@@ -1,11 +1,9 @@
-package org.camunda.feel
+package org.camunda.feel.script
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import javax.script.ScriptEngineManager
-
 import scala.collection.JavaConversions._
-
 
 /**
  * @author Philipp Ossler
@@ -14,7 +12,7 @@ class ScriptEngineManagerTest extends FlatSpec with Matchers {
   
   val scriptEngineManager = new ScriptEngineManager
     
-  "Script engine manager" should "get feel script entgine by name" in {
+  "The script engine manager" should "get feel script entgine by name" in {
     
     val engine = scriptEngineManager.getEngineByName("feel")
     

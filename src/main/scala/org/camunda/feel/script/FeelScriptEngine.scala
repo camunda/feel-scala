@@ -1,4 +1,4 @@
-package org.camunda.feel
+package org.camunda.feel.script
 
 import javax.script.ScriptEngine
 import javax.script.Bindings
@@ -7,8 +7,9 @@ import javax.script.ScriptContext
 import javax.script.ScriptEngineFactory
 import javax.script.AbstractScriptEngine
 
-
 class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine {
+  
+  lazy val factory = new FeelScriptEngineFactory
   
   def createBindings(): Bindings = {
     ???
@@ -22,8 +23,6 @@ class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine {
     ???
   }
 
-  def getFactory(): ScriptEngineFactory = {
-    ???
-  }
+  def getFactory(): ScriptEngineFactory = factory
   
 }

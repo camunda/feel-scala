@@ -1,10 +1,8 @@
-package org.camunda.feel
+package org.camunda.feel.script
 
 import javax.script.ScriptEngineFactory
 import javax.script.ScriptEngine
-
 import scala.collection.JavaConversions._
-
 
 /**
  * @author Philipp Ossler
