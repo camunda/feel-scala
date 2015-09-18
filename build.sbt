@@ -13,6 +13,7 @@ libraryDependencies ++= List(
 	"junit" % "junit" % "4.11" % "test"
 )
 
+libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
 assemblyMergeStrategy  in assembly := {
   case x if x.startsWith("META-INF") => MergeStrategy.discard // Bumf

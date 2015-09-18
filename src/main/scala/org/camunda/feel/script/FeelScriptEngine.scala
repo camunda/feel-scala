@@ -6,20 +6,20 @@ import java.io.Reader
 import javax.script.ScriptContext
 import javax.script.ScriptEngineFactory
 import javax.script.AbstractScriptEngine
+import javax.script.SimpleBindings
 
 class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine {
   
   lazy val factory = new FeelScriptEngineFactory
   
-  def createBindings(): Bindings = {
+  // TODO alternatives?
+  def createBindings(): Bindings = new SimpleBindings
+
+  def eval(reader: Reader, context: ScriptContext): Object = {
     ???
   }
 
-  def eval(x$1: Reader, x$2: ScriptContext): Object = {
-    ???
-  }
-
-  def eval(x$1: String, x$2: ScriptContext): Object = {
+  def eval(script: String, context: ScriptContext): Object = {
     ???
   }
 
