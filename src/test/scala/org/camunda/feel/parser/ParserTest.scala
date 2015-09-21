@@ -1,12 +1,7 @@
-package org.camunda.feel
+package org.camunda.feel.parser
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.camunda.feel.parser.FeelParser
-import org.camunda.feel.parser.LessThan
-import org.camunda.feel.parser.ConstNumber
-import org.camunda.feel.parser.Exp
-import org.scalatest.matchers.Matcher
 
 
 /**
@@ -26,6 +21,18 @@ class ParserTest extends FlatSpec with Matchers {
   
   it should "not parse '< true'" in {
     parser.parse("< true").successful should be (false)
+  }
+  
+  it should "parse '<= 3'" in {
+    parser.parse("<= 3").get should be (LessOrEqual(ConstNumber(3)))
+  }
+  
+  it should "parse '> 3'" in {
+    parser.parse("> 3").get should be (GreaterThat(ConstNumber(3)))
+  }
+  
+  it should "parse '>= 3'" in {
+    parser.parse(">= 3").get should be (GreaterOrEqual(ConstNumber(3)))
   }
   
 }

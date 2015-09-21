@@ -1,6 +1,7 @@
 package org.camunda.feel.parser
 
 import scala.util.parsing.combinator.JavaTokenParsers
+import org.camunda.feel.types.Number
 
 /**
  * @author Philipp Ossler
@@ -10,6 +11,8 @@ import scala.util.parsing.combinator.JavaTokenParsers
 class FeelParser extends JavaTokenParsers {
   
   def parse(expression: String): ParseResult[Exp] = parseAll(program, expression)
+  
+  def parseTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
   
   
   private def program: Parser[Exp] = expression
@@ -25,7 +28,12 @@ class FeelParser extends JavaTokenParsers {
   
   // 7
   // compare for number, dates, time, duration
-  private def simplePositivUnaryTest = "<" ~ (numericLiteral) ^^ { case op ~ x => LessThan(x) } // ..
+  private def simplePositivUnaryTest = (  "<"  ~ numericLiteral ^^ { case op ~ x => LessThan(x) }
+                                        | "<=" ~ numericLiteral ^^ { case op ~ x => LessOrEqual(x)}
+                                        | ">"  ~ numericLiteral ^^ { case op ~ x => GreaterThat(x)}
+                                        | ">=" ~ numericLiteral ^^ { case op ~ x => GreaterOrEqual(x)} 
+                                        )
+                              
   
   // 14
   private def simpleUnaryTests = simplePositivUnaryTest // ...
@@ -40,7 +48,7 @@ class FeelParser extends JavaTokenParsers {
   private def simpleLiteral = numericLiteral | booleanLiteral | stringLiteraL  // | date time literal
   
   // 36
-  private def numericLiteral = wholeNumber ^^ ( n => ConstNumber(n.toLong) ) 
+  private def numericLiteral = wholeNumber ^^ ( n => ConstNumber(n.toDouble) ) 
   
   // 34
   // naming clash with JavaTokenParser
