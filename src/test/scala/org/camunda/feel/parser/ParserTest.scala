@@ -5,6 +5,7 @@ import org.scalatest.Matchers
 import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
 import org.camunda.feel.types.OpenIntervalBoundary
+import org.camunda.feel.types.ClosedIntervalBoundary
 
 
 /**
@@ -63,5 +64,10 @@ class ParserTest extends FlatSpec with Matchers {
     
     parser.parse("]2 .. 4[").get should be (interval)
   }
-  
+ 
+  it should "parse '[2 .. 4]'" in {
+    val interval = Interval(start = ClosedIntervalBoundary(ConstNumber(2)), end = ClosedIntervalBoundary(ConstNumber(4)))
+    
+    parser.parse("[2 .. 4]").get should be (interval)
+  }
 }
