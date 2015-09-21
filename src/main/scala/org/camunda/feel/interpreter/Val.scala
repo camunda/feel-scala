@@ -1,5 +1,7 @@
 package org.camunda.feel.interpreter
 
+import org.joda.time.LocalDate
+
 /**
  * FEEL supports the following datatypes:
 * number
@@ -17,8 +19,10 @@ built-in function (10.3.4.1).
 sealed trait Val
 
 // should be BigDecimal (or simple Double)
-case class ValNumber(x: Double) extends Val
+case class ValNumber(value: Double) extends Val
 
-case class ValBoolean(b: Boolean) extends Val
+case class ValBoolean(value: Boolean) extends Val
+
+case class ValDate(value: LocalDate) extends Val
 
 case class ValError(error: String) extends Val

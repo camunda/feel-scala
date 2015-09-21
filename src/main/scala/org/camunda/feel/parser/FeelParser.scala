@@ -2,6 +2,9 @@ package org.camunda.feel.parser
 
 import scala.util.parsing.combinator.JavaTokenParsers
 import org.camunda.feel.types.Number
+import org.joda.time.LocalDate
+import org.camunda.feel.types.OpenIntervalBoundary
+import org.camunda.feel.types.OpenIntervalBoundary
 
 /**
  * @author Philipp Ossler
@@ -21,19 +24,25 @@ class FeelParser extends JavaTokenParsers {
   private def expression = textualExpression // ...
   
   // 2
-  private def textualExpression = simplePositivUnaryTest // ...
+  private def textualExpression = simplePositivUnaryTest | literal // ...
   
   // 5
   private def simpleExpression = simpleValue // arithmeticExpressio
   
   // 7
   // compare for number, dates, time, duration
-  private def simplePositivUnaryTest = (  "<"  ~ numericLiteral ^^ { case op ~ x => LessThan(x) }
-                                        | "<=" ~ numericLiteral ^^ { case op ~ x => LessOrEqual(x)}
-                                        | ">"  ~ numericLiteral ^^ { case op ~ x => GreaterThat(x)}
-                                        | ">=" ~ numericLiteral ^^ { case op ~ x => GreaterOrEqual(x)} 
+  private def simplePositivUnaryTest = (  "<"  ~ compareableLiteral ^^ { case op ~ x => LessThan(x) }
+                                        | "<=" ~ compareableLiteral ^^ { case op ~ x => LessOrEqual(x)}
+                                        | ">"  ~ compareableLiteral ^^ { case op ~ x => GreaterThan(x)}
+                                        | ">=" ~ compareableLiteral ^^ { case op ~ x => GreaterOrEqual(x)} 
+                                        | interval
                                         )
-                              
+  
+  // all types that can compare with unary operator
+  private def compareableLiteral = numericLiteral | dateTimeLiternal
+  
+  private def interval = ( "(" | "]" ) ~ compareableLiteral ~ ".." ~ compareableLiteral ~ ( ")" | "[" ) ^^ { case _ ~ start ~ _ ~ end ~ _ => Interval(OpenIntervalBoundary(start), OpenIntervalBoundary(end)) }
+                          
   
   // 14
   private def simpleUnaryTests = simplePositivUnaryTest // ...
@@ -45,17 +54,21 @@ class FeelParser extends JavaTokenParsers {
   private def simpleValue = simpleLiteral // ...
   
   // 33
-  private def simpleLiteral = numericLiteral | booleanLiteral | stringLiteraL  // | date time literal
+  private def literal = simpleLiteral // ...
+  
+  // 33
+  private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL  // | date time literal
   
   // 36
-  private def numericLiteral = wholeNumber ^^ ( n => ConstNumber(n.toDouble) ) 
+  private def numericLiteral = decimalNumber ^^ ( n => ConstNumber(n.toDouble) )
   
   // 34
   // naming clash with JavaTokenParser
   private def stringLiteraL = ("""[a-zA-Z_]\w*""".r) ^^ ( s => ConstString(s) )
   
   // 35
-  private def booleanLiteral = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
+  private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
   
-  
+  // 39
+  private def dateTimeLiternal: Parser[Exp] = "date" ~ "(" ~ stringLiteral ~ ")" ^^ { case op ~ _ ~ date ~ _ => ConstDate(LocalDate.parse(date.replaceAll("\"", ""))) }
 }

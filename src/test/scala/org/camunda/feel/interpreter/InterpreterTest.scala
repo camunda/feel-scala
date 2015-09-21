@@ -3,6 +3,9 @@ package org.camunda.feel.interpreter
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel.parser.FeelParser
+import org.joda.time.LocalDate
+
+import com.github.nscala_time.time.Imports._
 
 /**
  * 10.3.2.8 Decision Table
@@ -35,23 +38,46 @@ class InterpreterTest extends FlatSpec with Matchers {
 
     val exp = parser.parse("< 3")
     (interpreter.test(exp.get)(Context(2))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(false))    
+    (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(false))
     (interpreter.test(exp.get)(Context(4))) should be(ValBoolean(false))
   }
-  
+
   it should "compare with '<='" in {
-    
+
     val exp = parser.parse("<= 3")
     (interpreter.test(exp.get)(Context(2))) should be(ValBoolean(true))
     (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(true))
     (interpreter.test(exp.get)(Context(4))) should be(ValBoolean(false))
   }
+
+  it should "be in interval '(2 .. 4)'" in {
+    
+    val exp = parser.parse("(2 .. 4)")
+    (interpreter.test(exp.get)(Context(2))) should be (ValBoolean(false))
+    (interpreter.test(exp.get)(Context(3))) should be (ValBoolean(true))
+    (interpreter.test(exp.get)(Context(4))) should be (ValBoolean(false))
+  }
   
-//  it should "compare with implicit '='" in {
-//    
-//    val exp = parser.parse("3")
-//    (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(true))
-//    (interpreter.test(exp.get)(Context(4))) should be(ValBoolean(false))
-//  } 
+  "A date" should "compare with '<'" in {
+
+    val exp = parser.parse("""< date("2015-09-18")""")
+
+    val date = LocalDate.parse("2015-09-18")
+
+    (interpreter.test(exp.get)(Context(date - 1.day))) should be(ValBoolean(true))
+    (interpreter.test(exp.get)(Context(date))) should be(ValBoolean(false))
+    (interpreter.test(exp.get)(Context(date + 1.day))) should be(ValBoolean(false))
+  }
+
+  it should "compare with '<='" in {
+
+    val exp = parser.parse("""<= date("2015-09-18")""")
+
+    val date = LocalDate.parse("2015-09-18")
+
+    (interpreter.test(exp.get)(Context(date - 1.day))) should be(ValBoolean(true))
+    (interpreter.test(exp.get)(Context(date))) should be(ValBoolean(true))
+    (interpreter.test(exp.get)(Context(date + 1.day))) should be(ValBoolean(false))
+  }
 
 }
