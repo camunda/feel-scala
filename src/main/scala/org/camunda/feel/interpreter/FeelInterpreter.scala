@@ -33,6 +33,8 @@ class FeelInterpreter {
     case GreaterThan(x) => unaryOp(value(x), _ > _, ValBoolean)
     case GreaterOrEqual(x) => unaryOp(value(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(value(start.value), value(end.value), isInInterval(interval), ValBoolean)
+    // combinator 
+    case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     // can not evaluate expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -41,11 +43,11 @@ class FeelInterpreter {
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
-      case ValBoolean(i) => withBoolean(x, x => f(c(i,x)))
-      case ValString(i) => withString(x, x => f(c(i,x)))
+      case ValBoolean(i) => withBoolean(x, x => f(c(i, x)))
+      case ValString(i) => withString(x, x => f(c(i, x)))
       case _ => ValError(s"expected Number, Boolean, String or Date but found '$input'")
     })
-    
+
   private def unaryOp(x: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
@@ -78,12 +80,12 @@ class FeelInterpreter {
         f(x, y)
       })
     })
-    
+
   private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
-    case ValBoolean(x)  => f(x)
+    case ValBoolean(x) => f(x)
     case _ => ValError(s"expected Boolean but found '$x'")
   }
-  
+
   private def withString(x: Val, f: String => Val): Val = x match {
     case ValString(x) => f(x)
     case _ => ValError(s"expected String but found '$x'")
@@ -111,6 +113,14 @@ class FeelInterpreter {
       }
       inStart && inEnd
     }
+
+  private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = xs match {
+    case Nil => f(false)
+    case x :: xs => withBoolean(value(x), _ match {
+      case true => f(true)
+      case false => atLeastOne(xs, f)
+    })
+  }
 
   private def input(implicit context: Context): Val = context.input
 }

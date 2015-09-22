@@ -26,8 +26,8 @@ class FeelParser extends JavaTokenParsers {
   // 5
   private def simpleExpression = simpleValue // arithmeticExpressio
 
-  // 7
-  // compare for number, dates, time, duration
+  
+  // 7 - compare for number, dates, time, duration
   private def simplePositivUnaryTest = ("<" ~ compareableLiteral ^^ { case op ~ x => LessThan(x) }
     | "<=" ~ compareableLiteral ^^ { case op ~ x => LessOrEqual(x) }
     | ">" ~ compareableLiteral ^^ { case op ~ x => GreaterThan(x) }
@@ -46,9 +46,13 @@ class FeelParser extends JavaTokenParsers {
     case "[" ~ start ~ _ ~ end ~ (")" | "[") => Interval(ClosedIntervalBoundary(start), OpenIntervalBoundary(end))
     case "[" ~ start ~ _ ~ end ~ "]" => Interval(ClosedIntervalBoundary(start), ClosedIntervalBoundary(end))
   }
-
+  
+   // 13
+  private def simplePositivUnaryTests = ( simplePositivUnaryTest ~ "," ~ repsep(simplePositivUnaryTest, ",") ^^ { case x ~ _ ~ xs => AtLeastOne(x :: xs) }
+                                        | simplePositivUnaryTest )
+ 
   // 14
-  private def simpleUnaryTests = simplePositivUnaryTest // ...
+  private def simpleUnaryTests = simplePositivUnaryTests // ...
 
   // 18
   private def endpoint = simpleValue

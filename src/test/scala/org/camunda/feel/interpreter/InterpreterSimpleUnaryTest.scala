@@ -81,10 +81,24 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(4, "[2 .. 4]") should be(ValBoolean(true))
   }
   
+  it should "be in '2,3'" in {
+    
+    eval(2, "2,3") should be (ValBoolean(true))
+    eval(3, "2,3") should be (ValBoolean(true))
+    eval(4, "2,3") should be (ValBoolean(false))
+  }
+  
   "A string" should "compare to another string (implicit '=')" in {
     
     eval("a", """ "b" """) should be (ValBoolean(false))
     eval("b", """ "b" """) should be (ValBoolean(true))
+  }
+  
+  it should """be in '"a","b"' """ in {
+    
+    eval("a", """ "a","b" """) should be (ValBoolean(true))
+    eval("b", """ "a","b" """) should be (ValBoolean(true))
+    eval("c", """ "a","b" """) should be (ValBoolean(false))
   }
   
   "A boolean" should "compare to another string (implicit '=')" in {

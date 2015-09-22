@@ -26,3 +26,5 @@ case class GreaterOrEqual(x: Exp) extends Exp
 case class Equal(x: Exp) extends Exp
 
 case class Interval(start: IntervalBoundary, end: IntervalBoundary) extends Exp
+
+case class AtLeastOne(expressions: List[Exp]) extends Exp

@@ -24,10 +24,10 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("true") should be(Equal(ConstBool(true)))
     parse("false") should be(Equal(ConstBool(false)))
   }
-  
+
   it should "parse a string" in {
-    
-    parse(""" "abc" """) should be (Equal(ConstString("abc")))
+
+    parse(""" "abc" """) should be(Equal(ConstString("abc")))
   }
 
   it should "parse a date" in {
@@ -56,43 +56,60 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   }
 
   it should "parse '(2 .. 4)'" in {
-    val interval = Interval(
-      start = OpenIntervalBoundary(ConstNumber(2)),
-      end = OpenIntervalBoundary(ConstNumber(4)))
 
-    parse("(2 .. 4)") should be(interval)
+    parse("(2 .. 4)") should be(
+      Interval(
+        start = OpenIntervalBoundary(ConstNumber(2)),
+        end = OpenIntervalBoundary(ConstNumber(4))))
   }
 
   it should "parse ']2 .. 4['" in {
-    val interval = Interval(
-      start = OpenIntervalBoundary(ConstNumber(2)),
-      end = OpenIntervalBoundary(ConstNumber(4)))
 
-    parse("]2 .. 4[") should be(interval)
+    parse("]2 .. 4[") should be(
+      Interval(
+        start = OpenIntervalBoundary(ConstNumber(2)),
+        end = OpenIntervalBoundary(ConstNumber(4))))
   }
 
   it should "parse '[2 .. 4]'" in {
-    val interval = Interval(
-      start = ClosedIntervalBoundary(ConstNumber(2)),
-      end = ClosedIntervalBoundary(ConstNumber(4)))
 
-    parse("[2 .. 4]") should be(interval)
+    parse("[2 .. 4]") should be(
+      Interval(
+        start = ClosedIntervalBoundary(ConstNumber(2)),
+        end = ClosedIntervalBoundary(ConstNumber(4))))
   }
 
   it should """parse '(date("2015-09-17") .. date("2015-09-19"))'""" in {
-    val interval = Interval(
-      start = OpenIntervalBoundary(ConstDate("2015-09-17")),
-      end = OpenIntervalBoundary(ConstDate("2015-09-19")))
 
-    parse("""(date("2015-09-17") .. date("2015-09-19"))""") should be(interval)
+    parse("""(date("2015-09-17") .. date("2015-09-19"))""") should be(
+      Interval(
+        start = OpenIntervalBoundary(ConstDate("2015-09-17")),
+        end = OpenIntervalBoundary(ConstDate("2015-09-19"))))
   }
 
   it should """parse '[date("2015-09-17") .. date("2015-09-19")]'""" in {
-    val interval = Interval(
-      start = ClosedIntervalBoundary(ConstDate("2015-09-17")),
-      end = ClosedIntervalBoundary(ConstDate("2015-09-19")))
 
-    parse("""[date("2015-09-17") .. date("2015-09-19")]""") should be(interval)
+    parse("""[date("2015-09-17") .. date("2015-09-19")]""") should be(
+      Interval(
+        start = ClosedIntervalBoundary(ConstDate("2015-09-17")),
+        end = ClosedIntervalBoundary(ConstDate("2015-09-19"))))
+  }
+
+  it should "parse '2,3,4' (multiple tests)" in {
+
+    parse("2,3,4") should be(
+      AtLeastOne(List(
+        Equal(ConstNumber(2)),
+        Equal(ConstNumber(3)),
+        Equal(ConstNumber(4)))))
+  }
+
+  it should """parse '"a","b"' (multiple tests)""" in {
+
+    parse(""" "a","b" """) should be(
+      AtLeastOne(List(
+        Equal(ConstString("a")),
+        Equal(ConstString("b")))))
   }
 
   private def parse(expression: String): Exp = {
