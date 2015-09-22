@@ -28,7 +28,7 @@ import org.scalatest.Matchers
  *
  * @author Philipp Ossler
  */
-class InterpreterTest extends FlatSpec with Matchers {
+class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
 
   val parser = new FeelParser
   val interpreter = new FeelInterpreter
@@ -61,6 +61,12 @@ class InterpreterTest extends FlatSpec with Matchers {
     eval(4, ">= 3") should be(ValBoolean(true))
   }
 
+  it should "compare with another number (implicit '=')" in {
+    
+    eval(2, "3") should be (ValBoolean(false))
+    eval(3, "3") should be (ValBoolean(true))
+  }
+  
   it should "be in interval '(2 .. 4)'" in {
 
     eval(2, "(2 .. 4)") should be(ValBoolean(false))
@@ -73,6 +79,21 @@ class InterpreterTest extends FlatSpec with Matchers {
     eval(2, "[2 .. 4]") should be(ValBoolean(true))
     eval(3, "[2 .. 4]") should be(ValBoolean(true))
     eval(4, "[2 .. 4]") should be(ValBoolean(true))
+  }
+  
+  "A string" should "compare to another string (implicit '=')" in {
+    
+    eval("a", """ "b" """) should be (ValBoolean(false))
+    eval("b", """ "b" """) should be (ValBoolean(true))
+  }
+  
+  "A boolean" should "compare to another string (implicit '=')" in {
+    
+    eval(false, "true") should be (ValBoolean(false))
+    eval(true, "false") should be (ValBoolean(false))
+    
+    eval(false, "false") should be (ValBoolean(true))
+    eval(true, "true") should be (ValBoolean(true))
   }
 
   "A date" should "compare with '<'" in {
@@ -102,6 +123,12 @@ class InterpreterTest extends FlatSpec with Matchers {
     eval(asDate("2015-09-18"), """>= date("2015-09-18")""") should be(ValBoolean(true))
     eval(asDate("2015-09-19"), """>= date("2015-09-18")""") should be(ValBoolean(true))
   }
+  
+  it should "compare with another date (implicit '=')" in {
+    
+    eval(asDate("2015-09-17"), """date("2015-09-18")""") should be (ValBoolean(false))
+    eval(asDate("2015-09-18"), """date("2015-09-18")""") should be (ValBoolean(true))
+  }
 
   it should """be in interval '(date("2015-09-17") .. date("2015-09-19")]'""" in {
 
@@ -118,7 +145,7 @@ class InterpreterTest extends FlatSpec with Matchers {
   }
 
   private def eval(input: Any, expression: String): Val = {
-    val exp = parser.parse(expression)
+    val exp = parser.parseSimpleUnaryTest(expression)
     interpreter.test(exp.get)(Context(input))
   }
 

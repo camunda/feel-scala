@@ -24,8 +24,10 @@ class FeelInterpreter {
     // simple literal
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
+    case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
     // simple unary test
+    case Equal(x) => unaryOpAny(value(x), _ == _, ValBoolean)
     case LessThan(x) => unaryOp(value(x), _ < _, ValBoolean)
     case LessOrEqual(x) => unaryOp(value(x), _ <= _, ValBoolean)
     case GreaterThan(x) => unaryOp(value(x), _ > _, ValBoolean)
@@ -35,6 +37,15 @@ class FeelInterpreter {
     case exp => ValError(s"unsupported expression '$exp'")
   }
 
+  private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
+    withVal(input, _ match {
+      case ValNumber(i) => withNumber(x, x => f(c(i, x)))
+      case ValDate(i) => withDate(x, x => f(c(i, x)))
+      case ValBoolean(i) => withBoolean(x, x => f(c(i,x)))
+      case ValString(i) => withString(x, x => f(c(i,x)))
+      case _ => ValError(s"expected Number, Boolean, String or Date but found '$input'")
+    })
+    
   private def unaryOp(x: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
@@ -47,12 +58,6 @@ class FeelInterpreter {
       case ValNumber(i) => withNumbers(x, y, (x, y) => f(c(i, x, y)))
       case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
       case _ => ValError(s"expected Number or Date but found '$input'")
-    })
-
-  private def withInput[R, T](f: Val => Val)(implicit context: Context): Val =
-    withVal(input, _ match {
-      case ValError(e) => ValError(s"expected Number but found '$input'")
-      case _ => f(input)
     })
 
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
@@ -73,6 +78,16 @@ class FeelInterpreter {
         f(x, y)
       })
     })
+    
+  private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
+    case ValBoolean(x)  => f(x)
+    case _ => ValError(s"expected Boolean but found '$x'")
+  }
+  
+  private def withString(x: Val, f: String => Val): Val = x match {
+    case ValString(x) => f(x)
+    case _ => ValError(s"expected String but found '$x'")
+  }
 
   private def withDate(x: Val, f: Date => Val): Val = x match {
     case ValDate(x) => f(x)
@@ -105,6 +120,7 @@ case class Context(in: Any) {
   def input: Val = in match {
     case (x: Int) => ValNumber(x)
     case (b: Boolean) => ValBoolean(b)
+    case (s: String) => ValString(s)
     case (d: Date) => ValDate(d)
     case _ => ValError(s"unsupported input '$in'")
   }

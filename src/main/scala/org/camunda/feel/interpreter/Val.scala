@@ -22,6 +22,8 @@ case class ValNumber(value: Number) extends Val
 
 case class ValBoolean(value: Boolean) extends Val
 
+case class ValString(value: String) extends Val
+
 case class ValDate(value: Date) extends Val
 
 case class ValError(error: String) extends Val

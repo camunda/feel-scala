@@ -11,9 +11,9 @@ import scala.util.parsing.combinator.JavaTokenParsers
  */
 class FeelParser extends JavaTokenParsers {
 
-  def parse(expression: String): ParseResult[Exp] = parseAll(program, expression)
+  def parseSimpleExpression(expression: String): ParseResult[Exp] = parseAll(simpleExpression, expression)
 
-  def parseTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
+  def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
 
   private def program: Parser[Exp] = expression
 
@@ -32,9 +32,11 @@ class FeelParser extends JavaTokenParsers {
     | "<=" ~ compareableLiteral ^^ { case op ~ x => LessOrEqual(x) }
     | ">" ~ compareableLiteral ^^ { case op ~ x => GreaterThan(x) }
     | ">=" ~ compareableLiteral ^^ { case op ~ x => GreaterOrEqual(x) }
-    | interval)
+    | interval
+    | simpleValue ^^ { case x => Equal(x) }  
+  )
 
-  // all types that can compare with unary operator
+  // all types that can compare with operator '<', '<=', '>' and '>='
   private def compareableLiteral = numericLiteral | dateTimeLiternal
 
   // 8
@@ -58,14 +60,14 @@ class FeelParser extends JavaTokenParsers {
   private def literal = simpleLiteral // ...
 
   // 33
-  private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL // | date time literal
+  private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL // ...
 
   // 36
   private def numericLiteral = decimalNumber ^^ (n => ConstNumber(n))
 
   // 34
   // naming clash with JavaTokenParser
-  private def stringLiteraL = ("""[a-zA-Z_]\w*""".r) ^^ (s => ConstString(s))
+  private def stringLiteraL: Parser[Exp] = "\"" ~ ("""[a-zA-Z_]\w*""".r) ~ "\"" ^^ { case _ ~ s ~ _ => ConstString(s) }
 
   // 35
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))

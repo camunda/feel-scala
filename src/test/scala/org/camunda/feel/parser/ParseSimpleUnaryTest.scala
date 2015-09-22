@@ -8,26 +8,31 @@ import org.scalatest.Matchers
 /**
  * @author Philipp Ossler
  */
-class ParserTest extends FlatSpec with Matchers {
+class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
   val parser = new FeelParser
 
-  "A parser" should "parse a number" in {
+  "A parser for simple unary test" should "parse a number" in {
 
-    parse("3") should be(ConstNumber(3))
-    parse("3.2") should be(ConstNumber(3.2))
-    parse(".2") should be(ConstNumber(.2))
+    parse("3") should be(Equal(ConstNumber(3)))
+    parse("3.2") should be(Equal(ConstNumber(3.2)))
+    parse(".2") should be(Equal(ConstNumber(.2)))
   }
 
   it should "parse a boolean" in {
 
-    parse("true") should be(ConstBool(true))
-    parse("false") should be(ConstBool(false))
+    parse("true") should be(Equal(ConstBool(true)))
+    parse("false") should be(Equal(ConstBool(false)))
+  }
+  
+  it should "parse a string" in {
+    
+    parse(""" "abc" """) should be (Equal(ConstString("abc")))
   }
 
   it should "parse a date" in {
 
-    parse("""date("2015-09-18")""") should be(ConstDate("2015-09-18"))
+    parse("""date("2015-09-18")""") should be(Equal(ConstDate("2015-09-18")))
   }
 
   it should "parse '< 3'" in {
@@ -91,7 +96,7 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   private def parse(expression: String): Exp = {
-    val result = parser.parse(expression)
+    val result = parser.parseSimpleUnaryTest(expression)
     result.get
   }
 
