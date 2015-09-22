@@ -27,4 +27,6 @@ case class Equal(x: Exp) extends Exp
 
 case class Interval(start: IntervalBoundary, end: IntervalBoundary) extends Exp
 
-case class AtLeastOne(expressions: List[Exp]) extends Exp
+case class AtLeastOne(xs: List[Exp]) extends Exp
+
+case class Not(x: Exp) extends Exp

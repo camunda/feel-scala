@@ -88,6 +88,20 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(4, "2,3") should be (ValBoolean(false))
   }
   
+  it should "be not equal 'not(3)'" in {
+    
+    eval(2, "not(3)") should be (ValBoolean(true))
+    eval(3, "not(3)") should be (ValBoolean(false))
+    eval(4, "not(3)") should be (ValBoolean(true))
+  }
+  
+  it should "be not in 'not(2,3)'" in {
+    
+    eval(2, "not(2,3)") should be (ValBoolean(false))
+    eval(3, "not(2,3)") should be (ValBoolean(false))
+    eval(4, "not(2,3)") should be (ValBoolean(true))
+  }
+  
   "A string" should "compare to another string (implicit '=')" in {
     
     eval("a", """ "b" """) should be (ValBoolean(false))
@@ -157,10 +171,20 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(asDate("2015-09-18"), """[date("2015-09-17") .. date("2015-09-19")]""") should be(ValBoolean(true))
     eval(asDate("2015-09-19"), """[date("2015-09-17") .. date("2015-09-19")]""") should be(ValBoolean(true))
   }
+  
+  "An empty expression ('-')" should "be always true" in {
+    
+    eval(None, "-") should be (ValBoolean(true))
+  }
+  
+  "An empty expression ('')" should "be always true" in {
+    
+    eval(None, "") should be (ValBoolean(true))
+  }
 
   private def eval(input: Any, expression: String): Val = {
     val exp = parser.parseSimpleUnaryTest(expression)
-    interpreter.test(exp.get)(Context(input))
+    interpreter.value(exp.get)(Context(input))
   }
 
   private def asDate(date: String): Date = date

@@ -52,7 +52,9 @@ class FeelParser extends JavaTokenParsers {
                                         | simplePositivUnaryTest )
  
   // 14
-  private def simpleUnaryTests = simplePositivUnaryTests // ...
+  private def simpleUnaryTests = (simplePositivUnaryTests 
+                                  | "not" ~ "(" ~ simplePositivUnaryTests ~ ")" ^^ { case _ ~ _ ~ x ~ _ => Not(x) }
+                                  | ("-"|"") ^^ ( _ => ConstBool(true) ))
 
   // 18
   private def endpoint = simpleValue

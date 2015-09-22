@@ -8,34 +8,23 @@ import org.camunda.feel.parser._
  */
 class FeelInterpreter {
 
-  def test(expression: Exp)(implicit context: Context): Val = {
-
-    // transform simple literal to simple positive unary test
-    val exp = expression match {
-      case x @ ConstNumber(_) => Equal(x)
-      case x @ ConstBool(_) => Equal(x)
-      case e => e
-    }
-
-    value(exp)
-  }
-
   def value(expression: Exp)(implicit context: Context): Val = expression match {
-    // simple literal
+    // simple literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
-    // simple unary test
+    // simple unary tests
     case Equal(x) => unaryOpAny(value(x), _ == _, ValBoolean)
     case LessThan(x) => unaryOp(value(x), _ < _, ValBoolean)
     case LessOrEqual(x) => unaryOp(value(x), _ <= _, ValBoolean)
     case GreaterThan(x) => unaryOp(value(x), _ > _, ValBoolean)
     case GreaterOrEqual(x) => unaryOp(value(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(value(start.value), value(end.value), isInInterval(interval), ValBoolean)
-    // combinator 
+    // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
-    // can not evaluate expression
+    case Not(x) => withBoolean(value(x), x => ValBoolean(!x))
+    // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
 

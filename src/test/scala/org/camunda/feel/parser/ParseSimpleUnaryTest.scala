@@ -112,6 +112,23 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
         Equal(ConstString("b")))))
   }
 
+  it should "parse '-'" in {
+
+    parse("-") should be(ConstBool(true))
+  }
+
+  it should "parse '' (empty)" in {
+
+    parse("") should be(ConstBool(true))
+  }
+
+  it should "parse 'not(3)' (negation)" in {
+
+    parse("not(3)") should be(
+      Not(
+        Equal(ConstNumber(3))))
+  }
+
   private def parse(expression: String): Exp = {
     val result = parser.parseSimpleUnaryTest(expression)
     result.get
