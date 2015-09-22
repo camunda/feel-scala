@@ -33,51 +33,68 @@ class InterpreterTest extends FlatSpec with Matchers {
 
   val parser = new FeelParser
   val interpreter = new FeelInterpreter
-
+  
   "A number" should "compare with '<'" in {
 
-    val exp = parser.parse("< 3")
-    (interpreter.test(exp.get)(Context(2))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(false))
-    (interpreter.test(exp.get)(Context(4))) should be(ValBoolean(false))
+    eval(2, "< 3") should be(ValBoolean(true))
+    eval(3, "< 3") should be(ValBoolean(false))
+    eval(4, "< 3") should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
-    val exp = parser.parse("<= 3")
-    (interpreter.test(exp.get)(Context(2))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(3))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(4))) should be(ValBoolean(false))
+    eval(2, "<= 3") should be(ValBoolean(true))
+    eval(3, "<= 3") should be(ValBoolean(true))
+    eval(4, "<= 3") should be(ValBoolean(false))
   }
 
   it should "be in interval '(2 .. 4)'" in {
     
-    val exp = parser.parse("(2 .. 4)")
-    (interpreter.test(exp.get)(Context(2))) should be (ValBoolean(false))
-    (interpreter.test(exp.get)(Context(3))) should be (ValBoolean(true))
-    (interpreter.test(exp.get)(Context(4))) should be (ValBoolean(false))
+    eval(2, "(2 .. 4)") should be (ValBoolean(false))
+    eval(3, "(2 .. 4)") should be (ValBoolean(true))
+    eval(4, "(2 .. 4)") should be (ValBoolean(false))
+  }
+  
+  it should "be in interval '[2 .. 4]'" in {
+    
+    eval(2, "[2 .. 4]") should be (ValBoolean(true))
+    eval(3, "[2 .. 4]") should be (ValBoolean(true))
+    eval(4, "[2 .. 4]") should be (ValBoolean(true))
   }
   
   "A date" should "compare with '<'" in {
 
-    val exp = parser.parse("""< date("2015-09-18")""")
-
-    val date = LocalDate.parse("2015-09-18")
-
-    (interpreter.test(exp.get)(Context(date - 1.day))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(date))) should be(ValBoolean(false))
-    (interpreter.test(exp.get)(Context(date + 1.day))) should be(ValBoolean(false))
+    eval(asDate("2015-09-17"), """< date("2015-09-18")""") should be(ValBoolean(true))
+    eval(asDate("2015-09-18"), """< date("2015-09-18")""") should be(ValBoolean(false))
+    eval(asDate("2015-09-19"), """< date("2015-09-18")""") should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
-    val exp = parser.parse("""<= date("2015-09-18")""")
-
-    val date = LocalDate.parse("2015-09-18")
-
-    (interpreter.test(exp.get)(Context(date - 1.day))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(date))) should be(ValBoolean(true))
-    (interpreter.test(exp.get)(Context(date + 1.day))) should be(ValBoolean(false))
+    eval(asDate("2015-09-17"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(asDate("2015-09-18"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(asDate("2015-09-19"), """<= date("2015-09-18")""") should be(ValBoolean(false))
+  }
+  
+  it should """be in interval '(date("2015-09-17") .. date("2015-09-19")]'""" in {
+    
+    eval(asDate("2015-09-17"), """(date("2015-09-17") .. date("2015-09-19"))""") should be (ValBoolean(false))
+    eval(asDate("2015-09-18"), """(date("2015-09-17") .. date("2015-09-19"))""") should be (ValBoolean(true))
+    eval(asDate("2015-09-19"), """(date("2015-09-17") .. date("2015-09-19"))""") should be (ValBoolean(false))
+  }
+  
+  it should """be in interval '[date("2015-09-17") .. date("2015-09-19")]'""" in {
+    
+    eval(asDate("2015-09-17"), """[date("2015-09-17") .. date("2015-09-19")]""") should be (ValBoolean(true))
+    eval(asDate("2015-09-18"), """[date("2015-09-17") .. date("2015-09-19")]""") should be (ValBoolean(true))
+    eval(asDate("2015-09-19"), """[date("2015-09-17") .. date("2015-09-19")]""") should be (ValBoolean(true))
   }
 
+  private def eval(input: Any, expression: String): Val = {
+    val exp = parser.parse(expression)
+    interpreter.test(exp.get)(Context(input))
+  }
+  
+  private def asDate(date: String): LocalDate = LocalDate.parse(date)
+  
 }
