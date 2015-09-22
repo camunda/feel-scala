@@ -1,6 +1,6 @@
 package org.camunda.feel.interpreter
 
-import org.joda.time.LocalDate
+import org.camunda.feel._
 
 
 /**
@@ -8,57 +8,59 @@ import org.joda.time.LocalDate
  */
 trait Compareable[T] {
   
-  def x: T
+  def value: T
 
-  def <(y: Compareable[_]): Boolean = op(y, <)
+  def <(x: Compareable[_]): Boolean = op(x, <)
   
-  def <=(y: Compareable[_]): Boolean = op(y, <=)
+  def <=(x: Compareable[_]): Boolean = op(x, <=)
   
-  def >(y: Compareable[_]): Boolean = op(y, >)
+  def >(x: Compareable[_]): Boolean = op(x, >)
   
-  def >=(y: Compareable[_]): Boolean = op(y, >=)
+  def >=(x: Compareable[_]): Boolean = op(x, >=)
   
-  def <(y: T): Boolean
+  def <(x: T): Boolean
   
-  def <=(y: T): Boolean
+  def <=(x: T): Boolean
   
-  def >(y: T): Boolean
+  def >(x: T): Boolean
   
-  def >=(y: T): Boolean
+  def >=(x: T): Boolean
   
-  private def op(y: Compareable[_], f: T => Boolean): Boolean = y match {
-    case i :Compareable[T] => f(i.x)
-    case i => throw new IllegalArgumentException(s"expect '${x.getClass}' but found '${y.getClass}'")
+  // txpe hacking to interpreter operators in a simple wax
+  // the interpreter should check the txpes
+  private def op(x: Compareable[_], f: T => Boolean): Boolean = x match {
+    case i :Compareable[T] => f(i.value)
+    case i => throw new IllegalArgumentException(s"expect '${value.getClass}' but found '${x.getClass}'")
   }
 }
 
 object Compareable {
 
-  implicit def numberToCompareable(x: Double): Compareable[Double] = CompareableNumber(x)
+  implicit def numberToCompareable(x: Number): Compareable[Number] = CompareableNumber(x)
 
-  implicit def dateToCompareable(x: LocalDate): Compareable[LocalDate] = CompareableDate(x)
+  implicit def dateToCompareable(x: Date): Compareable[Date] = CompareableDate(x)
 }
 
-case class CompareableNumber(x: Double) extends Compareable[Double] {
+case class CompareableNumber(value: Number) extends Compareable[Number] {
   
-  def <(y: Double) = x < y
+  def <(x: Number) = value < x
   
-  def <=(y: Double) = x <= y
+  def <=(x: Number) = value <= x
   
-  def >(y: Double) = x > y
+  def >(x: Number) = value > x
   
-  def >=(y: Double) = x >= y
+  def >=(x: Number) = value >= x
   
 }
 
-case class CompareableDate(x: LocalDate) extends Compareable[LocalDate] {
+case class CompareableDate(value: Date) extends Compareable[Date] {
   
-  def <(y: LocalDate) = x isBefore y
+  def <(x: Date) = value isBefore x
   
-  def <=(y: LocalDate) = x == y || (x isBefore y)
+  def <=(x: Date) = value == x || (value isBefore x)
   
-  def >(y: LocalDate) = x isAfter y
+  def >(x: Date) = value isAfter x
   
-  def >=(y: LocalDate) = x == y || (x isAfter y)
+  def >=(x: Date) = value == x || (value isAfter x)
   
 }

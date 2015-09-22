@@ -1,8 +1,8 @@
 package org.camunda.feel.parser
 
+import org.camunda.feel._
+
 import scala.util.parsing.combinator.JavaTokenParsers
-import org.camunda.feel.types.Number
-import org.joda.time.LocalDate
 
 /**
  * @author Philipp Ossler
@@ -61,7 +61,7 @@ class FeelParser extends JavaTokenParsers {
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL // | date time literal
 
   // 36
-  private def numericLiteral = decimalNumber ^^ (n => ConstNumber(n.toDouble))
+  private def numericLiteral = decimalNumber ^^ (n => ConstNumber(n))
 
   // 34
   // naming clash with JavaTokenParser
@@ -71,5 +71,6 @@ class FeelParser extends JavaTokenParsers {
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
   // 39
-  private def dateTimeLiternal: Parser[Exp] = "date" ~ "(" ~ stringLiteral ~ ")" ^^ { case op ~ _ ~ date ~ _ => ConstDate(LocalDate.parse(date.replaceAll("\"", ""))) }
+  private def dateTimeLiternal: Parser[Exp] = "date" ~ "(" ~ stringLiteral ~ ")" ^^ { case op ~ _ ~ date ~ _ => ConstDate(date.replaceAll("\"", "")) }
+  
 }

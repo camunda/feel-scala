@@ -1,7 +1,7 @@
 package org.camunda.feel.interpreter
 
+import org.camunda.feel._
 import org.camunda.feel.parser._
-import org.joda.time.LocalDate
 
 /**
  * @author Philipp Ossler
@@ -55,26 +55,26 @@ class FeelInterpreter {
       case _ => f(input)
     })
 
-  private def withNumbers(x: Val, y: Val, f: (Double, Double) => Val): Val =
+  private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
     withNumber(x, x => {
       withNumber(y, y => {
         f(x, y)
       })
     })
 
-  private def withNumber(x: Val, f: Double => Val): Val = x match {
+  private def withNumber(x: Val, f: Number => Val): Val = x match {
     case ValNumber(x) => f(x)
     case _ => ValError(s"expected Number but found '$x'")
   }
 
-  private def withDates(x: Val, y: Val, f: (LocalDate, LocalDate) => Val): Val =
+  private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
     withDate(x, x => {
       withDate(y, y => {
         f(x, y)
       })
     })
 
-  private def withDate(x: Val, f: LocalDate => Val): Val = x match {
+  private def withDate(x: Val, f: Date => Val): Val = x match {
     case ValDate(x) => f(x)
     case _ => ValError(s"expected Date but found '$x'")
   }
@@ -105,7 +105,7 @@ case class Context(in: Any) {
   def input: Val = in match {
     case (x: Int) => ValNumber(x)
     case (b: Boolean) => ValBoolean(b)
-    case (d: LocalDate) => ValDate(d)
+    case (d: Date) => ValDate(d)
     case _ => ValError(s"unsupported input '$in'")
   }
 }

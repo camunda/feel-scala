@@ -1,20 +1,19 @@
 package org.camunda.feel.parser
 
-import org.camunda.feel.types.Number
-import org.joda.time.LocalDate
+import org.camunda.feel._
 
 /**
  * @author Philipp Ossler
  */
 sealed trait Exp
 
-case class ConstNumber(value: Double) extends Exp
+case class ConstNumber(value: Number) extends Exp
 
 case class ConstBool(value: Boolean) extends Exp
 
 case class ConstString(value: String) extends Exp
 
-case class ConstDate(value: LocalDate) extends Exp
+case class ConstDate(value: Date) extends Exp
 
 case class LessThan(x: Exp) extends Exp
 

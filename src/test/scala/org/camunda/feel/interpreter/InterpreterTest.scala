@@ -1,11 +1,10 @@
 package org.camunda.feel.interpreter
 
+import org.camunda.feel._
+import org.camunda.feel.parser.FeelParser
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.camunda.feel.parser.FeelParser
-import org.joda.time.LocalDate
-
-import com.github.nscala_time.time.Imports._
 
 /**
  * 10.3.2.8 Decision Table
@@ -123,6 +122,6 @@ class InterpreterTest extends FlatSpec with Matchers {
     interpreter.test(exp.get)(Context(input))
   }
 
-  private def asDate(date: String): LocalDate = LocalDate.parse(date)
+  private def asDate(date: String): Date = date
 
 }
