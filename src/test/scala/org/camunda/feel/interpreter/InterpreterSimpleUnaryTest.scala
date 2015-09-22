@@ -67,18 +67,18 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(3, "3") should be (ValBoolean(true))
   }
   
-  it should "be in interval '(2 .. 4)'" in {
+  it should "be in interval '(2..4)'" in {
 
-    eval(2, "(2 .. 4)") should be(ValBoolean(false))
-    eval(3, "(2 .. 4)") should be(ValBoolean(true))
-    eval(4, "(2 .. 4)") should be(ValBoolean(false))
+    eval(2, "(2..4)") should be(ValBoolean(false))
+    eval(3, "(2..4)") should be(ValBoolean(true))
+    eval(4, "(2..4)") should be(ValBoolean(false))
   }
 
-  it should "be in interval '[2 .. 4]'" in {
+  it should "be in interval '[2..4]'" in {
 
-    eval(2, "[2 .. 4]") should be(ValBoolean(true))
-    eval(3, "[2 .. 4]") should be(ValBoolean(true))
-    eval(4, "[2 .. 4]") should be(ValBoolean(true))
+    eval(2, "[2..4]") should be(ValBoolean(true))
+    eval(3, "[2..4]") should be(ValBoolean(true))
+    eval(4, "[2..4]") should be(ValBoolean(true))
   }
   
   it should "be in '2,3'" in {
@@ -158,18 +158,18 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(asDate("2015-09-18"), """date("2015-09-18")""") should be (ValBoolean(true))
   }
 
-  it should """be in interval '(date("2015-09-17") .. date("2015-09-19")]'""" in {
+  it should """be in interval '(date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    eval(asDate("2015-09-17"), """(date("2015-09-17") .. date("2015-09-19"))""") should be(ValBoolean(false))
-    eval(asDate("2015-09-18"), """(date("2015-09-17") .. date("2015-09-19"))""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """(date("2015-09-17") .. date("2015-09-19"))""") should be(ValBoolean(false))
+    eval(asDate("2015-09-17"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
+    eval(asDate("2015-09-18"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(true))
+    eval(asDate("2015-09-19"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
   }
 
-  it should """be in interval '[date("2015-09-17") .. date("2015-09-19")]'""" in {
+  it should """be in interval '[date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    eval(asDate("2015-09-17"), """[date("2015-09-17") .. date("2015-09-19")]""") should be(ValBoolean(true))
-    eval(asDate("2015-09-18"), """[date("2015-09-17") .. date("2015-09-19")]""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """[date("2015-09-17") .. date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(asDate("2015-09-17"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(asDate("2015-09-18"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(asDate("2015-09-19"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
   }
   
   "An empty expression ('-')" should "be always true" in {

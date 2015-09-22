@@ -55,41 +55,41 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("""< date("2015-09-18")""") should be(LessThan(ConstDate("2015-09-18")))
   }
 
-  it should "parse '(2 .. 4)'" in {
+  it should "parse '(2..4)'" in {
 
-    parse("(2 .. 4)") should be(
+    parse("(2..4)") should be(
       Interval(
         start = OpenIntervalBoundary(ConstNumber(2)),
         end = OpenIntervalBoundary(ConstNumber(4))))
   }
 
-  it should "parse ']2 .. 4['" in {
+  it should "parse ']2..4['" in {
 
-    parse("]2 .. 4[") should be(
+    parse("]2..4[") should be(
       Interval(
         start = OpenIntervalBoundary(ConstNumber(2)),
         end = OpenIntervalBoundary(ConstNumber(4))))
   }
 
-  it should "parse '[2 .. 4]'" in {
+  it should "parse '[2..4]'" in {
 
-    parse("[2 .. 4]") should be(
+    parse("[2..4]") should be(
       Interval(
         start = ClosedIntervalBoundary(ConstNumber(2)),
         end = ClosedIntervalBoundary(ConstNumber(4))))
   }
 
-  it should """parse '(date("2015-09-17") .. date("2015-09-19"))'""" in {
+  it should """parse '(date("2015-09-17")..date("2015-09-19"))'""" in {
 
-    parse("""(date("2015-09-17") .. date("2015-09-19"))""") should be(
+    parse("""(date("2015-09-17")..date("2015-09-19"))""") should be(
       Interval(
         start = OpenIntervalBoundary(ConstDate("2015-09-17")),
         end = OpenIntervalBoundary(ConstDate("2015-09-19"))))
   }
 
-  it should """parse '[date("2015-09-17") .. date("2015-09-19")]'""" in {
+  it should """parse '[date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    parse("""[date("2015-09-17") .. date("2015-09-19")]""") should be(
+    parse("""[date("2015-09-17")..date("2015-09-19")]""") should be(
       Interval(
         start = ClosedIntervalBoundary(ConstDate("2015-09-17")),
         end = ClosedIntervalBoundary(ConstDate("2015-09-19"))))

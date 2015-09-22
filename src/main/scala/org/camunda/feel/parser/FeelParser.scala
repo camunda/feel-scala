@@ -14,18 +14,9 @@ class FeelParser extends JavaTokenParsers {
   def parseSimpleExpression(expression: String): ParseResult[Exp] = parseAll(simpleExpression, expression)
 
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
-
-  private def program: Parser[Exp] = expression
-
-  // 1
-  private def expression = textualExpression // ...
-
-  // 2
-  private def textualExpression = simplePositivUnaryTest | literal // ...
-
+  
   // 5
-  private def simpleExpression = simpleValue // arithmeticExpressio
-
+  private def simpleExpression = simpleValue // arithmeticExpression
   
   // 7 - compare for number, dates, time, duration
   private def simplePositivUnaryTest = ("<" ~ compareableLiteral ^^ { case op ~ x => LessThan(x) }
@@ -60,16 +51,13 @@ class FeelParser extends JavaTokenParsers {
   private def endpoint = simpleValue
 
   // 19
-  private def simpleValue = simpleLiteral // ...
+  private def simpleValue = simpleLiteral // qualified name
 
   // 33
-  private def literal = simpleLiteral // ...
-
-  // 33
-  private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL // ...
+  private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
 
   // 36
-  private def numericLiteral = decimalNumber ^^ (n => ConstNumber(n))
+  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
 
   // 34
   // naming clash with JavaTokenParser
@@ -80,5 +68,6 @@ class FeelParser extends JavaTokenParsers {
 
   // 39
   private def dateTimeLiternal: Parser[Exp] = "date" ~ "(" ~ stringLiteral ~ ")" ^^ { case op ~ _ ~ date ~ _ => ConstDate(date.replaceAll("\"", "")) }
+    // time, duration
   
 }
