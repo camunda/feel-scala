@@ -2,7 +2,6 @@ package org.camunda.feel.parser
 
 import org.camunda.feel.types.Number
 import org.joda.time.LocalDate
-import org.camunda.feel.types.IntervalBoundary
 
 /**
  * @author Philipp Ossler

@@ -3,10 +3,6 @@ package org.camunda.feel.parser
 import scala.util.parsing.combinator.JavaTokenParsers
 import org.camunda.feel.types.Number
 import org.joda.time.LocalDate
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.ClosedIntervalBoundary
 
 /**
  * @author Philipp Ossler

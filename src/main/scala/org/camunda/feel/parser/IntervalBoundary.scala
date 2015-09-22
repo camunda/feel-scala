@@ -1,6 +1,4 @@
-package org.camunda.feel.types
-
-import org.camunda.feel.parser.Exp
+package org.camunda.feel.parser
 
 /**
  * @author Philipp Ossler

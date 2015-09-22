@@ -4,8 +4,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.ClosedIntervalBoundary
 
 /**
  * @author Philipp Ossler

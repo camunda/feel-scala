@@ -2,12 +2,6 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel.parser._
 import org.joda.time.LocalDate
-import org.camunda.feel.types.IntervalBoundary
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.OpenIntervalBoundary
-import org.camunda.feel.types.ClosedIntervalBoundary
-import org.camunda.feel.types.ClosedIntervalBoundary
 
 /**
  * @author Philipp Ossler
@@ -27,55 +21,33 @@ class FeelInterpreter {
   }
 
   def value(expression: Exp)(implicit context: Context): Val = expression match {
+    // simple literal
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstDate(d) => ValDate(d)
-    case LessThan(x) => withInput(_ match {
-      case ValNumber(i) => withNumber(value(x), x => ValBoolean(i < x))
-      case ValDate(i) => withDate(value(x), x => ValBoolean(i.isBefore(x)))
-      case e => ValError(s"expected number, date or time for operator '<' but found '$e'")
-    })
-    case LessOrEqual(x) => withInput(_ match {
-      case ValNumber(i) => withNumber(value(x), x => ValBoolean(i <= x))
-      case ValDate(i) => withDate(value(x), x => ValBoolean(i.isBefore(x) || i == x))
-      case e => ValError(s"expected number, date or time for operator '<' but found '$e'")
-    })
-    case interval @ Interval(start, end) => withInput(_ match {
-      case ValNumber(i) => withNumbers(value(start.value), value(end.value), (startValue,endValue) => 
-        ValBoolean( isInInterval(interval)(startValue, endValue,i) ) )
-      case ValDate(i)  => withDates(value(start.value), value(end.value), (startValue, endValue) =>
-        ValBoolean(isInIntervalD(interval)(startValue, endValue, i)))
-      case e => ValError(s"expected number, date or time for interval but found '$e'")
-    })
+    // simple unary test
+    case LessThan(x) => unaryOp(value(x), _ < _, ValBoolean)
+    case LessOrEqual(x) => unaryOp(value(x), _ <= _, ValBoolean)
+    case GreaterThan(x) => unaryOp(value(x), _ > _, ValBoolean)
+    case GreaterOrEqual(x) => unaryOp(value(x), _ >= _, ValBoolean)
+    case interval @ Interval(start, end) => unaryOpDual(value(start.value), value(end.value), isInInterval(interval), ValBoolean)
+    // can not evaluate expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
-  
-  private def isInInterval(interval: Interval): (Double, Double, Double) => Boolean = 
-      (x,y, i) => {
-        val inStart: Boolean = interval.start match {
-          case OpenIntervalBoundary(_)   => i > x
-          case ClosedIntervalBoundary(_) => i >= x
-        }
-        val inEnd = interval.end match {
-          case OpenIntervalBoundary(_)   => i < y
-          case ClosedIntervalBoundary(_) => i <= y
-        }
-        inStart && inEnd
-      }
-      
-      //TODO DRY
-  private def isInIntervalD(interval: Interval): (LocalDate, LocalDate, LocalDate) => Boolean = 
-      (x,y, i) => {
-        val inStart: Boolean = interval.start match {
-          case OpenIntervalBoundary(_)   => x.isBefore(i)
-          case ClosedIntervalBoundary(_) => x.isBefore(i) || x == i
-        }
-        val inEnd = interval.end match {
-          case OpenIntervalBoundary(_)   => i.isBefore(y)
-          case ClosedIntervalBoundary(_) => i.isBefore(y) || y == i
-        }
-        inStart && inEnd
-      }
+
+  private def unaryOp(x: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
+    withVal(input, _ match {
+      case ValNumber(i) => withNumber(x, x => f(c(i, x)))
+      case ValDate(i) => withDate(x, x => f(c(i, x)))
+      case _ => ValError(s"expected Number or Date but found '$input'")
+    })
+
+  private def unaryOpDual(x: Val, y: Val, c: (Compareable[_], Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
+    withVal(input, _ match {
+      case ValNumber(i) => withNumbers(x, y, (x, y) => f(c(i, x, y)))
+      case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
+      case _ => ValError(s"expected Number or Date but found '$input'")
+    })
 
   private def withInput[R, T](f: Val => Val)(implicit context: Context): Val =
     withVal(input, _ match {
@@ -95,13 +67,13 @@ class FeelInterpreter {
     case _ => ValError(s"expected Number but found '$x'")
   }
 
-  private def withDates(x: Val, y: Val, f: (LocalDate, LocalDate) => Val): Val = 
+  private def withDates(x: Val, y: Val, f: (LocalDate, LocalDate) => Val): Val =
     withDate(x, x => {
       withDate(y, y => {
-        f(x,y)  
+        f(x, y)
       })
     })
-  
+
   private def withDate(x: Val, f: LocalDate => Val): Val = x match {
     case ValDate(x) => f(x)
     case _ => ValError(s"expected Date but found '$x'")
@@ -111,6 +83,19 @@ class FeelInterpreter {
     case ValError(e) => ValError(s"expected value but found '$e'")
     case _ => f(x)
   }
+
+  private def isInInterval(interval: Interval): (Compareable[_], Compareable[_], Compareable[_]) => Boolean =
+    (i, x, y) => {
+      val inStart: Boolean = interval.start match {
+        case OpenIntervalBoundary(_) => i > x
+        case ClosedIntervalBoundary(_) => i >= x
+      }
+      val inEnd = interval.end match {
+        case OpenIntervalBoundary(_) => i < y
+        case ClosedIntervalBoundary(_) => i <= y
+      }
+      inStart && inEnd
+    }
 
   private def input(implicit context: Context): Val = context.input
 }
