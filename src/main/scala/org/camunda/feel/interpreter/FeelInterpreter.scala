@@ -8,7 +8,7 @@ import org.camunda.feel.parser._
  */
 class FeelInterpreter {
 
-  def value(expression: Exp)(implicit context: Context): Val = expression match {
+  def value(expression: Exp)(implicit context: Context = Context()): Val = expression match {
     // simple literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
@@ -24,6 +24,8 @@ class FeelInterpreter {
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBoolean(value(x), x => ValBoolean(!x))
+    // context access
+    case Ref(name) => context(name)
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -112,15 +114,5 @@ class FeelInterpreter {
   }
 
   private def input(implicit context: Context): Val = context.input
-}
-
-case class Context(in: Any) {
-
-  def input: Val = in match {
-    case (x: Int) => ValNumber(x)
-    case (b: Boolean) => ValBoolean(b)
-    case (s: String) => ValString(s)
-    case (d: Date) => ValDate(d)
-    case _ => ValError(s"unsupported input '$in'")
-  }
+  
 }

@@ -15,6 +15,8 @@ class FeelParser extends JavaTokenParsers {
 
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
   
+  private val reservedWords = "not" | "date" | "-"
+  
   // 5
   private def simpleExpression = simpleValue // arithmeticExpression
   
@@ -24,11 +26,11 @@ class FeelParser extends JavaTokenParsers {
     | ">" ~ compareableLiteral ^^ { case op ~ x => GreaterThan(x) }
     | ">=" ~ compareableLiteral ^^ { case op ~ x => GreaterOrEqual(x) }
     | interval
-    | simpleValue ^^ { case x => Equal(x) }  
+    | endpoint ^^ { case x => Equal(x) }  
   )
 
   // all types that can compare with operator '<', '<=', '>' and '>='
-  private def compareableLiteral = numericLiteral | dateTimeLiternal
+  private def compareableLiteral = numericLiteral | dateTimeLiternal | qualifiedName
 
   // 8
   private def interval = ("(" | "]" | "[") ~ compareableLiteral ~ ".." ~ compareableLiteral ~ (")" | "[" | "]") ^^ {
@@ -51,8 +53,17 @@ class FeelParser extends JavaTokenParsers {
   private def endpoint = simpleValue
 
   // 19
-  private def simpleValue = simpleLiteral // qualified name
+  private def simpleValue = simpleLiteral | qualifiedName
+  
+  // 20 
+  private def qualifiedName = ( rep1sep(identifier, ".") ^^ { case xs => Ref(xs mkString "." ) }
+                             | name )
 
+  // 27
+  private def name = identifier ^^ ( s => Ref(s) )
+  
+  private def identifier = not(reservedWords) ~> ident ^^ ( s => s )
+  
   // 33
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
 

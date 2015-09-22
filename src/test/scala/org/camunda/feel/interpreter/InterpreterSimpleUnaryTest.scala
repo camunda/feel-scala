@@ -102,6 +102,18 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(4, "not(2,3)") should be (ValBoolean(true))
   }
   
+  it should "compare to a variable (qualified name)" in {
+    
+    eval(2,"var", variables = Map("var" -> 3)) should be (ValBoolean(false)) 
+    eval(3,"var", variables = Map("var" -> 3)) should be (ValBoolean(true)) 
+    
+    eval(2,"q.var", variables = Map("q.var" -> 3)) should be (ValBoolean(false)) 
+    eval(3,"q.var", variables = Map("q.var" -> 3)) should be (ValBoolean(true))
+    
+    eval(2,"< var", variables = Map("var" -> 3)) should be (ValBoolean(true)) 
+    eval(3,"< var", variables = Map("var" -> 3)) should be (ValBoolean(false))
+  }
+  
   "A string" should "compare to another string (implicit '=')" in {
     
     eval("a", """ "b" """) should be (ValBoolean(false))
@@ -181,10 +193,10 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     
     eval(None, "") should be (ValBoolean(true))
   }
-
-  private def eval(input: Any, expression: String): Val = {
+  
+  private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = parser.parseSimpleUnaryTest(expression)
-    interpreter.value(exp.get)(Context(input))
+    interpreter.value(exp.get)(Context(variables + ( Context.inputKey -> input)))
   }
 
   private def asDate(date: String): Date = date

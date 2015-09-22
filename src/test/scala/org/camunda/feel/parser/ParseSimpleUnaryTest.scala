@@ -128,6 +128,21 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
       Not(
         Equal(ConstNumber(3))))
   }
+  
+  it should "parse 'var' (qualified name)" in {
+    
+    parse("var") should be (Equal(Ref("var")))
+  }
+  
+  it should "parse 'qualified.var' (qualified name)" in {
+    
+    parse("qualified.var") should be (Equal(Ref("qualified.var")))
+  }
+  
+  it should "parse '< var'" in {
+    
+    parse("< var") should be (LessThan(Ref("var")))
+  }
 
   private def parse(expression: String): Exp = {
     val result = parser.parseSimpleUnaryTest(expression)
