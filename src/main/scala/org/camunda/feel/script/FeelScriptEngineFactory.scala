@@ -47,7 +47,7 @@ object FeelScriptEngineFactory {
   
   val ENGINE_NAME = "feel"
   
-  val ENGINE_VERSION = "1.0.0-alpha"
+  val ENGINE_VERSION = "1.0.0"
   
   val LANGUAGE_NAME = "Friendly Enough Expression Language"
   

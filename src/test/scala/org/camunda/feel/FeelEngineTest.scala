@@ -11,7 +11,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   val engine = new FeelEngine
 
-  "A FeelEngine" should "evaluate simpleUnaryTest '< 3'" in {
+  "A FeelEngine" should "evaluate a simpleUnaryTest '< 3'" in {
 
     eval("< 3", context = Map(Context.inputKey -> 2)) should be(EvalValue(true))
     eval("< 3", context = Map(Context.inputKey -> 3)) should be(EvalValue(false))
