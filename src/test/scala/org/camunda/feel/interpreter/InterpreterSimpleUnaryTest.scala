@@ -30,7 +30,6 @@ import org.scalatest.Matchers
  */
 class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
 
-  val parser = new FeelParser
   val interpreter = new FeelInterpreter
 
   "A number" should "compare with '<'" in {
@@ -189,14 +188,9 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(None, "-") should be (ValBoolean(true))
   }
   
-  "An empty expression ('')" should "be always true" in {
-    
-    eval(None, "") should be (ValBoolean(true))
-  }
-  
   private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
-    val exp = parser.parseSimpleUnaryTest(expression)
-    interpreter.value(exp.get)(Context(variables + ( Context.inputKey -> input)))
+    val exp = FeelParser.parseSimpleUnaryTest(expression)
+    interpreter.eval(exp.get)(Context(variables + ( Context.inputKey -> input)))
   }
 
   private def asDate(date: String): Date = date

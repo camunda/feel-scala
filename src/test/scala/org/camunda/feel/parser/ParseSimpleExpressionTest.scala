@@ -9,9 +9,7 @@ import org.scalatest.Matchers
  * @author Philipp Ossler
  */
 class ParseSimpleExpressionTest extends FlatSpec with Matchers {
-  
-  val parser = new FeelParser
-  
+ 
   "A parser for simple expression" should "parse number" in {
     
     parse("3") should be(ConstNumber(3))
@@ -31,7 +29,7 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
   }
   
   private def parse(expression: String): Exp = {
-    val result = parser.parseSimpleExpression(expression)
+    val result = FeelParser.parseSimpleExpression(expression)
     result.get
   }
   

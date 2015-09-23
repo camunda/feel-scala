@@ -8,22 +8,22 @@ import org.camunda.feel.parser._
  */
 class FeelInterpreter {
 
-  def value(expression: Exp)(implicit context: Context = Context()): Val = expression match {
+  def eval(expression: Exp)(implicit context: Context = Context()): Val = expression match {
     // simple literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
     // simple unary tests
-    case Equal(x) => unaryOpAny(value(x), _ == _, ValBoolean)
-    case LessThan(x) => unaryOp(value(x), _ < _, ValBoolean)
-    case LessOrEqual(x) => unaryOp(value(x), _ <= _, ValBoolean)
-    case GreaterThan(x) => unaryOp(value(x), _ > _, ValBoolean)
-    case GreaterOrEqual(x) => unaryOp(value(x), _ >= _, ValBoolean)
-    case interval @ Interval(start, end) => unaryOpDual(value(start.value), value(end.value), isInInterval(interval), ValBoolean)
+    case Equal(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
+    case LessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
+    case LessOrEqual(x) => unaryOp(eval(x), _ <= _, ValBoolean)
+    case GreaterThan(x) => unaryOp(eval(x), _ > _, ValBoolean)
+    case GreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
+    case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
-    case Not(x) => withBoolean(value(x), x => ValBoolean(!x))
+    case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     // context access
     case Ref(name) => context(name)
     // unsupported expression
@@ -88,7 +88,7 @@ class FeelInterpreter {
   }
 
   private def withVal(x: Val, f: Val => Val): Val = x match {
-    case ValError(e) => ValError(s"expected value but found '$e'")
+    case ValError(_) => ValError(s"expected value but found '$x'")
     case _ => f(x)
   }
 
@@ -107,7 +107,7 @@ class FeelInterpreter {
 
   private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = xs match {
     case Nil => f(false)
-    case x :: xs => withBoolean(value(x), _ match {
+    case x :: xs => withBoolean(eval(x), _ match {
       case true => f(true)
       case false => atLeastOne(xs, f)
     })

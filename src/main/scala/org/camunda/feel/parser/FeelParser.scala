@@ -9,28 +9,31 @@ import scala.util.parsing.combinator.JavaTokenParsers
  *
  * @ss DMN 1.0 (S.99)
  */
-class FeelParser extends JavaTokenParsers {
+object FeelParser extends JavaTokenParsers {
 
   def parseSimpleExpression(expression: String): ParseResult[Exp] = parseAll(simpleExpression, expression)
 
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
   
-  private val reservedWords = "not" | "date" | "-"
-  
+  private val reservedWord = "not" | "date" | "-"
+
   // 5
   private def simpleExpression = simpleValue // arithmeticExpression
-  
+
   // 7 - compare for number, dates, time, duration
-  private def simplePositivUnaryTest = ("<" ~ compareableLiteral ^^ { case op ~ x => LessThan(x) }
-    | "<=" ~ compareableLiteral ^^ { case op ~ x => LessOrEqual(x) }
-    | ">" ~ compareableLiteral ^^ { case op ~ x => GreaterThan(x) }
-    | ">=" ~ compareableLiteral ^^ { case op ~ x => GreaterOrEqual(x) }
+  private def simplePositivUnaryTest = ("<" ~> compareableLiteral ^^ { case x => LessThan(x) }
+    | "<=" ~> compareableLiteral ^^ { case x => LessOrEqual(x) }
+    | ">" ~> compareableLiteral ^^ { case x => GreaterThan(x) }
+    | ">=" ~> compareableLiteral ^^ { case x => GreaterOrEqual(x) }
     | interval
-    | endpoint ^^ { case x => Equal(x) }  
-  )
+    | endpoint ^^ { case x => Equal(x) }
+    | failure("illegal start of simple positiv unary test. expect a compare operator ('<', '<=', '>', '>='), an interval ('[..]', '(..)', ']..['), a simple literal or a qualified name."))
 
   // all types that can compare with operator '<', '<=', '>' and '>='
-  private def compareableLiteral = numericLiteral | dateTimeLiternal | qualifiedName
+  private def compareableLiteral = (numericLiteral
+    | dateTimeLiternal
+    | qualifiedName
+    | failure("illegal argument for compare operator. expect a number, a date or a qualified name."))
 
   // 8
   private def interval = ("(" | "]" | "[") ~ compareableLiteral ~ ".." ~ compareableLiteral ~ (")" | "[" | "]") ^^ {
@@ -39,31 +42,33 @@ class FeelParser extends JavaTokenParsers {
     case "[" ~ start ~ _ ~ end ~ (")" | "[") => Interval(ClosedIntervalBoundary(start), OpenIntervalBoundary(end))
     case "[" ~ start ~ _ ~ end ~ "]" => Interval(ClosedIntervalBoundary(start), ClosedIntervalBoundary(end))
   }
-  
-   // 13
-  private def simplePositivUnaryTests = ( simplePositivUnaryTest ~ "," ~ repsep(simplePositivUnaryTest, ",") ^^ { case x ~ _ ~ xs => AtLeastOne(x :: xs) }
-                                        | simplePositivUnaryTest )
- 
+
+  // 13
+  private def simplePositivUnaryTests = (simplePositivUnaryTest ~ "," ~ repsep(simplePositivUnaryTest, ",") ^^ { case x ~ _ ~ xs => AtLeastOne(x :: xs) }
+    | simplePositivUnaryTest)
+
   // 14
-  private def simpleUnaryTests = (simplePositivUnaryTests 
-                                  | "not" ~ "(" ~ simplePositivUnaryTests ~ ")" ^^ { case _ ~ _ ~ x ~ _ => Not(x) }
-                                  | ("-"|"") ^^ ( _ => ConstBool(true) ))
+  private def simpleUnaryTests = (
+    "-" ^^ (_ => ConstBool(true))
+    | "not(" ~> simplePositivUnaryTests <~ ")" ^^ { case x => Not(x) }
+    | simplePositivUnaryTests
+    | failure("illegal start of simple unary test. expect simple positiv unary tests (e.g. compare operator, interval, literal, qualified name), a 'not' operator or an empty test (eg. '-')"))
 
   // 18
   private def endpoint = simpleValue
 
   // 19
   private def simpleValue = simpleLiteral | qualifiedName
-  
+
   // 20 
-  private def qualifiedName = ( rep1sep(identifier, ".") ^^ { case xs => Ref(xs mkString "." ) }
-                             | name )
+  private def qualifiedName = (rep1sep(identifier, ".") ^^ { case xs => Ref(xs mkString ".") }
+    | name)
 
   // 27
-  private def name = identifier ^^ ( s => Ref(s) )
-  
-  private def identifier = not(reservedWords) ~> ident ^^ ( s => s )
-  
+  private def name = identifier ^^ (s => Ref(s))
+
+  private def identifier = not(reservedWord) ~> ident
+
   // 33
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
 
@@ -72,13 +77,13 @@ class FeelParser extends JavaTokenParsers {
 
   // 34
   // naming clash with JavaTokenParser
-  private def stringLiteraL: Parser[Exp] = "\"" ~ ("""[a-zA-Z_]\w*""".r) ~ "\"" ^^ { case _ ~ s ~ _ => ConstString(s) }
+  private def stringLiteraL: Parser[Exp] = "\"" ~> ("""[a-zA-Z_]\w*""".r) <~ "\"" ^^ { case s => ConstString(s) }
 
   // 35
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
   // 39
-  private def dateTimeLiternal: Parser[Exp] = "date" ~ "(" ~ stringLiteral ~ ")" ^^ { case op ~ _ ~ date ~ _ => ConstDate(date.replaceAll("\"", "")) }
-    // time, duration
-  
+  private def dateTimeLiternal: Parser[Exp] = "date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(date.replaceAll("\"", "")) }
+  // time, duration
+
 }

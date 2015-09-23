@@ -10,8 +10,6 @@ import org.scalatest.Matchers
  */
 class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
-  val parser = new FeelParser
-
   "A parser for simple unary test" should "parse a number" in {
 
     parse("3") should be(Equal(ConstNumber(3)))
@@ -117,11 +115,6 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("-") should be(ConstBool(true))
   }
 
-  it should "parse '' (empty)" in {
-
-    parse("") should be(ConstBool(true))
-  }
-
   it should "parse 'not(3)' (negation)" in {
 
     parse("not(3)") should be(
@@ -145,7 +138,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   }
 
   private def parse(expression: String): Exp = {
-    val result = parser.parseSimpleUnaryTest(expression)
+    val result = FeelParser.parseSimpleUnaryTest(expression)
     result.get
   }
 
