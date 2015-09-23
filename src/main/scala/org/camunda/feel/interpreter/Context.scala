@@ -1,6 +1,7 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
+import org.joda.time.LocalDate
 
 /**
  * @author Philipp Ossler
@@ -20,6 +21,7 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Boolean => ValBoolean(x)
     case x: String => ValString(x)
     case x: Date => ValDate(x)
+    case x: java.util.Date => ValDate( LocalDate.fromDateFields(x) )
     case None => ValError("no variable avaiale")
     case _ => ValError(s"unsupported variable '$x'")
   }
