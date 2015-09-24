@@ -1,7 +1,7 @@
 # FEEL 
 A parser and interpreter for FEEL (friendly enough expression language) written in scala. 
 
-FEEL is a part of the (DMN Spec)[http://www.omg.org/spec/DMN/] and is designed to write expressions and conditions in a simple way what can easily understand by business professionals and developers.
+FEEL is a part of the [DMN Spec](http://www.omg.org/spec/DMN/) and is designed to write expressions and conditions in a simple way what can easily understand by business professionals and developers.
 S-FEEL is a subset of FEEL that can be used for simple expressions and conditions. Mostly, it should used for decision tables.
 
 ## Goal
@@ -44,7 +44,7 @@ object AnyProgram {
 ```
 
 ## As Script Engine
-The spec (JSR 223)[https://www.jcp.org/en/jsr/detail?id=223] is implemented so that it can be used as script engine. It is registered by name 'feel'.
+The spec [JSR 223](https://www.jcp.org/en/jsr/detail?id=223) is implemented so that it can be used as script engine. It is registered by name 'feel'.
 
 ```scala
 object AnyProgram {
