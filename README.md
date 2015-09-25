@@ -17,14 +17,14 @@ Currently, the goal of the parser and interpreter is to support S-FEEL, so that 
 * the input of the simple unary test should be given as context entry 'cellInput'
 * limited support for types of input and qualified variables
 
-# How to use 
+## How to use 
 The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
 
 Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet. 
 
 Or just use a built jar of the released version found on [github release page](https://github.com/saig0/feel/releases).
 
-## Native Way
+### Native Way
 There is a class 'FeelEngine' that can be used to parse and evaluate a given expression. This class can be called from a scala or java program. 
 
 ```scala
@@ -46,7 +46,7 @@ object AnyProgram {
 }
 ```
 
-## As Script Engine
+### As Script Engine
 The spec [JSR 223](https://www.jcp.org/en/jsr/detail?id=223) is implemented so that it can be used as script engine. It is registered by name 'feel'.
 
 ```scala
@@ -65,7 +65,7 @@ object AnyProgram {
 }
 ```
 
-# How to build
+## How to build
 
 > Requirements
 * [SBT](http://www.scala-sbt.org) to build and test the application
@@ -85,10 +85,10 @@ Deploy it locally with
 sbt pulishLocal
 ```
 
-# Examples
+## Examples
 Just to have a feeling how an expression can look like:
 
-## Simple Unary Test
+### Simple Unary Test
 ```
 < 42                                        // input less than 42
 
@@ -110,5 +110,5 @@ not(2,4)                                    // input is not 2 or 4
 
 ```
 
-# Note
+## Note
 The parser and interpreter can be used into the [camunda DMN engine](https://github.com/camunda/camunda-engine-dmn) as alternative to the built-in FEEL script engine.
