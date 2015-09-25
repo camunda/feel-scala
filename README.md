@@ -8,18 +8,18 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 Currently, the goal of the parser and interpreter is to support S-FEEL, so that it can used for decision tables.
 
 ## Supported Language Features
-* data types: number, string, boolean, date
+* data types: number, string, boolean, date, time, duration
 * simple unary tests: compare operators ('<', '<=', '>', '>=', equal), interval, negation, combination of multiple tests
 * qualified names
 
 ## Current Limitations
-* unsupported data types: time, duration
-* no simple expressions
+* no simple expressions, only S-FEEL
 * the input of the simple unary test should be given as context entry 'cellInput'
+* limited support for types of input and qualified variables
 
 # How to use 
-The parser and interpreter can be integrated as dependency or as jar which include all dependencies (size of ~ 7mb).
-Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet.
+The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
+Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet. Or just use a built jar of the released version found on github.
 
 ## Native Way
 There is a class 'FeelEngine' that can be used to parse and evaluate a given expression. This class can be called from a scala or java program. 
@@ -87,18 +87,25 @@ Just to have a feeling how an expression can look like:
 
 ## Simple Unary Test
 ```
-< 42
+< 42                                        // input less than 42
 
-(2..4)
+(2..4)                                      // input greater than 2 and less than 4
 
-2,4
+2,4                                         // input is 2 or 4
 
-not(2,4)
+not(2,4)                                    // input is not 2 or 4
 
->= a
+>= a                                        // input is greater or equal to the value of variable 'a'
 
-[date("2015-09-17")..date("2015-09-19")]
+"good"                                      // input is equal the string 'good'
 
-"good"
+[date("2015-09-17")..date("2015-09-19")]    // input is after or equal '2015-09-17' and before or equal '2015-09-19'
+
+]time("08:00:00")..time("16:00:00")[        // input is after '08:00:00' and before '16:00:00'
+
+<= duration("P1D")                          // input is less or equal to 'P1D' (one day)
 
 ```
+
+# Note
+The parser and interpreter can be used into the [camunda DMN engine](https://github.com/camunda/camunda-engine-dmn) as alternative to the built-in FEEL script engine.

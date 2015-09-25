@@ -10,7 +10,10 @@ import scala.util.parsing.combinator.JavaTokenParsers
  * @ss DMN 1.0 (S.99)
  */
 object FeelParser extends JavaTokenParsers {
-
+  
+  // override to ignore comment '// ...' and '/* ... */'
+  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+  
   def parseSimpleExpression(expression: String): ParseResult[Exp] = parseAll(simpleExpression, expression)
 
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
@@ -85,8 +88,9 @@ object FeelParser extends JavaTokenParsers {
   // 39
   private def dateTimeLiternal: Parser[Exp] = ("date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
     | "time(" ~> stringLiteral <~ ")" ^^ { case time => ConstTime(withoutQuotes(time)) }
-    | "duration(" ~> stringLiteral <~ ")" ^^ { case duration => ConstDuration(withoutQuotes(duration)) })
+    | "duration(" ~> stringLiteral <~ ")" ^^ { case duration => ConstDuration(withoutQuotes(duration)) }
+    | failure("illegal start of a date time literal. expect a date ('YYYY-MM-DD'), time ('hh:mm:ss') or duration ('P_Y_M_DT_H_M_S')"))
 
   private def withoutQuotes(exp: String): String = exp.replaceAll("\"", "")
-
+  
 }

@@ -7,7 +7,7 @@ import org.joda.time.LocalDate
  * @author Philipp Ossler
  */
 case class Context(variables: Map[String, Any] = Map()) {
-  
+
   def input: Val = apply(Context.inputKey)
 
   def apply(key: String): Val = variables.get(key) match {
@@ -23,15 +23,18 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Date => ValDate(x)
     case x: Time => ValTime(x)
     case x: Duration => ValDuration(x)
-    case x: java.util.Date => ValDate( LocalDate.fromDateFields(x) )
-    case None => ValError("no variable avaiale")
-    case _ => ValError(s"unsupported variable '$x'")
+    // extended types
+    case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
+    // unsupported values
+    case None => ValError("no variable available")
+    case null => ValError("no varibale available")
+    case _ => ValError(s"unsupported type of variable '$x'")
   }
 
 }
 
 object Context {
-  
+
   val inputKey = "cellInput"
-  
+
 }
