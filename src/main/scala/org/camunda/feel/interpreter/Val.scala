@@ -26,4 +26,8 @@ case class ValString(value: String) extends Val
 
 case class ValDate(value: Date) extends Val
 
+case class ValTime(value: Time) extends Val
+
+case class ValDuration(value: Duration) extends Val
+
 case class ValError(error: String) extends Val

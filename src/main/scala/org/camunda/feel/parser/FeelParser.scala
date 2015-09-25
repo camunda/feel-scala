@@ -14,8 +14,8 @@ object FeelParser extends JavaTokenParsers {
   def parseSimpleExpression(expression: String): ParseResult[Exp] = parseAll(simpleExpression, expression)
 
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
-  
-  private val reservedWord = "not" | "date" | "-"
+
+  private val reservedWord = "not" | "-" | "date" | "time" | "duration"
 
   // 5
   private def simpleExpression = simpleValue // arithmeticExpression
@@ -83,7 +83,10 @@ object FeelParser extends JavaTokenParsers {
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
   // 39
-  private def dateTimeLiternal: Parser[Exp] = "date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(date.replaceAll("\"", "")) }
-  // time, duration
+  private def dateTimeLiternal: Parser[Exp] = ("date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
+    | "time(" ~> stringLiteral <~ ")" ^^ { case time => ConstTime(withoutQuotes(time)) }
+    | "duration(" ~> stringLiteral <~ ")" ^^ { case duration => ConstDuration(withoutQuotes(duration)) })
+
+  private def withoutQuotes(exp: String): String = exp.replaceAll("\"", "")
 
 }

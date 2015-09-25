@@ -14,7 +14,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
     parse("3") should be(Equal(ConstNumber(3)))
     parse("3.2") should be(Equal(ConstNumber(3.2)))
-    parse(".2") should be(Equal(ConstNumber(.2)))
+    parse(".2") should be(Equal(ConstNumber(.2))) 
   }
 
   it should "parse a boolean" in {
@@ -33,6 +33,21 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("""date("2015-09-18")""") should be(Equal(ConstDate("2015-09-18")))
   }
 
+  it should "parse a time" in {
+    
+    parse("""time("15:41:10")""") should be(Equal(ConstTime("15:41:10")))
+  }
+  
+  it should "parse a duration (days and time)" in {
+    
+    parse("""duration("P4DT2H")""") should be(Equal(ConstDuration("P4DT2H")))
+  }
+  
+  it should "parse a duration (years and months)" in {
+    
+    parse("""duration("P2Y1M")""") should be(Equal(ConstDuration("P2Y1M")))
+  }
+  
   it should "parse '< 3'" in {
     parse("< 3") should be(LessThan(ConstNumber(3)))
   }
@@ -53,6 +68,14 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("""< date("2015-09-18")""") should be(LessThan(ConstDate("2015-09-18")))
   }
 
+  it should """parse '< time("15:41:10")'""" in {
+    parse("""< time("15:41:10")""") should be(LessThan(ConstTime("15:41:10")))
+  }
+  
+  it should """parse '< duration("P1D")'""" in {
+    parse("""< duration("P1D")""") should be(LessThan(ConstDuration("P1D")))
+  }
+  
   it should "parse '(2..4)'" in {
 
     parse("(2..4)") should be(

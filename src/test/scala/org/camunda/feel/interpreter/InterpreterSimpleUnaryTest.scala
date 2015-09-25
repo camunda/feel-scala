@@ -7,25 +7,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 /**
- * 10.3.2.8 Decision Table
- * The normative notation for decision tables is specified in clause 8. A textual representation using invocation of the decision
- * table built-in function is provided here in order to tie the syntax to the semantics in the same way as is done for the rest of
- * FEEL. Unary tests (grammar rule 17) cannot be mapped to the semantic domain in isolation, and are left as their syntactic
- * forms, indicated by the enclosing single-quotes. For example, the first decision table in Table 26 can be represented
- * textually as
- * decision table(
- * outputs: "Applicant Risk Rating",
- * input expression list: [Applicant Age, Medical History],
- * rule list: [
- * ['>60', '"good"', '"Medium"'],
- * ['>60', '"bad"', '"High"'],
- * ['[25..60]', '-', '"Medium"'],
- * ['<25', '"good"','"Low"'],
- * ['<25', '"bad"', '"Medium"']],
- * hit policy: "Unique")
- * The decision table built-in in clause 10.3.4.6 will compose the unary tests syntax into expressions that can be mapped to the
- * FEEL semantic domain.
- *
  * @author Philipp Ossler
  */
 class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
@@ -60,7 +41,7 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(4, ">= 3") should be(ValBoolean(true))
   }
 
-  it should "compare with another number (implicit '=')" in {
+  it should "be equal to another number" in {
     
     eval(2, "3") should be (ValBoolean(false))
     eval(3, "3") should be (ValBoolean(true))
@@ -113,7 +94,7 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(3,"< var", variables = Map("var" -> 3)) should be (ValBoolean(false))
   }
   
-  "A string" should "compare to another string (implicit '=')" in {
+  "A string" should "be equal to another string" in {
     
     eval("a", """ "b" """) should be (ValBoolean(false))
     eval("b", """ "b" """) should be (ValBoolean(true))
@@ -126,7 +107,7 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval("c", """ "a","b" """) should be (ValBoolean(false))
   }
   
-  "A boolean" should "compare to another string (implicit '=')" in {
+  "A boolean" should "be equal to another boolean" in {
     
     eval(false, "true") should be (ValBoolean(false))
     eval(true, "false") should be (ValBoolean(false))
@@ -137,50 +118,90 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
 
   "A date" should "compare with '<'" in {
 
-    eval(asDate("2015-09-17"), """< date("2015-09-18")""") should be(ValBoolean(true))
-    eval(asDate("2015-09-18"), """< date("2015-09-18")""") should be(ValBoolean(false))
-    eval(asDate("2015-09-19"), """< date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-17"), """< date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-18"), """< date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-19"), """< date("2015-09-18")""") should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
-    eval(asDate("2015-09-17"), """<= date("2015-09-18")""") should be(ValBoolean(true))
-    eval(asDate("2015-09-18"), """<= date("2015-09-18")""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """<= date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-17"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-18"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-19"), """<= date("2015-09-18")""") should be(ValBoolean(false))
   }
 
   it should "compare with '>'" in {
 
-    eval(asDate("2015-09-17"), """> date("2015-09-18")""") should be(ValBoolean(false))
-    eval(asDate("2015-09-18"), """> date("2015-09-18")""") should be(ValBoolean(false))
-    eval(asDate("2015-09-19"), """> date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-17"), """> date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-18"), """> date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-19"), """> date("2015-09-18")""") should be(ValBoolean(true))
   }
   
   it should "compare with '>='" in {
 
-    eval(asDate("2015-09-17"), """>= date("2015-09-18")""") should be(ValBoolean(false))
-    eval(asDate("2015-09-18"), """>= date("2015-09-18")""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """>= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-17"), """>= date("2015-09-18")""") should be(ValBoolean(false))
+    eval(date("2015-09-18"), """>= date("2015-09-18")""") should be(ValBoolean(true))
+    eval(date("2015-09-19"), """>= date("2015-09-18")""") should be(ValBoolean(true))
   }
   
-  it should "compare with another date (implicit '=')" in {
+  it should "be equal to another date" in {
     
-    eval(asDate("2015-09-17"), """date("2015-09-18")""") should be (ValBoolean(false))
-    eval(asDate("2015-09-18"), """date("2015-09-18")""") should be (ValBoolean(true))
+    eval(date("2015-09-17"), """date("2015-09-18")""") should be (ValBoolean(false))
+    eval(date("2015-09-18"), """date("2015-09-18")""") should be (ValBoolean(true))
   }
 
   it should """be in interval '(date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    eval(asDate("2015-09-17"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
-    eval(asDate("2015-09-18"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
+    eval(date("2015-09-17"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
+    eval(date("2015-09-18"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(true))
+    eval(date("2015-09-19"), """(date("2015-09-17")..date("2015-09-19"))""") should be(ValBoolean(false))
   }
 
   it should """be in interval '[date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    eval(asDate("2015-09-17"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
-    eval(asDate("2015-09-18"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
-    eval(asDate("2015-09-19"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(date("2015-09-17"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(date("2015-09-18"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+    eval(date("2015-09-19"), """[date("2015-09-17")..date("2015-09-19")]""") should be(ValBoolean(true))
+  }
+  
+  "A time" should "compare with '<'" in {
+    
+    eval(time("08:31:14"), """< time("10:00:00")""") should be(ValBoolean(true))
+    eval(time("10:10:00"), """< time("10:00:00")""") should be(ValBoolean(false))
+    eval(time("11:31:14"), """< time("10:00:00")""") should be(ValBoolean(false))
+  }
+  
+  it should "be equal to another time" in {
+    
+    eval(time("08:31:14"), """time("10:00:00")""") should be(ValBoolean(false))
+    eval(time("08:31:14"), """time("08:31:14")""") should be(ValBoolean(true))
+  }
+  
+  it should """be in interval '[time("08:00:00")..time("10:00:00")]'""" in {
+    
+    eval(time("07:45:10"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
+    eval(time("09:15:20"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(true))
+    eval(time("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
+  }
+  
+  "A duration" should "compare with '<'" in {
+    
+    eval(duration("P1DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(true))
+    eval(duration("P2DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
+    eval(duration("P2DT8H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
+  }
+  
+  it should "be equal to another duration" in {
+    
+    eval(duration("P1DT4H"), """duration("P2DT4H")""") should be(ValBoolean(false))
+    eval(duration("P2DT4H"), """duration("P2DT4H")""") should be(ValBoolean(true))
+  }
+  
+  it should """be in interval '[duration("P1D")..duration("P2D")]'""" in {
+    
+    eval(duration("PT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
+    eval(duration("P1DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(true))
+    eval(duration("P2DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
   }
   
   "An empty expression ('-')" should "be always true" in {
@@ -193,6 +214,10 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     interpreter.eval(exp.get)(Context(variables + ( Context.inputKey -> input)))
   }
 
-  private def asDate(date: String): Date = date
+  private def date(date: String): Date = date
 
+  private def time(time: String): Time = time
+  
+  private def duration(duration: String): Duration = duration
+  
 }

@@ -14,6 +14,8 @@ class FeelInterpreter {
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
+    case ConstTime(t) => ValTime(t)
+    case ConstDuration(d) => ValDuration(d)
     // simple unary tests
     case Equal(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case LessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -33,24 +35,30 @@ class FeelInterpreter {
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
-      case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValBoolean(i) => withBoolean(x, x => f(c(i, x)))
       case ValString(i) => withString(x, x => f(c(i, x)))
-      case _ => ValError(s"expected Number, Boolean, String or Date but found '$input'")
+      case ValDate(i) => withDate(x, x => f(c(i, x)))
+      case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValDuration(i) => withDuration(x, x => f(c(i,x)))
+      case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
     })
 
   private def unaryOp(x: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
-      case _ => ValError(s"expected Number or Date but found '$input'")
+      case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValDuration(i) => withDuration(x, x => f(c(i, x)))
+      case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
 
   private def unaryOpDual(x: Val, y: Val, c: (Compareable[_], Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
       case ValNumber(i) => withNumbers(x, y, (x, y) => f(c(i, x, y)))
       case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
-      case _ => ValError(s"expected Number or Date but found '$input'")
+      case ValTime(i) => withTimes(x, y, (x,y) => f(c(i, x, y)))
+      case ValDuration(i) => withDurations(x, y, (x,y) => f(c(i, x, y)))
+      case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
 
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
@@ -65,14 +73,7 @@ class FeelInterpreter {
     case _ => ValError(s"expected Number but found '$x'")
   }
 
-  private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
-    withDate(x, x => {
-      withDate(y, y => {
-        f(x, y)
-      })
-    })
-
-  private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
+    private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
     case _ => ValError(s"expected Boolean but found '$x'")
   }
@@ -81,10 +82,41 @@ class FeelInterpreter {
     case ValString(x) => f(x)
     case _ => ValError(s"expected String but found '$x'")
   }
+  
+  private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
+    withDate(x, x => {
+      withDate(y, y => {
+        f(x, y)
+      })
+    })
 
   private def withDate(x: Val, f: Date => Val): Val = x match {
     case ValDate(x) => f(x)
     case _ => ValError(s"expected Date but found '$x'")
+  }
+
+  private def withTimes(x: Val, y: Val, f: (Time, Time) => Val): Val =
+    withTime(x, x => {
+      withTime(y, y => {
+        f(x, y)
+      })
+    })
+  
+  private def withTime(x: Val, f: Time => Val): Val = x match {
+    case ValTime(x) => f(x)
+    case _ => ValError(s"expect Time but found '$x'")
+  }
+  
+  private def withDurations(x: Val, y: Val, f: (Duration, Duration) => Val): Val =
+    withDuration(x, x => {
+      withDuration(y, y => {
+        f(x, y)
+      })
+    })
+
+  private def withDuration(x: Val, f: Duration => Val): Val = x match {
+    case ValDuration(x) => f(x)
+    case _ => ValError(s"expect Duration but found '$x'")
   }
 
   private def withVal(x: Val, f: Val => Val): Val = x match {
@@ -114,5 +146,5 @@ class FeelInterpreter {
   }
 
   private def input(implicit context: Context): Val = context.input
-  
+
 }
