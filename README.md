@@ -19,7 +19,10 @@ Currently, the goal of the parser and interpreter is to support S-FEEL, so that 
 
 # How to use 
 The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
-Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet. Or just use a built jar of the released version found on github.
+
+Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet. 
+
+Or just use a built jar of the released version found on [github release page](https://github.com/saig0/feel/releases).
 
 ## Native Way
 There is a class 'FeelEngine' that can be used to parse and evaluate a given expression. This class can be called from a scala or java program. 
