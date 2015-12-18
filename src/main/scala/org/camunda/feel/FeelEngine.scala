@@ -14,26 +14,26 @@ class FeelEngine {
 
   val interpreter = new FeelInterpreter
 
-  def evalSimpleUnaryTest(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    nonEmpty(expression) { () =>
-      FeelParser.parseSimpleUnaryTest(expression) match {
-        case Success(exp, _) => {
-          interpreter.eval(exp)(Context(context)) match {
-            case ValError(cause) => EvalFailure(s"failed to evaluate expression '$expression':\n$cause")
-            case value => EvalValue(extractResultValue(value))
-          }
-        }
-        case e: NoSuccess => {
-          ParseFailure(s"failed to parse expression '$expression':\n$e")
-        }
-      }
-    }
+  def evalExpression(expression: String, context: Map[String, Any] = Map()): EvalResult = {
+    eval(FeelParser.parseExpression, expression, context)
   }
 
-  private def nonEmpty(expression: String)(f: () => EvalResult): EvalResult = expression match {
-    case "" => EvalValue(true)
-    case _ => f()
+  def evalSimpleUnaryTest(expression: String, context: Map[String, Any] = Map()): EvalResult = {
+    eval(FeelParser.parseSimpleUnaryTest, expression, context)
   }
+
+  private def eval(parser: String => ParseResult[Exp], expression: String, context: Map[String, Any]) =
+    parser(expression) match {
+      case Success(exp, _) => {
+        interpreter.eval(exp)(Context(context)) match {
+          case ValError(cause) => EvalFailure(s"failed to evaluate expression '$expression':\n$cause")
+          case value => EvalValue(extractResultValue(value))
+        }
+      }
+      case e: NoSuccess => {
+        ParseFailure(s"failed to parse expression '$expression':\n$e")
+      }
+    }
 
   private def extractResultValue(value: Val): Any = value match {
     case ValBoolean(boolean) => boolean
