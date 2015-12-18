@@ -25,6 +25,8 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Duration => ValDuration(x)
     // extended types
     case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
+    // experimental
+    case x: ValFunction => x
     // unsupported values
     case None => ValError("no variable available")
     case null => ValError("no varibale available")

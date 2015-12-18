@@ -42,6 +42,8 @@ class FeelInterpreter {
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     // context access
     case Ref(name) => context(name)
+    // experimental
+    case FunctionInvocation(name, params) => withFunction(context(name), f => f.invoke(params map eval))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -186,5 +188,10 @@ class FeelInterpreter {
       case ValDuration(x) => withDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
     }
+  
+  private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
+    case x: ValFunction => f(x)
+    case _ => ValError(s"expect Function but found '$x'")
+  }
 
 }

@@ -31,3 +31,9 @@ case class ValTime(value: Time) extends Val
 case class ValDuration(value: Duration) extends Val
 
 case class ValError(error: String) extends Val
+
+// experimental
+
+case class ValFunction(name: String, params: List[ValParameter[_]], invoke: List[Val] => Val) extends Val
+
+case class ValParameter[V <: Val](name: String, `type`: Class[V])

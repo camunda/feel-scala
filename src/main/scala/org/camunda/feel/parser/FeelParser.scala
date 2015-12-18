@@ -21,8 +21,11 @@ object FeelParser extends JavaTokenParsers {
   private val reservedWord = "not" | "-" | "+" | "*" | "/" | "**" | "date" | "time" | "duration"
 
   // 1
-  private def expression: Parser[Exp] = simpleExpression // currently, it's only s-feel
+  private def expression: Parser[Exp] = experiments | simpleExpression // currently, it's only s-feel
 
+  // for experiments - TODO match to the grammar 
+  private def experiments = functionInvocation
+  
   // 4
   private def arithmeticExpression = ( addition | subtraction | multiplication | division
     | exponentiation | arithmeticNegation
@@ -124,6 +127,15 @@ object FeelParser extends JavaTokenParsers {
 
   private def withoutQuotes(exp: String): String = exp.replaceAll("\"", "")
 
+  // 40 - name should be an expression
+  private def functionInvocation = identifier ~ parameters ^^ { case name ~ params => FunctionInvocation(name, params) }
+  
+  // 41 - TODO: add named params
+  private def parameters = "(" ~> positionalParameters <~ ")"
+
+  // 44
+  private def positionalParameters = repsep(expression, ",")
+  
   // 51 - TODO: both should be expressions
   private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)

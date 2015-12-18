@@ -79,6 +79,9 @@ class InterpreterSimpleExpressionTest extends FlatSpec with Matchers {
     eval("x>=2", Map("x" -> 1)) should be(ValBoolean(false))
   }
   
+  // TODO add test case for add. and sub. of durations
+  // TODO add tests cases for compare op's with date, time and duration
+  
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
