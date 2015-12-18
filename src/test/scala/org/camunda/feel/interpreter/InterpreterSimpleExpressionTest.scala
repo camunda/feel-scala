@@ -43,6 +43,42 @@ class InterpreterSimpleExpressionTest extends FlatSpec with Matchers {
     eval("-2") should be(ValNumber(-2))
   }
   
+  it should "compare with '='" in {
+    
+    eval("x=2", Map("x" -> 2)) should be(ValBoolean(true))
+    eval("x=2", Map("x" -> 3)) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval("x!=2", Map("x" -> 2)) should be(ValBoolean(false))
+    eval("x!=2", Map("x" -> 3)) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval("x<2", Map("x" -> 1)) should be(ValBoolean(true))
+    eval("x<2", Map("x" -> 2)) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval("x<=2", Map("x" -> 2)) should be(ValBoolean(true))
+    eval("x<=2", Map("x" -> 3)) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval("x>2", Map("x" -> 2)) should be(ValBoolean(false))
+    eval("x>2", Map("x" -> 3)) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval("x>=2", Map("x" -> 2)) should be(ValBoolean(true))
+    eval("x>=2", Map("x" -> 1)) should be(ValBoolean(false))
+  }
+  
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

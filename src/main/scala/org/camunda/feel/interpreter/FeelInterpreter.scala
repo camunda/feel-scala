@@ -24,12 +24,19 @@ class FeelInterpreter {
     case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
     // arithmetic operations
-    case Addition(x,y) => dualNumericOp(eval(x), eval(y), _ + _)
-    case Subtraction(x,y) => dualNumericOp(eval(x), eval(y), _ - _)
-    case Multiplication(x,y) => dualNumericOp(eval(x), eval(y), _ * _)
-    case Division(x,y) => dualNumericOp(eval(x), eval(y), _ / _)
-    case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt)
+    // TODO support duration, date and time for add. and sub.
+    case Addition(x,y) => dualNumericOp(eval(x), eval(y), _ + _, ValNumber)
+    case Subtraction(x,y) => dualNumericOp(eval(x), eval(y), _ - _, ValNumber)
+    case Multiplication(x,y) => dualNumericOp(eval(x), eval(y), _ * _, ValNumber)
+    case Division(x,y) => dualNumericOp(eval(x), eval(y), _ / _, ValNumber)
+    case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber)
     case ArithmeticNegation(x) => withNumber(eval(x), x => ValNumber(-x))
+    // dual comparators
+    case Equal(x,y) => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
+    case LessThan(x,y) => dualOp(eval(x), eval(y), _ < _, ValBoolean)
+    case LessOrEqual(x,y) => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
+    case GreaterThan(x,y) => dualOp(eval(x), eval(y), _ > _, ValBoolean)
+    case GreaterOrEqual(x,y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
@@ -154,10 +161,30 @@ class FeelInterpreter {
 
   private def input(implicit context: Context): Val = context.input
   
-  private def dualNumericOp(x: Val, y: Val, op: (Number,Number) => Number)(implicit context: Context): Val =
+  private def dualNumericOp(x: Val, y: Val, op: (Number,Number) => Number, f: Number => Val)(implicit context: Context): Val =
     x match {
-      case ValNumber(x) => withNumber(y, y => ValNumber(op(x,y)))
+      case ValNumber(x) => withNumber(y, y => f(op(x,y)))
       case _ => ValError(s"expected Number but found '$x'")
+    }
+  
+  private def dualOpAny(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
+    x match {
+      case ValNumber(x) => withNumber(y, y => f(c(x, y)))
+      case ValBoolean(x) => withBoolean(y, y => f(c(x, y)))
+      case ValString(x) => withString(y, y => f(c(x, y)))
+      case ValDate(x) => withDate(y, y => f(c(x, y)))
+      case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValDuration(x) => withDuration(y, y => f(c(x,y)))
+      case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
+    }
+  
+  private def dualOp(x: Val, y: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
+    x match {
+      case ValNumber(x) => withNumber(y, y => f(c(x, y)))
+      case ValDate(x) => withDate(y, y => f(c(x, y)))
+      case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValDuration(x) => withDuration(y, y => f(c(x,y)))
+      case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
     }
 
 }
