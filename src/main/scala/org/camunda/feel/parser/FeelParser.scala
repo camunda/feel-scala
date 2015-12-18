@@ -29,7 +29,7 @@ object FeelParser extends JavaTokenParsers {
     | failure("ilegal start of an arithmetic expression. expect an operator of '+', '-', '*', '/', '**' or a negation '-'."))
 
   // 5
-  private def simpleExpression = arithmeticExpression | simpleValue // | comparison
+  private def simpleExpression = arithmeticExpression | comparison | simpleValue
 
   // 6
   private def simpleExpressions = (simpleExpression ~ "," ~ repsep(simpleExpression, ",") ^^ { case x ~ _ ~ xs => 
@@ -50,7 +50,7 @@ object FeelParser extends JavaTokenParsers {
     | dateTimeLiternal
     | qualifiedName
     | failure("illegal argument for compare operator. expect a number, a date or a qualified name."))
-
+    
   // 8
   private def interval = ("(" | "]" | "[") ~ compareableLiteral ~ ".." ~ compareableLiteral ~ (")" | "[" | "]") ^^ {
     case ("(" | "]") ~ start ~ _ ~ end ~ (")" | "[") => Interval(OpenIntervalBoundary(start), OpenIntervalBoundary(end))
@@ -124,8 +124,8 @@ object FeelParser extends JavaTokenParsers {
 
   private def withoutQuotes(exp: String): String = exp.replaceAll("\"", "")
 
-  // 51
-  private def comparison = expression ~ ("=" | "!=" | "<" | "<=" | ">" | ">=") ~ expression ^^ {
+  // 51 - TODO: both should be expressions
+  private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
     case x ~ "!=" ~ y => Not(Equal(x, y))
     case x ~ "<" ~ y => LessThan(x, y)

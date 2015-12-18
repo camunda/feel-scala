@@ -108,6 +108,92 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse("-4") should be(ArithmeticNegation(ConstNumber(4)))
   }
   
+  it should "parse a '=' comparison" in {
+    
+    // string
+    parse("""a="b" """) should be(Equal(Ref("a"), ConstString("b")))
+    // boolean
+    parse("a=true") should be(Equal(Ref("a"), ConstBool(true)))
+    // numeric
+    parse("a=1") should be(Equal(Ref("a"), ConstNumber(1)))
+    // duration
+    parse("""a=duration("P1Y")""") should be(Equal(Ref("a"), ConstDuration("P1Y")))
+    parse("""a=duration("PT2H")""") should be(Equal(Ref("a"), ConstDuration("PT2H")))
+    // date
+    parse("""a=date("2015-09-18")""") should be(Equal(Ref("a"), ConstDate("2015-09-18")))
+    // time
+    parse("""a=time("10:00:00")""") should be(Equal(Ref("a"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a '!=' comparison" in {
+    
+    // string
+    parse("""a!="b" """) should be(Not(Equal(Ref("a"), ConstString("b"))))
+    // boolean
+    parse("a!=true") should be(Not(Equal(Ref("a"), ConstBool(true))))
+    // numeric
+    parse("a!=1") should be(Not(Equal(Ref("a"), ConstNumber(1))))
+    // duration
+    parse("""a!=duration("P1Y")""") should be(Not(Equal(Ref("a"), ConstDuration("P1Y"))))
+    parse("""a!=duration("PT2H")""") should be(Not(Equal(Ref("a"), ConstDuration("PT2H"))))
+    // date
+    parse("""a!=date("2015-09-18")""") should be(Not(Equal(Ref("a"), ConstDate("2015-09-18"))))
+    // time
+    parse("""a!=time("10:00:00")""") should be(Not(Equal(Ref("a"), ConstTime("10:00:00"))))
+  }
+  
+  it should "parse a '<' comparison" in {
+    
+    // numeric
+    parse("a<2") should be(LessThan(Ref("a"), ConstNumber(2)))
+    // duration
+    parse("""a<duration("P1Y")""") should be(LessThan(Ref("a"), ConstDuration("P1Y")))
+    parse("""a<duration("PT2H")""") should be(LessThan(Ref("a"), ConstDuration("PT2H")))
+    // date
+    parse("""a<date("2015-09-18")""") should be(LessThan(Ref("a"), ConstDate("2015-09-18")))
+    // time
+    parse("""a<time("10:00:00")""") should be(LessThan(Ref("a"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a '<=' comparison" in {
+    
+    // numeric
+    parse("a<=2") should be(LessOrEqual(Ref("a"), ConstNumber(2)))
+    // duration
+    parse("""a<=duration("P1Y")""") should be(LessOrEqual(Ref("a"), ConstDuration("P1Y")))
+    parse("""a<=duration("PT2H")""") should be(LessOrEqual(Ref("a"), ConstDuration("PT2H")))
+    // date
+    parse("""a<=date("2015-09-18")""") should be(LessOrEqual(Ref("a"), ConstDate("2015-09-18")))
+    // time
+    parse("""a<=time("10:00:00")""") should be(LessOrEqual(Ref("a"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a '>' comparison" in {
+    
+    // numeric
+    parse("a>2") should be(GreaterThan(Ref("a"), ConstNumber(2)))
+    // duration
+    parse("""a>duration("P1Y")""") should be(GreaterThan(Ref("a"), ConstDuration("P1Y")))
+    parse("""a>duration("PT2H")""") should be(GreaterThan(Ref("a"), ConstDuration("PT2H")))
+    // date
+    parse("""a>date("2015-09-18")""") should be(GreaterThan(Ref("a"), ConstDate("2015-09-18")))
+    // time
+    parse("""a>time("10:00:00")""") should be(GreaterThan(Ref("a"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a '>=' comparison" in {
+    
+    // numeric
+    parse("a>=2") should be(GreaterOrEqual(Ref("a"), ConstNumber(2)))
+    // duration
+    parse("""a>=duration("P1Y")""") should be(GreaterOrEqual(Ref("a"), ConstDuration("P1Y")))
+    parse("""a>=duration("PT2H")""") should be(GreaterOrEqual(Ref("a"), ConstDuration("PT2H")))
+    // date
+    parse("""a>=date("2015-09-18")""") should be(GreaterOrEqual(Ref("a"), ConstDate("2015-09-18")))
+    // time
+    parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

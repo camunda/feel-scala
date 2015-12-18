@@ -53,7 +53,7 @@ case class CompareableNumber(value: Number) extends Compareable[Number] {
   def >(x: Number) = value > x
 
   def >=(x: Number) = value >= x
-
+  
 }
 
 case class CompareableDate(value: Date) extends Compareable[Date] {

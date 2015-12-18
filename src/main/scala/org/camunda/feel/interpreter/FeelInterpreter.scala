@@ -2,7 +2,6 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.parser._
-import scala.annotation.tailrec
 
 /**
  * @author Philipp Ossler
@@ -24,6 +23,13 @@ class FeelInterpreter {
     case InputGreaterThan(x) => unaryOp(eval(x), _ > _, ValBoolean)
     case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
+    // arithmetic operations
+    case Addition(x,y) => dualNumericOp(eval(x), eval(y), _ + _)
+    case Subtraction(x,y) => dualNumericOp(eval(x), eval(y), _ - _)
+    case Multiplication(x,y) => dualNumericOp(eval(x), eval(y), _ * _)
+    case Division(x,y) => dualNumericOp(eval(x), eval(y), _ / _)
+    case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt)
+    case ArithmeticNegation(x) => withNumber(eval(x), x => ValNumber(-x))
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
@@ -61,7 +67,7 @@ class FeelInterpreter {
       case ValDuration(i) => withDurations(x, y, (x,y) => f(c(i, x, y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
-
+  
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
     withNumber(x, x => {
       withNumber(y, y => {
@@ -147,5 +153,11 @@ class FeelInterpreter {
   }
 
   private def input(implicit context: Context): Val = context.input
+  
+  private def dualNumericOp(x: Val, y: Val, op: (Number,Number) => Number)(implicit context: Context): Val =
+    x match {
+      case ValNumber(x) => withNumber(y, y => ValNumber(op(x,y)))
+      case _ => ValError(s"expected Number but found '$x'")
+    }
 
 }
