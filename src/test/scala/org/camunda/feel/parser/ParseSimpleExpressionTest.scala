@@ -60,8 +60,56 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
              */ """)
   }
   
+  it should "parse an addition" in {
+    
+    // numeric addition
+    parse("2+3") should be(Addition(ConstNumber(2), ConstNumber(3)))
+    // addition with two durations
+    parse("""duration("P1Y")+duration("P6M")""") should be(Addition(ConstDuration("P1Y"), ConstDuration("P6M")))
+    parse("""duration("P1D")+duration("PT12H")""") should be(Addition(ConstDuration("P1D"), ConstDuration("PT12H")))
+    // addition with duration and date
+    parse("""duration("P1M")+date("2015-09-18")""") should be(Addition(ConstDuration("P1M"), ConstDate("2015-09-18")))
+    parse("""duration("P7D")+date("2015-09-18")""") should be(Addition(ConstDuration("P7D"), ConstDate("2015-09-18")))
+    // addition with duration and time
+    parse("""duration("PT2H")+time("10:00:00")""") should be(Addition(ConstDuration("PT2H"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a substraction" in {
+    
+    // numeric subtraction
+    parse("3-2") should be(Subtraction(ConstNumber(3), ConstNumber(2)))
+    // subtraction with two durations
+    parse("""duration("P1Y")-duration("P6M")""") should be(Subtraction(ConstDuration("P1Y"), ConstDuration("P6M")))
+    parse("""duration("P1D")-duration("PT12H")""") should be(Subtraction(ConstDuration("P1D"), ConstDuration("PT12H")))
+    // subtraction with duration and date
+    parse("""duration("P1M")-date("2015-09-18")""") should be(Subtraction(ConstDuration("P1M"), ConstDate("2015-09-18")))
+    parse("""duration("P7D")-date("2015-09-18")""") should be(Subtraction(ConstDuration("P7D"), ConstDate("2015-09-18")))
+    // subtraction with duration and time
+    parse("""duration("PT2H")-time("10:00:00")""") should be(Subtraction(ConstDuration("PT2H"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a multiplication" in {
+    
+    parse("2*4") should be(Multiplication(ConstNumber(2), ConstNumber(4)))
+  }
+  
+  it should "parse a division" in {
+    
+    parse("4/2") should be(Division(ConstNumber(4), ConstNumber(2)))
+  }
+  
+  it should "parse an exponentiation" in {
+    
+    parse("2**4") should be(Exponentiation(ConstNumber(2), ConstNumber(4)))
+  }
+  
+  it should "parse an arithmetic negation" in {
+    
+    parse("-4") should be(ArithmeticNegation(ConstNumber(4)))
+  }
+  
   private def parse(expression: String): Exp = {
-    val result = FeelParser.parseSimpleExpression(expression)
+    val result = FeelParser.parseExpression(expression)
     result.get
   }
   

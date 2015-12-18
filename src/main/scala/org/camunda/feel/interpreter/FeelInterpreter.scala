@@ -2,6 +2,7 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.parser._
+import scala.annotation.tailrec
 
 /**
  * @author Philipp Ossler
@@ -17,11 +18,11 @@ class FeelInterpreter {
     case ConstTime(t) => ValTime(t)
     case ConstDuration(d) => ValDuration(d)
     // simple unary tests
-    case Equal(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
-    case LessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
-    case LessOrEqual(x) => unaryOp(eval(x), _ <= _, ValBoolean)
-    case GreaterThan(x) => unaryOp(eval(x), _ > _, ValBoolean)
-    case GreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
+    case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
+    case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
+    case InputLessOrEqual(x) => unaryOp(eval(x), _ <= _, ValBoolean)
+    case InputGreaterThan(x) => unaryOp(eval(x), _ > _, ValBoolean)
+    case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)

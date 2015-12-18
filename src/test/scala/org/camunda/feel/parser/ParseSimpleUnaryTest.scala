@@ -12,68 +12,68 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
   "A parser for simple unary test" should "parse a number" in {
 
-    parse("3") should be(Equal(ConstNumber(3)))
-    parse("3.2") should be(Equal(ConstNumber(3.2)))
-    parse(".2") should be(Equal(ConstNumber(.2))) 
+    parse("3") should be(InputEqualTo(ConstNumber(3)))
+    parse("3.2") should be(InputEqualTo(ConstNumber(3.2)))
+    parse(".2") should be(InputEqualTo(ConstNumber(.2))) 
   }
 
   it should "parse a boolean" in {
 
-    parse("true") should be(Equal(ConstBool(true)))
-    parse("false") should be(Equal(ConstBool(false)))
+    parse("true") should be(InputEqualTo(ConstBool(true)))
+    parse("false") should be(InputEqualTo(ConstBool(false)))
   }
 
   it should "parse a string" in {
 
-    parse(""" "abc" """) should be(Equal(ConstString("abc")))
+    parse(""" "abc" """) should be(InputEqualTo(ConstString("abc")))
   }
 
   it should "parse a date" in {
 
-    parse("""date("2015-09-18")""") should be(Equal(ConstDate("2015-09-18")))
+    parse("""date("2015-09-18")""") should be(InputEqualTo(ConstDate("2015-09-18")))
   }
 
   it should "parse a time" in {
     
-    parse("""time("15:41:10")""") should be(Equal(ConstTime("15:41:10")))
+    parse("""time("15:41:10")""") should be(InputEqualTo(ConstTime("15:41:10")))
   }
   
   it should "parse a duration (days and time)" in {
     
-    parse("""duration("P4DT2H")""") should be(Equal(ConstDuration("P4DT2H")))
+    parse("""duration("P4DT2H")""") should be(InputEqualTo(ConstDuration("P4DT2H")))
   }
   
   it should "parse a duration (years and months)" in {
     
-    parse("""duration("P2Y1M")""") should be(Equal(ConstDuration("P2Y1M")))
+    parse("""duration("P2Y1M")""") should be(InputEqualTo(ConstDuration("P2Y1M")))
   }
   
   it should "parse '< 3'" in {
-    parse("< 3") should be(LessThan(ConstNumber(3)))
+    parse("< 3") should be(InputLessThan(ConstNumber(3)))
   }
 
   it should "parse '<= 3'" in {
-    parse("<= 3") should be(LessOrEqual(ConstNumber(3)))
+    parse("<= 3") should be(InputLessOrEqual(ConstNumber(3)))
   }
 
   it should "parse '> 3'" in {
-    parse("> 3") should be(GreaterThan(ConstNumber(3)))
+    parse("> 3") should be(InputGreaterThan(ConstNumber(3)))
   }
 
   it should "parse '>= 3'" in {
-    parse(">= 3") should be(GreaterOrEqual(ConstNumber(3)))
+    parse(">= 3") should be(InputGreaterOrEqual(ConstNumber(3)))
   }
 
   it should """parse '< date("2015-09-18")'""" in {
-    parse("""< date("2015-09-18")""") should be(LessThan(ConstDate("2015-09-18")))
+    parse("""< date("2015-09-18")""") should be(InputLessThan(ConstDate("2015-09-18")))
   }
 
   it should """parse '< time("15:41:10")'""" in {
-    parse("""< time("15:41:10")""") should be(LessThan(ConstTime("15:41:10")))
+    parse("""< time("15:41:10")""") should be(InputLessThan(ConstTime("15:41:10")))
   }
   
   it should """parse '< duration("P1D")'""" in {
-    parse("""< duration("P1D")""") should be(LessThan(ConstDuration("P1D")))
+    parse("""< duration("P1D")""") should be(InputLessThan(ConstDuration("P1D")))
   }
   
   it should "parse '(2..4)'" in {
@@ -120,17 +120,17 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
     parse("2,3,4") should be(
       AtLeastOne(List(
-        Equal(ConstNumber(2)),
-        Equal(ConstNumber(3)),
-        Equal(ConstNumber(4)))))
+        InputEqualTo(ConstNumber(2)),
+        InputEqualTo(ConstNumber(3)),
+        InputEqualTo(ConstNumber(4)))))
   }
 
   it should """parse '"a","b"' (multiple tests)""" in {
 
     parse(""" "a","b" """) should be(
       AtLeastOne(List(
-        Equal(ConstString("a")),
-        Equal(ConstString("b")))))
+        InputEqualTo(ConstString("a")),
+        InputEqualTo(ConstString("b")))))
   }
 
   it should "parse '-'" in {
@@ -142,22 +142,22 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
     parse("not(3)") should be(
       Not(
-        Equal(ConstNumber(3))))
+        InputEqualTo(ConstNumber(3))))
   }
   
   it should "parse 'var' (qualified name)" in {
     
-    parse("var") should be (Equal(Ref("var")))
+    parse("var") should be (InputEqualTo(Ref("var")))
   }
   
   it should "parse 'qualified.var' (qualified name)" in {
     
-    parse("qualified.var") should be (Equal(Ref("qualified.var")))
+    parse("qualified.var") should be (InputEqualTo(Ref("qualified.var")))
   }
   
   it should "parse '< var'" in {
     
-    parse("< var") should be (LessThan(Ref("var")))
+    parse("< var") should be (InputLessThan(Ref("var")))
   }
 
   private def parse(expression: String): Exp = {
