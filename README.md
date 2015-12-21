@@ -110,5 +110,5 @@ not(2,4)                                    // input is not 2 or 4
 
 ```
 
-## Note
-The parser and interpreter can be used into the [camunda DMN engine](https://github.com/camunda/camunda-engine-dmn) as alternative to the built-in FEEL script engine.
+## Using the FEEL Engine to evaluate DMN decision tables
+Camunda provide a [DMN Engine](https://github.com/camunda/camunda-engine-dmn) what can evaluate DMN decision tables. You can use the FEEL engine inside of the DMN engine to evaluate expressions. See the [integration](https://github.com/saig0/camunda-feel-integration) for details.
