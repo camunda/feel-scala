@@ -43,6 +43,7 @@ class FeelInterpreter {
     // context access
     case Ref(name) => context(name)
     // experimental
+    // TODO check function parameter: amount, type
     case FunctionInvocation(name, params) => withFunction(context(name), f => f.invoke(params map eval))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
@@ -77,6 +78,7 @@ class FeelInterpreter {
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
   
+  // TODO move to Val class so it can be used anywhere  
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
     withNumber(x, x => {
       withNumber(y, y => {
