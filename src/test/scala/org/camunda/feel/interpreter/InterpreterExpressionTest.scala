@@ -9,9 +9,29 @@ import org.camunda.feel.parser.FeelParser
 /**
  * @author Philipp Ossler
  */
-class InterpreterSimpleExpressionTest extends FlatSpec with Matchers {
+class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   val interpreter = new FeelInterpreter
+  
+  "An interpreter for expression" should "interpret a number" in {
+    
+    eval("2") should be(ValNumber(2))
+  }
+  
+  it should "interpret a string" in {
+    
+    eval(""" "a" """) should be(ValString("a"))
+  }
+  
+  it should "interpret a boolean" in {
+    
+    eval("true") should be(ValBoolean(true))
+  }
+  
+  it should "interpret null" in {
+    
+    eval("null") should be(ValNull)
+  }
   
   "A number" should "add to '4'" in {
     
@@ -81,6 +101,49 @@ class InterpreterSimpleExpressionTest extends FlatSpec with Matchers {
   
   // TODO add test case for add. and sub. of durations
   // TODO add tests cases for compare op's with date, time and duration
+  
+  "A function" should "be invoked without parameter" in {
+
+    val variables = Map("f" -> ValFunction(
+      params = List(),
+      invoke = (params: List[Val]) => {
+        ValString("invoked")
+      }))
+
+    eval("f()", variables) should be(ValString("invoked"))
+  }
+
+  it should "be invoked with one positional parameter" in {
+
+    val variables = Map("f" -> ValFunction(
+      params = List(ValParameter("x", classOf[ValNumber])),
+      invoke = (params: List[Val]) => {
+        params.head match {
+          case ValNumber(n) if (n == 1) => ValString("yes")
+          case _ => ValString("no")
+        }
+      }))
+
+    eval("f(1)", variables) should be(ValString("yes"))
+    eval("f(2)", variables) should be(ValString("no"))
+  }
+  
+  it should "be invoked with positional parameters" in {
+
+    val variables = Map("add" -> ValFunction(
+      params = List(
+          ValParameter("x", classOf[ValNumber]),
+          ValParameter("y", classOf[ValNumber])),
+      invoke = (params: List[Val]) => {
+        val x = params(0).asInstanceOf[ValNumber].value
+        val y = params(1).asInstanceOf[ValNumber].value
+        
+        ValNumber(x + y)
+      }))
+
+    eval("add(1,2)", variables) should be(ValNumber(3))
+    eval("add(2,3)", variables) should be(ValNumber(5))
+  }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)

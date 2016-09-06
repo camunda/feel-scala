@@ -9,13 +9,14 @@ import org.camunda.feel.parser._
 class FeelInterpreter {
 
   def eval(expression: Exp)(implicit context: Context = Context()): Val = expression match {
-    // simple literals
+    // literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
     case ConstTime(t) => ValTime(t)
     case ConstDuration(d) => ValDuration(d)
+    case ConstNull => ValNull
     // simple unary tests
     case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -42,7 +43,7 @@ class FeelInterpreter {
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     // context access
     case Ref(name) => context(name)
-    // experimental
+    // functions
     // TODO check function parameter: amount, type
     case FunctionInvocation(name, params) => withFunction(context(name), f => f.invoke(params map eval))
     // unsupported expression

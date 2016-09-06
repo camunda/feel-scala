@@ -8,9 +8,9 @@ import org.scalatest.Matchers
 /**
  * @author Philipp Ossler
  */
-class ParseSimpleExpressionTest extends FlatSpec with Matchers {
+class ParseExpressionTest extends FlatSpec with Matchers {
  
-  "A parser for simple expression" should "parse number" in {
+  "A parser for expression" should "parse number" in {
     
     parse("3") should be(ConstNumber(3))
     parse("3.2") should be(ConstNumber(3.2))
@@ -22,7 +22,7 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse(""" "a" """) should be(ConstString("a"))
   }
   
-  it should "parse a qualified name" in {
+  it should "parse a name" in {
     
     parse("b") should be(Ref("b"))
   }
@@ -46,6 +46,11 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
   it should "parse a duration" in {
     
     parse("""duration("P1D")""") should be(ConstDuration("P1D"))
+  }
+  
+  it should "parse null" in {
+    
+    parse("null") should be(ConstNull)
   }
   
   it should "ignore an one line comment '// ...'" in {
@@ -194,8 +199,19 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
   }
   
+  it should "parse a function invocation with positional arguments" in {
+
+    parse("fib(1)") should be(FunctionInvocation("fib",
+      params = List(ConstNumber(1))))
+    
+    parse("""concat("in", x)""") should be(FunctionInvocation("concat",
+      params = List(
+        ConstString("in"),
+        Ref("x"))))
+  }
+  
   private def parse(expression: String): Exp = {
-    val result = FeelParser.parseSimpleExpression(expression)
+    val result = FeelParser.parseExpression(expression)
     result.get
   }
   

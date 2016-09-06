@@ -14,6 +14,8 @@ object FeelParser extends JavaTokenParsers {
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
+  def parseSimpleExpression(exp: String): ParseResult[Exp] = parseAll(simpleExpression, exp)
+  
   def parseExpression(exp: String): ParseResult[Exp] = parseAll(expression, exp)
   
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
@@ -21,10 +23,14 @@ object FeelParser extends JavaTokenParsers {
   private val reservedWord = "not" | "-" | "+" | "*" | "/" | "**" | "date" | "time" | "duration"
 
   // 1
-  private def expression: Parser[Exp] = experiments | simpleExpression // currently, it's only s-feel
-
-  // for experiments - TODO match to the grammar 
-  private def experiments = functionInvocation
+  private def expression: Parser[Exp] = textualExpression
+  
+  // 2
+  private def textualExpression = ( comparison 
+    | arithmeticExpression 
+    | functionInvocation
+    | literal 
+    | name )
   
   // 4
   private def arithmeticExpression = ( addition | subtraction | multiplication | division
@@ -107,11 +113,12 @@ object FeelParser extends JavaTokenParsers {
   private def identifier = not(reservedWord) ~> ident
 
   // 33
+  private def literal: Parser[Exp] = ( simpleLiteral
+      | "null" ^^ (_ => ConstNull) )
+  
+  // 34
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
-
-  // 36
-  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
-
+  
   // 34
   // naming clash with JavaTokenParser
   private def stringLiteraL: Parser[Exp] = "\"" ~> ("""[a-zA-Z_]\w*""".r) <~ "\"" ^^ { case s => ConstString(s) }
@@ -119,6 +126,9 @@ object FeelParser extends JavaTokenParsers {
   // 35
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
+  // 36
+  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
+  
   // 39
   private def dateTimeLiternal: Parser[Exp] = ("date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
     | "time(" ~> stringLiteral <~ ")" ^^ { case time => ConstTime(withoutQuotes(time)) }

@@ -32,7 +32,9 @@ case class ValDuration(value: Duration) extends Val
 
 case class ValError(error: String) extends Val
 
-// experimental
+case object ValNull extends Val
+
+// functions
 
 case class ValFunction(params: List[ValParameter[_]], invoke: List[Val] => Val) extends Val
 
