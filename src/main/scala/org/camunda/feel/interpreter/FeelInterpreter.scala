@@ -45,7 +45,7 @@ class FeelInterpreter {
     case Ref(name) => context(name)
     // functions
     // TODO check function parameter: amount, type
-    case FunctionInvocation(name, params) => withFunction(context(name), f => f.invoke(params map eval))
+    case FunctionInvocation(name, params) => withFunction(context(name), f => invokeFunction(f, params))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -195,6 +195,23 @@ class FeelInterpreter {
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)
     case _ => ValError(s"expect Function but found '$x'")
+  }
+  
+  private def invokeFunction(f: ValFunction, params: List[Exp]): Val = {
+    // check number of parameters
+    if (params.size != f.params.size) {
+      return ValError(s"expected ${f.params.size} parameters but found ${params.size}")
+    }
+    
+    val evalParams = params map eval
+    // check type of parameters
+    for ( i <- 0 until params.size ) {
+      if (evalParams(i).getClass != f.params(i).`type` ) {
+        return ValError(s"expected parameter '${f.params(i).name}' of type ${f.params(i).`type`.getSimpleName} but was ${evalParams(i).getClass.getSimpleName}")
+      }
+    }
+    
+    f.invoke(evalParams) 
   }
 
 }

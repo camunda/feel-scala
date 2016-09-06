@@ -145,6 +145,34 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("add(2,3)", variables) should be(ValNumber(5))
   }
   
+  it should "fail to invoke with wrong number of parameters" in {
+    
+    val variables = Map("f" -> ValFunction(
+      params = List(
+          ValParameter("x", classOf[ValNumber]),
+          ValParameter("y", classOf[ValNumber])),
+      invoke = (params: List[Val]) => {
+        ValString("invoked")
+      }))
+
+    eval("f()", variables) should be(ValError("expected 2 parameters but found 0"))
+    eval("f(1)", variables) should be(ValError("expected 2 parameters but found 1"))
+  }
+  
+  it should "fail to invoke with wrong type of parameters" in {
+    
+    val variables = Map("f" -> ValFunction(
+      params = List(
+          ValParameter("x", classOf[ValNumber]),
+          ValParameter("y", classOf[ValBoolean])),
+      invoke = (params: List[Val]) => {
+        ValString("invoked")
+      }))
+
+    eval("f(1,2)", variables) should be(ValError("expected parameter 'y' of type ValBoolean but was ValNumber"))
+    eval("f(false,true)", variables) should be(ValError("expected parameter 'x' of type ValNumber but was ValBoolean"))
+  }
+  
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
