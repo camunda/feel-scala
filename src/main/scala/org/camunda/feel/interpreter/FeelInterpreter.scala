@@ -197,21 +197,25 @@ class FeelInterpreter {
     case _ => ValError(s"expect Function but found '$x'")
   }
   
-  private def invokeFunction(f: ValFunction, params: List[Exp]): Val = {
-    // check number of parameters
-    if (params.size != f.params.size) {
-      return ValError(s"expected ${f.params.size} parameters but found ${params.size}")
-    }
-    
-    val evalParams = params map eval
-    // check type of parameters
-    for ( i <- 0 until params.size ) {
-      if (evalParams(i).getClass != f.params(i).`type` ) {
-        return ValError(s"expected parameter '${f.params(i).name}' of type ${f.params(i).`type`.getSimpleName} but was ${evalParams(i).getClass.getSimpleName}")
+  private def invokeFunction(f: ValFunction, params: FunctionParameters): Val = params match {
+    case PositionalFunctionParameters(params) => {
+      // check number of parameters
+      if (params.size != f.params.size) {
+        return ValError(s"expected ${f.params.size} parameters but found ${params.size}")
       }
+      
+      val evalParams = params map eval
+      // check type of parameters
+      for ( i <- 0 until params.size ) {
+        if (evalParams(i).getClass != f.params(i).`type` ) {
+          return ValError(s"expected parameter '${f.params(i).name}' of type ${f.params(i).`type`.getSimpleName} but was ${evalParams(i).getClass.getSimpleName}")
+        }
+      }
+      
+      f.invoke(evalParams)
     }
-    
-    f.invoke(evalParams) 
+    case NamedFunctionParameters(params) => {
+      ValError("not supported yet")
+    }
   }
-
 }

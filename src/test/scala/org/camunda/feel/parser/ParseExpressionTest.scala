@@ -199,15 +199,32 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
   }
   
-  it should "parse a function invocation with positional arguments" in {
+  it should "parse a function invocation without parameters" in {
+
+    parse("f()") should be(FunctionInvocation("f",
+      params = PositionalFunctionParameters( List())) )
+  }
+  
+  it should "parse a function invocation with positional parameters" in {
 
     parse("fib(1)") should be(FunctionInvocation("fib",
-      params = List(ConstNumber(1))))
+      params = PositionalFunctionParameters( List(ConstNumber(1)))) )
     
     parse("""concat("in", x)""") should be(FunctionInvocation("concat",
-      params = List(
+      params = PositionalFunctionParameters( List(
         ConstString("in"),
-        Ref("x"))))
+        Ref("x")))) )
+  }
+  
+  it should "parse a function invocation with named parameters" in {
+
+    parse("f(a:1)") should be(FunctionInvocation("f",
+      params = NamedFunctionParameters( Map("a" -> ConstNumber(1)))) )
+    
+    parse("f(a:1, b:true)") should be(FunctionInvocation("f",
+      params = NamedFunctionParameters( Map(
+          "a" -> ConstNumber(1),
+          "b" -> ConstBool(true)))) )
   }
   
   private def parse(expression: String): Exp = {

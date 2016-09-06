@@ -140,11 +140,19 @@ object FeelParser extends JavaTokenParsers {
   // 40 - name should be an expression
   private def functionInvocation = identifier ~ parameters ^^ { case name ~ params => FunctionInvocation(name, params) }
   
-  // 41 - TODO: add named params
-  private def parameters = "(" ~> positionalParameters <~ ")"
+  // 41
+  private def parameters = "(" ~> ( namedParameters | positionalParameters ) <~ ")"
 
+  // 42
+  private def namedParameters = rep1sep(namedParameter , ",") ^^ (params => NamedFunctionParameters(params.toMap) )
+  
+  private def namedParameter = parameterName ~ ":" ~ expression ^^ { case name ~ _ ~ value => (name, value) }
+  
+  // 43
+  private def parameterName = identifier
+  
   // 44
-  private def positionalParameters = repsep(expression, ",")
+  private def positionalParameters = repsep(expression, ",") ^^ (params => PositionalFunctionParameters(params) )
   
   // 51 - TODO: both should be expressions
   private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
