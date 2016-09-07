@@ -45,7 +45,7 @@ class FeelInterpreter {
     case Ref(name) => context(name)
     // functions
     // TODO check function parameter: amount, type
-    case FunctionInvocation(name, params) => withFunction(context(name), f => invokeFunction(f, params))
+    case FunctionInvocation(name, params) => withFunction(context(name), f => withValidParameters(params, f, params => f.invoke(params) ))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -92,7 +92,7 @@ class FeelInterpreter {
     case _ => ValError(s"expected Number but found '$x'")
   }
 
-    private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
+  private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
     case _ => ValError(s"expected Boolean but found '$x'")
   }
@@ -197,25 +197,43 @@ class FeelInterpreter {
     case _ => ValError(s"expect Function but found '$x'")
   }
   
-  private def invokeFunction(f: ValFunction, params: FunctionParameters): Val = params match {
+  private def withValidParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val): Val = params match {
     case PositionalFunctionParameters(params) => {
-      // check number of parameters
-      if (params.size != f.params.size) {
-        return ValError(s"expected ${f.params.size} parameters but found ${params.size}")
-      }
       
-      val evalParams = params map eval
-      // check type of parameters
-      for ( i <- 0 until params.size ) {
-        if (evalParams(i).getClass != f.params(i).`type` ) {
-          return ValError(s"expected parameter '${f.params(i).name}' of type ${f.params(i).`type`.getSimpleName} but was ${evalParams(i).getClass.getSimpleName}")
-        }
-      }
+      if (params.size != function.params.size) {
+        return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
+      } 
       
-      f.invoke(evalParams)
+      withValidParameterTypes(function, params map eval, f(_) )
     }
     case NamedFunctionParameters(params) => {
-      ValError("not supported yet")
+      
+      val missingParameters = function.params.filter( p => !params.contains(p.name) )
+      if (!missingParameters.isEmpty) {
+        return ValError(s"expected parameter '${missingParameters.head.name}' but not found")  
+      }
+      
+      val unknownParameters = params.filter( p => !function.params.exists(_.name == p._1) )
+      if (!unknownParameters.isEmpty) {
+        return ValError(s"unexpected parameter '${unknownParameters.head._1}'")  
+      }
+              
+      val paramList = function.params map ( param => eval(params(param.name)) )
+      
+      withValidParameterTypes(function, paramList, f(_) )
     }
   }
+  
+  private def withValidParameterTypes(function: ValFunction, params: List[Val], f: List[Val] => Val): Val = {
+    for ( i <- 0 until params.size ) { 
+      val param = function.params(i)
+      
+      if (params(i).getClass != param.`type` ) {
+        return ValError(s"expected parameter '${param.name}' of type ${param.`type`.getSimpleName} but was ${params(i).getClass.getSimpleName}")
+      }
+    }  
+    
+    f(params)
+  }
+  
 }

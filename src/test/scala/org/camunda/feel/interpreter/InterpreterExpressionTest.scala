@@ -145,6 +145,38 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("add(2,3)", variables) should be(ValNumber(5))
   }
   
+  it should "be invoked with one named parameter" in {
+
+    val variables = Map("f" -> ValFunction(
+      params = List(ValParameter("x", classOf[ValNumber])),
+      invoke = (params: List[Val]) => {
+        params.head match {
+          case ValNumber(n) if (n == 1) => ValString("yes")
+          case _ => ValString("no")
+        }
+      }))
+
+    eval("f(x:1)", variables) should be(ValString("yes"))
+    eval("f(x:2)", variables) should be(ValString("no"))
+  }
+  
+  it should "be invoked with named parameters" in {
+
+    val variables = Map("sub" -> ValFunction(
+      params = List(
+          ValParameter("x", classOf[ValNumber]),
+          ValParameter("y", classOf[ValNumber])),
+      invoke = (params: List[Val]) => {
+        val x = params(0).asInstanceOf[ValNumber].value
+        val y = params(1).asInstanceOf[ValNumber].value
+        
+        ValNumber(x - y)
+      }))
+
+    eval("sub(x:4,y:2)", variables) should be(ValNumber(2))
+    eval("sub(y:2,x:4)", variables) should be(ValNumber(2))    
+  }
+  
   it should "fail to invoke with wrong number of parameters" in {
     
     val variables = Map("f" -> ValFunction(
@@ -157,6 +189,10 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
 
     eval("f()", variables) should be(ValError("expected 2 parameters but found 0"))
     eval("f(1)", variables) should be(ValError("expected 2 parameters but found 1"))
+    
+    eval("f(x:1)", variables) should be(ValError("expected parameter 'y' but not found"))
+    eval("f(y:1)", variables) should be(ValError("expected parameter 'x' but not found"))
+    eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
   }
   
   it should "fail to invoke with wrong type of parameters" in {
@@ -171,6 +207,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
 
     eval("f(1,2)", variables) should be(ValError("expected parameter 'y' of type ValBoolean but was ValNumber"))
     eval("f(false,true)", variables) should be(ValError("expected parameter 'x' of type ValNumber but was ValBoolean"))
+    
+    eval("f(x:1,y:2)", variables) should be(ValError("expected parameter 'y' of type ValBoolean but was ValNumber"))
+    eval("f(y:true,x:false)", variables) should be(ValError("expected parameter 'x' of type ValNumber but was ValBoolean"))
   }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
