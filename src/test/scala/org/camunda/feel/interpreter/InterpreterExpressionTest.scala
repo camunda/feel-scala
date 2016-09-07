@@ -116,7 +116,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   it should "be invoked with one positional parameter" in {
 
     val variables = Map("f" -> ValFunction(
-      params = List(ValParameter("x", classOf[ValNumber])),
+      params = List("x"),
       invoke = (params: List[Val]) => {
         params.head match {
           case ValNumber(n) if (n == 1) => ValString("yes")
@@ -131,9 +131,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   it should "be invoked with positional parameters" in {
 
     val variables = Map("add" -> ValFunction(
-      params = List(
-          ValParameter("x", classOf[ValNumber]),
-          ValParameter("y", classOf[ValNumber])),
+      params = List("x", "y"),
       invoke = (params: List[Val]) => {
         val x = params(0).asInstanceOf[ValNumber].value
         val y = params(1).asInstanceOf[ValNumber].value
@@ -148,7 +146,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   it should "be invoked with one named parameter" in {
 
     val variables = Map("f" -> ValFunction(
-      params = List(ValParameter("x", classOf[ValNumber])),
+      params = List("x"),
       invoke = (params: List[Val]) => {
         params.head match {
           case ValNumber(n) if (n == 1) => ValString("yes")
@@ -163,9 +161,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   it should "be invoked with named parameters" in {
 
     val variables = Map("sub" -> ValFunction(
-      params = List(
-          ValParameter("x", classOf[ValNumber]),
-          ValParameter("y", classOf[ValNumber])),
+      params = List("x", "y"),
       invoke = (params: List[Val]) => {
         val x = params(0).asInstanceOf[ValNumber].value
         val y = params(1).asInstanceOf[ValNumber].value
@@ -180,9 +176,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   it should "fail to invoke with wrong number of parameters" in {
     
     val variables = Map("f" -> ValFunction(
-      params = List(
-          ValParameter("x", classOf[ValNumber]),
-          ValParameter("y", classOf[ValNumber])),
+      params = List("x", "y"),
       invoke = (params: List[Val]) => {
         ValString("invoked")
       }))
@@ -193,23 +187,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("f(x:1)", variables) should be(ValError("expected parameter 'y' but not found"))
     eval("f(y:1)", variables) should be(ValError("expected parameter 'x' but not found"))
     eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
-  }
-  
-  it should "fail to invoke with wrong type of parameters" in {
-    
-    val variables = Map("f" -> ValFunction(
-      params = List(
-          ValParameter("x", classOf[ValNumber]),
-          ValParameter("y", classOf[ValBoolean])),
-      invoke = (params: List[Val]) => {
-        ValString("invoked")
-      }))
-
-    eval("f(1,2)", variables) should be(ValError("expected parameter 'y' of type ValBoolean but was ValNumber"))
-    eval("f(false,true)", variables) should be(ValError("expected parameter 'x' of type ValNumber but was ValBoolean"))
-    
-    eval("f(x:1,y:2)", variables) should be(ValError("expected parameter 'y' of type ValBoolean but was ValNumber"))
-    eval("f(y:true,x:false)", variables) should be(ValError("expected parameter 'x' of type ValNumber but was ValBoolean"))
   }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {

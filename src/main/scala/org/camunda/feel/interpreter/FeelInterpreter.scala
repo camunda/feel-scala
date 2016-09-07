@@ -204,36 +204,24 @@ class FeelInterpreter {
         return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
       } 
       
-      withValidParameterTypes(function, params map eval, f(_) )
+      f(params map eval)
     }
     case NamedFunctionParameters(params) => {
       
-      val missingParameters = function.params.filter( p => !params.contains(p.name) )
+      val missingParameters = function.params.filter( p => !params.contains(p) )
       if (!missingParameters.isEmpty) {
-        return ValError(s"expected parameter '${missingParameters.head.name}' but not found")  
+        return ValError(s"expected parameter '${missingParameters.head}' but not found")  
       }
       
-      val unknownParameters = params.filter( p => !function.params.exists(_.name == p._1) )
+      val unknownParameters = params.filter( p => !function.params.exists(_ == p._1) )
       if (!unknownParameters.isEmpty) {
         return ValError(s"unexpected parameter '${unknownParameters.head._1}'")  
       }
               
-      val paramList = function.params map ( param => eval(params(param.name)) )
+      val paramList = function.params map ( p => eval(params(p)) )
       
-      withValidParameterTypes(function, paramList, f(_) )
+      f(paramList)
     }
-  }
-  
-  private def withValidParameterTypes(function: ValFunction, params: List[Val], f: List[Val] => Val): Val = {
-    for ( i <- 0 until params.size ) { 
-      val param = function.params(i)
-      
-      if (params(i).getClass != param.`type` ) {
-        return ValError(s"expected parameter '${param.name}' of type ${param.`type`.getSimpleName} but was ${params(i).getClass.getSimpleName}")
-      }
-    }  
-    
-    f(params)
   }
   
 }
