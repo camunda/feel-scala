@@ -53,6 +53,11 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("null") should be(ConstNull)
   }
   
+  it should "parse an expression inside brackets" in {
+    
+    parse("(42)") should be(ConstNumber(42))
+  }
+  
   it should "ignore an one line comment '// ...'" in {
     
     parse("""duration("P1D") // one day""") should be(ConstDuration("P1D"))

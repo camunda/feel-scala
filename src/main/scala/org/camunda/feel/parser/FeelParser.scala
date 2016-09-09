@@ -26,11 +26,12 @@ object FeelParser extends JavaTokenParsers {
   private def expression: Parser[Exp] = textualExpression
   
   // 2
-  private def textualExpression = ( comparison 
+  private def textualExpression: Parser[Exp] = ( comparison 
     | arithmeticExpression 
     | functionInvocation
     | literal 
-    | name )
+    | name
+    | "(" ~> textualExpression <~ ")" )
   
   // 4
   private def arithmeticExpression = ( addition | subtraction | multiplication | division
