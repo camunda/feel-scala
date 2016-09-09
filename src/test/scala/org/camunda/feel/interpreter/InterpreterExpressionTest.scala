@@ -102,42 +102,32 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   // TODO add test case for add. and sub. of durations
   // TODO add tests cases for compare op's with date, time and duration
   
-  "A function" should "be invoked without parameter" in {
+  "A function definition" should "be interpeted" in {
+    
+    val function = eval("function(x) x + 1")
+    
+    function shouldBe a [ValFunction]
+    function.asInstanceOf[ValFunction].params should be(List("x")) 
+  }
+  
+  it should "be invoked without parameter" in {
 
-    val variables = Map("f" -> ValFunction(
-      params = List(),
-      invoke = (params: List[Val]) => {
-        ValString("invoked")
-      }))
+    val variables = Map("f" -> eval("""function() "invoked" """))
 
     eval("f()", variables) should be(ValString("invoked"))
   }
 
   it should "be invoked with one positional parameter" in {
 
-    val variables = Map("f" -> ValFunction(
-      params = List("x"),
-      invoke = (params: List[Val]) => {
-        params.head match {
-          case ValNumber(n) if (n == 1) => ValString("yes")
-          case _ => ValString("no")
-        }
-      }))
+    val variables = Map("f" -> eval("function(x) x + 1"))
 
-    eval("f(1)", variables) should be(ValString("yes"))
-    eval("f(2)", variables) should be(ValString("no"))
+    eval("f(1)", variables) should be(ValNumber(2))
+    eval("f(2)", variables) should be(ValNumber(3))
   }
   
   it should "be invoked with positional parameters" in {
 
-    val variables = Map("add" -> ValFunction(
-      params = List("x", "y"),
-      invoke = (params: List[Val]) => {
-        val x = params(0).asInstanceOf[ValNumber].value
-        val y = params(1).asInstanceOf[ValNumber].value
-        
-        ValNumber(x + y)
-      }))
+    val variables = Map("add" -> eval("function(x,y) x + y"))
 
     eval("add(1,2)", variables) should be(ValNumber(3))
     eval("add(2,3)", variables) should be(ValNumber(5))
@@ -145,29 +135,15 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   it should "be invoked with one named parameter" in {
 
-    val variables = Map("f" -> ValFunction(
-      params = List("x"),
-      invoke = (params: List[Val]) => {
-        params.head match {
-          case ValNumber(n) if (n == 1) => ValString("yes")
-          case _ => ValString("no")
-        }
-      }))
+    val variables = Map("f" -> eval("function(x) x + 1"))
 
-    eval("f(x:1)", variables) should be(ValString("yes"))
-    eval("f(x:2)", variables) should be(ValString("no"))
+    eval("f(x:1)", variables) should be(ValNumber(2))
+    eval("f(x:2)", variables) should be(ValNumber(3))
   }
   
   it should "be invoked with named parameters" in {
 
-    val variables = Map("sub" -> ValFunction(
-      params = List("x", "y"),
-      invoke = (params: List[Val]) => {
-        val x = params(0).asInstanceOf[ValNumber].value
-        val y = params(1).asInstanceOf[ValNumber].value
-        
-        ValNumber(x - y)
-      }))
+    val variables = Map("sub" -> eval("function(x,y) x - y"))
 
     eval("sub(x:4,y:2)", variables) should be(ValNumber(2))
     eval("sub(y:2,x:4)", variables) should be(ValNumber(2))    
@@ -175,11 +151,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   it should "fail to invoke with wrong number of parameters" in {
     
-    val variables = Map("f" -> ValFunction(
-      params = List("x", "y"),
-      invoke = (params: List[Val]) => {
-        ValString("invoked")
-      }))
+    val variables = Map("f" -> eval("function(x,y) true"))
 
     eval("f()", variables) should be(ValError("expected 2 parameters but found 0"))
     eval("f(1)", variables) should be(ValError("expected 2 parameters but found 1"))

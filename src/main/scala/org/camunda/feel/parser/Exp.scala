@@ -62,3 +62,5 @@ case class GreaterThan(x: Exp, y: Exp) extends Exp
 case class GreaterOrEqual(x: Exp, y: Exp) extends Exp
 
 case class FunctionInvocation(function: String, params: FunctionParameters) extends Exp
+
+case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp

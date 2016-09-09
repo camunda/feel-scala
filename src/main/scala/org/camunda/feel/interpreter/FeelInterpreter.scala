@@ -44,8 +44,8 @@ class FeelInterpreter {
     // context access
     case Ref(name) => context(name)
     // functions
-    // TODO check function parameter: amount, type
-    case FunctionInvocation(name, params) => withFunction(context(name), f => withValidParameters(params, f, params => f.invoke(params) ))
+    case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
+    case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -197,7 +197,7 @@ class FeelInterpreter {
     case _ => ValError(s"expect Function but found '$x'")
   }
   
-  private def withValidParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val): Val = params match {
+  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val): Val = params match {
     case PositionalFunctionParameters(params) => {
       
       if (params.size != function.params.size) {

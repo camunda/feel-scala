@@ -204,6 +204,17 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
   }
   
+  it should "parse a function definition" in {
+    
+    parse("function() 42") should be(FunctionDefinition(
+        parameters = List(),
+        body = ConstNumber(42) ))
+    
+    parse("function(a,b) a + b") should be(FunctionDefinition(
+        parameters = List("a","b"),
+        body = Addition(Ref("a"), Ref("b")) ))
+  }
+  
   it should "parse a function invocation without parameters" in {
 
     parse("f()") should be(FunctionInvocation("f",

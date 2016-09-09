@@ -20,13 +20,17 @@ object FeelParser extends JavaTokenParsers {
   
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
 
-  private val reservedWord = "not" | "-" | "+" | "*" | "/" | "**" | "date" | "time" | "duration"
+  private val reservedWord = ( "not" 
+    | "-" | "+" | "*" | "/" | "**" 
+    | "date" | "time" | "duration"
+    | "function" )
 
   // 1
   private def expression: Parser[Exp] = textualExpression
   
   // 2
-  private def textualExpression: Parser[Exp] = ( comparison 
+  private def textualExpression: Parser[Exp] = ( functionDefinition
+    | comparison 
     | arithmeticExpression 
     | functionInvocation
     | literal 
@@ -165,4 +169,10 @@ object FeelParser extends JavaTokenParsers {
     case x ~ ">=" ~ y => GreaterOrEqual(x, y)
   }
 
+  // 57
+  private def functionDefinition = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) }
+  
+  // 58
+  private def formalParameter = parameterName
+  
 }
