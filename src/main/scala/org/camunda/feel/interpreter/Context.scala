@@ -12,6 +12,7 @@ case class Context(variables: Map[String, Any] = Map()) {
 
   def apply(key: String): Val = variables.get(key) match {
     case None => ValError(s"no variable found for key '$key'")
+    case Some(x : Val) => x
     case Some(x) => toVal(x)
   }
 
@@ -23,13 +24,15 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Date => ValDate(x)
     case x: Time => ValTime(x)
     case x: Duration => ValDuration(x)
+    case null => ValNull
     // extended types
     case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
     // unsupported values
     case None => ValError("no variable available")
-    case null => ValError("no varibale available")
     case _ => ValError(s"unsupported type of variable '$x'")
   }
+  
+  def ++(vars: Map[String, Any]) = Context(variables ++ vars)
 
 }
 

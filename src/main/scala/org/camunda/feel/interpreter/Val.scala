@@ -31,3 +31,9 @@ case class ValTime(value: Time) extends Val
 case class ValDuration(value: Duration) extends Val
 
 case class ValError(error: String) extends Val
+
+case object ValNull extends Val
+
+// functions
+
+case class ValFunction(params: List[String], invoke: List[Val] => Val) extends Val

@@ -9,13 +9,14 @@ import org.camunda.feel.parser._
 class FeelInterpreter {
 
   def eval(expression: Exp)(implicit context: Context = Context()): Val = expression match {
-    // simple literals
+    // literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
     case ConstTime(t) => ValTime(t)
     case ConstDuration(d) => ValDuration(d)
+    case ConstNull => ValNull
     // simple unary tests
     case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -42,6 +43,9 @@ class FeelInterpreter {
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     // context access
     case Ref(name) => context(name)
+    // functions
+    case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
+    case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -75,6 +79,7 @@ class FeelInterpreter {
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
   
+  // TODO move to Val class so it can be used anywhere  
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
     withNumber(x, x => {
       withNumber(y, y => {
@@ -87,7 +92,7 @@ class FeelInterpreter {
     case _ => ValError(s"expected Number but found '$x'")
   }
 
-    private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
+  private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
     case _ => ValError(s"expected Boolean but found '$x'")
   }
@@ -186,5 +191,37 @@ class FeelInterpreter {
       case ValDuration(x) => withDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
     }
-
+  
+  private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
+    case x: ValFunction => f(x)
+    case _ => ValError(s"expect Function but found '$x'")
+  }
+  
+  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val): Val = params match {
+    case PositionalFunctionParameters(params) => {
+      
+      if (params.size != function.params.size) {
+        return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
+      } 
+      
+      f(params map eval)
+    }
+    case NamedFunctionParameters(params) => {
+      
+      val missingParameters = function.params.filter( p => !params.contains(p) )
+      if (!missingParameters.isEmpty) {
+        return ValError(s"expected parameter '${missingParameters.head}' but not found")  
+      }
+      
+      val unknownParameters = params.filter( p => !function.params.exists(_ == p._1) )
+      if (!unknownParameters.isEmpty) {
+        return ValError(s"unexpected parameter '${unknownParameters.head._1}'")  
+      }
+              
+      val paramList = function.params map ( p => eval(params(p)) )
+      
+      f(paramList)
+    }
+  }
+  
 }

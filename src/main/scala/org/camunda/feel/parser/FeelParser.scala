@@ -14,15 +14,29 @@ object FeelParser extends JavaTokenParsers {
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
+  def parseSimpleExpression(exp: String): ParseResult[Exp] = parseAll(simpleExpression, exp)
+  
   def parseExpression(exp: String): ParseResult[Exp] = parseAll(expression, exp)
   
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
 
-  private val reservedWord = "not" | "-" | "+" | "*" | "/" | "**" | "date" | "time" | "duration"
+  private val reservedWord = ( "not" 
+    | "-" | "+" | "*" | "/" | "**" 
+    | "date" | "time" | "duration"
+    | "function" )
 
   // 1
-  private def expression: Parser[Exp] = simpleExpression // currently, it's only s-feel
-
+  private def expression: Parser[Exp] = textualExpression
+  
+  // 2
+  private def textualExpression: Parser[Exp] = ( functionDefinition
+    | comparison 
+    | arithmeticExpression 
+    | functionInvocation
+    | literal 
+    | name
+    | "(" ~> textualExpression <~ ")" )
+  
   // 4
   private def arithmeticExpression = ( addition | subtraction | multiplication | division
     | exponentiation | arithmeticNegation
@@ -104,11 +118,12 @@ object FeelParser extends JavaTokenParsers {
   private def identifier = not(reservedWord) ~> ident
 
   // 33
+  private def literal: Parser[Exp] = ( simpleLiteral
+      | "null" ^^ (_ => ConstNull) )
+  
+  // 34
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
-
-  // 36
-  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
-
+  
   // 34
   // naming clash with JavaTokenParser
   private def stringLiteraL: Parser[Exp] = "\"" ~> ("""[a-zA-Z_]\w*""".r) <~ "\"" ^^ { case s => ConstString(s) }
@@ -116,6 +131,9 @@ object FeelParser extends JavaTokenParsers {
   // 35
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
+  // 36
+  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
+  
   // 39
   private def dateTimeLiternal: Parser[Exp] = ("date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
     | "time(" ~> stringLiteral <~ ")" ^^ { case time => ConstTime(withoutQuotes(time)) }
@@ -124,6 +142,23 @@ object FeelParser extends JavaTokenParsers {
 
   private def withoutQuotes(exp: String): String = exp.replaceAll("\"", "")
 
+  // 40 - name should be an expression
+  private def functionInvocation = identifier ~ parameters ^^ { case name ~ params => FunctionInvocation(name, params) }
+  
+  // 41
+  private def parameters = "(" ~> ( namedParameters | positionalParameters ) <~ ")"
+
+  // 42
+  private def namedParameters = rep1sep(namedParameter , ",") ^^ (params => NamedFunctionParameters(params.toMap) )
+  
+  private def namedParameter = parameterName ~ ":" ~ expression ^^ { case name ~ _ ~ value => (name, value) }
+  
+  // 43
+  private def parameterName = identifier
+  
+  // 44
+  private def positionalParameters = repsep(expression, ",") ^^ (params => PositionalFunctionParameters(params) )
+  
   // 51 - TODO: both should be expressions
   private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
@@ -134,4 +169,10 @@ object FeelParser extends JavaTokenParsers {
     case x ~ ">=" ~ y => GreaterOrEqual(x, y)
   }
 
+  // 57
+  private def functionDefinition = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) }
+  
+  // 58
+  private def formalParameter = parameterName
+  
 }
