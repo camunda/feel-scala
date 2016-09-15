@@ -23,15 +23,18 @@ object FeelParser extends JavaTokenParsers {
   private val reservedWord = ( "not" 
     | "-" | "+" | "*" | "/" | "**" 
     | "date" | "time" | "duration"
-    | "function" )
+    | "function"
+    | "if" | "then" | "else")
 
   // 1
-  private def expression: Parser[Exp] = textualExpression
+  private def expression: Parser[Exp] = textualExpression | boxedExpression
   
   // 2
   private def textualExpression: Parser[Exp] = ( functionDefinition
+    | ifExpression
     | comparison 
     | arithmeticExpression 
+    // | pathExpression
     | functionInvocation
     | literal 
     | name
@@ -159,6 +162,14 @@ object FeelParser extends JavaTokenParsers {
   // 44
   private def positionalParameters = repsep(expression, ",") ^^ (params => PositionalFunctionParameters(params) )
   
+  // 45
+  private def pathExpression = expression ~ "." ~ identifier  ^^ { case exp ~ _ ~ name => PathExpression(exp, name) }
+  
+  // 47 
+  private def ifExpression = "if" ~> expression ~ "then" ~ expression ~ "else" ~ expression ^^ {
+    case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
+  }
+  
   // 51 - TODO: both should be expressions
   private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
@@ -168,11 +179,23 @@ object FeelParser extends JavaTokenParsers {
     case x ~ ">" ~ y => GreaterThan(x, y)
     case x ~ ">=" ~ y => GreaterOrEqual(x, y)
   }
+  
+  // 55
+  private def boxedExpression = functionDefinition | context
 
   // 57
   private def functionDefinition = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) }
   
   // 58
   private def formalParameter = parameterName
+  
+  // 59
+  private def context = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ { case entries => ContextEntries(entries.toMap) }
+  
+  // 60 
+  private def contextEntry = key ~ ":" ~ expression ^^ { case key ~ _ ~ value => (key -> value) }
+  
+  // 61 - TODO: should be also string literal
+  private def key = identifier
   
 }

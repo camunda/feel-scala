@@ -41,8 +41,11 @@ class FeelInterpreter {
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
+    // controll structurs
+    case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
     // context access
     case Ref(name) => context(name)
+    case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> ( () => eval(entry._2) ) ).toMap)
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))

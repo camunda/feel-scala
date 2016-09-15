@@ -34,6 +34,6 @@ case class ValError(error: String) extends Val
 
 case object ValNull extends Val
 
-// functions
-
 case class ValFunction(params: List[String], invoke: List[Val] => Val) extends Val
+
+case class ValContext(entries: Map[String, Function0[Val]]) extends Val

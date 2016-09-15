@@ -243,6 +243,27 @@ class ParseExpressionTest extends FlatSpec with Matchers {
           "b" -> ConstBool(true)))) )
   }
   
+  it should "parse a context" in {
+    
+    parse("{}") should be(ContextEntries(Map()))
+    
+    parse("{ a : 1 }") should be(ContextEntries(Map( 
+        "a" -> ConstNumber(1) )))
+    
+    parse("{ a:1, b:true }") should be(ContextEntries(Map(
+        "a" -> ConstNumber(1),
+        "b" -> ConstBool(true) )))
+  }
+  
+  it should "parse an if-then-else condition" in {
+    
+    parse(""" if (x < 5) then "low" else "high" """) should be(If(
+      condition = LessThan(Ref("x"), ConstNumber(5)),
+      then = ConstString("low"),
+      otherwise = ConstString("high")
+    ))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

@@ -39,6 +39,8 @@ case class Not(x: Exp) extends Exp
 
 case class Ref(name: String) extends Exp
 
+case class PathExpression(path: Exp, name: String) extends Exp
+
 case class Addition(x: Exp, y: Exp) extends Exp
 
 case class Subtraction(x: Exp, y: Exp) extends Exp
@@ -64,3 +66,7 @@ case class GreaterOrEqual(x: Exp, y: Exp) extends Exp
 case class FunctionInvocation(function: String, params: FunctionParameters) extends Exp
 
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp
+
+case class ContextEntries(entries: Map[String, Exp]) extends Exp
+
+case class If(condition: Exp, then: Exp, otherwise: Exp) extends Exp

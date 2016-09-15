@@ -13,24 +13,32 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   val interpreter = new FeelInterpreter
   
-  "An interpreter for expression" should "interpret a number" in {
+  "An expression" should "be a number" in {
     
     eval("2") should be(ValNumber(2))
   }
   
-  it should "interpret a string" in {
+  it should "be a string" in {
     
     eval(""" "a" """) should be(ValString("a"))
   }
   
-  it should "interpret a boolean" in {
+  it should "be a boolean" in {
     
     eval("true") should be(ValBoolean(true))
   }
   
-  it should "interpret null" in {
+  it should "be null" in {
     
     eval("null") should be(ValNull)
+  }
+  
+  it should "be an if-then-else" in {
+    
+    val exp = """ if (x < 5) then "low" else "high" """
+    
+    eval(exp, Map("x" -> 2)) should be(ValString("low"))
+    eval(exp, Map("x" -> 7)) should be(ValString("high"))
   }
   
   "A number" should "add to '4'" in {
@@ -159,6 +167,14 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("f(x:1)", variables) should be(ValError("expected parameter 'y' but not found"))
     eval("f(y:1)", variables) should be(ValError("expected parameter 'x' but not found"))
     eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
+  }
+  
+  "A context" should "be defined" in {
+    
+    val context = eval("{ a : 1 }")
+    
+    context shouldBe a [ValContext]
+    context.asInstanceOf[ValContext].entries.keys should contain ("a")
   }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
