@@ -26,8 +26,7 @@ object FeelParser extends JavaTokenParsers {
     | "function"
     | "if" | "then" | "else"
     | "or" )
-    
-  // use to avoid endless recursion  
+      
   private def atom = literal | name | "(" ~> textualExpression <~ ")"
     
   // 1
@@ -102,20 +101,20 @@ object FeelParser extends JavaTokenParsers {
   private def qualifiedName = (rep1sep(identifier, ".") ^^ { case xs => Ref(xs mkString ".") }
     | name)
 
-  // 21 - TODO: both should be expressions
-  private def addition = simpleValue ~ "+" ~ expression ^^ { case x ~ _ ~ y => Addition(x, y) }
+  // 21
+  private def addition = atom ~ "+" ~ expression ^^ { case x ~ _ ~ y => Addition(x, y) }
 
-  // 22 - TODO: both should be expressions
-  private def subtraction = simpleValue ~ "-" ~ expression ^^ { case x ~ _ ~ y => Subtraction(x, y) }
+  // 22
+  private def subtraction = atom ~ "-" ~ expression ^^ { case x ~ _ ~ y => Subtraction(x, y) }
 
-  // 23 - TODO: both should be expressions
-  private def multiplication = simpleValue ~ "*" ~ expression ^^ { case x ~ _ ~ y => Multiplication(x, y) }
+  // 23
+  private def multiplication = atom ~ "*" ~ expression ^^ { case x ~ _ ~ y => Multiplication(x, y) }
 
-  // 24 - TODO: both should be expressions
-  private def division = simpleValue ~ "/" ~ expression ^^ { case x ~ _ ~ y => Division(x, y) }
+  // 24
+  private def division = atom ~ "/" ~ expression ^^ { case x ~ _ ~ y => Division(x, y) }
 
-  // 25 - TODO: both should be expressions
-  private def exponentiation = simpleValue ~ "**" ~ expression ^^ { case x ~ _ ~ y => Exponentiation(x, y) }
+  // 25
+  private def exponentiation = atom ~ "**" ~ expression ^^ { case x ~ _ ~ y => Exponentiation(x, y) }
 
   // 26
   private def arithmeticNegation = "-" ~> expression ^^ { case x => ArithmeticNegation(x) }
@@ -178,8 +177,8 @@ object FeelParser extends JavaTokenParsers {
   // 48
   private def disjunction = atom ~ "or" ~ expression ^^ { case x ~ _ ~ y => Disjunction(x,y) }
   
-  // 51 - TODO: both should be expressions
-  private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
+  // 51
+  private def comparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
     case x ~ "!=" ~ y => Not(Equal(x, y))
     case x ~ "<" ~ y => LessThan(x, y)

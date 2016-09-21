@@ -46,6 +46,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("2+4") should be(ValNumber(6))
   }
   
+  it should "add to '4' and '6'" in {
+    
+    eval("2+4+6") should be(ValNumber(12))
+  }
+  
   it should "subtract from '2'" in {
     
     eval("4-2") should be(ValNumber(2))
@@ -75,6 +80,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     
     eval("x=2", Map("x" -> 2)) should be(ValBoolean(true))
     eval("x=2", Map("x" -> 3)) should be(ValBoolean(false))
+    
+    eval("(x * 2) = 4", Map("x" -> 2)) should be(ValBoolean(true))
+    eval("(x * 2) = 4", Map("x" -> 3)) should be(ValBoolean(false))
   }
   
   it should "compare with '!='" in {

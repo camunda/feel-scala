@@ -4,7 +4,6 @@ import org.camunda.feel._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.camunda.feel.interpreter.ValNumber
 
 /**
  * @author Philipp Ossler
@@ -75,6 +74,9 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     
     // numeric addition
     parse("2+3") should be(Addition(ConstNumber(2), ConstNumber(3)))
+    parse("2+3+4") should be(Addition(ConstNumber(2), 
+        Addition( ConstNumber(3), ConstNumber(4) )))
+    
     // addition with two durations
     parse("""duration("P1Y")+duration("P6M")""") should be(Addition(ConstDuration("P1Y"), ConstDuration("P6M")))
     parse("""duration("P1D")+duration("PT12H")""") should be(Addition(ConstDuration("P1D"), ConstDuration("PT12H")))
@@ -127,6 +129,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("a=true") should be(Equal(Ref("a"), ConstBool(true)))
     // numeric
     parse("a=1") should be(Equal(Ref("a"), ConstNumber(1)))
+    parse("(a * 2) = 4") should be(Equal( Multiplication(Ref("a"), ConstNumber(2)), ConstNumber(4) ))
     // duration
     parse("""a=duration("P1Y")""") should be(Equal(Ref("a"), ConstDuration("P1Y")))
     parse("""a=duration("PT2H")""") should be(Equal(Ref("a"), ConstDuration("PT2H")))
