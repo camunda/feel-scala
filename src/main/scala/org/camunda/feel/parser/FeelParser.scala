@@ -24,14 +24,19 @@ object FeelParser extends JavaTokenParsers {
     | "-" | "+" | "*" | "/" | "**" 
     | "date" | "time" | "duration"
     | "function"
-    | "if" | "then" | "else")
-
+    | "if" | "then" | "else"
+    | "or" )
+    
+  // use to avoid endless recursion  
+  private def atom = literal | name | "(" ~> textualExpression <~ ")"
+    
   // 1
   private def expression: Parser[Exp] = textualExpression | boxedExpression
   
   // 2
   private def textualExpression: Parser[Exp] = ( functionDefinition
     | ifExpression
+    | disjunction
     | comparison 
     | arithmeticExpression 
     // | pathExpression
@@ -39,7 +44,7 @@ object FeelParser extends JavaTokenParsers {
     | literal 
     | name
     | "(" ~> textualExpression <~ ")" )
-  
+    
   // 4
   private def arithmeticExpression = ( addition | subtraction | multiplication | division
     | exponentiation | arithmeticNegation
@@ -169,6 +174,9 @@ object FeelParser extends JavaTokenParsers {
   private def ifExpression = "if" ~> expression ~ "then" ~ expression ~ "else" ~ expression ^^ {
     case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
   }
+  
+  // 48
+  private def disjunction = atom ~ "or" ~ expression ^^ { case x ~ _ ~ y => Disjunction(x,y) }
   
   // 51 - TODO: both should be expressions
   private def comparison = simpleValue ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {

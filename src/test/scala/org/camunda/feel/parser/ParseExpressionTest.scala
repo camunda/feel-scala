@@ -4,6 +4,7 @@ import org.camunda.feel._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import org.camunda.feel.interpreter.ValNumber
 
 /**
  * @author Philipp Ossler
@@ -262,6 +263,16 @@ class ParseExpressionTest extends FlatSpec with Matchers {
       then = ConstString("low"),
       otherwise = ConstString("high")
     ))
+  }
+  
+  it should "parse a disjunction" in {
+    
+    parse("true or false") should be(Disjunction(
+        ConstBool(true), ConstBool(false)) )
+    
+    parse("(a < 5) or (b < 10)") should be(Disjunction(
+        LessThan(Ref("a"), ConstNumber(5)), 
+        LessThan(Ref("b"), ConstNumber(10) )))
   }
   
   private def parse(expression: String): Exp = {
