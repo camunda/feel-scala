@@ -36,6 +36,7 @@ object FeelParser extends JavaTokenParsers {
   private def textualExpression: Parser[Exp] = ( functionDefinition
     | ifExpression
     | disjunction
+    | conjunction
     | comparison 
     | arithmeticExpression 
     // | pathExpression
@@ -174,8 +175,11 @@ object FeelParser extends JavaTokenParsers {
     case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
   }
   
-  // 48
-  private def disjunction = atom ~ "or" ~ expression ^^ { case x ~ _ ~ y => Disjunction(x,y) }
+  // 49
+  private def disjunction = atom ~ "or" ~ expression ^^ { case x ~ _ ~ y => Disjunction(x, y) }
+  
+  // 50
+  private def conjunction = atom ~ "and" ~ expression ^^ { case x ~ _ ~ y => Conjunction(x,y) }
   
   // 51
   private def comparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {

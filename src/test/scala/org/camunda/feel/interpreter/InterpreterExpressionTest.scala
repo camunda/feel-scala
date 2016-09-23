@@ -41,6 +41,18 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval(exp, Map("x" -> 7)) should be(ValString("high"))
   }
   
+  it should "be a disjunction" in {
+    
+    eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(true))) should be(ValBoolean(true))
+    eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(false))) should be(ValBoolean(false))
+  }
+  
+  it should "be a conjunction" in {
+    
+    eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(true))) should be(ValBoolean(true))
+    eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(false))) should be(ValBoolean(false))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))

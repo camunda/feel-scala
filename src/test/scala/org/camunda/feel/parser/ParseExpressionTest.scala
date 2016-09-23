@@ -278,6 +278,11 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         LessThan(Ref("b"), ConstNumber(10) )))
   }
   
+  it should "parse a conjunction" in {
+    
+    parse("a and b") should be(Conjunction(Ref("a"), Ref("b")))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

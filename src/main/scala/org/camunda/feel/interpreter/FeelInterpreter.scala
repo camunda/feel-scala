@@ -41,7 +41,9 @@ class FeelInterpreter {
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
-    // controll structurs
+    case Disjunction(x,y) => atLeastOne(x :: y :: Nil, ValBoolean)
+    case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
+    // control structures
     case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
     // context access
     case Ref(name) => context(name)
@@ -164,6 +166,14 @@ class FeelInterpreter {
     case x :: xs => withBoolean(eval(x), _ match {
       case true => f(true)
       case false => atLeastOne(xs, f)
+    })
+  }
+  
+  private def all(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = xs match {
+    case Nil => f(true)
+    case x :: xs => withBoolean(eval(x), _ match {
+      case false => f(false)
+      case true => all(xs, f)
     })
   }
 

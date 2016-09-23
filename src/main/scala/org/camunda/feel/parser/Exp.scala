@@ -72,3 +72,5 @@ case class ContextEntries(entries: Map[String, Exp]) extends Exp
 case class If(condition: Exp, then: Exp, otherwise: Exp) extends Exp
 
 case class Disjunction(x: Exp, y: Exp) extends Exp
+
+case class Conjunction(x: Exp, y: Exp) extends Exp
