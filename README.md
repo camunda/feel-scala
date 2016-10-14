@@ -19,8 +19,11 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * combination of multiple tests with ','
 * expression:
   * arithmetic expression ('+', '-', '*', '/', '**', negation) (numbers only)
+  * if-then-else
+  * disjunction and conjunction 
   * function definition (no external)
   * function invocation (positional + named parameters)
+  * simple positive unary test (as expression)
 
 ## Current Limitations
 * the input of the simple unary test should be given as context entry 'cellInput'
