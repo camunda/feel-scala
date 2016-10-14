@@ -25,7 +25,7 @@ object FeelParser extends JavaTokenParsers {
     | "date" | "time" | "duration"
     | "function"
     | "if" | "then" | "else"
-    | "or" )
+    | "or" | "and" )
       
   private def atom = literal | name | "(" ~> textualExpression <~ ")"
     
@@ -43,6 +43,7 @@ object FeelParser extends JavaTokenParsers {
     | functionInvocation
     | literal 
     | name
+    | simplePositivUnaryTest
     | "(" ~> textualExpression <~ ")" )
     
   // 4

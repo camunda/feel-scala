@@ -84,7 +84,6 @@ class FeelInterpreter {
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
   
-  // TODO move to Val class so it can be used anywhere  
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
     withNumber(x, x => {
       withNumber(y, y => {

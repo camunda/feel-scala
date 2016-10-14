@@ -53,6 +53,13 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(false))) should be(ValBoolean(false))
   }
   
+  it should "be a simple positive unary test" in {
+    
+    eval("< 3", Map(Context.inputKey -> 2)) should be(ValBoolean(true))
+    
+    eval("(2 .. 4)", Map(Context.inputKey -> 5)) should be(ValBoolean(false))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))

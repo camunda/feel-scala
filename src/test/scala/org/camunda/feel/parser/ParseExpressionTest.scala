@@ -283,6 +283,16 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("a and b") should be(Conjunction(Ref("a"), Ref("b")))
   }
   
+  it should "parse a simple positive unary test" in {
+    
+    parse("< 3") should be(InputLessThan(ConstNumber(3)))
+    
+    parse("[2..4]") should be(
+      Interval(
+        start = ClosedIntervalBoundary(ConstNumber(2)),
+        end = ClosedIntervalBoundary(ConstNumber(4))))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get
