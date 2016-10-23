@@ -25,7 +25,7 @@ object FeelParser extends JavaTokenParsers {
     | "date" | "time" | "duration"
     | "function"
     | "if" | "then" | "else"
-    | "or" | "and" )
+    | "or" | "and" | "between" )
       
   private def atom = literal | name | "(" ~> textualExpression <~ ")"
     
@@ -52,7 +52,7 @@ object FeelParser extends JavaTokenParsers {
     | failure("ilegal start of an arithmetic expression. expect an operator of '+', '-', '*', '/', '**' or a negation '-'."))
 
   // 5
-  private def simpleExpression = arithmeticExpression | comparison | simpleValue
+  private def simpleExpression = arithmeticExpression | simpleValue
 
   // 6
   private def simpleExpressions = (simpleExpression ~ "," ~ repsep(simpleExpression, ",") ^^ { case x ~ _ ~ xs => 
@@ -144,7 +144,8 @@ object FeelParser extends JavaTokenParsers {
   private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
   
   // 39
-  private def dateTimeLiternal: Parser[Exp] = ("date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
+  private def dateTimeLiternal: Parser[Exp] = (
+      "date(" ~> stringLiteral <~ ")" ^^ { case date => ConstDate(withoutQuotes(date)) }
     | "time(" ~> stringLiteral <~ ")" ^^ { case time => ConstTime(withoutQuotes(time)) }
     | "duration(" ~> stringLiteral <~ ")" ^^ { case duration => ConstDuration(withoutQuotes(duration)) }
     | failure("illegal start of a date time literal. expect a date ('YYYY-MM-DD'), time ('hh:mm:ss') or duration ('PnYnMnDTnHnMnS')"))
@@ -183,7 +184,11 @@ object FeelParser extends JavaTokenParsers {
   private def conjunction = atom ~ "and" ~ expression ^^ { case x ~ _ ~ y => Conjunction(x,y) }
   
   // 51
-  private def comparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
+  private def comparison = ( simpleComparison
+      | atom ~ "between" ~ atom ~ "and" ~ expression ^^ { case x ~ _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) }
+  )
+  
+  private def simpleComparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
     case x ~ "!=" ~ y => Not(Equal(x, y))
     case x ~ "<" ~ y => LessThan(x, y)

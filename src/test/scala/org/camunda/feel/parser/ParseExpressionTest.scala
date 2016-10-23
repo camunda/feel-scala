@@ -4,6 +4,7 @@ import org.camunda.feel._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import com.sun.org.apache.xpath.internal.objects.LessThanOrEqualComparator
 
 /**
  * @author Philipp Ossler
@@ -206,6 +207,17 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("""a>=date("2015-09-18")""") should be(GreaterOrEqual(Ref("a"), ConstDate("2015-09-18")))
     // time
     parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
+  }
+  
+  it should "parse a 'between _ and _' comparison " in {
+    
+    // numeric
+    parse("a between 2 and 4") should be(
+        Conjunction(GreaterOrEqual(Ref("a"), ConstNumber(2)), LessOrEqual(Ref("a"), ConstNumber(4))))
+  
+    // time
+    parse(""" a between time("10:00:00") and time("14:00:00") """) should be(
+        Conjunction(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")), LessOrEqual(Ref("a"), ConstTime("14:00:00"))))
   }
   
   it should "parse a function definition" in {
