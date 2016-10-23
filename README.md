@@ -24,7 +24,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * comparison (compare operators, 'between x and y', 'x in y') 
   * function definition (no external)
   * function invocation (positional + named parameters)
-  * instance of (for build in types)
+  * instance of (for build-in types)
   * simple positive unary test (as expression)
 
 ## Current Limitations
