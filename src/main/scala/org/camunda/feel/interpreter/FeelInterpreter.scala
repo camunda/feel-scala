@@ -43,6 +43,7 @@ class FeelInterpreter {
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     case Disjunction(x,y) => atLeastOne(x :: y :: Nil, ValBoolean)
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
+    case In(x, test) => withVal(eval(x), x => eval(test)(context + (Context.inputKey -> x)) )
     // control structures
     case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
     // context access

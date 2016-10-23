@@ -143,6 +143,21 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("x between 2 and 4", Map("x" -> 5)) should be (ValBoolean(false))
   }
   
+  it should "compare with 'in'" in {
+    
+    eval("x in < 2", Map("x" -> 1)) should be(ValBoolean(true))
+    eval("x in < 2", Map("x" -> 2)) should be(ValBoolean(false))
+    
+    eval("x in (2 .. 4)", Map("x" -> 3)) should be (ValBoolean(true))
+    eval("x in (2 .. 4)", Map("x" -> 4)) should be (ValBoolean(false))
+
+    eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
+    eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))
+    
+    eval("3 in (2 .. 4)") should be(ValBoolean(true))
+    eval("4 in (2 .. 4)") should be(ValBoolean(false))
+  }
+  
   // TODO add test case for add. and sub. of durations
   // TODO add tests cases for compare op's with date, time and duration
   

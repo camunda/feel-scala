@@ -220,6 +220,23 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         Conjunction(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")), LessOrEqual(Ref("a"), ConstTime("14:00:00"))))
   }
   
+  it should "parse a 'in' comparision" in {
+    
+    // endpoint
+    parse("a in < 2") should be(In(Ref("a"), InputLessThan(ConstNumber(2))))
+    // interval
+    parse("a in (2 .. 4)") should be(In(Ref("a"), 
+        Interval(OpenIntervalBoundary(ConstNumber(2)), OpenIntervalBoundary(ConstNumber(4)))))
+    // null value
+    parse("a in null") should be(In(Ref("a"), InputEqualTo(ConstNull)))
+    // multiple tests
+    parse("a in (2,4,6)") should be(In(Ref("a"), 
+        AtLeastOne(List(
+            InputEqualTo(ConstNumber(2)), 
+            InputEqualTo(ConstNumber(4)),
+            InputEqualTo(ConstNumber(6)) ))) )
+  }
+  
   it should "parse a function definition" in {
     
     parse("function() 42") should be(FunctionDefinition(

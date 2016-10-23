@@ -34,6 +34,8 @@ case class Context(variables: Map[String, Any] = Map()) {
   
   def ++(vars: Map[String, Any]) = Context(variables ++ vars)
 
+  def +(variable : (String, Any)) = Context(variables + variable)
+  
 }
 
 object Context {

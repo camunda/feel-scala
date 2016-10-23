@@ -20,7 +20,8 @@ object FeelParser extends JavaTokenParsers {
   
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
 
-  private val reservedWord = ( "not" 
+  private val reservedWord = ( "null"
+    | "not" 
     | "-" | "+" | "*" | "/" | "**" 
     | "date" | "time" | "duration"
     | "function"
@@ -89,10 +90,25 @@ object FeelParser extends JavaTokenParsers {
   // 14
   private def simpleUnaryTests = (
     "-" ^^ (_ => ConstBool(true))
-    | "not(" ~> simplePositivUnaryTests <~ ")" ^^ { case x => Not(x) }
+    | "not(" ~> simplePositivUnaryTests <~ ")" ^^ { Not }
     | simplePositivUnaryTests
     | failure("illegal start of simple unary test. expect simple positiv unary tests (e.g. compare operator, interval, literal, qualified name), a 'not' operator or an empty test (eg. '-')"))
 
+  // 15
+  private def positiveUnaryTest = ( simplePositivUnaryTest 
+    | "null" ^^ ( _ => InputEqualTo(ConstNull)) ) 
+    
+  // 16
+  private def positiveUnaryTests = (positiveUnaryTest ~ "," ~ repsep(positiveUnaryTest, ",") ^^ { case x ~ _ ~ xs => AtLeastOne(x :: xs) }
+    | positiveUnaryTest)   
+    
+  // 17
+  private def unaryTest = ( 
+    "-" ^^ ( _ => ConstBool(true) )
+    | "not(" ~> positiveUnaryTests <~ ")" ^^ ( Not )
+    | positiveUnaryTests 
+    | failure("illegal start of unary test. expect positive unary tests (i.e. simple unary test or 'null'), a 'not' operator or an empty test (eg. '-')") )
+    
   // 18
   private def endpoint = simpleValue
 
@@ -186,6 +202,8 @@ object FeelParser extends JavaTokenParsers {
   // 51
   private def comparison = ( simpleComparison
       | atom ~ "between" ~ atom ~ "and" ~ expression ^^ { case x ~ _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) }
+      | atom ~ "in" ~ positiveUnaryTest ^^ { case x ~ _ ~ test => In(x, test) }
+      | atom ~ "in" ~ "(" ~ positiveUnaryTests <~ ")" ^^ { case x ~ _ ~ _ ~ tests => In(x, tests) }
   )
   
   private def simpleComparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {

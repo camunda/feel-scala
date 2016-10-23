@@ -74,3 +74,5 @@ case class If(condition: Exp, then: Exp, otherwise: Exp) extends Exp
 case class Disjunction(x: Exp, y: Exp) extends Exp
 
 case class Conjunction(x: Exp, y: Exp) extends Exp
+
+case class In(x: Exp, test: Exp) extends Exp
