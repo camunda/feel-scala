@@ -60,6 +60,18 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("(2 .. 4)", Map(Context.inputKey -> 5)) should be(ValBoolean(false))
   }
   
+  it should "be an instance of" in {
+    
+    eval("x instance of number", Map("x" -> 1)) should be(ValBoolean(true))
+    eval("x instance of number", Map("x" -> "NaN")) should be(ValBoolean(false))
+    
+    eval("x instance of boolean", Map("x" -> true)) should be(ValBoolean(true))
+    eval("x instance of boolean", Map("x" -> 0)) should be(ValBoolean(false))
+    
+    eval("x instance of string", Map("x" -> "yes")) should be(ValBoolean(true))
+    eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))

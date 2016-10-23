@@ -43,9 +43,10 @@ class FeelInterpreter {
     case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
     case Disjunction(x,y) => atLeastOne(x :: y :: Nil, ValBoolean)
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
-    case In(x, test) => withVal(eval(x), x => eval(test)(context + (Context.inputKey -> x)) )
     // control structures
     case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
+    case In(x, test) => withVal(eval(x), x => eval(test)(context + (Context.inputKey -> x)) )
+    case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
     // context access
     case Ref(name) => context(name)
     case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> ( () => eval(entry._2) ) ).toMap)
@@ -235,6 +236,17 @@ class FeelInterpreter {
       
       f(paramList)
     }
+  }
+  
+  private def withType(x: Val, f: String => ValBoolean): Val = x match {
+    case ValNumber(_) => f("number")
+    case ValBoolean(_) => f("boolean")
+    case ValString(_) => f("string")
+    case ValDate(_) => f("date")
+    case ValTime(_) => f("time")
+    case ValDuration(_) => f("duration")
+    case ValNull => f("null")
+    case _ => ValError(s"unexpected type '${x.getClass.getName}'")
   }
   
 }

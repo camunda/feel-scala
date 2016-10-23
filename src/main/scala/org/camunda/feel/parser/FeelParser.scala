@@ -26,7 +26,8 @@ object FeelParser extends JavaTokenParsers {
     | "date" | "time" | "duration"
     | "function"
     | "if" | "then" | "else"
-    | "or" | "and" | "between" )
+    | "or" | "and" | "between"
+    | "instance" | "of" )
       
   private def atom = literal | name | "(" ~> textualExpression <~ ")"
     
@@ -36,9 +37,10 @@ object FeelParser extends JavaTokenParsers {
   // 2
   private def textualExpression: Parser[Exp] = ( functionDefinition
     | ifExpression
+    | instanceOf
+    | comparison 
     | disjunction
     | conjunction
-    | comparison 
     | arithmeticExpression 
     // | pathExpression
     | functionInvocation
@@ -214,6 +216,12 @@ object FeelParser extends JavaTokenParsers {
     case x ~ ">" ~ y => GreaterThan(x, y)
     case x ~ ">=" ~ y => GreaterOrEqual(x, y)
   }
+  
+  // 53
+  private def instanceOf = atom ~ "instance" ~ "of" ~ typeName ^^ { case x ~ _ ~ _ ~ typeName => InstanceOf(x, typeName) }
+  
+  // 54 - TODO: should be qualified name
+  private def typeName = identifier
   
   // 55
   private def boxedExpression = functionDefinition | context

@@ -322,6 +322,11 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         end = ClosedIntervalBoundary(ConstNumber(4))))
   }
   
+  it should "parse a 'instance of'" in {
+    
+    parse("x instance of number") should be(InstanceOf(Ref("x"), "number"))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

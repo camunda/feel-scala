@@ -76,3 +76,5 @@ case class Disjunction(x: Exp, y: Exp) extends Exp
 case class Conjunction(x: Exp, y: Exp) extends Exp
 
 case class In(x: Exp, test: Exp) extends Exp
+
+case class InstanceOf(x: Exp, typeName: String) extends Exp
