@@ -20,7 +20,8 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 * expression:
   * arithmetic expression ('+', '-', '*', '/', '**', negation) (numbers only)
   * if-then-else
-  * disjunction and conjunction 
+  * disjunction and conjunction
+  * comparison (compare operators, 'between x and y', 'x in y') 
   * function definition (no external)
   * function invocation (positional + named parameters)
   * simple positive unary test (as expression)
