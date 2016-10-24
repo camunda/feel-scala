@@ -67,8 +67,6 @@ case class FunctionInvocation(function: String, params: FunctionParameters) exte
 
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp
 
-case class ContextEntries(entries: Map[String, Exp]) extends Exp
-
 case class If(condition: Exp, then: Exp, otherwise: Exp) extends Exp
 
 case class Disjunction(x: Exp, y: Exp) extends Exp
@@ -78,3 +76,7 @@ case class Conjunction(x: Exp, y: Exp) extends Exp
 case class In(x: Exp, test: Exp) extends Exp
 
 case class InstanceOf(x: Exp, typeName: String) extends Exp
+
+case class ContextEntries(entries: Map[String, Exp]) extends Exp
+
+case class ListEntries(items: List[Exp]) extends Exp

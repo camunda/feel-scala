@@ -4,6 +4,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel._
 import org.camunda.feel.parser.FeelParser
+import org.camunda.feel.parser.ConstNumber
 
 
 /**
@@ -70,6 +71,34 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     
     eval("x instance of string", Map("x" -> "yes")) should be(ValBoolean(true))
     eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
+  }
+  
+  it should "be a context" in {
+    
+    eval("{ a : 1 }") should be(ValContext(Map( "a" -> ValNumber(1) )))
+    
+    eval("""{ a:1, b:"foo" }""") should be(ValContext(Map( 
+        "a" -> ValNumber(1),
+        "b" -> ValString("foo") )))
+    
+    // nested
+    eval("{ a : { b : 1 } }") should be(ValContext(Map(
+        "a" -> ValContext(Map(
+            "b" -> ValNumber(1) )))))
+  }
+  
+  it should "be a list" in {
+    
+    eval("[1]") should be(ValList(List( ValNumber(1) )))
+    
+    eval("[1,2]") should be(ValList(List( 
+        ValNumber(1),
+        ValNumber(2) )))
+    
+    // nested
+    eval("[ [1], [2] ]") should be(ValList(List( 
+        ValList(List(ValNumber(1))),
+        ValList(List(ValNumber(2))) )))
   }
   
   "A number" should "add to '4'" in {
@@ -232,13 +261,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
   }
   
-  "A context" should "be defined" in {
-    
-    val context = eval("{ a : 1 }")
-    
-    context shouldBe a [ValContext]
-    context.asInstanceOf[ValContext].entries.keys should contain ("a")
-  }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)

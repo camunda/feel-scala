@@ -288,6 +288,17 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         "b" -> ConstBool(true) )))
   }
   
+  it should "parse a list" in {
+    
+    parse("[]") should be(ListEntries(List()))
+    
+    parse("[1]") should be(ListEntries( List(ConstNumber(1)) ))
+   
+    parse("[1, 2]") should be(ListEntries(List(
+        ConstNumber(1), 
+        ConstNumber(2) )))
+  }
+  
   it should "parse an if-then-else condition" in {
     
     parse(""" if (x < 5) then "low" else "high" """) should be(If(

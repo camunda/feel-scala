@@ -47,9 +47,11 @@ class FeelInterpreter {
     case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (Context.inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
-    // context access
+    // context
     case Ref(name) => context(name)
-    case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> ( () => eval(entry._2) ) ).toMap)
+    case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
+    // list
+    case ListEntries(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))

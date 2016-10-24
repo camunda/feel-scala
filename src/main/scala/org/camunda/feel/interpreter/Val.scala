@@ -36,4 +36,6 @@ case object ValNull extends Val
 
 case class ValFunction(params: List[String], invoke: List[Val] => Val) extends Val
 
-case class ValContext(entries: Map[String, Function0[Val]]) extends Val
+case class ValContext(entries: Map[String, Val]) extends Val
+
+case class ValList(items: List[Val]) extends Val

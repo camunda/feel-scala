@@ -224,8 +224,11 @@ object FeelParser extends JavaTokenParsers {
   private def typeName = identifier
   
   // 55
-  private def boxedExpression = functionDefinition | context
-
+  private def boxedExpression = list | functionDefinition | context
+  
+  // 56
+  private def list = "[" ~> repsep(expression, ",") <~ "]" ^^ ( entries => ListEntries(entries) )
+  
   // 57
   private def functionDefinition = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) }
   
