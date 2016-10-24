@@ -52,6 +52,8 @@ class FeelInterpreter {
     case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
     // list
     case ListEntries(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
+    case Some(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
+    case Every(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
@@ -164,17 +166,23 @@ class FeelInterpreter {
       inStart && inEnd
     }
 
-  private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = xs match {
+  private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = 
+  	atLeastOne( xs map( x => () => eval(x)), f)
+  
+  private def atLeastOne(xs: List[() => Val], f: Boolean => Val): Val = xs match {
     case Nil => f(false)
-    case x :: xs => withBoolean(eval(x), _ match {
+    case x :: xs => withBoolean(x(), _ match {
       case true => f(true)
       case false => atLeastOne(xs, f)
     })
   }
   
-  private def all(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val = xs match {
+  private def all(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val =
+		  all( xs map ( x => () => eval(x)), f)
+  
+  private def all(xs: List[() => Val], f: Boolean => Val): Val = xs match {
     case Nil => f(true)
-    case x :: xs => withBoolean(eval(x), _ match {
+    case x :: xs => withBoolean(x(), _ match {
       case false => f(false)
       case true => all(xs, f)
     })
@@ -249,6 +257,11 @@ class FeelInterpreter {
     case ValDuration(_) => f("duration")
     case ValNull => f("null")
     case _ => ValError(s"unexpected type '${x.getClass.getName}'")
+  }
+  
+  private def withList(x: Val, f: ValList => Val): Val = x match {
+    case x: ValList => f(x)
+    case _ => ValError(s"expect List but found '$x'")
   }
   
 }

@@ -80,3 +80,7 @@ case class InstanceOf(x: Exp, typeName: String) extends Exp
 case class ContextEntries(entries: Map[String, Exp]) extends Exp
 
 case class ListEntries(items: List[Exp]) extends Exp
+
+case class Some(name: String, list: Exp, condition: Exp) extends Exp
+
+case class Every(name: String, list: Exp, condition: Exp) extends Exp

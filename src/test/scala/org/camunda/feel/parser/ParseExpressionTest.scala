@@ -338,6 +338,22 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("x instance of number") should be(InstanceOf(Ref("x"), "number"))
   }
   
+  it should "parse a 'some' expression" in {
+  	
+  	parse("some x in [1,2] satisfies x < 3") should be(Some(
+  			"x", 
+  			ListEntries(List(ConstNumber(1), ConstNumber(2))),
+  			LessThan(Ref("x"), ConstNumber(3)) ))
+  }
+  
+  it should "parse an 'every' expression" in {
+  	
+  	parse("every x in [1,2] satisfies x < 3") should be(Every(
+  			"x", 
+  			ListEntries(List(ConstNumber(1), ConstNumber(2))),
+  			LessThan(Ref("x"), ConstNumber(3)) ))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

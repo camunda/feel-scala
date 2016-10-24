@@ -101,6 +101,18 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
         ValList(List(ValNumber(2))) )))
   }
   
+  it should "be a some-expression" in {
+  	
+  	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
+  	eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
+  }
+  
+  it should "be an every-expression" in {
+  	
+  	eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
+  	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))
