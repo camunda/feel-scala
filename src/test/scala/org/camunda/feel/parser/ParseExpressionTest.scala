@@ -340,7 +340,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   
   it should "parse a 'some' expression" in {
   	
-  	parse("some x in [1,2] satisfies x < 3") should be(Some(
+  	parse("some x in [1,2] satisfies x < 3") should be(SomeItem(
   			"x", 
   			ListEntries(List(ConstNumber(1), ConstNumber(2))),
   			LessThan(Ref("x"), ConstNumber(3)) ))
@@ -348,10 +348,23 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   
   it should "parse an 'every' expression" in {
   	
-  	parse("every x in [1,2] satisfies x < 3") should be(Every(
+  	parse("every x in [1,2] satisfies x < 3") should be(EveryItem(
   			"x", 
   			ListEntries(List(ConstNumber(1), ConstNumber(2))),
   			LessThan(Ref("x"), ConstNumber(3)) ))
+  }
+  
+  it should "parse a 'for' expression" in {
+    
+    parse("for x in [1,2] return x") should be(For(
+        List("x" -> ListEntries(List( ConstNumber(1), ConstNumber(2) ))),
+        Ref("x") ))
+    
+     parse("for x in [1,2], y in [3,4] return x + y") should be(For(
+        List(
+            "x" -> ListEntries(List( ConstNumber(1), ConstNumber(2) )),
+            "y" -> ListEntries(List( ConstNumber(3), ConstNumber(4) ))),
+        Addition(Ref("x"), Ref("y")) ))
   }
   
   private def parse(expression: String): Exp = {

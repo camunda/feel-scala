@@ -113,6 +113,19 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
   }
   
+  it should "be a for-expression" in {
+    
+    eval("for x in [1,2] return x * 2") should be(ValList(List(
+        ValNumber(2), 
+        ValNumber(4) )))
+    
+    eval("for x in [1,2], y in [3,4] return x * y") should be(ValList(List(
+        ValNumber(3), 
+        ValNumber(4),
+        ValNumber(6),
+        ValNumber(8) )))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))

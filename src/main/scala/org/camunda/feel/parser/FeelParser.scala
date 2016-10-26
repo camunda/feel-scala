@@ -36,6 +36,7 @@ object FeelParser extends JavaTokenParsers {
   
   // 2
   private def textualExpression: Parser[Exp] = ( functionDefinition
+    | forExpression  
     | ifExpression
     | quantifiedExpression
     | instanceOf
@@ -191,15 +192,22 @@ object FeelParser extends JavaTokenParsers {
   // 45
   private def pathExpression = expression ~ "." ~ identifier  ^^ { case exp ~ _ ~ name => PathExpression(exp, name) }
   
+  // 46
+  private def forExpression = "for" ~> rep1sep(listIterator, ",") ~ "return" ~ expression ^^ {
+    case iterators ~ _ ~ exp => For(iterators, exp)
+  }
+  
+  private def listIterator = identifier ~ "in" ~ expression ^^ { case name ~ _ ~ list => (name, list) }
+  
   // 47 
   private def ifExpression = "if" ~> expression ~ "then" ~ expression ~ "else" ~ expression ^^ {
     case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
   }
   
   // 48 - TODO: should be multiple lists - but how to separate them?
-  private def quantifiedExpression = ("some" | "every") ~ identifier ~ "in" ~ expression ~ "satisfies" ~ expression ^^ {
-  	case "some" ~ name ~ _ ~ list ~ _ ~ condition => Some(name, list, condition)
-  	case "every" ~ name ~ _ ~ list ~ _ ~ condition => Every(name, list, condition)
+  private def quantifiedExpression = ("some" | "every") ~ listIterator ~ "satisfies" ~ expression ^^ {
+  	case "some" ~ Tuple2(name, list) ~ _ ~ condition => SomeItem(name, list, condition)
+  	case "every" ~ Tuple2(name, list) ~ _ ~ condition => EveryItem(name, list, condition)
   }
   
   // 49

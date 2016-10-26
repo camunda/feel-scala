@@ -52,8 +52,9 @@ class FeelInterpreter {
     case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
     // list
     case ListEntries(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
-    case Some(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
-    case Every(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
+    case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
+    case EveryItem(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
+    case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
@@ -262,6 +263,21 @@ class FeelInterpreter {
   private def withList(x: Val, f: ValList => Val): Val = x match {
     case x: ValList => f(x)
     case _ => ValError(s"expect List but found '$x'")
+  }
+      
+  private def withLists(lists: List[(String, Val)], f: List[(String, ValList)] => Val)(implicit context: Context): Val = {
+    lists
+      .map { case (name, it) => name -> withList(it, list => list)  }
+      .find( _._2.isInstanceOf[ValError]) match {
+        case Some(Tuple2(_, e: Val)) => e
+        case None => f( lists.asInstanceOf[List[(String, ValList)]] )
+      }
+  }
+  
+  private def flattenAndZipLists(lists: List[(String, ValList)]): List[Map[String, Val]] = lists match {
+    case Nil => List()
+    case (name, list) :: Nil => list.items map( v => Map(name -> v ) ) // flatten
+    case (name, list) :: tail => for { v <- list.items; values <- flattenAndZipLists(tail) } yield values + (name -> v) // zip
   }
   
 }

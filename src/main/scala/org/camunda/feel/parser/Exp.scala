@@ -81,6 +81,8 @@ case class ContextEntries(entries: Map[String, Exp]) extends Exp
 
 case class ListEntries(items: List[Exp]) extends Exp
 
-case class Some(name: String, list: Exp, condition: Exp) extends Exp
+case class SomeItem(name: String, list: Exp, condition: Exp) extends Exp
 
-case class Every(name: String, list: Exp, condition: Exp) extends Exp
+case class EveryItem(name: String, list: Exp, condition: Exp) extends Exp
+
+case class For(iterators: List[(String, Exp)], exp: Exp) extends Exp
