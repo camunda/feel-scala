@@ -4,7 +4,7 @@ A parser and interpreter for FEEL (friendly enough expression language) written 
 FEEL is a part of the [DMN Spec](http://www.omg.org/spec/DMN/) and is designed to write expressions and conditions in a simple way what can easily understand by business professionals and developers.
 S-FEEL is a subset of FEEL that can be used for simple expressions and conditions. Mostly, it should used for decision tables.
 
-## Supported Language Features
+## Currently Supported Language Features
 * data types: 
   * number
   * string
@@ -12,6 +12,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * date
   * time
   * duration
+  * list
 * simple unary tests: 
   * compare operators ('<', '<=', '>', '>=', equal)
   * interval
@@ -22,6 +23,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * if-then-else
   * disjunction and conjunction
   * comparison (compare operators, 'between x and y', 'x in y') 
+  * list expressions ('some', 'every', 'for', filter)
   * function definition (no external)
   * function invocation (positional + named parameters)
   * instance of (for build-in types)
@@ -29,7 +31,14 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 
 ## Current Limitations
 * the input of the simple unary test should be given as context entry 'cellInput'
-* limited support for types of input and variables
+
+## Next Steps
+* support all language expressions (context, path expression, external function definition)
+* support built-in functions
+* extend support for date, time and duration
+* support script compilation
+* improve Java interoperability
+* improve Camunda DMN engine integration
 
 ## How to use 
 The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
