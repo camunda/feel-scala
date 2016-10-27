@@ -55,6 +55,7 @@ class FeelInterpreter {
     case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case EveryItem(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )
+    case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(context + ("item" -> item)) ))
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
@@ -278,6 +279,14 @@ class FeelInterpreter {
     case Nil => List()
     case (name, list) :: Nil => list.items map( v => Map(name -> v ) ) // flatten
     case (name, list) :: tail => for { v <- list.items; values <- flattenAndZipLists(tail) } yield values + (name -> v) // zip
+  }
+ 
+  private def filterList(list: List[Val], filter: Val => Val): Val = list match {
+    case Nil => ValList(List())
+    case x :: xs => withBoolean(filter(x), _ match {
+      case false => filterList(xs, filter)
+      case true => withList(filterList(xs, filter), l => ValList(x :: l.items) )
+    })
   }
   
 }

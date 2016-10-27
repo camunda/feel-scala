@@ -101,31 +101,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
         ValList(List(ValNumber(2))) )))
   }
   
-  it should "be a some-expression" in {
-  	
-  	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
-  	eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
-  }
-  
-  it should "be an every-expression" in {
-  	
-  	eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
-  	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
-  }
-  
-  it should "be a for-expression" in {
-    
-    eval("for x in [1,2] return x * 2") should be(ValList(List(
-        ValNumber(2), 
-        ValNumber(4) )))
-    
-    eval("for x in [1,2], y in [3,4] return x * y") should be(ValList(List(
-        ValNumber(3), 
-        ValNumber(4),
-        ValNumber(6),
-        ValNumber(8) )))
-  }
-  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))
@@ -284,6 +259,39 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("f(x:1)", variables) should be(ValError("expected parameter 'y' but not found"))
     eval("f(y:1)", variables) should be(ValError("expected parameter 'x' but not found"))
     eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
+  }
+  
+  "A list" should "be checked with 'some'" in {
+  	
+  	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
+  	eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
+  }
+  
+  it should "be checked with 'every'" in {
+  	
+  	eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
+  	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
+  }
+  
+  it should "be a processed in a for-expression" in {
+    
+    eval("for x in [1,2] return x * 2") should be(ValList(List(
+        ValNumber(2), 
+        ValNumber(4) )))
+    
+    eval("for x in [1,2], y in [3,4] return x * y") should be(ValList(List(
+        ValNumber(3), 
+        ValNumber(4),
+        ValNumber(6),
+        ValNumber(8) )))
+  }
+  
+  it should "be filtered" in {
+    
+    eval("[1,2,3,4][item > 2]") should be(ValList(List(
+        ValNumber(3), ValNumber(4))))
+    
+    // TODO filter list of context
   }
   
   

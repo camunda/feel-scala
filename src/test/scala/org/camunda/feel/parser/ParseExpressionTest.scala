@@ -367,6 +367,13 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         Addition(Ref("x"), Ref("y")) ))
   }
   
+  it should "parse a 'filter' expression" in {
+    
+    parse("[1,2][item < 1]") should be(Filter(
+        ListEntries(List( ConstNumber(1), ConstNumber(2) )),
+        LessThan(Ref("item"), ConstNumber(1)) ))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

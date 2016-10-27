@@ -45,6 +45,7 @@ object FeelParser extends JavaTokenParsers {
     | conjunction
     | arithmeticExpression 
     // | pathExpression
+    | filter
     | functionInvocation
     | literal 
     | name
@@ -231,6 +232,9 @@ object FeelParser extends JavaTokenParsers {
     case x ~ ">" ~ y => GreaterThan(x, y)
     case x ~ ">=" ~ y => GreaterOrEqual(x, y)
   }
+  
+  // 52
+  private def filter = (atom | list) ~ "[" ~ expression ~ "]" ^^ { case list ~ _ ~ filter ~ _ => Filter(list, filter) } 
   
   // 53
   private def instanceOf = atom ~ "instance" ~ "of" ~ typeName ^^ { case x ~ _ ~ _ ~ typeName => InstanceOf(x, typeName) }
