@@ -31,6 +31,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 
 ## Current Limitations
 * the input of the simple unary test should be given as context entry 'cellInput'
+* the interpreter returns a failure when the type of the expression doesn't match (regarding the spec it should just return `null`)
 
 ## Next Steps
 * support all language expressions (context, path expression, external function definition)
@@ -39,6 +40,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 * support script compilation
 * improve Java interoperability
 * improve Camunda DMN engine integration
+* improve parsing and failure messages
 
 ## How to use 
 The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
