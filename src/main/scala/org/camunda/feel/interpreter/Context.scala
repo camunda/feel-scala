@@ -17,6 +17,7 @@ case class Context(variables: Map[String, Any] = Map()) {
   }
 
   private def toVal(x: Any): Val = x match {
+    case null => ValNull
     case x: Int => ValNumber(x)
     case x: Double => ValNumber(x)
     case x: Boolean => ValBoolean(x)
@@ -24,7 +25,8 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Date => ValDate(x)
     case x: Time => ValTime(x)
     case x: Duration => ValDuration(x)
-    case null => ValNull
+    case x: List[_] => ValList( x map toVal )
+    case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toMap )
     // extended types
     case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
     // unsupported values

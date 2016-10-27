@@ -265,12 +265,18 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   	
   	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
   	eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
+  	
+  	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
+  	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2))) should be(ValBoolean(false))
   }
   
   it should "be checked with 'every'" in {
   	
   	eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
   	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
+  	
+  	eval("every x in xs satisfies x >= 1", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
+  	eval("every x in xs satisfies x >= 1", Map("xs" -> List(0,1,2,3))) should be(ValBoolean(false))
   }
   
   it should "be a processed in a for-expression" in {
@@ -284,11 +290,18 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
         ValNumber(4),
         ValNumber(6),
         ValNumber(8) )))
+    
+    eval("for x in xs return x * 2", Map("xs" -> List(1,2))) should be(ValList(List(
+        ValNumber(2), 
+        ValNumber(4) )))
   }
   
   it should "be filtered" in {
     
     eval("[1,2,3,4][item > 2]") should be(ValList(List(
+        ValNumber(3), ValNumber(4))))
+    
+    eval("xs [item > 2]", Map("xs" -> List(1,2,3,4))) should be(ValList(List(
         ValNumber(3), ValNumber(4))))
     
     // TODO filter list of context

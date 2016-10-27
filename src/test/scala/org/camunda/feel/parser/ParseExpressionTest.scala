@@ -278,23 +278,23 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   
   it should "parse a context" in {
     
-    parse("{}") should be(ContextEntries(Map()))
+    parse("{}") should be(ConstContext(Map()))
     
-    parse("{ a : 1 }") should be(ContextEntries(Map( 
+    parse("{ a : 1 }") should be(ConstContext(Map( 
         "a" -> ConstNumber(1) )))
     
-    parse("{ a:1, b:true }") should be(ContextEntries(Map(
+    parse("{ a:1, b:true }") should be(ConstContext(Map(
         "a" -> ConstNumber(1),
         "b" -> ConstBool(true) )))
   }
   
   it should "parse a list" in {
     
-    parse("[]") should be(ListEntries(List()))
+    parse("[]") should be(ConstList(List()))
     
-    parse("[1]") should be(ListEntries( List(ConstNumber(1)) ))
+    parse("[1]") should be(ConstList( List(ConstNumber(1)) ))
    
-    parse("[1, 2]") should be(ListEntries(List(
+    parse("[1, 2]") should be(ConstList(List(
         ConstNumber(1), 
         ConstNumber(2) )))
   }
@@ -342,7 +342,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   	
   	parse("some x in [1,2] satisfies x < 3") should be(SomeItem(
   			"x", 
-  			ListEntries(List(ConstNumber(1), ConstNumber(2))),
+  			ConstList(List(ConstNumber(1), ConstNumber(2))),
   			LessThan(Ref("x"), ConstNumber(3)) ))
   }
   
@@ -350,27 +350,27 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   	
   	parse("every x in [1,2] satisfies x < 3") should be(EveryItem(
   			"x", 
-  			ListEntries(List(ConstNumber(1), ConstNumber(2))),
+  			ConstList(List(ConstNumber(1), ConstNumber(2))),
   			LessThan(Ref("x"), ConstNumber(3)) ))
   }
   
   it should "parse a 'for' expression" in {
     
     parse("for x in [1,2] return x") should be(For(
-        List("x" -> ListEntries(List( ConstNumber(1), ConstNumber(2) ))),
+        List("x" -> ConstList(List( ConstNumber(1), ConstNumber(2) ))),
         Ref("x") ))
     
      parse("for x in [1,2], y in [3,4] return x + y") should be(For(
         List(
-            "x" -> ListEntries(List( ConstNumber(1), ConstNumber(2) )),
-            "y" -> ListEntries(List( ConstNumber(3), ConstNumber(4) ))),
+            "x" -> ConstList(List( ConstNumber(1), ConstNumber(2) )),
+            "y" -> ConstList(List( ConstNumber(3), ConstNumber(4) ))),
         Addition(Ref("x"), Ref("y")) ))
   }
   
   it should "parse a 'filter' expression" in {
     
     parse("[1,2][item < 1]") should be(Filter(
-        ListEntries(List( ConstNumber(1), ConstNumber(2) )),
+        ConstList(List( ConstNumber(1), ConstNumber(2) )),
         LessThan(Ref("item"), ConstNumber(1)) ))
   }
   

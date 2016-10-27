@@ -17,6 +17,8 @@ class FeelInterpreter {
     case ConstTime(t) => ValTime(t)
     case ConstDuration(d) => ValDuration(d)
     case ConstNull => ValNull
+    case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
+    case ConstContext(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
     // simple unary tests
     case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -49,9 +51,7 @@ class FeelInterpreter {
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
     // context
     case Ref(name) => context(name)
-    case ContextEntries(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
     // list
-    case ListEntries(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case EveryItem(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )

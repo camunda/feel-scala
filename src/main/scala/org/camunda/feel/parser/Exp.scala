@@ -19,6 +19,10 @@ case class ConstTime(value: Time) extends Exp
 
 case class ConstDuration(value: Duration) extends Exp
 
+case class ConstList(items: List[Exp]) extends Exp
+
+case class ConstContext(entries: Map[String, Exp]) extends Exp
+
 case object ConstNull extends Exp
 
 case class InputLessThan(x: Exp) extends Exp
@@ -76,10 +80,6 @@ case class Conjunction(x: Exp, y: Exp) extends Exp
 case class In(x: Exp, test: Exp) extends Exp
 
 case class InstanceOf(x: Exp, typeName: String) extends Exp
-
-case class ContextEntries(entries: Map[String, Exp]) extends Exp
-
-case class ListEntries(items: List[Exp]) extends Exp
 
 case class SomeItem(name: String, list: Exp, condition: Exp) extends Exp
 

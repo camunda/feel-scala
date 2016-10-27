@@ -246,7 +246,7 @@ object FeelParser extends JavaTokenParsers {
   private def boxedExpression = list | functionDefinition | context
   
   // 56
-  private def list = "[" ~> repsep(expression, ",") <~ "]" ^^ ( entries => ListEntries(entries) )
+  private def list = "[" ~> repsep(expression, ",") <~ "]" ^^ ( entries => ConstList(entries) )
   
   // 57
   private def functionDefinition = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) }
@@ -255,7 +255,7 @@ object FeelParser extends JavaTokenParsers {
   private def formalParameter = parameterName
   
   // 59
-  private def context = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ { case entries => ContextEntries(entries.toMap) }
+  private def context = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ { case entries => ConstContext(entries.toMap) }
   
   // 60 
   private def contextEntry = key ~ ":" ~ expression ^^ { case key ~ _ ~ value => (key -> value) }
