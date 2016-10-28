@@ -258,6 +258,9 @@ class FeelInterpreter {
     case ValTime(_) => f("time")
     case ValDuration(_) => f("duration")
     case ValNull => f("null")
+    case ValList(_) => f("list")
+    case ValContext(_) => f("context")
+    case ValFunction(_, _) => f("function")
     case _ => ValError(s"unexpected type '${x.getClass.getName}'")
   }
   

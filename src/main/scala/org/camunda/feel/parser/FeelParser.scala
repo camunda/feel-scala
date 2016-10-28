@@ -3,6 +3,7 @@ package org.camunda.feel.parser
 import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
+import com.sun.org.apache.bcel.internal.generic.IFEQ
 
 /**
  * @author Philipp Ossler
@@ -29,7 +30,11 @@ object FeelParser extends JavaTokenParsers {
     | "or" | "and" | "between"
     | "instance" | "of" )
       
-  private def atom = literal | name | "(" ~> textualExpression <~ ")"
+  // safe recursive expressions  
+  private def atom =  ( boxedExpression | functionDefinition | functionInvocation
+    | forExpression | ifExpression | quantifiedExpression
+    | literal | name | simplePositivUnaryTest 
+    | "(" ~> textualExpression <~ ")" )
     
   // 1
   private def expression: Parser[Exp] = textualExpression | boxedExpression
@@ -191,7 +196,7 @@ object FeelParser extends JavaTokenParsers {
   private def positionalParameters = repsep(expression, ",") ^^ (params => PositionalFunctionParameters(params) )
   
   // 45
-  private def pathExpression = expression ~ "." ~ identifier  ^^ { case exp ~ _ ~ name => PathExpression(exp, name) }
+  private def pathExpression = atom ~ "." ~ identifier  ^^ { case exp ~ _ ~ name => PathExpression(exp, name) }
   
   // 46
   private def forExpression = "for" ~> rep1sep(listIterator, ",") ~ "return" ~ expression ^^ {
