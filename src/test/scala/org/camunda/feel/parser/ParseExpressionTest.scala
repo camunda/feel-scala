@@ -278,14 +278,14 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   
   it should "parse a context" in {
     
-    parse("{}") should be(ConstContext(Map()))
+    parse("{}") should be(ConstContext(List()))
     
-    parse("{ a : 1 }") should be(ConstContext(Map( 
-        "a" -> ConstNumber(1) )))
+    parse("{ a : 1 }") should be(ConstContext(List( 
+        ("a" -> ConstNumber(1)) )))
     
-    parse("{ a:1, b:true }") should be(ConstContext(Map(
-        "a" -> ConstNumber(1),
-        "b" -> ConstBool(true) )))
+    parse("{ a:1, b:true }") should be(ConstContext(List(
+        ("a" -> ConstNumber(1)),
+        ("b" -> ConstBool(true)) )))
   }
   
   it should "parse a list" in {

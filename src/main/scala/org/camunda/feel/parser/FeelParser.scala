@@ -288,7 +288,7 @@ object FeelParser extends JavaTokenParsers {
   private def formalParameter = parameterName
   
   // 59
-  private def context = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ { case entries => ConstContext(entries.toMap) }
+  private def context = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ { case entries => ConstContext(entries) }
   
   // 60 
   private def contextEntry = key ~ ":" ~ expression ^^ { case key ~ _ ~ value => (key -> value) }

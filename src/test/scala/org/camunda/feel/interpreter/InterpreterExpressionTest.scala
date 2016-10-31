@@ -75,15 +75,15 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   it should "be a context" in {
     
-    eval("{ a : 1 }") should be(ValContext(Map( "a" -> ValNumber(1) )))
+    eval("{ a : 1 }") should be(ValContext(List( "a" -> ValNumber(1) )))
     
-    eval("""{ a:1, b:"foo" }""") should be(ValContext(Map( 
+    eval("""{ a:1, b:"foo" }""") should be(ValContext(List( 
         "a" -> ValNumber(1),
         "b" -> ValString("foo") )))
     
     // nested
-    eval("{ a : { b : 1 } }") should be(ValContext(Map(
-        "a" -> ValContext(Map(
+    eval("{ a : { b : 1 } }") should be(ValContext(List(
+        "a" -> ValContext(List(
             "b" -> ValNumber(1) )))))
   }
   
@@ -314,7 +314,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
   
   it should "be accessed in a nested context" in {
     
-    eval("{ a: { b:1 } }.a") should be(ValContext(Map(
+    eval("{ a: { b:1 } }.a") should be(ValContext(List(
         "b" -> ValNumber(1)) )) 
     
     eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))  
@@ -326,17 +326,19 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
         ValNumber(1), ValNumber(3) )))  
   }
   
-  it should "be accessed in previous context" in {
+  it should "be accessed in same context" in {
     
+    eval("{ a:1, b:(a+1), c:(b+1)}.c") should be(ValNumber(3))
+
     eval("{ a: { b: 1 }, c: (1 + a.b) }.c") should be(ValNumber(2))
   }
   
   it should "be filtered in a list" in {
     
     eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]") should be(ValList(List(
-        ValContext(Map(
+        ValContext(List(
             "a" -> ValNumber(3),
-            "b" -> ValNumber(4) )) )))  
+            "b" -> ValNumber(4) )) )))
   }
   
   private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {

@@ -21,7 +21,7 @@ case class ConstDuration(value: Duration) extends Exp
 
 case class ConstList(items: List[Exp]) extends Exp
 
-case class ConstContext(entries: Map[String, Exp]) extends Exp
+case class ConstContext(entries: List[(String, Exp)]) extends Exp
 
 case object ConstNull extends Exp
 

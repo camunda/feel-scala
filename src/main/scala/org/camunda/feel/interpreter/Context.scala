@@ -26,7 +26,7 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: Time => ValTime(x)
     case x: Duration => ValDuration(x)
     case x: List[_] => ValList( x map toVal )
-    case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toMap )
+    case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
     // extended types
     case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
     // unsupported values

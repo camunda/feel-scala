@@ -18,7 +18,7 @@ class FeelInterpreter {
     case ConstDuration(d) => ValDuration(d)
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
-    case ConstContext(entries) => ValContext(entries.map( entry => entry._1 -> withVal(eval(entry._2), x => x) ))
+    case ConstContext((k,v) :: entries) => ValContext( entries.foldLeft( evalContextEntry(k,v) ){ (ctx, entry) => ctx ++ evalContextEntry(entry._1, entry._2)(context ++ ctx.toMap) } )
     // simple unary tests
     case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -294,17 +294,21 @@ class FeelInterpreter {
   }
   
   private def filterContext(x: Val)(implicit context: Context): Context = x match {
-    case ValContext(ctx) => context ++ ctx + ("item" -> ctx)
+    case ValContext(ctx) => context ++ ctx.toMap + ("item" -> x)
     case v => context + ("item" -> v)
   }
   
   private def path(v: Val, key: String): Val = v match {
-    case ValContext(ctx) => ctx.get(key) match {
+    case ValContext(ctx) => ctx.toMap.get(key) match {
       case Some(entry) =>  entry
       case None => ValError(s"context contains no entry with key '$key'")
     }
     case ValList(list) => ValList( list map (item => path(item, key)) )
     case e => ValError(s"expected Context or List of Contextes but found '$e'")
   }
+  
+  private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): List[(String, Val)] = 
+    List( key -> withVal(eval(exp), value => value))  
+  
     
 }
