@@ -51,11 +51,12 @@ class FeelInterpreter {
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
     // context
     case Ref(name) => context(name)
+    case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
     // list
     case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case EveryItem(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
     case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )
-    case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(context + ("item" -> item)) ))
+    case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
@@ -292,4 +293,18 @@ class FeelInterpreter {
     })
   }
   
+  private def filterContext(x: Val)(implicit context: Context): Context = x match {
+    case ValContext(ctx) => context ++ ctx + ("item" -> ctx)
+    case v => context + ("item" -> v)
+  }
+  
+  private def path(v: Val, key: String): Val = v match {
+    case ValContext(ctx) => ctx.get(key) match {
+      case Some(entry) =>  entry
+      case None => ValError(s"context contains no entry with key '$key'")
+    }
+    case ValList(list) => ValList( list map (item => path(item, key)) )
+    case e => ValError(s"expected Context or List of Contextes but found '$e'")
+  }
+    
 }

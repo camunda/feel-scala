@@ -43,7 +43,7 @@ case class Not(x: Exp) extends Exp
 
 case class Ref(name: String) extends Exp
 
-case class PathExpression(path: Exp, name: String) extends Exp
+case class PathExpression(path: Exp, key: String) extends Exp
 
 case class Addition(x: Exp, y: Exp) extends Exp
 

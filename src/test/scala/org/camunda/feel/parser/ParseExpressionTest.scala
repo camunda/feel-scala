@@ -374,6 +374,16 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         LessThan(Ref("item"), ConstNumber(1)) ))
   }
   
+  it should "parse a path expression" in {
+    
+    parse("a.b") should be(PathExpression(Ref("a"), "b"))
+    
+    parse("a.b.c") should be(PathExpression(
+        PathExpression(
+            Ref("a"), "b"
+            ), "c"))
+  }
+  
   private def parse(expression: String): Exp = {
     val result = FeelParser.parseExpression(expression)
     result.get

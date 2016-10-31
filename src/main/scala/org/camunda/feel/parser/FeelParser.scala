@@ -49,7 +49,7 @@ object FeelParser extends JavaTokenParsers {
     | disjunction
     | conjunction
     | arithmeticExpression 
-    // | pathExpression
+    | pathExpression
     | filter
     | functionInvocation
     | literal 
@@ -222,8 +222,9 @@ object FeelParser extends JavaTokenParsers {
   // 44
   private def positionalParameters = repsep(expression, ",") ^^ (params => PositionalFunctionParameters(params) )
   
-  // 45
-  private def pathExpression = atom ~ "." ~ identifier  ^^ { case exp ~ _ ~ name => PathExpression(exp, name) }
+  // 45 - enables recursive path expressions
+  private def pathExpression = atom ~ "." ~ rep1sep(identifier, ".") ^^ { 
+    case exp ~ _ ~ (key :: keys) => keys.foldLeft(PathExpression(exp, key)) { (path,k) => PathExpression(path, k) }}
   
   // 46
   private def forExpression = "for" ~> rep1sep(listIterator, ",") ~ "return" ~ expression ^^ {
