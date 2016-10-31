@@ -147,11 +147,32 @@ object FeelParser extends JavaTokenParsers {
   // 26
   private def arithmeticNegation = "-" ~> expression ^^ { case x => ArithmeticNegation(x) }
 
-  // 27
+  // 27 - TODO use FEEL name definition
   private def name = identifier ^^ (s => Ref(s))
 
   private def identifier = not(reservedWord) ~> ident
-
+  
+  // 27 - without additional name symbols
+  private def feelName: Parser[String] = nameStart ~ repsep( namePart, "") ^^ { case s ~ ps => s + ps.mkString }
+  
+  // 28
+  private def nameStart: Parser[String] = nameStartChar ~ repsep(namePartChar, "") ^^ { case s ~ ps => s + ps.mkString }
+  
+  // 29
+  private def namePart: Parser[String] = rep1sep(namePartChar, "") ^^ (_.mkString)
+  
+  // 30 - without whitespaces
+  // - no unicode chars? "[\\uC0-\\uD6]".r | "[\\uD8-\\uF6]".r | "[\\uF8-\\u2FF]".r | "[\\u370-\\u37D]".r | "[\\u37F-\u1FFF]".r 
+  private def nameStartChar: Parser[String] = ( "?" | "[A-Z]".r |"[a-z]".r 
+    | "[\u200C-\u200D]".r | "[\u2070-\u218F]".r | "[\u2C00-\u2FEF]".r | "[\u3001-\uD7FF]".r | "[\uF900-\uFDCF]".r | "[\uFDF0-\uFFFD]".r | "[\u10000-\uEFFFF]".r        
+  ) ^^ (s => s)
+  
+  // 31
+  private def namePartChar: Parser[String] = (nameStartChar | "[\u0300-\u036F]".r | "[\u203F-\u2040]".r)| digit ^^ (d => d.toString)
+  
+  // 32
+  private def additionalNameSymbols: Parser[String] = "." | "/" | "-" | "’" | "+" | "*" 
+  
   // 33
   private def literal: Parser[Exp] = ( simpleLiteral
       | "null" ^^ (_ => ConstNull) )
@@ -159,15 +180,21 @@ object FeelParser extends JavaTokenParsers {
   // 34
   private def simpleLiteral = numericLiteral | booleanLiteral | dateTimeLiternal | stringLiteraL
   
-  // 34
+  // 35
   // naming clash with JavaTokenParser
   private def stringLiteraL: Parser[Exp] = "\"" ~> ("""[a-zA-Z_]\w*""".r) <~ "\"" ^^ { case s => ConstString(s) }
 
-  // 35
+  // 36
   private def booleanLiteral: Parser[Exp] = ("true" | "false") ^^ (b => ConstBool(b.toBoolean))
 
-  // 36
-  private def numericLiteral = """(\d+(\.\d+)?|\d*\.\d+)""".r ^^ (n => ConstNumber(n))
+  // 37
+  private def numericLiteral: Parser[ConstNumber] = """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ (x => ConstNumber(x))
+    
+  // 38
+  private def digit: Parser[Number] = "[0-9]".r ^^ ( d => d)
+  
+  // 39
+  private def digits: Parser[Number] = rep1sep(digit, "") ^^ ( _.mkString )
   
   // 39
   private def dateTimeLiternal: Parser[Exp] = (
