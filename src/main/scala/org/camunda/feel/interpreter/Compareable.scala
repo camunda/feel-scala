@@ -40,6 +40,8 @@ object Compareable {
   implicit def dateToCompareable(x: Date): Compareable[Date] = CompareableDate(x)
 
   implicit def timeToCompareable(x: Time): Compareable[Time] = CompareableTime(x)
+  
+  implicit def dateTimeToCompareable(x: DateTime): Compareable[DateTime] = CompareableDateTime(x)
 
   implicit def durationToCompareable(x: Duration): Compareable[Duration] = CompareableDuration(x)
 }
@@ -77,6 +79,17 @@ case class CompareableTime(value: Time) extends Compareable[Time] {
   def >(x: Time) = value isAfter x
 
   def >=(x: Time) = value == x || (value isAfter x)
+}
+
+case class CompareableDateTime(value: DateTime) extends Compareable[DateTime] {
+
+  def <(x: DateTime) = value isBefore x
+
+  def <=(x: DateTime) = value == x || (value isBefore x)
+
+  def >(x: DateTime) = value isAfter x
+
+  def >=(x: DateTime) = value == x || (value isAfter x)
 }
 
 case class CompareableDuration(value: Duration) extends Compareable[Duration] {

@@ -43,6 +43,11 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse("""time("10:31:10")""") should be(ConstTime("10:31:10"))
   }
   
+  it should "parse a date-time" in {
+    
+    parse("""date and time("2015-09-18T10:31:10")""") should be(ConstDateTime("2015-09-18T10:31:10"))
+  }
+  
   it should "parse a duration" in {
     
     parse("""duration("P1D")""") should be(ConstDuration("P1D"))

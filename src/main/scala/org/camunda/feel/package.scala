@@ -8,6 +8,7 @@ import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.Period
 import org.joda.time.convert.DurationConverter
 import javax.xml.datatype.DatatypeFactory
+import org.joda.time.LocalDateTime
 
 /**
  * @author Philipp Ossler
@@ -20,6 +21,8 @@ package object feel {
   
   type Time = org.joda.time.LocalTime
   
+  type DateTime = org.joda.time.LocalDateTime
+  
   type Duration = javax.xml.datatype.Duration
  
   implicit def stringToNumber(number: String): Number = BigDecimal(number)
@@ -27,6 +30,8 @@ package object feel {
   implicit def stringToDate(date: String): Date = LocalDate.parse(date)
   
   implicit def stringToTime(time: String): Time = LocalTime.parse(time)
+  
+  implicit def stringToDateTime(dateTime: String): DateTime = LocalDateTime.parse(dateTime)
   
   implicit def stringToDuration(duration: String): Duration = DatatypeFactory.newInstance().newDuration(duration)
   

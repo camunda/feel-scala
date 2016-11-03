@@ -15,6 +15,7 @@ class FeelInterpreter {
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
     case ConstTime(t) => ValTime(t)
+    case ConstDateTime(dt) => ValDateTime(dt)
     case ConstDuration(d) => ValDuration(d)
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
@@ -71,6 +72,7 @@ class FeelInterpreter {
       case ValString(i) => withString(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValDuration(i) => withDuration(x, x => f(c(i,x)))
       case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
     })
@@ -80,6 +82,7 @@ class FeelInterpreter {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValDuration(i) => withDuration(x, x => f(c(i, x)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
@@ -89,6 +92,7 @@ class FeelInterpreter {
       case ValNumber(i) => withNumbers(x, y, (x, y) => f(c(i, x, y)))
       case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
       case ValTime(i) => withTimes(x, y, (x,y) => f(c(i, x, y)))
+      case ValDateTime(i) => withDateTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValDuration(i) => withDurations(x, y, (x,y) => f(c(i, x, y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
@@ -137,6 +141,18 @@ class FeelInterpreter {
   private def withTime(x: Val, f: Time => Val): Val = x match {
     case ValTime(x) => f(x)
     case _ => ValError(s"expect Time but found '$x'")
+  }
+  
+  private def withDateTimes(x: Val, y: Val, f: (DateTime, DateTime) => Val): Val =
+    withDateTime(x, x => {
+      withDateTime(y, y => {
+        f(x, y)
+      })
+    })
+  
+  private def withDateTime(x: Val, f: DateTime => Val): Val = x match {
+    case ValDateTime(x) => f(x)
+    case _ => ValError(s"expect Date Time but found '$x'")
   }
   
   private def withDurations(x: Val, y: Val, f: (Duration, Duration) => Val): Val =
@@ -206,6 +222,7 @@ class FeelInterpreter {
       case ValString(x) => withString(y, y => f(c(x, y)))
       case ValDate(x) => withDate(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValDuration(x) => withDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
     }
@@ -215,6 +232,7 @@ class FeelInterpreter {
       case ValNumber(x) => withNumber(y, y => f(c(x, y)))
       case ValDate(x) => withDate(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValDuration(x) => withDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
     }
@@ -257,6 +275,7 @@ class FeelInterpreter {
     case ValString(_) => f("string")
     case ValDate(_) => f("date")
     case ValTime(_) => f("time")
+    case ValDateTime(_) => f("date time")
     case ValDuration(_) => f("duration")
     case ValNull => f("null")
     case ValList(_) => f("list")
@@ -310,5 +329,4 @@ class FeelInterpreter {
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): List[(String, Val)] = 
     List( key -> withVal(eval(exp), value => value))  
   
-    
 }

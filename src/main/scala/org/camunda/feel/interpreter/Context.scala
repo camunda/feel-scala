@@ -2,6 +2,7 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.joda.time.LocalDate
+import org.camunda.feel.interpreter.ValDateTime
 
 /**
  * @author Philipp Ossler
@@ -24,6 +25,7 @@ case class Context(variables: Map[String, Any] = Map()) {
     case x: String => ValString(x)
     case x: Date => ValDate(x)
     case x: Time => ValTime(x)
+    case x: DateTime => ValDateTime(x)
     case x: Duration => ValDuration(x)
     case x: List[_] => ValList( x map toVal )
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
