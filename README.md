@@ -11,8 +11,10 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * boolean
   * date
   * time
+  * date time
   * duration
   * list
+  * context
 * simple unary tests: 
   * compare operators ('<', '<=', '>', '>=', equal)
   * interval
@@ -24,6 +26,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * disjunction and conjunction
   * comparison (compare operators, 'between x and y', 'x in y') 
   * list expressions ('some', 'every', 'for', filter)
+  * path expression (access context, transform list of contextes)
   * function definition (no external)
   * function invocation (positional + named parameters)
   * instance of (for build-in types)
@@ -32,11 +35,12 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 ## Current Limitations
 * the input of the simple unary test should be given as context entry 'cellInput'
 * the interpreter returns a failure when the type of the expression doesn't match (regarding the spec it should just return `null`)
+* the string literal must be simple and doesn't match the exact definition regarding the specs 
 
 ## Next Steps
-* support all language expressions (context, path expression, external function definition)
+* support all language expressions (external function definition)
 * support built-in functions
-* extend support for date, time and duration
+* extend support for date, time, date-time and duration
 * support script compilation
 * improve Java interoperability
 * improve Camunda DMN engine integration
