@@ -27,7 +27,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * comparison (compare operators, 'between x and y', 'x in y') 
   * list expressions ('some', 'every', 'for', filter)
   * path expression (access context, transform list of contextes)
-  * function definition (no external)
+  * function definition (FEEl + Java)
   * function invocation (positional + named parameters)
   * instance of (for build-in types)
   * simple positive unary test (as expression)
@@ -38,7 +38,6 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 * the string literal must be simple and doesn't match the exact definition regarding the specs 
 
 ## Next Steps
-* support all language expressions (external function definition)
 * support built-in functions
 * extend support for date, time, date-time and duration
 * support script compilation
