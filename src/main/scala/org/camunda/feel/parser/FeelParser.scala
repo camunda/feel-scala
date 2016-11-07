@@ -290,11 +290,23 @@ object FeelParser extends JavaTokenParsers {
   // 56
   private def list: Parser[ConstList] = "[" ~> repsep(expression, ",") <~ "]" ^^ ( entries => ConstList(entries) )
   
-  // 57 - TODO external function definitions
-  private def functionDefinition: Parser[FunctionDefinition] = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ expression ^^ { 
+  // 57
+  private def functionDefinition: Parser[FunctionDefinition] = "function" ~ "(" ~ repsep(formalParameter, ",") ~ ")" ~ (externalJavaFunction | expression) ^^ { 
   	case _ ~ _ ~ params ~ _ ~ body => FunctionDefinition(params, body) 
   }
   
+  private def externalJavaFunction: Parser[JavaFunctionInvocation] = "external" ~ "{" ~ "java" ~ ":" ~ "{" ~> functionClassName ~ "," ~ functionMethodSignature <~ "}" ~ "}" ^^ {  
+  	case className ~ _ ~ Tuple2(methodName, arguments) => JavaFunctionInvocation(className, methodName, arguments)
+  }
+  
+  private def functionClassName = "class" ~ ":" ~> stringLiteralWithQuotes 
+  
+  private def functionMethodSignature = "method_signature" ~ ":" ~ "\"" ~> identifier ~ "(" ~ repsep(functionMethodArgument, ",") <~ ")" ~ "\"" ^^ { 
+  	case methodName ~ _ ~ arguments => (methodName, arguments) 
+  }
+  
+  private def functionMethodArgument = rep1sep(identifier, ".") ^^ (_.mkString("."))
+    
   // 58
   private def formalParameter = parameterName
   

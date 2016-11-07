@@ -60,7 +60,10 @@ class FeelInterpreter {
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
     // functions
     case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
-    case FunctionDefinition(params, body) => ValFunction(params, paramValues => eval(body)(context ++ (params zip paramValues).toMap))
+    case FunctionDefinition(params, body) => ValFunction(params, paramValues => body match {
+      case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues)
+      case _ => eval(body)(context ++ (params zip paramValues).toMap)
+    })
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
@@ -329,4 +332,27 @@ class FeelInterpreter {
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): List[(String, Val)] = 
     List( key -> withVal(eval(exp), value => value))  
   
+  private def invokeJavaFunction(className: String, methodName: String, arguments: List[String], paramValues: List[Val]): Val = {
+    try {
+    	
+	    val clazz = JavaClassMapper.loadClass(className)
+	   
+	    val argTypes = arguments map JavaClassMapper.loadClass 
+	    
+	    val method = clazz.getDeclaredMethod(methodName, argTypes: _*)
+	    
+	    val argValues = paramValues map ValueMapper.unpackVal
+	    val argJavaObjects = argValues zip argTypes map { case (obj,clazz) => JavaClassMapper.asJavaObject(obj, clazz) }
+	    
+	    val result = method.invoke(null, argJavaObjects: _*)
+	    
+	    ValueMapper.toVal(result)
+	    
+    } catch {
+    	case e: ClassNotFoundException => ValError(s"fail to load class '$className'")
+    	case e: NoSuchMethodException => ValError(s"fail to get method with name '$methodName' and arguments '$arguments' from class '$className'")
+    	case _: Throwable => ValError(s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
+    }
+  }
+    
 }

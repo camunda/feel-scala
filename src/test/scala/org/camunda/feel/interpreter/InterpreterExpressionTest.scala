@@ -261,6 +261,35 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
   }
   
+  "An external java function definition" should "be invoked with one double parameter" in {
+
+    val variables = Map("cos" -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """))
+
+    eval("cos(0)", variables) should be(ValNumber(1))
+    eval("cos(1)", variables) should be(ValNumber( Math.cos(1) ))
+  }
+  
+  it should "be invoked with two int parameters" in {
+
+    val variables = Map("max" -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """))
+
+    eval("max(1,2)", variables) should be(ValNumber(2))
+  }
+  
+  it should "be invoked with one long parameters" in {
+
+    val variables = Map("abs" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """))
+
+    eval("abs(-1)", variables) should be(ValNumber(1))
+  }
+  
+  it should "be invoked with one float parameters" in {
+
+    val variables = Map("round" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """))
+
+    eval("round(3.2)", variables) should be(ValNumber(3))
+  }
+  
   "A list" should "be checked with 'some'" in {
   	
   	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
