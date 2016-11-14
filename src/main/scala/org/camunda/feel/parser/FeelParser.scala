@@ -24,7 +24,6 @@ object FeelParser extends JavaTokenParsers {
   private val reservedWord = ( "null"
     | "not" 
     | "-" | "+" | "*" | "/" | "**" 
-    | "date" | "time" | "date and time" | "duration"
     | "function"
     | "if" | "then" | "else"
     | "or" | "and" | "between"
@@ -35,9 +34,9 @@ object FeelParser extends JavaTokenParsers {
   private def stringLiteralWithQuotes = stringLiteral ^^ ( _.replaceAll("\"", "") ) 
     
   // safe recursive expressions  
-  private def atom =  ( boxedExpression | functionDefinition | functionInvocation
+  private def atom =  ( boxedExpression | functionDefinition 
     | forExpression | ifExpression | quantifiedExpression
-    | literal | name | simplePositivUnaryTest 
+    | literal | functionInvocation | name | simplePositivUnaryTest 
     | "(" ~> textualExpression <~ ")" )
     
   // 1
@@ -55,8 +54,8 @@ object FeelParser extends JavaTokenParsers {
     | arithmeticExpression 
     | pathExpression
     | filter
-    | functionInvocation
     | literal 
+    | functionInvocation
     | name
     | simplePositivUnaryTest
     | "(" ~> textualExpression <~ ")" )

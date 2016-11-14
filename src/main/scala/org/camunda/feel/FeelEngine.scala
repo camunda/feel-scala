@@ -34,5 +34,5 @@ class FeelEngine {
         ParseFailure(s"failed to parse expression '$expression':\n$e")
       }
     }
-
+  
 }

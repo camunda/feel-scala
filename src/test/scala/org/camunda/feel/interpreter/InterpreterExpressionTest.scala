@@ -4,7 +4,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel._
 import org.camunda.feel.parser.FeelParser
-import org.camunda.feel.parser.ConstNumber
 
 
 /**
@@ -374,11 +373,5 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
   }
-
-  private def date(date: String): Date = date
-
-  private def time(time: String): Time = time
-  
-  private def duration(duration: String): Duration = duration
   
 }

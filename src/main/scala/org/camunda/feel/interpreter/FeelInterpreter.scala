@@ -8,7 +8,7 @@ import org.camunda.feel.parser._
  */
 class FeelInterpreter {
 
-  def eval(expression: Exp)(implicit context: Context = Context()): Val = expression match {
+  def eval(expression: Exp)(implicit context: Context = Context.empty): Val = expression match {
     // literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
@@ -59,7 +59,7 @@ class FeelInterpreter {
     case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
     // functions
-    case FunctionInvocation(name, params) => withFunction(context(name), f => withParameters(params, f, params => f.invoke(params) ))
+    case FunctionInvocation(name, params) => withFunction(context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => body match {
       case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues)
       case _ => eval(body)(context ++ (params zip paramValues).toMap)
