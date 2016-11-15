@@ -19,7 +19,8 @@ object BuiltinFunctions {
 		"time" -> timeFunction,
 		"time" -> timeFunction3,
 		"time" -> timeFunction4,
-		"string" -> stringFunction
+		"string" -> stringFunction,
+		"duration" -> durationFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -68,6 +69,11 @@ object BuiltinFunctions {
 		case List(ValTime(from)) => ValString(from.toString("HH:mm:ss"))
 		case List(ValDateTime(from)) => ValString(from.toString("yyyy-MM-dd'T'HH:mm:ss"))
 		case List(ValDuration(from)) => ValString(from.toString)
+		case e => error(e)
+	})
+	
+	def durationFunction = ValFunction(List("from"), _ match {
+		case List(ValString(from)) => ValDuration(from)
 		case e => error(e)
 	})
 	

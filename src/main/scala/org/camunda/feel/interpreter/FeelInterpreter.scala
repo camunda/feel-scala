@@ -245,7 +245,7 @@ class FeelInterpreter {
     case _ => ValError(s"expect Function but found '$x'")
   }
   
-  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val): Val = params match {
+  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val)(implicit context: Context): Val = params match {
     case PositionalFunctionParameters(params) => {
       
       if (params.size != function.params.size) {

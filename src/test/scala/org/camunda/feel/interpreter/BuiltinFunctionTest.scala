@@ -14,7 +14,7 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 
 	"A date() function" should "convert String" in {
 
-		eval(""" date("2012-12-25") """) should be(ValDate("2012-12-25"))
+		eval(""" date(x) """, Map("x" -> "2012-12-25")) should be(ValDate("2012-12-25"))
 	}
 	
 	it should "convert Date-Time" in {
@@ -29,7 +29,7 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	
 	"A date-and-time() function" should "convert String" in {
 
-		eval(""" date_and_time("2012-12-24T23:59:00") """) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date_and_time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(ValDateTime("2012-12-24T23:59:00"))
 	}
 
 	it should "convert (Date,Time)" in {
@@ -44,7 +44,7 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	
 	"A time() function" should "convert String" in {
 
-		eval(""" time("23:59:00") """) should be(ValTime("23:59:00"))
+		eval(""" time(x) """, Map("x" -> "23:59:00")) should be(ValTime("23:59:00"))
 	}
 	
 	it should "convert Date-Time" in {
@@ -62,7 +62,7 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 		eval(""" time(14, 30, 0, duration("PT1H")) """) should be(ValTime("15:30:00"))
 	}
 	
-	"A strimg() function" should "convert Number" in {
+	"A string() function" should "convert Number" in {
 
 		eval(""" string(1.1) """) should be(ValString("1.1"))
 	}
@@ -92,6 +92,10 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 		eval(""" string(duration("PT1H")) """) should be(ValString("PT1H"))
 	}
 	
+	"A duration() function" should "convert String" in {
+
+		eval(""" duration(x) """, Map("x" -> "P2DT20H14M")) should be(ValDuration("P2DT20H14M"))
+	}
 	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
