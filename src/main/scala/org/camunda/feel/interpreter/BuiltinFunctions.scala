@@ -44,7 +44,8 @@ object BuiltinFunctions {
 	  "string_length" -> stringLengthFunction,
 	  "upper_case" -> upperCaseFunction,
 	  "lower_case" -> lowerCaseFunction,
-	  "substring_before" -> substringBeforeFunction
+	  "substring_before" -> substringBeforeFunction,
+	  "substring_after" -> substringAfterFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -180,6 +181,18 @@ object BuiltinFunctions {
 	    val index = string.indexOf(m)
 	    if (index > 0) {
 	      ValString(string.substring(0, index))
+	    } else {
+	      ValString("")
+	    }
+	  }
+	  case e => error(e)
+	})
+	
+	def substringAfterFunction = ValFunction(List("string", "match"), _ match {
+	  case List(ValString(string), ValString(m)) => {
+	    val index = string.indexOf(m)
+	    if (index > 0) {
+	      ValString(string.substring(index + m.length))
 	    } else {
 	      ValString("")
 	    }
