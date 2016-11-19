@@ -138,6 +138,21 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" not(false) ") should be(ValBoolean(true))
 	}
 	
+	"A substring() function" should "return string with _ characters" in {
+	  
+	  eval(""" substring("foobar",3) """) should be(ValString("obar"))
+	}
+	
+	it should "return string with _ characters starting at _" in {
+	  
+	  eval(""" substring("foobar",3,3) """) should be(ValString("oba"))
+	}
+	
+	it should "return string with _ characters starting at negative _" in {
+	  
+	  eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

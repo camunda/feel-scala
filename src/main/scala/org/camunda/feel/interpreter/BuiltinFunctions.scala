@@ -15,7 +15,8 @@ object BuiltinFunctions {
 	
   val builtinFunctions: List[(String, ValFunction)] = 
     conversionFunctions ++
-    booleanFunctions
+    booleanFunctions ++
+    stringFunctions
 	
 	def conversionFunctions = List(
 	  "date" -> dateFunction,
@@ -35,6 +36,11 @@ object BuiltinFunctions {
 	
 	def booleanFunctions = List(
 	  "not" -> notFunction    
+	)
+	
+	def stringFunctions = List(
+	  "substring" -> substringFunction,
+	  "substring" -> substringFunction3
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -134,6 +140,22 @@ object BuiltinFunctions {
 	  case e => error(e)
 	})
 	
+	def substringFunction = ValFunction(List("string", "start"), _ match {
+	  case List(ValString(string), ValNumber(start)) => ValString(string.substring(stringIndex(string, start.intValue())))
+	  case e => error(e)
+	})
+	
+	def substringFunction3 = ValFunction(List("string", "start", "length"), _ match {
+	  case List(ValString(string), ValNumber(start), ValNumber(length)) => ValString(string.substring(stringIndex(string, start.intValue()), stringIndex(string, start.intValue()) + length.intValue))
+	  case e => error(e)
+	})
+	
+	private def stringIndex(string: String, index: Int) = if (index > 0) {
+	  index - 1
+	} else {
+	  string.length + index
+	}
+  
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
 	
 }
