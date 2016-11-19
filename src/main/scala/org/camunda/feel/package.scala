@@ -35,4 +35,6 @@ package object feel {
   
   implicit def stringToDuration(duration: String): Duration = DatatypeFactory.newInstance().newDuration(duration)
   
+  def yearMonthDuration(year: Int, month: Int): Duration = DatatypeFactory.newInstance().newDurationYearMonth(true, year, month);
+  
 }

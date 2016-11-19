@@ -97,6 +97,11 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 		eval(""" duration(x) """, Map("x" -> "P2DT20H14M")) should be(ValDuration("P2DT20H14M"))
 	}
 	
+	"A years and months duration(from,to) function" should "convert (Date,Date)" in {
+
+		eval(""" years_and_months_duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValDuration("P1Y8M"))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

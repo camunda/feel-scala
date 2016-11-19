@@ -3,6 +3,7 @@ package org.camunda.feel.interpreter
 import org.camunda.feel._
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
+import javax.xml.datatype.Duration
 
 /**
  * @author Philipp
@@ -11,16 +12,19 @@ object BuiltinFunctions {
   
 	// conversion functions
 	
+  // note that some function names has whitespaces in spec 
+  // this will be changed in further version
 	val builtinFunctions: List[(String, ValFunction)] = List (
 		"date" -> dateFunction,
 		"date" -> dateFunction3,
-		"date_and_time" -> dateTime,	// note that function has whitespaces in spec which will be changed in further version
+		"date_and_time" -> dateTime,	
 		"date_and_time" -> dateTime2,
 		"time" -> timeFunction,
 		"time" -> timeFunction3,
 		"time" -> timeFunction4,
 		"string" -> stringFunction,
-		"duration" -> durationFunction
+		"duration" -> durationFunction,
+		"years_and_months_duration" -> durationFunction2
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -74,6 +78,22 @@ object BuiltinFunctions {
 	
 	def durationFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => ValDuration(from)
+		case e => error(e)
+	})
+	
+	def durationFunction2 = ValFunction(List("from", "to"), _ match {
+	  case List(ValDate(from), ValDate(to)) => {
+		  val year = to.getYear - from.getYear
+		  val month = to.getMonthOfYear - from.getMonthOfYear
+		 
+		  val duration = if (month >= 0) {
+		    yearMonthDuration(year, month)
+		  } else {
+		    yearMonthDuration(year - 1, month + 12)
+		  }
+		  
+		  ValDuration(duration)
+		}
 		case e => error(e)
 	})
 	
