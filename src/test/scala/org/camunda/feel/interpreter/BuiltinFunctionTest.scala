@@ -168,6 +168,13 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" lower_case("aBc4") """) should be(ValString("abc4"))
 	}
 	
+	"A substring_before() function" should "return substring before _ in _" in {
+	  
+	  eval(""" substring_before("foobar", "bar") """) should be(ValString("foo"))
+	  
+	  eval(""" substring_before("foobar", "xyz") """) should be(ValString(""))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
