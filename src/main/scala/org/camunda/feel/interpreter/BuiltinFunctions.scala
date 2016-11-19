@@ -45,7 +45,9 @@ object BuiltinFunctions {
 	  "upper_case" -> upperCaseFunction,
 	  "lower_case" -> lowerCaseFunction,
 	  "substring_before" -> substringBeforeFunction,
-	  "substring_after" -> substringAfterFunction
+	  "substring_after" -> substringAfterFunction,
+	  // TODO replace 
+	  "contains" -> containsFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -197,6 +199,11 @@ object BuiltinFunctions {
 	      ValString("")
 	    }
 	  }
+	  case e => error(e)
+	})
+	
+	def containsFunction = ValFunction(List("string", "match"), _ match {
+	  case List(ValString(string), ValString(m)) => ValBoolean(string.contains(m))
 	  case e => error(e)
 	})
 	

@@ -182,6 +182,13 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" substring_after("", "a") """) should be(ValString(""))
 	}
 	
+	"A contains() function" should "return if contains the match" in {
+	  
+	  eval(""" contains("foobar", "ob") """) should be(ValBoolean(true))
+	  
+	  eval(""" contains("foobar", "of") """) should be(ValBoolean(false))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
