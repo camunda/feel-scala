@@ -10,12 +10,15 @@ import javax.xml.datatype.Duration
  */
 object BuiltinFunctions {
   
-	// conversion functions
-	
   // note that some function names has whitespaces in spec 
   // this will be changed in further version
-	val builtinFunctions: List[(String, ValFunction)] = List (
-		"date" -> dateFunction,
+	
+  val builtinFunctions: List[(String, ValFunction)] = 
+    conversionFunctions ++
+    booleanFunctions
+	
+	def conversionFunctions = List(
+	  "date" -> dateFunction,
 		"date" -> dateFunction3,
 		"date_and_time" -> dateTime,	
 		"date_and_time" -> dateTime2,
@@ -27,7 +30,11 @@ object BuiltinFunctions {
 		"number" -> numberFunction3,
 		"string" -> stringFunction,
 		"duration" -> durationFunction,
-		"years_and_months_duration" -> durationFunction2
+		"years_and_months_duration" -> durationFunction2  
+	)
+	
+	def booleanFunctions = List(
+	  "not" -> notFunction    
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -120,6 +127,11 @@ object BuiltinFunctions {
 		  ValDuration(duration)
 		}
 		case e => error(e)
+	})
+	
+	def notFunction = ValFunction(List("negand"), _ match {
+	  case List(ValBoolean(negand)) => ValBoolean(!negand)
+	  case e => error(e)
 	})
 	
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")

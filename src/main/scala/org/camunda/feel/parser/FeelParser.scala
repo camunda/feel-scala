@@ -22,7 +22,6 @@ object FeelParser extends JavaTokenParsers {
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
 
   private val reservedWord = ( "null"
-    | "not" 
     | "-" | "+" | "*" | "/" | "**" 
     | "function"
     | "if" | "then" | "else"

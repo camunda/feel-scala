@@ -132,6 +132,12 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 		eval(""" years_and_months_duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValDuration("P1Y8M"))
 	}
 	
+	"A not() function" should "negate Boolean" in {
+	  
+	  eval(" not(true) ") should be(ValBoolean(false))
+	  eval(" not(false) ") should be(ValBoolean(true))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
