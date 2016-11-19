@@ -62,6 +62,36 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 		eval(""" time(14, 30, 0, duration("PT1H")) """) should be(ValTime("15:30:00"))
 	}
 	
+	"A number() function" should "convert String" in {
+
+		eval(""" number("1500.5") """) should be(ValNumber(1500.5))
+	}
+	
+	it should "convert String with Grouping Separator ' '" in {
+
+		eval(""" number("1 500.5", " ") """) should be(ValNumber(1500.5))
+	}
+	
+	it should "convert String with Grouping Separator ','" in {
+
+		eval(""" number("1,500", ",") """) should be(ValNumber(1500))
+	}
+	
+	it should "convert String with Grouping Separator '.'" in {
+
+		eval(""" number("1.500", ".") """) should be(ValNumber(1500))
+	}
+	
+	it should "convert String with Grouping ' ' and Decimal Separator '.'" in {
+
+		eval(""" number("1 500.5", " ", ".") """) should be(ValNumber(1500.5))
+	}
+	
+	it should "convert String with Grouping ' ' and Decimal Separator ','" in {
+
+		eval(""" number("1 500,5", " ", ",") """) should be(ValNumber(1500.5))
+	}
+	
 	"A string() function" should "convert Number" in {
 
 		eval(""" string(1.1) """) should be(ValString("1.1"))

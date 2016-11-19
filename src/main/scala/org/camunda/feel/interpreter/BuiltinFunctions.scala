@@ -22,6 +22,9 @@ object BuiltinFunctions {
 		"time" -> timeFunction,
 		"time" -> timeFunction3,
 		"time" -> timeFunction4,
+		"number" -> numberFunction,
+		"number" -> numberFunction2,
+		"number" -> numberFunction3,
 		"string" -> stringFunction,
 		"duration" -> durationFunction,
 		"years_and_months_duration" -> durationFunction2
@@ -64,6 +67,28 @@ object BuiltinFunctions {
 		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDuration(offset)) => ValTime(new LocalTime(hour.intValue() + offset.getHours, minute.intValue() + offset.getMinutes, second.intValue() + offset.getSeconds))
 		case e => error(e)
 	})
+	
+	def numberFunction = ValFunction(List("from"), _ match {
+	  case List(ValString(from)) => ValNumber(from)
+	  case e => error(e)
+	})
+	
+	def numberFunction2 = ValFunction(List("from", "grouping"), _ match {
+	  case List(ValString(from), ValString(grouping)) if(isValidGroupingSeparator(grouping)) => ValNumber(from.replace(grouping, ""))
+	  case List(ValString(from), ValString(grouping)) => ValError(s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
+	  case e => error(e)
+	})
+	
+	def numberFunction3 = ValFunction(List("from", "grouping", "decimal"), _ match {
+	  case List(ValString(from), ValString(grouping), ValString(decimal)) if(isValidGroupingSeparator(grouping) && isValidDecimalSeparator(decimal) && grouping != decimal) 
+	    => ValNumber(from.replace(grouping, "").replace(decimal, "."))
+	  case List(ValString(from), ValString(grouping), ValString(decimal)) => ValError(s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'")
+	  case e => error(e)
+	})
+	
+	private def isValidGroupingSeparator(separator: String) = separator == " " || separator == "," || separator == "."
+	
+	private def isValidDecimalSeparator(separator: String) = separator == "," || separator == "."
 	
 	def stringFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => ValString(from)
