@@ -158,6 +158,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" string_length("foo") """) should be(ValNumber(3))
 	}
 	
+	"A upper_case() function" should "return uppercased String" in {
+	  
+	  eval(""" upper_case("aBc4") """) should be(ValString("ABC4"))
+	}
+	
+	"A lower_case() function" should "return lowercased String" in {
+	  
+	  eval(""" lower_case("aBc4") """) should be(ValString("abc4"))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

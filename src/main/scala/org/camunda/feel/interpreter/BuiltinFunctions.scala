@@ -41,7 +41,9 @@ object BuiltinFunctions {
 	def stringFunctions = List(
 	  "substring" -> substringFunction,
 	  "substring" -> substringFunction3,
-	  "string_length" -> stringLengthFunction
+	  "string_length" -> stringLengthFunction,
+	  "upper_case" -> upperCaseFunction,
+	  "lower_case" -> lowerCaseFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -162,6 +164,16 @@ object BuiltinFunctions {
 	  case e => error(e)
 	})
   
+	def upperCaseFunction = ValFunction(List("string"), _ match {
+	  case List(ValString(string)) => ValString(string.toUpperCase)
+	  case e => error(e)
+	})
+	
+	def lowerCaseFunction = ValFunction(List("string"), _ match {
+	  case List(ValString(string)) => ValString(string.toLowerCase)
+	  case e => error(e)
+	})
+	
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
 	
 }
