@@ -153,6 +153,11 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
 	}
 	
+	"A string_length() function" should "return the length of a String" in {
+	  
+	  eval(""" string_length("foo") """) should be(ValNumber(3))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

@@ -40,7 +40,8 @@ object BuiltinFunctions {
 	
 	def stringFunctions = List(
 	  "substring" -> substringFunction,
-	  "substring" -> substringFunction3
+	  "substring" -> substringFunction3,
+	  "string_length" -> stringLengthFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -155,6 +156,11 @@ object BuiltinFunctions {
 	} else {
 	  string.length + index
 	}
+  
+  def stringLengthFunction = ValFunction(List("string"), _ match {
+	  case List(ValString(string)) => ValNumber(string.length)
+	  case e => error(e)
+	})
   
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
 	
