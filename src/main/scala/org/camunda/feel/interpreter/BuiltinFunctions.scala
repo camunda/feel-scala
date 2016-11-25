@@ -49,8 +49,8 @@ object BuiltinFunctions {
 	  "replace" -> replaceFunction,
 	  "contains" -> containsFunction,
 	  "starts_with" -> startsWithFunction,
-	  "ends_with" -> endsWithFunction
-	  // TODO matches
+	  "ends_with" -> endsWithFunction,
+	  "matches" -> matchesFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -222,6 +222,11 @@ object BuiltinFunctions {
 	
 	def endsWithFunction = ValFunction(List("string", "match"), _ match {
 	  case List(ValString(string), ValString(m)) => ValBoolean(string.endsWith(m))
+	  case e => error(e)
+	})
+	
+	def matchesFunction = ValFunction(List("input", "pattern"), _ match {
+	  case List(ValString(input), ValString(pattern)) => ValBoolean(input.matches(pattern))
 	  case e => error(e)
 	})
 	

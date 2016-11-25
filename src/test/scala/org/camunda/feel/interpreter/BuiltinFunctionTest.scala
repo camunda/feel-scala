@@ -208,6 +208,13 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" ends_with("foobar", "o") """) should be(ValBoolean(false))
 	}
 	
+	"A matches() function" should "return if String matches a pattern" in {
+	  
+	  eval(""" matches("foobar", "^fo*bar") """) should be(ValBoolean(true))
+	  
+	  eval(""" matches("foobar", "^fo*b") """) should be(ValBoolean(false))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
