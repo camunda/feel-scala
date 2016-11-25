@@ -23,7 +23,7 @@ class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine {
   }
 
   def eval(script: String, context: ScriptContext): Object = {
-    engine.evalSimpleUnaryTest(script, getEngineContext(context)) match {
+    engine.evalExpression(script, getEngineContext(context)) match {
       case EvalValue(value) => value.asInstanceOf[AnyRef]
       case EvalFailure(cause) => throw new ScriptException(cause)
       case ParseFailure(cause) => throw new ScriptException(cause)

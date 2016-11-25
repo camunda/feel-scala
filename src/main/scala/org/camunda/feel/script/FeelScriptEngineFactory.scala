@@ -25,7 +25,7 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
 
   def getMimeTypes(): java.util.List[String] = List()
 
-  def getNames(): java.util.List[String] = List(ENGINE_NAME, LANGUAGE_NAME)
+  def getNames(): java.util.List[String] = List(ENGINE_NAME, LANGUAGE_NAME, "scala-feel")
 
   def getOutputStatement(x$1: String): String = throw new UnsupportedOperationException()
 
