@@ -16,7 +16,8 @@ object BuiltinFunctions {
   val builtinFunctions: List[(String, ValFunction)] = 
     conversionFunctions ++
     booleanFunctions ++
-    stringFunctions
+    stringFunctions ++
+    listFunctions
 	
 	def conversionFunctions = List(
 	  "date" -> dateFunction,
@@ -51,6 +52,10 @@ object BuiltinFunctions {
 	  "starts_with" -> startsWithFunction,
 	  "ends_with" -> endsWithFunction,
 	  "matches" -> matchesFunction
+	)
+	
+	def listFunctions = List(
+	  "list_contains" -> listContainsFunction    
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -227,6 +232,11 @@ object BuiltinFunctions {
 	
 	def matchesFunction = ValFunction(List("input", "pattern"), _ match {
 	  case List(ValString(input), ValString(pattern)) => ValBoolean(input.matches(pattern))
+	  case e => error(e)
+	})
+	
+	def listContainsFunction = ValFunction(List("list", "element"), _ match {
+	  case List(ValList(list), element) => ValBoolean(list.contains(element))
 	  case e => error(e)
 	})
 	
