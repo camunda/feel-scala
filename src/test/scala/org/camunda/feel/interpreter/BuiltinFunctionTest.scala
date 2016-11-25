@@ -182,11 +182,30 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" substring_after("", "a") """) should be(ValString(""))
 	}
 	
+	"A replace() function" should "replace a String" in {
+	  
+	  eval(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should be(ValString("[1=ab][2=]cd"))
+	}
+	
 	"A contains() function" should "return if contains the match" in {
 	  
 	  eval(""" contains("foobar", "ob") """) should be(ValBoolean(true))
 	  
 	  eval(""" contains("foobar", "of") """) should be(ValBoolean(false))
+	}
+	
+	"A starts_with() function" should "return if starts with match" in {
+	  
+	  eval(""" starts_with("foobar", "fo") """) should be(ValBoolean(true))
+	  
+	  eval(""" starts_with("foobar", "ba") """) should be(ValBoolean(false))
+	}
+	
+	"A ends_with() function" should "return if ends with match" in {
+	  
+	  eval(""" ends_with("foobar", "r") """) should be(ValBoolean(true))
+	  
+	  eval(""" ends_with("foobar", "o") """) should be(ValBoolean(false))
 	}
 	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
