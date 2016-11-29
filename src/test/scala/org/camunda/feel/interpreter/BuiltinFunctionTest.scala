@@ -274,6 +274,30 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" mean([1,2,3]) ") should be(ValNumber(2))
 	}
 	
+	"A and() function" should "return true if empty list" in {
+	  
+	  eval(" and([]) ") should be(ValBoolean(true))
+	}
+	
+	it should "return true if all items are true" in {
+	  
+	  eval(" and([true,true]) ") should be(ValBoolean(true))
+	  
+	  eval(" and([true,false]) ") should be(ValBoolean(false))
+	}
+	
+	"A or() function" should "return false if empty list" in {
+	  
+	  eval(" or([]) ") should be(ValBoolean(false))
+	}
+	
+	it should "return false if all items are false" in {
+	  
+	  eval(" or([false,true]) ") should be(ValBoolean(true))
+	  
+	  eval(" or([false,false]) ") should be(ValBoolean(false))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

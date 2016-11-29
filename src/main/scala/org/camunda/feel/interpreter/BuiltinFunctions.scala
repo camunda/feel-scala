@@ -60,7 +60,9 @@ object BuiltinFunctions {
 	  "min" -> minFunction,
 	  "max" -> maxFunction,
 	  "sum" -> sumFunction,
-	  "mean" -> meanFunction
+	  "mean" -> meanFunction,
+	  "and" -> andFunction,
+	  "or" -> orFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -285,6 +287,22 @@ object BuiltinFunctions {
 	  case e => error(e)
 	})
 	
+	def andFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => list match {
+	    case Nil => ValBoolean(true)
+	    case l => withListOfBooleans(list, numbers => ValBoolean( numbers.reduce(_ && _) ))
+	  }
+	  case e => error(e)
+	})
+	
+	def orFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => list match {
+	    case Nil => ValBoolean(false)
+	    case l => withListOfBooleans(list, numbers => ValBoolean( numbers.reduce(_ || _) ))
+	  }
+	  case e => error(e)
+	})
+	
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
       .map( _ match {
@@ -294,6 +312,18 @@ object BuiltinFunctions {
       .find( _.isInstanceOf[ValError]) match {
         case Some(e) => e
         case None => f( list.asInstanceOf[List[ValNumber]].map( _.value ) )
+      }
+  }
+  
+  private def withListOfBooleans(list: List[Val], f: List[Boolean] => Val): Val = {
+    list
+      .map( _ match {
+        case b: ValBoolean => b
+        case x => ValError(s"expected boolean but found '$x'")
+      })
+      .find( _.isInstanceOf[ValError]) match {
+        case Some(e) => e
+        case None => f( list.asInstanceOf[List[ValBoolean]].map( _.value ) )
       }
   }
 	

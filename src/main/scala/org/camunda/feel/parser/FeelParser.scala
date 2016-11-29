@@ -25,7 +25,7 @@ object FeelParser extends JavaTokenParsers {
     | "-" | "+" | "*" | "/" | "**" 
     | "function"
     | "if" | "then" | "else"
-    | "or" | "and" | "between"
+    | "between"
     | "instance" | "of" )
       
   private def identifier = not(reservedWord) ~> ident 
