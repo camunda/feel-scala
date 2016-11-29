@@ -59,7 +59,8 @@ object BuiltinFunctions {
 	  "count" -> countFunction,
 	  "min" -> minFunction,
 	  "max" -> maxFunction,
-	  "sum" -> sumFunction
+	  "sum" -> sumFunction,
+	  "mean" -> meanFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -273,6 +274,14 @@ object BuiltinFunctions {
 	
 	def sumFunction = ValFunction(List("list"), _ match {
 	  case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber( numbers.sum ))
+	  case e => error(e)
+	})
+	
+	def meanFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => list match {
+	    case Nil => ValNull
+	    case l => withListOfNumbers(list, numbers => ValNumber( numbers.sum / numbers.size ))
+	  }
 	  case e => error(e)
 	})
 	

@@ -264,6 +264,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" sum([1,2,3]) ") should be(ValNumber(6))
 	}
 	
+	"A mean() function" should "return null if empty list" in {
+	  
+	  eval(" mean([]) ") should be(ValNull)
+	}
+	
+	it should "return mean of numbers" in {
+	  
+	  eval(" mean([1,2,3]) ") should be(ValNumber(2))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
