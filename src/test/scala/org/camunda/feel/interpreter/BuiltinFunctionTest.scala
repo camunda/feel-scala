@@ -254,6 +254,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" max([1,2,3]) ") should be(ValNumber(3))
 	}
 	
+	"A sum() function" should "return 0 if empty list" in {
+	  
+	  eval(" sum([]) ") should be(ValNumber(0))
+	}
+	
+	it should "return sum of numbers" in {
+	  
+	  eval(" sum([1,2,3]) ") should be(ValNumber(6))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

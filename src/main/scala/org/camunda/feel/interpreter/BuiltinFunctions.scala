@@ -58,7 +58,8 @@ object BuiltinFunctions {
 	  "list_contains" -> listContainsFunction,
 	  "count" -> countFunction,
 	  "min" -> minFunction,
-	  "max" -> maxFunction
+	  "max" -> maxFunction,
+	  "sum" -> sumFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -267,6 +268,11 @@ object BuiltinFunctions {
 	      case e => ValError(s"expected number but found '$e")
 	    }
 	  }
+	  case e => error(e)
+	})
+	
+	def sumFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber( numbers.sum ))
 	  case e => error(e)
 	})
 	
