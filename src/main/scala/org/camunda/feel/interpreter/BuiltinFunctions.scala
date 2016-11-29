@@ -55,7 +55,10 @@ object BuiltinFunctions {
 	)
 	
 	def listFunctions = List(
-	  "list_contains" -> listContainsFunction    
+	  "list_contains" -> listContainsFunction,
+	  "count" -> countFunction,
+	  "min" -> minFunction,
+	  "max" -> maxFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -239,6 +242,45 @@ object BuiltinFunctions {
 	  case List(ValList(list), element) => ValBoolean(list.contains(element))
 	  case e => error(e)
 	})
+	
+	def countFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => ValNumber(list.size)
+	  case e => error(e)
+	})
+	
+	def minFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => list match {
+	    case Nil => ValNull
+	    case x :: xs => x match {
+	      case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.min ))
+	      case e => ValError(s"expected number but found '$e")
+	    }
+	  }
+	  case e => error(e)
+	})
+	
+	def maxFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => list match {
+	    case Nil => ValNull
+	    case x :: xs => x match {
+	      case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.max ))
+	      case e => ValError(s"expected number but found '$e")
+	    }
+	  }
+	  case e => error(e)
+	})
+	
+	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
+    list
+      .map( _ match {
+        case n: ValNumber => n
+        case x => ValError(s"expected number but found '$x'")
+      })
+      .find( _.isInstanceOf[ValError]) match {
+        case Some(e) => e
+        case None => f( list.asInstanceOf[List[ValNumber]].map( _.value ) )
+      }
+  }
 	
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
 	

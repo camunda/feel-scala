@@ -229,6 +229,31 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(""" list_contains(["a","b"], "c") """) should be(ValBoolean(false))
 	}
 	
+	"A count() function" should "return the size of a list" in {
+	  
+	  eval(" count([1,2,3]) ") should be(ValNumber(3))
+	}
+	
+	"A min() function" should "return the null if empty list" in {
+	  
+	  eval(" min([]) ") should be(ValNull)
+	}
+	
+	it should "return the minimum item of numbers" in {
+	  
+	  eval(" min([1,2,3]) ") should be(ValNumber(1))
+	}
+	
+	"A max() function" should "return the null if empty list" in {
+	  
+	  eval(" max([]) ") should be(ValNull)
+	}
+	
+	it should "return the maximum item of numbers" in {
+	  
+	  eval(" max([1,2,3]) ") should be(ValNumber(3))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
