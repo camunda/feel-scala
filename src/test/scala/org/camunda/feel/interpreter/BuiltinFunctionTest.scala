@@ -313,6 +313,11 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" append([1,2], 3) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 	
+	"A concatenate() function" should "return list with item appended" in {
+	  
+	  eval(" concatenate([1,2],[3]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

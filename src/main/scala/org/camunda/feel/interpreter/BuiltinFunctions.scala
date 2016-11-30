@@ -65,7 +65,8 @@ object BuiltinFunctions {
 	  "or" -> orFunction,
 	  "sublist" -> sublistFunction,
 	  "sublist" -> sublistFunction3,
-	  "append" -> appendFunction
+	  "append" -> appendFunction,
+	  "concatenate" -> concatenateFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -324,6 +325,11 @@ object BuiltinFunctions {
   
   def appendFunction = ValFunction(List("list", "item"), _ match {
 	  case List(ValList(list), item: Val) => ValList(list ++ (item :: Nil)) 
+	  case e => error(e)
+	})
+	
+	def concatenateFunction = ValFunction(List("list", "other"), _ match {
+	  case List(ValList(list), ValList(other)) => ValList(list ++ other) 
 	  case e => error(e)
 	})
 	
