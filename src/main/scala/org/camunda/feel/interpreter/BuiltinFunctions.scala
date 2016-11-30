@@ -64,7 +64,8 @@ object BuiltinFunctions {
 	  "and" -> andFunction,
 	  "or" -> orFunction,
 	  "sublist" -> sublistFunction,
-	  "sublist" -> sublistFunction3
+	  "sublist" -> sublistFunction3,
+	  "append" -> appendFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -320,6 +321,11 @@ object BuiltinFunctions {
 	} else {
 	  list.size + index
 	}
+  
+  def appendFunction = ValFunction(List("list", "item"), _ match {
+	  case List(ValList(list), item: Val) => ValList(list ++ (item :: Nil)) 
+	  case e => error(e)
+	})
 	
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
