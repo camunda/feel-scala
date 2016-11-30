@@ -298,6 +298,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" or([false,false]) ") should be(ValBoolean(false))
 	}
 	
+	"A sublist() function" should "return list starting with _" in {
+	  
+	  eval(" sublist([1,2,3], 2) ") should be(ValList(List(ValNumber(2), ValNumber(3))))
+	}
+	
+	it should "return list starting with _ and length _" in {
+	  
+	  eval(" sublist([1,2,3], 1, 2) ") should be(ValList(List(ValNumber(1), ValNumber(2))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

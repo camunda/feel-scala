@@ -62,7 +62,9 @@ object BuiltinFunctions {
 	  "sum" -> sumFunction,
 	  "mean" -> meanFunction,
 	  "and" -> andFunction,
-	  "or" -> orFunction
+	  "or" -> orFunction,
+	  "sublist" -> sublistFunction,
+	  "sublist" -> sublistFunction3
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -302,6 +304,22 @@ object BuiltinFunctions {
 	  }
 	  case e => error(e)
 	})
+	
+	def sublistFunction = ValFunction(List("list", "start"), _ match {
+	  case List(ValList(list), ValNumber(start)) => ValList(list.slice(listIndex(list, start.intValue), list.length)) 
+	  case e => error(e)
+	})
+	
+	def sublistFunction3 = ValFunction(List("list", "start", "length"), _ match {
+	  case List(ValList(list), ValNumber(start), ValNumber(length)) => ValList(list.slice(listIndex(list, start.intValue), length.intValue)) 
+	  case e => error(e)
+	})
+	
+	private def listIndex(list: List[_], index: Int) = if (index > 0) {
+	  index - 1
+	} else {
+	  list.size + index
+	}
 	
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
