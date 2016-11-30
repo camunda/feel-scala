@@ -67,7 +67,9 @@ object BuiltinFunctions {
 	  "sublist" -> sublistFunction3,
 	  "append" -> appendFunction,
 	  "concatenate" -> concatenateFunction,
-	  "insert_before" -> insertBeforeFunction
+	  "insert_before" -> insertBeforeFunction,
+	  "remove" -> removeFunction,
+	  "reverse" -> reverseFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -336,6 +338,16 @@ object BuiltinFunctions {
 	
 	def insertBeforeFunction = ValFunction(List("list", "position", "newItem"), _ match {
 	  case List(ValList(list), ValNumber(position), newItem: Val) => ValList(list.take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list.drop(listIndex(list, position.intValue))) 
+	  case e => error(e)
+	})
+	
+	def removeFunction = ValFunction(List("list", "position"), _ match {
+	  case List(ValList(list), ValNumber(position)) => ValList(list.take(listIndex(list, position.intValue)) ++ list.drop(listIndex(list, position.intValue + 1))) 
+	  case e => error(e)
+	})
+	
+	def reverseFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => ValList(list.reverse) 
 	  case e => error(e)
 	})
 	

@@ -323,6 +323,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" insert_before([1,3],2,2) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 	
+	"A remove() function" should "return list with item at _ removed" in {
+	  
+	  eval(" remove([1,1,3],2) ") should be(ValList(List(ValNumber(1), ValNumber(3))))
+	}
+	
+	"A reverse() function" should "reverse the list" in {
+	  
+	  eval(" reverse([1,2,3]) ") should be(ValList(List(ValNumber(3), ValNumber(2), ValNumber(1))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
