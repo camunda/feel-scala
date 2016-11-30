@@ -348,6 +348,11 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" union([1,2],[2,3]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 	
+	"A distinct_values() function" should "remove duplicates" in {
+	  
+	  eval(" distinct_values([1,2,3,2,1]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))

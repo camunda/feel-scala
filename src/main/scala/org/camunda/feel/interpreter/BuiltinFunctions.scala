@@ -71,7 +71,8 @@ object BuiltinFunctions {
 	  "remove" -> removeFunction,
 	  "reverse" -> reverseFunction,
 	  "index_of" -> indexOfFunction,
-	  "union" -> unionFunction
+	  "union" -> unionFunction,
+	  "distinct_values" -> distinctValuesFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -370,6 +371,11 @@ object BuiltinFunctions {
   
   def unionFunction = ValFunction(List("list", "other"), _ match {
 	  case List(ValList(list), ValList(other)) => ValList((list ++ other) distinct) 
+	  case e => error(e)
+	})
+	
+	def distinctValuesFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => ValList(list distinct) 
 	  case e => error(e)
 	})
 	
