@@ -69,7 +69,8 @@ object BuiltinFunctions {
 	  "concatenate" -> concatenateFunction,
 	  "insert_before" -> insertBeforeFunction,
 	  "remove" -> removeFunction,
-	  "reverse" -> reverseFunction
+	  "reverse" -> reverseFunction,
+	  "index_of" -> indexOfFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -350,6 +351,21 @@ object BuiltinFunctions {
 	  case List(ValList(list)) => ValList(list.reverse) 
 	  case e => error(e)
 	})
+	
+	def indexOfFunction = ValFunction(List("list", "match"), _ match {
+	  case List(ValList(list), m: Val) => ValList(indexOfList(list, m) map(ValNumber(_))) 
+	  case e => error(e)
+	})
+	
+	private def indexOfList(list: List[Val], item: Val, from: Int = 0): List[Int] = {
+	  val index = list.indexOf(item, from)
+	  
+	  if (index > 0) {
+	    (index + 1) :: indexOfList(list, item, index + 1)  
+	  } else {
+	    Nil  
+	  }
+  }
 	
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list

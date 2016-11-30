@@ -333,6 +333,16 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" reverse([1,2,3]) ") should be(ValList(List(ValNumber(3), ValNumber(2), ValNumber(1))))
 	}
 	
+	"A index_of() function" should "return empty list if no match" in {
+	  
+	  eval(" index_of([1,2,3,2], 4) ") should be(ValList(List()))
+	}
+	
+	it should "return list of positions containing the match" in {
+	  
+	  eval(" index_of([1,2,3,2], 2) ") should be(ValList(List(ValNumber(2), ValNumber(4))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
     val exp = FeelParser.parseExpression(expression)
     interpreter.eval(exp.get)(Context(variables))
