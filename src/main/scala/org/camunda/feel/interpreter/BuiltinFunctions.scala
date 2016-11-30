@@ -66,7 +66,8 @@ object BuiltinFunctions {
 	  "sublist" -> sublistFunction,
 	  "sublist" -> sublistFunction3,
 	  "append" -> appendFunction,
-	  "concatenate" -> concatenateFunction
+	  "concatenate" -> concatenateFunction,
+	  "insert_before" -> insertBeforeFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -330,6 +331,11 @@ object BuiltinFunctions {
 	
 	def concatenateFunction = ValFunction(List("list", "other"), _ match {
 	  case List(ValList(list), ValList(other)) => ValList(list ++ other) 
+	  case e => error(e)
+	})
+	
+	def insertBeforeFunction = ValFunction(List("list", "position", "newItem"), _ match {
+	  case List(ValList(list), ValNumber(position), newItem: Val) => ValList(list.take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list.drop(listIndex(list, position.intValue))) 
 	  case e => error(e)
 	})
 	
