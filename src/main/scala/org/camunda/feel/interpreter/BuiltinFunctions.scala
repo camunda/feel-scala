@@ -70,7 +70,8 @@ object BuiltinFunctions {
 	  "insert_before" -> insertBeforeFunction,
 	  "remove" -> removeFunction,
 	  "reverse" -> reverseFunction,
-	  "index_of" -> indexOfFunction
+	  "index_of" -> indexOfFunction,
+	  "union" -> unionFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -366,6 +367,11 @@ object BuiltinFunctions {
 	    Nil  
 	  }
   }
+  
+  def unionFunction = ValFunction(List("list", "other"), _ match {
+	  case List(ValList(list), ValList(other)) => ValList((list ++ other) distinct) 
+	  case e => error(e)
+	})
 	
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
