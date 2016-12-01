@@ -5,6 +5,7 @@ import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import javax.xml.datatype.Duration
 import scala.annotation.tailrec
+import scala.math.BigDecimal.RoundingMode
 
 /**
  * @author Philipp
@@ -18,7 +19,8 @@ object BuiltinFunctions {
     conversionFunctions ++
     booleanFunctions ++
     stringFunctions ++
-    listFunctions
+    listFunctions ++
+    numericFunctions
 	
 	def conversionFunctions = List(
 	  "date" -> dateFunction,
@@ -75,6 +77,10 @@ object BuiltinFunctions {
 	  "union" -> unionFunction,
 	  "distinct_values" -> distinctValuesFunction,
 	  "flatten" -> flattenFunction
+	)
+	
+	def numericFunctions = List(
+	  "decimal" -> decimalFunction    
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -392,6 +398,11 @@ object BuiltinFunctions {
     case ValList(l) :: xs => flatten(l) ++ flatten(xs)
     case x :: xs => x :: flatten(xs)
   }
+  
+  def decimalFunction = ValFunction(List("n", "scale"), _ match {
+	  case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
+	  case e => error(e)
+	})
   
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
