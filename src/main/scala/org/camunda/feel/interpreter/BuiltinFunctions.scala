@@ -77,7 +77,8 @@ object BuiltinFunctions {
 	  "index_of" -> indexOfFunction,
 	  "union" -> unionFunction,
 	  "distinct_values" -> distinctValuesFunction,
-	  "flatten" -> flattenFunction
+	  "flatten" -> flattenFunction,
+	  "sort" -> sortFunction
 	)
 	
 	def numericFunctions = List(
@@ -401,6 +402,16 @@ object BuiltinFunctions {
     case ValList(l) :: xs => flatten(l) ++ flatten(xs)
     case x :: xs => x :: flatten(xs)
   }
+  
+  def sortFunction = ValFunction(List("list", "precedes"), _ match {
+	  case List(ValList(list), ValFunction(params, f)) if (params.size == 2) => try {
+	    ValList( list.sortWith{ case (x,y) => f(List(x,y)).asInstanceOf[ValBoolean].value })   
+	  } catch {
+	    case e: Throwable => ValError(s"fail to sort list by given precedes function: $e")
+	  }
+	  case List(ValList(list), ValFunction(params, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
+	  case e => error(e)
+	})
   
   def decimalFunction = ValFunction(List("n", "scale"), _ match {
 	  case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))

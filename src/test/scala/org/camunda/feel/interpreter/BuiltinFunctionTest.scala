@@ -358,6 +358,11 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" flatten([[1,2],[[3]], 4]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
 	}
 	
+	"A sort() function" should "sort list of numbers" in {
+	  
+	  eval(" sort(list: [3,1,4,5,2], precedes: function(x,y) x < y) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4), ValNumber(5))))
+	}
+	
 	"A decimal() function" should "return number with a given scale" in {
 	  
 	  eval(" decimal((1/3), 2) ") should be(ValNumber(0.33))
