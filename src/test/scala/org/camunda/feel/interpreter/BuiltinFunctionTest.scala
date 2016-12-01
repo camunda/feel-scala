@@ -358,13 +358,27 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" flatten([[1,2],[[3]], 4]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
 	}
 	
-	"A numeric() function" should "return number with a given scale" in {
+	"A decimal() function" should "return number with a given scale" in {
 	  
 	  eval(" decimal((1/3), 2) ") should be(ValNumber(0.33))
 	  
 	  eval(" decimal(1.5, 0) ") should be(ValNumber(2))
 	  
 	  eval(" decimal(2.5, 0) ") should be(ValNumber(2))
+	}
+	
+	"A floor() function" should "return greatest integer <= _" in {
+	  
+	  eval(" floor(1.5) ") should be(ValNumber(1))
+	  
+	  eval(" floor(-1.5) ") should be(ValNumber(-2))
+	}
+	
+	"A ceiling() function" should "return smallest integer >= _" in {
+	  
+	  eval(" ceiling(1.5) ") should be(ValNumber(2))
+	  
+	  eval(" ceiling(-1.5) ") should be(ValNumber(-1))
 	}
 	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {

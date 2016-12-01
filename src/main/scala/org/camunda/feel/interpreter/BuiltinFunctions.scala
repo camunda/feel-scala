@@ -6,6 +6,7 @@ import org.joda.time.LocalTime
 import javax.xml.datatype.Duration
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
+import java.math.MathContext
 
 /**
  * @author Philipp
@@ -80,7 +81,9 @@ object BuiltinFunctions {
 	)
 	
 	def numericFunctions = List(
-	  "decimal" -> decimalFunction    
+	  "decimal" -> decimalFunction,
+	  "floor" -> floorFunction,
+	  "ceiling" -> ceilingFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -401,6 +404,16 @@ object BuiltinFunctions {
   
   def decimalFunction = ValFunction(List("n", "scale"), _ match {
 	  case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
+	  case e => error(e)
+	})
+	
+	def floorFunction = ValFunction(List("n"), _ match {
+	  case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.FLOOR))
+	  case e => error(e)
+	})
+	
+	def ceilingFunction = ValFunction(List("n"), _ match {
+	  case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
 	  case e => error(e)
 	})
   
