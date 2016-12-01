@@ -353,8 +353,13 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  eval(" distinct_values([1,2,3,2,1]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 	
+	"A flatten() function" should "flatten nested lists" in {
+	  
+	  eval(" flatten([[1,2],[[3]], 4]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
+	}
+	
 	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
-    val exp = FeelParser.parseExpression(expression)
+	  val exp = FeelParser.parseExpression(expression)    
     interpreter.eval(exp.get)(Context(variables))
   }
 

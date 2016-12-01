@@ -4,6 +4,7 @@ import org.camunda.feel._
 import org.joda.time.LocalDate
 import org.joda.time.LocalTime
 import javax.xml.datatype.Duration
+import scala.annotation.tailrec
 
 /**
  * @author Philipp
@@ -72,7 +73,8 @@ object BuiltinFunctions {
 	  "reverse" -> reverseFunction,
 	  "index_of" -> indexOfFunction,
 	  "union" -> unionFunction,
-	  "distinct_values" -> distinctValuesFunction
+	  "distinct_values" -> distinctValuesFunction,
+	  "flatten" -> flattenFunction
 	)
 	
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -359,13 +361,14 @@ object BuiltinFunctions {
 	  case e => error(e)
 	})
 	
-	private def indexOfList(list: List[Val], item: Val, from: Int = 0): List[Int] = {
+	@tailrec
+	private def indexOfList(list: List[Val], item: Val, from: Int = 0, indexList: List[Int] = List()): List[Int] = {
 	  val index = list.indexOf(item, from)
 	  
 	  if (index > 0) {
-	    (index + 1) :: indexOfList(list, item, index + 1)  
+	    indexOfList(list, item, index + 1, indexList ++ List(index + 1))  
 	  } else {
-	    Nil  
+	    indexList  
 	  }
   }
   
@@ -379,6 +382,17 @@ object BuiltinFunctions {
 	  case e => error(e)
 	})
 	
+	def flattenFunction = ValFunction(List("list"), _ match {
+	  case List(ValList(list)) => ValList(flatten(list))
+	  case e => error(e)
+	})
+	
+	private def flatten(list: List[Val]): List[Val] = list match {
+    case Nil => Nil
+    case ValList(l) :: xs => flatten(l) ++ flatten(xs)
+    case x :: xs => x :: flatten(xs)
+  }
+  
 	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
       .map( _ match {

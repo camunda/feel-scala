@@ -12,14 +12,14 @@ import com.sun.org.apache.bcel.internal.generic.IFEQ
  */
 object FeelParser extends JavaTokenParsers {
 
-  // override to ignore comment '// ...' and '/* ... */'
-  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
-
   def parseSimpleExpression(exp: String): ParseResult[Exp] = parseAll(simpleExpression, exp)
   
   def parseExpression(exp: String): ParseResult[Exp] = parseAll(expression, exp)
   
   def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseAll(simpleUnaryTests, expression)
+
+  // override to ignore comment '// ...' and '/* ... */'
+  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
   private val reservedWord = ( "null"
     | "-" | "+" | "*" | "/" | "**" 
@@ -227,7 +227,7 @@ object FeelParser extends JavaTokenParsers {
   private def parameterName = identifier
   
   // 44
-  private def positionalParameters = repsep(expression, ",") ^^ ( PositionalFunctionParameters )
+  private def positionalParameters = repsep(atom, ",") ^^ ( PositionalFunctionParameters )
   
   // 45 - enables recursive path expressions
   private def pathExpression: Parser[PathExpression] = atom ~ "." ~ rep1sep(identifier, ".") ^^ { 
