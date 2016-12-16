@@ -31,6 +31,7 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
   * function invocation (positional + named parameters)
   * instance of (for build-in types)
   * simple positive unary test (as expression)
+* built-in functions  
 
 ## Current Limitations
 * the input of the simple unary test should be given as context entry 'cellInput'
@@ -38,7 +39,6 @@ S-FEEL is a subset of FEEL that can be used for simple expressions and condition
 * the string literal must be simple and doesn't match the exact definition regarding the specs 
 
 ## Next Steps
-* support built-in functions
 * extend support for date, time, date-time and duration
 * support script compilation
 * improve Java interoperability
