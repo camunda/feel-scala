@@ -32,11 +32,13 @@ object FeelParser extends JavaTokenParsers {
   
   private def stringLiteralWithQuotes = stringLiteral ^^ ( _.replaceAll("\"", "") ) 
     
-  // safe recursive expressions  
+  // recursive expression helper 
   private def atom =  ( boxedExpression | functionDefinition 
     | forExpression | ifExpression | quantifiedExpression
     | literal | functionInvocation | name | simplePositivUnaryTest 
     | "(" ~> textualExpression <~ ")" )
+    
+  private def composedAtom = pathExpression | atom
     
   // 1
   private def expression: Parser[Exp] = textualExpression | boxedExpression
@@ -227,7 +229,7 @@ object FeelParser extends JavaTokenParsers {
   private def parameterName = identifier
   
   // 44
-  private def positionalParameters = repsep(atom, ",") ^^ ( PositionalFunctionParameters )
+  private def positionalParameters = repsep(expression, ",") ^^ ( PositionalFunctionParameters )
   
   // 45 - enables recursive path expressions
   private def pathExpression: Parser[PathExpression] = atom ~ "." ~ rep1sep(identifier, ".") ^^ { 
@@ -259,12 +261,12 @@ object FeelParser extends JavaTokenParsers {
   
   // 51
   private def comparison: Parser[Exp] = ( simpleComparison
-      | atom ~ "between" ~ atom ~ "and" ~ expression ^^ { case x ~ _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) }
-      | atom ~ "in" ~ positiveUnaryTest ^^ { case x ~ _ ~ test => In(x, test) }
-      | atom ~ "in" ~ "(" ~ positiveUnaryTests <~ ")" ^^ { case x ~ _ ~ _ ~ tests => In(x, tests) }
+      | composedAtom ~ "between" ~ atom ~ "and" ~ expression ^^ { case x ~ _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) }
+      | composedAtom ~ "in" ~ positiveUnaryTest ^^ { case x ~ _ ~ test => In(x, test) }
+      | composedAtom ~ "in" ~ "(" ~ positiveUnaryTests <~ ")" ^^ { case x ~ _ ~ _ ~ tests => In(x, tests) }
   )
   
-  private def simpleComparison = atom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
+  private def simpleComparison = composedAtom ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~ expression ^^ {
     case x ~ "=" ~ y => Equal(x, y)
     case x ~ "!=" ~ y => Not(Equal(x, y))
     case x ~ "<" ~ y => LessThan(x, y)

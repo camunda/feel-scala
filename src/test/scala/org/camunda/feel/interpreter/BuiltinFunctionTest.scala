@@ -8,10 +8,8 @@ import org.camunda.feel.parser.FeelParser
 /**
  * @author Philipp
  */
-class BuiltinFunctionTest extends FlatSpec with Matchers {
-
-	val interpreter = new FeelInterpreter
-
+class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTest {
+	
 	"A date() function" should "convert String" in {
 
 		eval(""" date(x) """, Map("x" -> "2012-12-25")) should be(ValDate("2012-12-25"))
@@ -385,10 +383,5 @@ class BuiltinFunctionTest extends FlatSpec with Matchers {
 	  
 	  eval(" ceiling(-1.5) ") should be(ValNumber(-1))
 	}
-	
-	private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
-	  val exp = FeelParser.parseExpression(expression)    
-    interpreter.eval(exp.get)(Context(variables))
-  }
 
 }

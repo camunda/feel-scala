@@ -9,9 +9,7 @@ import org.camunda.feel.parser.FeelParser
 /**
  * @author Philipp Ossler
  */
-class InterpreterExpressionTest extends FlatSpec with Matchers {
-  
-  val interpreter = new FeelInterpreter
+class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrationTest {
   
   "An expression" should "be a number" in {
     
@@ -367,11 +365,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers {
         ValContext(List(
             "a" -> ValNumber(3),
             "b" -> ValNumber(4) )) )))
-  }
-  
-  private def eval(expression: String, variables: Map[String, Any] = Map()): Val = {
-    val exp = FeelParser.parseExpression(expression)
-    interpreter.eval(exp.get)(Context(variables))
   }
   
 }
