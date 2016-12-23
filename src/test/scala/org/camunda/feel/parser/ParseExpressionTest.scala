@@ -1,6 +1,7 @@
 package org.camunda.feel.parser
 
 import org.camunda.feel._
+import org.camunda.feel.parser.FeelParser._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -80,8 +81,8 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     
     // numeric addition
     parse("2+3") should be(Addition(ConstNumber(2), ConstNumber(3)))
-    parse("2+3+4") should be(Addition(ConstNumber(2), 
-        Addition( ConstNumber(3), ConstNumber(4) )))
+    parse("2+3+4") should be(Addition(Addition(ConstNumber(2), 
+        ConstNumber(3)), ConstNumber(4) ))
     
     // addition with two durations
     parse("""duration("P1Y")+duration("P6M")""") should be(Addition(ConstDuration("P1Y"), ConstDuration("P6M")))
@@ -389,9 +390,10 @@ class ParseExpressionTest extends FlatSpec with Matchers {
             ), "c"))
   }
   
-  private def parse(expression: String): Exp = {
-    val result = FeelParser.parseExpression(expression)
-    result.get
-  }
+  private def parse(expression: String): Exp = 
+    FeelParser.parseExpression(expression) match {
+      case Success(exp, _) => exp
+      case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")
+    }
   
 }

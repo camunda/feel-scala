@@ -10,24 +10,24 @@ class ScriptEngineFactoryTest extends FlatSpec with Matchers {
   
   val scriptEngineFactory = new FeelScriptEngineFactory
   
-  "The feel script engine factory" should "has engine name 'feel'" in {
+  "The feel script engine factory" should "has engine name 'feel-scala'" in {
     
-    scriptEngineFactory.getEngineName should be ("feel")
+    scriptEngineFactory.getEngineName should be ("feel-scala")
   }  
   
   it should "has language name 'feel'" in {
     
-    scriptEngineFactory.getEngineName should be ("feel")
+    scriptEngineFactory.getLanguageName should be ("feel")
   }
   
-  it should "has language version '1.0'" in {
+  it should "has language version '1.1'" in {
     
-    scriptEngineFactory.getLanguageVersion should be ("1.0")
+    scriptEngineFactory.getLanguageVersion should be ("1.1")
   }
   
   it should "has extension 'feel'" in {
     
-    scriptEngineFactory.getExtensions() should contain ("feel")
+    scriptEngineFactory.getExtensions should contain ("feel")
   }
   
   it should "get a script engine" in {

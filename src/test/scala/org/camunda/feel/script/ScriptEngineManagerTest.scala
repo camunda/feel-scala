@@ -12,9 +12,30 @@ class ScriptEngineManagerTest extends FlatSpec with Matchers {
   
   val scriptEngineManager = new ScriptEngineManager
     
-  "The script engine manager" should "get feel script entgine by name" in {
+  "The script engine manager" should "get feel script engine by name" in {
+    
+    val engine = scriptEngineManager.getEngineByName("feel-scala")
+    
+    engine.getClass should be (classOf[FeelScriptEngine])
+  }
+  
+  it should "get feel script engine by short language name" in {
     
     val engine = scriptEngineManager.getEngineByName("feel")
+    
+    engine.getClass should be (classOf[FeelScriptEngine])
+  }
+  
+  it should "get feel script engine by qualified name" in {
+    
+    val engine = scriptEngineManager.getEngineByName("http://www.omg.org/spec/FEEL/20140401")
+    
+    engine.getClass should be (classOf[FeelScriptEngine])
+  }
+
+  it should "get feel script engine by full name" in {
+    
+    val engine = scriptEngineManager.getEngineByName("Friendly Enough Expression Language")
     
     engine.getClass should be (classOf[FeelScriptEngine])
   }

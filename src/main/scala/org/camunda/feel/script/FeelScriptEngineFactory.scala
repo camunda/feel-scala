@@ -17,7 +17,7 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
 
   def getExtensions(): java.util.List[String] = EXTENSIONS
 
-  def getLanguageName(): String = LANGUAGE_NAME
+  def getLanguageName(): String = LANGUAGE_SHORT_NAME
 
   def getLanguageVersion(): String = LANGUAGE_VERSION
 
@@ -25,7 +25,7 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
 
   def getMimeTypes(): java.util.List[String] = List()
 
-  def getNames(): java.util.List[String] = List(ENGINE_NAME, LANGUAGE_NAME, "scala-feel")
+  def getNames(): java.util.List[String] = List(ENGINE_NAME, LANGUAGE_NAME, LANGUAGE_SHORT_NAME, LANGUAGE_QUALIFIED_NAME)
 
   def getOutputStatement(x$1: String): String = throw new UnsupportedOperationException()
 
@@ -35,6 +35,7 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
     case ScriptEngine.ENGINE_VERSION    => getEngineVersion
     case ScriptEngine.LANGUAGE          => getLanguageName
     case ScriptEngine.LANGUAGE_VERSION  => getLanguageVersion
+    case "THREADING"                    => "STATELESS"
   }
 
   def getProgram(statements: String*): String = throw new UnsupportedOperationException()
@@ -45,13 +46,17 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
 
 object FeelScriptEngineFactory {
   
-  val ENGINE_NAME = "feel"
+  val ENGINE_NAME = "feel-scala"
   
   val ENGINE_VERSION = "1.0.0"
   
   val LANGUAGE_NAME = "Friendly Enough Expression Language"
   
-  val LANGUAGE_VERSION = "1.0"
+  val LANGUAGE_SHORT_NAME = "feel"
+
+  val LANGUAGE_QUALIFIED_NAME = "http://www.omg.org/spec/FEEL/20140401"
+
+  val LANGUAGE_VERSION = "1.1"
   
   val EXTENSIONS = List("feel")
   

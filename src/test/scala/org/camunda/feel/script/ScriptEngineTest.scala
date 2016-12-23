@@ -26,8 +26,8 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
 
-    eval("< 2", context) should be(false)
-    eval("< 3", context) should be(true)
+    eval("< 2", context).asInstanceOf[Boolean] should be(false)
+    eval("< 3", context).asInstanceOf[Boolean] should be(true)
   }
 
   it should "evaluate a simpleUnaryTest script '< 3' using global scope" in {
@@ -37,8 +37,15 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.GLOBAL_SCOPE)
 
-    eval("< 2", context) should be(false)
-    eval("< 3", context) should be(true)
+    eval("< 2", context).asInstanceOf[Boolean] should be(false)
+    eval("< 3", context).asInstanceOf[Boolean] should be(true)
+  }
+  
+  it should "evaluate an expression script '2 + 3'" in {
+
+    val context = new SimpleScriptContext
+
+    eval("2 + 3", context) should be(5)
   }
 
   it should "throw an exception when parse an invalid script" in {
@@ -51,8 +58,6 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     a[ScriptException] should be thrownBy eval("< 3", new SimpleScriptContext)
   }
 
-  private def eval(script: String, context: ScriptContext): Boolean = {
-    scriptEngine.eval(script, context).asInstanceOf[Boolean]
-  }
-
+  private def eval(script: String, context: ScriptContext) = scriptEngine.eval(script, context)
+  
 }

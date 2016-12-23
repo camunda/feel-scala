@@ -42,7 +42,7 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
         PMT: function(rate, term, amount) (amount *rate/12) / (1 - (1 + rate/12)**-term)
       }    
 
-    """).asInstanceOf[ValContext]
+    """)
   
   
   "The FEEL engine" should "calculate" in {
@@ -65,20 +65,23 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
   
   it should "invoke an user-defined function" in {
     
-    // TODO fix calc
+  	val rate: BigDecimal = 0.25
+  	val term: BigDecimal = 36
+  	val amount: BigDecimal = 100000
+  	
     evalWithContext(""" PMT(
                              requested_product . rate,                             
                              requested_product . term,
                              requested_product . amount
                            ) 
     
-    """) should be(ValNumber(3975.982590125562))
+    """) should be(ValNumber(
+    		(amount * rate / 12) / (1 - (1 + rate/12).pow(-36))) ) // ~ 3975.982590125562
   }
   
   it should "sum a filtered list of context" in {
     
-    // TODO remove the brackets
-    evalWithContext(""" sum( ( credit_history[record_date > date("2011-01-01")] ) .weight) """) should be(ValNumber(150))
+    evalWithContext(""" sum( credit_history[record_date > date("2011-01-01")].weight) """) should be(ValNumber(150))
     
   }
   
@@ -87,6 +90,6 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
     evalWithContext(""" some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(ValBoolean(false))
   }
   
-  private def evalWithContext(exp: String) = eval(exp, context.entries.toMap)
+  private def evalWithContext(exp: String) = eval(exp, context.asInstanceOf[ValContext].entries.toMap)
   
 }

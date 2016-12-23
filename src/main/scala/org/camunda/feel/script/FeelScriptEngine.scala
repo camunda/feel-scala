@@ -48,7 +48,7 @@ class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine {
       closeSilently(reader)
     }
   }
-
+  
   @tailrec
   private def read(reader: Reader, buffer: StringBuffer = new StringBuffer): String = {
     val chars = new Array[Char](16 * 1024)

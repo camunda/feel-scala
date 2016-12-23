@@ -1,6 +1,7 @@
 package org.camunda.feel.parser
 
 import org.camunda.feel._
+import org.camunda.feel.parser.FeelParser._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -113,9 +114,10 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse("-4") should be(ArithmeticNegation(ConstNumber(4)))
   }
   
-  private def parse(expression: String): Exp = {
-    val result = FeelParser.parseSimpleExpression(expression)
-    result.get
-  }
+  private def parse(expression: String): Exp = 
+    FeelParser.parseSimpleExpression(expression) match {
+      case Success(exp, _) => exp
+      case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")
+    }
   
 }

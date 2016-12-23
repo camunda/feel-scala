@@ -43,12 +43,16 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     
     eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(true))) should be(ValBoolean(true))
     eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(false))) should be(ValBoolean(false))
+    
+    eval("false or false or true") should be(ValBoolean(true))
   }
   
   it should "be a conjunction" in {
     
     eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(true))) should be(ValBoolean(true))
     eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(false))) should be(ValBoolean(false))
+    
+    eval("true and true and false") should be(ValBoolean(false))
   }
   
   it should "be a simple positive unary test" in {
@@ -113,6 +117,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("4-2") should be(ValNumber(2))
   }
   
+  it should "add and subtract" in {
+    
+    eval("2+4-3+1") should be(ValNumber(4))
+  }
+  
   it should "multiply by '3'" in {
     
     eval("3*3") should be(ValNumber(9))
@@ -123,14 +132,43 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("8/4") should be(ValNumber(2))
   }
   
+  it should "multiply and divide" in {
+  	
+  	eval("3*4/2*5") should be(ValNumber(30))
+  }
+  
   it should "exponentiate by '3'" in {
     
     eval("2**3") should be(ValNumber(8))
   }
   
+  it should "exponentiate twice" in {
+    // all operators are left associative
+    eval("2**2**3") should be(ValNumber(64))
+  }
+  
   it should "negate" in {
     
     eval("-2") should be(ValNumber(-2))
+  }
+  
+  it should "negate and multiply" in {
+  	
+  	eval("2 * -3") should be(ValNumber(-6))
+  }
+  
+  it should "add and multiply" in {
+  	
+  	eval("2 + 3 * 4") should be(ValNumber(14))
+  	
+  	eval("2 * 3 + 4") should be(ValNumber(10))
+  }
+  
+  it should "multiply and exponentiate" in {
+  	
+  	eval("2**3 * 4") should be(ValNumber(32))
+  	
+  	eval("3 * 4**2") should be(ValNumber(48))
   }
   
   it should "compare with '='" in {

@@ -1,6 +1,7 @@
 package org.camunda.feel.parser
 
 import org.camunda.feel._
+import org.camunda.feel.parser.FeelParser._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -160,9 +161,10 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("< var") should be (InputLessThan(Ref("var")))
   }
 
-  private def parse(expression: String): Exp = {
-    val result = FeelParser.parseSimpleUnaryTest(expression)
-    result.get
-  }
+   private def parse(expression: String): Exp = 
+    FeelParser.parseSimpleUnaryTest(expression) match {
+      case Success(exp, _) => exp
+      case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")
+    }
 
 }
