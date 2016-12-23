@@ -47,6 +47,20 @@ class ScriptEngineTest extends FlatSpec with Matchers {
 
     eval("2 + 3", context) should be(5)
   }
+  
+  it should "compile and evaluate an expression '< 3'" in {
+    
+    val compiledScript = scriptEngine.compile("< 3")
+    
+    compiledScript should not be (null)
+    
+    val context = new SimpleScriptContext
+    val bindings = scriptEngine.createBindings()
+    bindings.put("cellInput", 2)
+    context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
+    
+    compiledScript.eval(context).asInstanceOf[Boolean] should be (true)
+  }
 
   it should "throw an exception when parse an invalid script" in {
 
@@ -56,6 +70,18 @@ class ScriptEngineTest extends FlatSpec with Matchers {
   it should "throw an exception when input is missing" in {
     
     a[ScriptException] should be thrownBy eval("< 3", new SimpleScriptContext)
+  }
+  
+  it should "throw an exception when compile an invalid script" in {
+    
+    a[ScriptException] should be thrownBy scriptEngine.compile("? 3")
+  }
+  
+  it should "throw an exception when input is missing of a compiled script" in {
+    
+    val compiledScript = scriptEngine.compile("< 3")
+    
+    a[ScriptException] should be thrownBy compiledScript.eval(new SimpleScriptContext)
   }
 
   private def eval(script: String, context: ScriptContext) = scriptEngine.eval(script, context)
