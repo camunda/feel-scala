@@ -35,7 +35,7 @@ class ScriptEngineFactoryTest extends FlatSpec with Matchers {
     val scriptEngine = scriptEngineFactory.getScriptEngine
     
     Option(scriptEngine) should not be None
-    scriptEngine.getClass should be (classOf[FeelScriptEngine])
+    scriptEngine.getClass should be (classOf[FeelExpressionScriptEngine])
   }
   
 }

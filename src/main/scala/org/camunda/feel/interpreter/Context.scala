@@ -12,7 +12,12 @@ case class Context(variables: Map[String, Any]) {
 		.map { case (name, f) => (name, f.params.size) -> f }
 	  .toMap
 	
-  def input: Val = apply(Context.inputKey)
+	def inputKey: String = variables.get(Context.inputVariableKey) match {
+   	case Some(inputVariableName: String) => inputVariableName
+    case _ => Context.defaultInputVariable
+	}  
+	  
+  def input: Val = apply(inputKey)
 
   def apply(key: String): Val = variables.get(key) match {
     case None => ValError(s"no variable found for key '$key'")
@@ -33,7 +38,9 @@ case class Context(variables: Map[String, Any]) {
 
 object Context {
 
-  val inputKey = "cellInput"
+  val defaultInputVariable = "cellInput"
+  
+  val inputVariableKey = "inputVariableName"
   
   def empty = Context(Map())
 

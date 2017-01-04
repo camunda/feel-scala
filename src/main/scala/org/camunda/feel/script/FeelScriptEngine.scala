@@ -10,14 +10,20 @@ import java.io.Closeable
 import scala.annotation.tailrec
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.FeelParser
+import org.camunda.feel.parser.Exp
 
-class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
+trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
-  lazy val factory = new FeelScriptEngineFactory
+  val eval: (String, Map[String, Any]) => EvalResult
+
+  val parse: String => ParseResult[Exp]
+  
+  val factory: ScriptEngineFactory
+  
   lazy val engine = new FeelEngine
-
+  
   def getFactory(): ScriptEngineFactory = factory
-
+  
   def createBindings(): Bindings = new SimpleBindings
 
   def eval(reader: Reader, context: ScriptContext): Object = {
@@ -25,12 +31,19 @@ class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
 
     eval(script, context)
   }
+         
+  def eval(script: String, context: ScriptContext): Object = handleEvaluationResult( () => eval(script, getEngineContext(context)) )
+          
+  def eval(script: CompiledFeelScript, context: ScriptContext): Object = handleEvaluationResult( () => engine.eval(script.expression, getEngineContext(context)) )
 
-  def eval(script: String, context: ScriptContext): Object = eval( () => engine.evalExpression(script, getEngineContext(context)) )
+  def compile(script: Reader): CompiledScript = compile( readerAsString(script) )
+          
+  def compile(script: String): CompiledScript = parse(script) match {
+          case Success(exp, _) => CompiledFeelScript(this, exp)
+          case e: NoSuccess => throw new ScriptException(s"failed to parse expression '$script':\n$e")    
+  }
   
-  def eval(script: CompiledFeelScript, context: ScriptContext): Object = eval( () => engine.eval(script.expression, getEngineContext(context)) )
-  
-  private def eval(f: () => EvalResult): Object = f() match {
+  private def handleEvaluationResult(f: () => EvalResult): Object = f() match {
     case EvalValue(value) => value.asInstanceOf[AnyRef]
     case EvalFailure(cause) => throw new ScriptException(cause)
     case ParseFailure(cause) => throw new ScriptException(cause)
@@ -43,13 +56,6 @@ class FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
       .toMap
   }
 
-  def compile(script: Reader): CompiledScript = compile( readerAsString(script) )
-  
-  def compile(script: String): CompiledScript = FeelParser.parseExpression(script) match {
-    case Success(exp, _) => CompiledFeelScript(this, exp)
-    case e: NoSuccess => throw new ScriptException(s"failed to parse expression '$script':\n$e")    
-  }
-  
   private def readerAsString(reader: Reader): String = {
     try {
       read(reader)

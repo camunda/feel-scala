@@ -16,7 +16,7 @@ object FeelParser extends JavaTokenParsers {
   
   def parseExpression(exp: String): ParseResult[Exp] = parseExp(expression, exp)
   
-  def parseSimpleUnaryTest(expression: String): ParseResult[Exp] = parseExp(simpleUnaryTests, expression)
+  def parseSimpleUnaryTests(expression: String): ParseResult[Exp] = parseExp(simpleUnaryTests, expression)
   
   private def parseExp[T](parser: Parser[T], exp: String) = {
   	val start = System.currentTimeMillis

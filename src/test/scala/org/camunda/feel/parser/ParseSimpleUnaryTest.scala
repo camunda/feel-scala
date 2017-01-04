@@ -162,7 +162,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   }
 
    private def parse(expression: String): Exp = 
-    FeelParser.parseSimpleUnaryTest(expression) match {
+    FeelParser.parseSimpleUnaryTests(expression) match {
       case Success(exp, _) => exp
       case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")
     }

@@ -57,9 +57,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   
   it should "be a simple positive unary test" in {
     
-    eval("< 3", Map(Context.inputKey -> 2)) should be(ValBoolean(true))
+    eval("< 3", Map(Context.defaultInputVariable -> 2)) should be(ValBoolean(true))
     
-    eval("(2 .. 4)", Map(Context.inputKey -> 5)) should be(ValBoolean(false))
+    eval("(2 .. 4)", Map(Context.defaultInputVariable -> 5)) should be(ValBoolean(false))
   }
   
   it should "be an instance of" in {

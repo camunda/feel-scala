@@ -13,18 +13,24 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   "A FeelEngine" should "evaluate a simpleUnaryTest '< 3'" in {
 
-    evalUnaryTest("< 3", context = Map(Context.inputKey -> 2)) should be(EvalValue(true))
-    evalUnaryTest("< 3", context = Map(Context.inputKey -> 3)) should be(EvalValue(false))
+    evalUnaryTest("< 3", context = Map(Context.defaultInputVariable -> 2)) should be(EvalValue(true))
+    evalUnaryTest("< 3", context = Map(Context.defaultInputVariable -> 3)) should be(EvalValue(false))
   }
   
   it should "evaluate a simpleExpression '2+4'" in {
-    
+     
     engine.evalExpression("2+4", context = Map()) should be(EvalValue(6))
+  }
+  
+  it should "evaluate an simpleUnaryTest with custom input variable name" in {
+     
+    evalUnaryTest("< 3", context = Map("myInput" -> 2, Context.inputVariableKey -> "myInput")) should be(EvalValue(true))
+    evalUnaryTest("< 3", context = Map("myInput" -> 3, Context.inputVariableKey -> "myInput")) should be(EvalValue(false))
   }
 
   it should "failed while evaluation cause of wrong type" in {
 
-    evalUnaryTest("< 3", context = Map(Context.inputKey -> "2")) shouldBe a[EvalFailure]
+    evalUnaryTest("< 3", context = Map(Context.defaultInputVariable -> "2")) shouldBe a[EvalFailure]
   }
 
   it should "failed while evaluation cause by missing input" in {
@@ -38,7 +44,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   }
 
   private def evalUnaryTest(expression: String, context: Map[String, Any]): EvalResult = {
-    engine.evalSimpleUnaryTest(expression, context)
+    engine.evalSimpleUnaryTests(expression, context)
   }
 
 }

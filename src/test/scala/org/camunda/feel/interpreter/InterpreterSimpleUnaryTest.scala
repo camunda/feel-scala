@@ -210,8 +210,8 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
   }
   
   private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
-    val exp = FeelParser.parseSimpleUnaryTest(expression)
-    interpreter.eval(exp.get)(Context(variables + ( Context.inputKey -> input)))
+    val exp = FeelParser.parseSimpleUnaryTests(expression)
+    interpreter.eval(exp.get)(Context(variables + ( Context.defaultInputVariable -> input)))
   }
 
   private def date(date: String): Date = date
