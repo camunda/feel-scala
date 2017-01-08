@@ -15,7 +15,7 @@ object BuiltinFunctions {
   
   // note that some function names has whitespaces in spec 
   // this will be changed in further version
-	
+		
   val builtinFunctions: List[(String, ValFunction)] = 
     conversionFunctions ++
     booleanFunctions ++
@@ -453,5 +453,11 @@ object BuiltinFunctions {
   }
 	
 	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
+	
+	private val builtinFunctionsByNameAndArgCount: Map[(String, Int), ValFunction] = builtinFunctions
+		.map { case (name, f) => (name, f.params.size) -> f }
+	  .toMap
+	  
+	def getFunction(name: String, argCount: Int) = builtinFunctionsByNameAndArgCount.get((name, argCount))
 	
 }

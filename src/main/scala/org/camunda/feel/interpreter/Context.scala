@@ -8,10 +8,6 @@ import org.joda.time.LocalDate
  */
 case class Context(variables: Map[String, Any]) {
 	
-	val builtinFunctions: Map[(String, Int), ValFunction] = BuiltinFunctions.builtinFunctions
-		.map { case (name, f) => (name, f.params.size) -> f }
-	  .toMap
-	
 	def inputKey: String = variables.get(Context.inputVariableKey) match {
    	case Some(inputVariableName: String) => inputVariableName
     case _ => Context.defaultInputVariable
@@ -29,7 +25,7 @@ case class Context(variables: Map[String, Any]) {
 
   def +(variable : (String, Any)) = Context(variables + variable)
     
-  def function(name: String, args: Int): Val = variables.get(name) orElse builtinFunctions.get((name, args)) match {
+  def function(name: String, args: Int): Val = variables.get(name) orElse BuiltinFunctions.getFunction(name, args) match {
 	  case Some(f: Val) => f
   	case _ => ValError(s"no function found with name '$name' and $args arguments")
   }

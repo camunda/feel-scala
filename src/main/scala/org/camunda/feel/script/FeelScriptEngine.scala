@@ -32,18 +32,32 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
     eval(script, context)
   }
          
-  def eval(script: String, context: ScriptContext): Object = handleEvaluationResult( () => eval(script, getEngineContext(context)) )
+  def eval(script: String, context: ScriptContext): Object = {
+  	val engineContext = getEngineContext(context)
+  	val result = eval(script, engineContext)
+  	
+  	handleEvaluationResult(result)
+  }
           
-  def eval(script: CompiledFeelScript, context: ScriptContext): Object = handleEvaluationResult( () => engine.eval(script.expression, getEngineContext(context)) )
+  def eval(script: CompiledFeelScript, context: ScriptContext): Object = {
+  	val engineContext = getEngineContext(context)
+  	val result = engine.eval(script.expression, engineContext)
+  	
+  	handleEvaluationResult(result)
+  }
 
-  def compile(script: Reader): CompiledScript = compile( readerAsString(script) )
+  def compile(reader: Reader): CompiledScript = {
+  	val script = readerAsString(reader)
+  	
+  	compile(script)
+  }
           
   def compile(script: String): CompiledScript = parse(script) match {
           case Success(exp, _) => CompiledFeelScript(this, exp)
           case e: NoSuccess => throw new ScriptException(s"failed to parse expression '$script':\n$e")    
   }
   
-  private def handleEvaluationResult(f: () => EvalResult): Object = f() match {
+  private def handleEvaluationResult(result: EvalResult): Object = result match {
     case EvalValue(value) => value.asInstanceOf[AnyRef]
     case EvalFailure(cause) => throw new ScriptException(cause)
     case ParseFailure(cause) => throw new ScriptException(cause)
