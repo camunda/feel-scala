@@ -16,7 +16,8 @@ class FeelInterpreter {
     case ConstDate(d) => ValDate(d)
     case ConstTime(t) => ValTime(t)
     case ConstDateTime(dt) => ValDateTime(dt)
-    case ConstDuration(d) => ValDuration(d)
+    case ConstYearMonthDuration(d) => ValYearMonthDuration(d)
+    case ConstDayTimeDuration(d) => ValDayTimeDuration(d)
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case ConstContext((k,v) :: entries) => ValContext( entries.foldLeft( evalContextEntry(k,v) ){ (ctx, entry) => ctx ++ evalContextEntry(entry._1, entry._2)(context ++ ctx.toMap) } )
@@ -29,7 +30,7 @@ class FeelInterpreter {
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
     // arithmetic operations
     // TODO support duration, date and time for add. and sub.
-    case Addition(x,y) => dualNumericOp(eval(x), eval(y), _ + _, ValNumber)
+    case Addition(x,y) => addOp(eval(x), eval(y))
     case Subtraction(x,y) => dualNumericOp(eval(x), eval(y), _ - _, ValNumber)
     case Multiplication(x,y) => dualNumericOp(eval(x), eval(y), _ * _, ValNumber)
     case Division(x,y) => dualNumericOp(eval(x), eval(y), _ / _, ValNumber)
@@ -76,7 +77,8 @@ class FeelInterpreter {
       case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
       case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
-      case ValDuration(i) => withDuration(x, x => f(c(i,x)))
+      case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
+      case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
       case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
     })
 
@@ -85,8 +87,8 @@ class FeelInterpreter {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
-      case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
-      case ValDuration(i) => withDuration(x, x => f(c(i, x)))
+      case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
+      case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
 
@@ -96,7 +98,8 @@ class FeelInterpreter {
       case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
       case ValTime(i) => withTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValDateTime(i) => withDateTimes(x, y, (x,y) => f(c(i, x, y)))
-      case ValDuration(i) => withDurations(x, y, (x,y) => f(c(i, x, y)))
+      case ValYearMonthDuration(i) => withYearMonthDurations(x, y, (x,y) => f(c(i, x, y)))
+      case ValDayTimeDuration(i) => withDayTimeDurations(x, y, (x,y) => f(c(i, x, y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
     })
   
@@ -158,16 +161,28 @@ class FeelInterpreter {
     case _ => ValError(s"expect Date Time but found '$x'")
   }
   
-  private def withDurations(x: Val, y: Val, f: (Duration, Duration) => Val): Val =
-    withDuration(x, x => {
-      withDuration(y, y => {
+  private def withYearMonthDurations(x: Val, y: Val, f: (YearMonthDuration, YearMonthDuration) => Val): Val =
+    withYearMonthDuration(x, x => {
+      withYearMonthDuration(y, y => {
         f(x, y)
       })
     })
+    
+  private def withDayTimeDurations(x: Val, y: Val, f: (DayTimeDuration, DayTimeDuration) => Val): Val =
+    withDayTimeDuration(x, x => {
+      withDayTimeDuration(y, y => {
+        f(x, y)
+      })
+    })  
 
-  private def withDuration(x: Val, f: Duration => Val): Val = x match {
-    case ValDuration(x) => f(x)
-    case _ => ValError(s"expect Duration but found '$x'")
+  private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val): Val = x match {
+    case ValYearMonthDuration(x) => f(x)
+    case _ => ValError(s"expect Year-Month-Duration but found '$x'")
+  }
+  
+  private def withDayTimeDuration(x: Val, f: DayTimeDuration => Val): Val = x match {
+    case ValDayTimeDuration(x) => f(x)
+    case _ => ValError(s"expect Day-Time-Duration but found '$x'")
   }
 
   private def withVal(x: Val, f: Val => Val): Val = x match {
@@ -226,7 +241,8 @@ class FeelInterpreter {
       case ValDate(x) => withDate(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
-      case ValDuration(x) => withDuration(y, y => f(c(x,y)))
+      case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
+      case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
     }
   
@@ -236,9 +252,19 @@ class FeelInterpreter {
       case ValDate(x) => withDate(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
-      case ValDuration(x) => withDuration(y, y => f(c(x,y)))
+      case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
+      case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
     }
+  
+  private def addOp(x: Val, y: Val): Val = x match {
+  	case ValNumber(x) => withNumber(y, y => ValNumber(x + y))
+  	case ValString(x) => withString(y, y => ValString(x + y))
+  	case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.plus(y) ))
+  	case ValDateTime(x) => withYearMonthDuration(y, y => ValDateTime( x.plus(y) ))
+  	// TODO add more types
+  	case _ => ValError(s"expected Number, String, Date, Time or Duration but found '$x'")
+  }
   
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)
@@ -279,7 +305,8 @@ class FeelInterpreter {
     case ValDate(_) => f("date")
     case ValTime(_) => f("time")
     case ValDateTime(_) => f("date time")
-    case ValDuration(_) => f("duration")
+    case ValYearMonthDuration(_) => f("year-month-duration")
+    case ValDayTimeDuration(_) => f("day-time-duration")
     case ValNull => f("null")
     case ValList(_) => f("list")
     case ValContext(_) => f("context")

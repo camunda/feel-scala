@@ -20,7 +20,8 @@ object ValueMapper {
     case x: Date => ValDate(x)
     case x: Time => ValTime(x)
     case x: DateTime => ValDateTime(x)
-    case x: Duration => ValDuration(x)
+    case x: YearMonthDuration => ValYearMonthDuration(x)
+    case x: DayTimeDuration => ValDayTimeDuration(x)
     case x: List[_] => ValList( x map toVal )
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
     // extended java types
@@ -41,7 +42,8 @@ object ValueMapper {
     case ValDate(date) => date
     case ValTime(time) => time
     case ValDateTime(dateTime) => dateTime
-    case ValDuration(duration) => duration
+    case ValYearMonthDuration(duration) => duration
+    case ValDayTimeDuration(duration) => duration
     case ValList(list) => list map unpackVal
     case ValContext(context) => context map { case (key, value) => key -> unpackVal(value) } toMap
     case ValError(error) => new Exception(error)

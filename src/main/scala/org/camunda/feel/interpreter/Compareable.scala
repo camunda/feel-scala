@@ -34,72 +34,75 @@ trait Compareable[T] {
 }
 
 object Compareable {
-
-  implicit def numberToCompareable(x: Number): Compareable[Number] = CompareableNumber(x)
-
-  implicit def dateToCompareable(x: Date): Compareable[Date] = CompareableDate(x)
-
-  implicit def timeToCompareable(x: Time): Compareable[Time] = CompareableTime(x)
   
-  implicit def dateTimeToCompareable(x: DateTime): Compareable[DateTime] = CompareableDateTime(x)
+  implicit class CompareableNumber(val value: Number) extends Compareable[Number] {
 
-  implicit def durationToCompareable(x: Duration): Compareable[Duration] = CompareableDuration(x)
-}
-
-case class CompareableNumber(value: Number) extends Compareable[Number] {
-
-  def <(x: Number) = value < x
-
-  def <=(x: Number) = value <= x
-
-  def >(x: Number) = value > x
-
-  def >=(x: Number) = value >= x
+	  def <(x: Number) = value < x
+	
+	  def <=(x: Number) = value <= x
+	
+	  def >(x: Number) = value > x
+	
+	  def >=(x: Number) = value >= x
+	  
+	}
+	
+	implicit class CompareableDate(val value: Date) extends Compareable[Date] {
+	
+	  def <(x: Date) = value isBefore x
+	
+	  def <=(x: Date) = value == x || (value isBefore x)
+	
+	  def >(x: Date) = value isAfter x
+	
+	  def >=(x: Date) = value == x || (value isAfter x)
+	
+	}
+	
+	implicit class CompareableTime(val value: Time) extends Compareable[Time] {
+	
+	  def <(x: Time) = value isBefore x
+	
+	  def <=(x: Time) = value == x || (value isBefore x)
+	
+	  def >(x: Time) = value isAfter x
+	
+	  def >=(x: Time) = value == x || (value isAfter x)
+	}
+	
+	implicit class CompareableDateTime(val value: DateTime) extends Compareable[DateTime] {
+	
+	  def <(x: DateTime) = value isBefore x
+	
+	  def <=(x: DateTime) = value == x || (value isBefore x)
+	
+	  def >(x: DateTime) = value isAfter x
+	
+	  def >=(x: DateTime) = value == x || (value isAfter x)
+	}
   
-}
+  implicit class CompareableYearMonthDuration(val value: YearMonthDuration) extends Compareable[YearMonthDuration] {
 
-case class CompareableDate(value: Date) extends Compareable[Date] {
+	  def <(x: YearMonthDuration) = value.minus(x).isNegative
+	
+	  def <=(x: YearMonthDuration) = value.minus(x).isNegative || value.minus(x).isZero
+	
+	  def >(x: YearMonthDuration) = !value.minus(x).isNegative && !value.minus(x).isZero
+	
+	  def >=(x: YearMonthDuration) = !value.minus(x).isNegative
+	
+	}
+  
+  implicit class CompareableDayTimeDuration(val value: DayTimeDuration) extends Compareable[DayTimeDuration] {
 
-  def <(x: Date) = value isBefore x
-
-  def <=(x: Date) = value == x || (value isBefore x)
-
-  def >(x: Date) = value isAfter x
-
-  def >=(x: Date) = value == x || (value isAfter x)
-
-}
-
-case class CompareableTime(value: Time) extends Compareable[Time] {
-
-  def <(x: Time) = value isBefore x
-
-  def <=(x: Time) = value == x || (value isBefore x)
-
-  def >(x: Time) = value isAfter x
-
-  def >=(x: Time) = value == x || (value isAfter x)
-}
-
-case class CompareableDateTime(value: DateTime) extends Compareable[DateTime] {
-
-  def <(x: DateTime) = value isBefore x
-
-  def <=(x: DateTime) = value == x || (value isBefore x)
-
-  def >(x: DateTime) = value isAfter x
-
-  def >=(x: DateTime) = value == x || (value isAfter x)
-}
-
-case class CompareableDuration(value: Duration) extends Compareable[Duration] {
-
-  def <(x: Duration) = value isShorterThan x
-
-  def <=(x: Duration) = value == x || (value isShorterThan x)
-
-  def >(x: Duration) = value isLongerThan x
-
-  def >=(x: Duration) = value == x || (value isLongerThan x)
-
+	  def <(x: DayTimeDuration) = value.minus(x).isNegative
+	
+	  def <=(x: DayTimeDuration) = value.minus(x).isNegative || value.minus(x).isZero
+	
+	  def >(x: DayTimeDuration) = !value.minus(x).isNegative && !value.minus(x).isZero
+	
+	  def >=(x: DayTimeDuration) = !value.minus(x).isNegative
+	
+	}
+  
 }

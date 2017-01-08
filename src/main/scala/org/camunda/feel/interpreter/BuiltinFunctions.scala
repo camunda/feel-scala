@@ -1,13 +1,13 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import javax.xml.datatype.Duration
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 import java.math.MathContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.Period
 
 /**
  * @author Philipp
@@ -122,7 +122,7 @@ object BuiltinFunctions {
 	})
 	
 	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDuration(offset)) => ValTime(LocalTime.of(hour.intValue() + offset.getHours, minute.intValue() + offset.getMinutes, second.intValue() + offset.getSeconds))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => ValTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()).plus(offset))
 		case e => error(e)
 	})
 	
@@ -155,28 +155,18 @@ object BuiltinFunctions {
 		case List(ValDate(from)) => ValString(from.format(dateFormatter))
 		case List(ValTime(from)) => ValString(from.format(timeFormatter))
 		case List(ValDateTime(from)) => ValString(from.format(dateTimeFormatter))
-		case List(ValDuration(from)) => ValString(from.toString)
+		case List(ValYearMonthDuration(from)) => ValString(from.toString)
+		case List(ValDayTimeDuration(from)) => ValString(from.toString)
 		case e => error(e)
 	})
 	
 	def durationFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => ValDuration(from)
+		case List(ValString(from)) => if(isYearMonthDuration(from)) ValYearMonthDuration(from) else ValDayTimeDuration(from)
 		case e => error(e)
 	})
 	
 	def durationFunction2 = ValFunction(List("from", "to"), _ match {
-	  case List(ValDate(from), ValDate(to)) => {
-		  val year = to.getYear - from.getYear
-		  val month = to.getMonthValue - from.getMonthValue
-		 
-		  val duration = if (month >= 0) {
-		    yearMonthDuration(year, month)
-		  } else {
-		    yearMonthDuration(year - 1, month + 12)
-		  }
-		  
-		  ValDuration(duration)
-		}
+	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0) )
 		case e => error(e)
 	})
 	

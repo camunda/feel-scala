@@ -184,24 +184,44 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(time("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
   }
   
-  "A duration" should "compare with '<'" in {
+  "A year-month-duration" should "compare with '<'" in {
     
-    eval(duration("P1DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(true))
-    eval(duration("P2DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
-    eval(duration("P2DT8H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
+    eval(yearMonthDuration("P1Y"), """< duration("P2Y")""") should be(ValBoolean(true))
+    eval(yearMonthDuration("P1Y"), """< duration("P1Y")""") should be(ValBoolean(false))
+    eval(yearMonthDuration("P1Y2M"), """< duration("P1Y")""") should be(ValBoolean(false))
   }
   
   it should "be equal to another duration" in {
     
-    eval(duration("P1DT4H"), """duration("P2DT4H")""") should be(ValBoolean(false))
-    eval(duration("P2DT4H"), """duration("P2DT4H")""") should be(ValBoolean(true))
+    eval(yearMonthDuration("P1Y4M"), """duration("P1Y3M")""") should be(ValBoolean(false))
+    eval(yearMonthDuration("P1Y4M"), """duration("P1Y4M")""") should be(ValBoolean(true))
+  }
+  
+  it should """be in interval '[duration("P1Y")..duration("P2Y")]'""" in {
+    
+    eval(yearMonthDuration("P6M"), """[duration("P1Y")..duration("P2Y")]""") should be(ValBoolean(false))
+    eval(yearMonthDuration("P1Y8M"), """[duration("P1Y")..duration("P2Y")]""") should be(ValBoolean(true))
+    eval(yearMonthDuration("P2Y1M"), """[duration("P1Y")..duration("P2Y")]""") should be(ValBoolean(false))
+  }
+  
+  "A day-time-duration" should "compare with '<'" in {
+    
+    eval(dayTimeDuration("P1DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(true))
+    eval(dayTimeDuration("P2DT4H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
+    eval(dayTimeDuration("P2DT8H"), """< duration("P2DT4H")""") should be(ValBoolean(false))
+  }
+  
+  it should "be equal to another duration" in {
+    
+    eval(dayTimeDuration("P1DT4H"), """duration("P2DT4H")""") should be(ValBoolean(false))
+    eval(dayTimeDuration("P2DT4H"), """duration("P2DT4H")""") should be(ValBoolean(true))
   }
   
   it should """be in interval '[duration("P1D")..duration("P2D")]'""" in {
     
-    eval(duration("PT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
-    eval(duration("P1DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(true))
-    eval(duration("P2DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
+    eval(dayTimeDuration("PT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
+    eval(dayTimeDuration("P1DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(true))
+    eval(dayTimeDuration("P2DT4H"), """[duration("P1D")..duration("P2D")]""") should be(ValBoolean(false))
   }
   
   "An empty expression ('-')" should "be always true" in {
@@ -218,6 +238,8 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
 
   private def time(time: String): Time = time
   
-  private def duration(duration: String): Duration = duration
+  private def yearMonthDuration(duration: String): YearMonthDuration = duration
+  
+  private def dayTimeDuration(duration: String): DayTimeDuration = duration
   
 }

@@ -30,7 +30,9 @@ case class ValTime(value: Time) extends Val
 
 case class ValDateTime(value: DateTime) extends Val
 
-case class ValDuration(value: Duration) extends Val
+case class ValYearMonthDuration(value: YearMonthDuration) extends Val
+
+case class ValDayTimeDuration(value: DayTimeDuration) extends Val
 
 case class ValError(error: String) extends Val
 

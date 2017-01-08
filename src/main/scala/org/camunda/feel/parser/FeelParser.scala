@@ -3,7 +3,6 @@ package org.camunda.feel.parser
 import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
-import com.sun.org.apache.bcel.internal.generic.IFEQ
 
 /**
  * @author Philipp Ossler
@@ -137,7 +136,7 @@ object FeelParser extends JavaTokenParsers {
     "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDate(_) ) |
     "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstTime(_) ) |
     "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDateTime(_) ) |
-    "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDuration(_) ) |
+    "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( d => if(isYearMonthDuration(d)) ConstYearMonthDuration(d) else ConstDayTimeDuration(d)) |
     failure("expected date time literal")
     
   // 35 - 

@@ -120,14 +120,19 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(""" string(duration("PT1H")) """) should be(ValString("PT1H"))
 	}
 	
-	"A duration() function" should "convert String" in {
+	"A duration() function" should "convert day-time-String" in {
 
-		eval(""" duration(x) """, Map("x" -> "P2DT20H14M")) should be(ValDuration("P2DT20H14M"))
+		eval(""" duration(x) """, Map("x" -> "P2DT20H14M")) should be(ValDayTimeDuration("P2DT20H14M"))
+	}
+	
+	it should "convert year-month-String" in {
+
+		eval(""" duration(x) """, Map("x" -> "P2Y4M")) should be(ValYearMonthDuration("P2Y4M"))
 	}
 	
 	"A years and months duration(from,to) function" should "convert (Date,Date)" in {
 
-		eval(""" years_and_months_duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValDuration("P1Y8M"))
+		eval(""" years_and_months_duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValYearMonthDuration("P1Y8M"))
 	}
 	
 	"A not() function" should "negate Boolean" in {

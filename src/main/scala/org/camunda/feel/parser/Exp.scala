@@ -19,7 +19,9 @@ case class ConstTime(value: Time) extends Exp
 
 case class ConstDateTime(value: DateTime) extends Exp
 
-case class ConstDuration(value: Duration) extends Exp
+case class ConstYearMonthDuration(value: YearMonthDuration) extends Exp
+
+case class ConstDayTimeDuration(value: DayTimeDuration) extends Exp
 
 case class ConstList(items: List[Exp]) extends Exp
 

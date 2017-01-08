@@ -49,14 +49,19 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     parse("""date and time("2015-09-18T10:31:10")""") should be(ConstDateTime("2015-09-18T10:31:10"))
   }
   
-  it should "parse a duration" in {
+  it should "parse a year-month-duration" in {
     
-    parse("""duration("P1D")""") should be(ConstDuration("P1D"))
+    parse("""duration("P1Y")""") should be(ConstYearMonthDuration("P1Y"))
+  }
+  
+  it should "parse a day-time-duration" in {
+    
+    parse("""duration("P1D")""") should be(ConstDayTimeDuration("P1D"))
   }
   
   it should "ignore an one line comment '// ...'" in {
     
-    parse("""duration("P1D") // one day""") should be(ConstDuration("P1D"))
+    parse("""duration("P1D") // one day""") should be(ConstDayTimeDuration("P1D"))
   }
   
   it should "ignore a multi line comment '/* ... */'" in {
@@ -70,28 +75,12 @@ class ParseSimpleExpressionTest extends FlatSpec with Matchers {
     
     // numeric addition
     parse("2+3") should be(Addition(ConstNumber(2), ConstNumber(3)))
-    // addition with two durations
-    parse("""duration("P1Y")+duration("P6M")""") should be(Addition(ConstDuration("P1Y"), ConstDuration("P6M")))
-    parse("""duration("P1D")+duration("PT12H")""") should be(Addition(ConstDuration("P1D"), ConstDuration("PT12H")))
-    // addition with duration and date
-    parse("""duration("P1M")+date("2015-09-18")""") should be(Addition(ConstDuration("P1M"), ConstDate("2015-09-18")))
-    parse("""duration("P7D")+date("2015-09-18")""") should be(Addition(ConstDuration("P7D"), ConstDate("2015-09-18")))
-    // addition with duration and time
-    parse("""duration("PT2H")+time("10:00:00")""") should be(Addition(ConstDuration("PT2H"), ConstTime("10:00:00")))
   }
   
   it should "parse a substraction" in {
     
     // numeric subtraction
     parse("3-2") should be(Subtraction(ConstNumber(3), ConstNumber(2)))
-    // subtraction with two durations
-    parse("""duration("P1Y")-duration("P6M")""") should be(Subtraction(ConstDuration("P1Y"), ConstDuration("P6M")))
-    parse("""duration("P1D")-duration("PT12H")""") should be(Subtraction(ConstDuration("P1D"), ConstDuration("PT12H")))
-    // subtraction with duration and date
-    parse("""duration("P1M")-date("2015-09-18")""") should be(Subtraction(ConstDuration("P1M"), ConstDate("2015-09-18")))
-    parse("""duration("P7D")-date("2015-09-18")""") should be(Subtraction(ConstDuration("P7D"), ConstDate("2015-09-18")))
-    // subtraction with duration and time
-    parse("""duration("PT2H")-time("10:00:00")""") should be(Subtraction(ConstDuration("PT2H"), ConstTime("10:00:00")))
   }
   
   it should "parse a multiplication" in {

@@ -25,6 +25,8 @@ trait FeelIntegrationTest {
 
   def time(time: String): Time = time
   
-  def duration(duration: String): Duration = duration
+  def yearMonthDuration(duration: String): YearMonthDuration = duration
+  
+  def dayTimeDuration(duration: String): DayTimeDuration = duration
   
 }

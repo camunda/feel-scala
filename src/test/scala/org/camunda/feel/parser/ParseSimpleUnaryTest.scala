@@ -39,14 +39,14 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
     parse("""time("15:41:10")""") should be(InputEqualTo(ConstTime("15:41:10")))
   }
   
-  it should "parse a duration (days and time)" in {
+  it should "parse a day-time-duration" in {
     
-    parse("""duration("P4DT2H")""") should be(InputEqualTo(ConstDuration("P4DT2H")))
+    parse("""duration("P4DT2H")""") should be(InputEqualTo(ConstDayTimeDuration("P4DT2H")))
   }
   
-  it should "parse a duration (years and months)" in {
+  it should "parse a year-month-duration" in {
     
-    parse("""duration("P2Y1M")""") should be(InputEqualTo(ConstDuration("P2Y1M")))
+    parse("""duration("P2Y1M")""") should be(InputEqualTo(ConstYearMonthDuration("P2Y1M")))
   }
   
   it should "parse '< 3'" in {
@@ -74,7 +74,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   }
   
   it should """parse '< duration("P1D")'""" in {
-    parse("""< duration("P1D")""") should be(InputLessThan(ConstDuration("P1D")))
+    parse("""< duration("P1D")""") should be(InputLessThan(ConstDayTimeDuration("P1D")))
   }
   
   it should "parse '(2..4)'" in {

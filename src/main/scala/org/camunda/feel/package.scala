@@ -8,6 +8,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField._
+import java.time.Duration
+import java.time.Period
 
 /**
  * @author Philipp Ossler
@@ -22,8 +24,10 @@ package object feel {
   
   type DateTime = java.time.LocalDateTime
   
-  type Duration = javax.xml.datatype.Duration
- 
+  type YearMonthDuration = java.time.Period
+  
+  type DayTimeDuration = java.time.Duration
+  
   implicit def stringToNumber(number: String): Number = BigDecimal(number)
   
   implicit def stringToDate(date: String): Date = LocalDate.parse(date)
@@ -32,9 +36,11 @@ package object feel {
   
   implicit def stringToDateTime(dateTime: String): DateTime = LocalDateTime.parse(dateTime)
   
-  implicit def stringToDuration(duration: String): Duration = DatatypeFactory.newInstance().newDuration(duration)
+  implicit def stringToYearMonthDuration(duration: String): YearMonthDuration = Period.parse(duration)
   
-  def yearMonthDuration(year: Int, month: Int): Duration = DatatypeFactory.newInstance().newDurationYearMonth(true, year, month);
+  implicit def stringToDayTimeDuration(duration: String): DayTimeDuration = Duration.parse(duration)
+  
+  def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")
   
   val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 	val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
