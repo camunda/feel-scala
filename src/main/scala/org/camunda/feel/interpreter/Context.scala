@@ -1,7 +1,6 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import org.joda.time.LocalDate
 
 /**
  * @author Philipp Ossler

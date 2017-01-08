@@ -1,12 +1,13 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import org.joda.time.LocalDate
-import org.joda.time.LocalTime
 import javax.xml.datatype.Duration
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 import java.math.MathContext
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
  * @author Philipp
@@ -94,7 +95,7 @@ object BuiltinFunctions {
 	})
 	
 	def dateFunction3 = ValFunction(List("year", "month", "day"), _ match {
-		case List(ValNumber(year), ValNumber(month), ValNumber(day)) => ValDate(new LocalDate(year.intValue(), month.intValue(), day.intValue()))
+		case List(ValNumber(year), ValNumber(month), ValNumber(day)) => ValDate(LocalDate.of(year.intValue(), month.intValue(), day.intValue()))
 		case e => error(e)
 	})
 	
@@ -104,8 +105,8 @@ object BuiltinFunctions {
 	})
 	
 	def dateTime2 = ValFunction(List("date", "time"), _ match {
-		case List(ValDate(date), ValTime(time)) => ValDateTime(date.toLocalDateTime(time))
-		case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().toLocalDateTime(time))
+		case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time))
+		case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
 		case e => error(e)
 	})	
 	
@@ -116,12 +117,12 @@ object BuiltinFunctions {
 	})
 	
 	def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => ValTime(new LocalTime(hour.intValue(), minute.intValue(), second.intValue()))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => ValTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
 		case e => error(e)
 	})
 	
 	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDuration(offset)) => ValTime(new LocalTime(hour.intValue() + offset.getHours, minute.intValue() + offset.getMinutes, second.intValue() + offset.getSeconds))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDuration(offset)) => ValTime(LocalTime.of(hour.intValue() + offset.getHours, minute.intValue() + offset.getMinutes, second.intValue() + offset.getSeconds))
 		case e => error(e)
 	})
 	
@@ -151,9 +152,9 @@ object BuiltinFunctions {
 		case List(ValString(from)) => ValString(from)
 		case List(ValBoolean(from)) => ValString(from.toString)
 		case List(ValNumber(from)) => ValString(from.toString)
-		case List(ValDate(from)) => ValString(from.toString("yyyy-MM-dd"))
-		case List(ValTime(from)) => ValString(from.toString("HH:mm:ss"))
-		case List(ValDateTime(from)) => ValString(from.toString("yyyy-MM-dd'T'HH:mm:ss"))
+		case List(ValDate(from)) => ValString(from.format(dateFormatter))
+		case List(ValTime(from)) => ValString(from.format(timeFormatter))
+		case List(ValDateTime(from)) => ValString(from.format(dateTimeFormatter))
 		case List(ValDuration(from)) => ValString(from.toString)
 		case e => error(e)
 	})
@@ -166,7 +167,7 @@ object BuiltinFunctions {
 	def durationFunction2 = ValFunction(List("from", "to"), _ match {
 	  case List(ValDate(from), ValDate(to)) => {
 		  val year = to.getYear - from.getYear
-		  val month = to.getMonthOfYear - from.getMonthOfYear
+		  val month = to.getMonthValue - from.getMonthValue
 		 
 		  val duration = if (month >= 0) {
 		    yearMonthDuration(year, month)

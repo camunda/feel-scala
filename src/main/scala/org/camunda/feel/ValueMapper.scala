@@ -2,7 +2,10 @@ package org.camunda.feel
 
 import org.camunda.feel._
 import org.camunda.feel.interpreter._
-import org.joda.time.LocalDate
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.LocalTime
+import java.time.LocalDateTime
 
 object ValueMapper {
   
@@ -20,8 +23,12 @@ object ValueMapper {
     case x: Duration => ValDuration(x)
     case x: List[_] => ValList( x map toVal )
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
-    // extended types
-    case x: java.util.Date => ValDate(LocalDate.fromDateFields(x))
+    // extended java types
+    case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+    // yoda-time
+    case x: org.joda.time.LocalDate => ValDate(LocalDate.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth))
+    case x: org.joda.time.LocalTime => ValTime(LocalTime.of(x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
+    case x: org.joda.time.LocalDateTime => ValDateTime(LocalDateTime.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth, x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
     // unsupported values
     case _ => ValError(s"unsupported type '$x'")
   }
