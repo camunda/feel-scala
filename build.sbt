@@ -1,20 +1,37 @@
-organization := "org.camunda"
+val appOrganization = "org.camunda"
+val appVersion = "1.0.0-SNAPSHOT"
 
-name := "feel-scala"
+organization := appOrganization
+version := appVersion
+name := "feel-scala-root"
 
-version := "1.0.0-SNAPSHOT"
-
-scalaVersion := "2.11.7"
-
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
- 
-libraryDependencies ++= List(
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ,
-  "com.github.nscala-time" %% "nscala-time" % "2.2.0"
-) 
- 
-libraryDependencies ++= List(
-	"org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
-	"junit" % "junit" % "4.11" % "test"
+lazy val commonSettings = Seq(
+  organization := appOrganization,
+  version := appVersion,
+  scalaVersion := "2.11.7",
+  resolvers ++= Seq(
+    "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+    "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public"
+  )
 )
 
+lazy val projectDependencies = List (
+  appOrganization %% "feel-scala" % appVersion
+)
+
+lazy val root = project.in( file(".") )
+                       .aggregate(engine, engineFactory, examples)
+
+
+lazy val engine = project.in( file("feel-engine") )
+                          .settings ( commonSettings )
+
+lazy val engineFactory = project.in( file("camunda-feel-engine-factory") )
+                                .settings ( commonSettings )
+                                .settings ( libraryDependencies ++= projectDependencies )
+                                .dependsOn(engine)
+                                
+lazy val examples = project.in( file("examples") )
+                                .settings ( commonSettings )
+                                .settings ( libraryDependencies += appOrganization %% "camunda-feel-integration" % appVersion )
+                                .dependsOn(engineFactory)
