@@ -234,8 +234,204 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("4 in (2 .. 4)") should be(ValBoolean(false))
   }
   
-  // TODO add test case for add. and sub. of durations
-  // TODO add tests cases for compare op's with date, time and duration
+  "A string" should "concatenates to another String" in {
+    
+    eval(""" "a" + "b" """) should be(ValString("ab"))
+  }
+  
+  it should "compare with '='" in {
+    
+    eval(""" "a" = "a" """) should be(ValBoolean(true))
+    eval(""" "a" = "b" """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" "a" != "a" """) should be(ValBoolean(false))
+    eval(""" "a" != "b" """) should be(ValBoolean(true))
+  }
+  
+  "A time" should "subtract from another time" in {
+    
+    eval(""" time("10:30:00") - time("09:00:00") """) should be(ValDayTimeDuration("PT1H30M"))
+    
+    eval(""" time("09:00:00") - time("10:00:00") """) should be(ValDayTimeDuration("PT-1H"))
+  }
+  
+  it should "compare with '='" in {
+    
+    eval(""" time("10:00:00") = time("10:00:00") """) should be(ValBoolean(true))
+    eval(""" time("10:00:00") = time("10:30:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" time("10:00:00") != time("10:00:00") """) should be(ValBoolean(false))
+    eval(""" time("10:00:00") != time("22:00:00") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval(""" time("10:00:00") < time("11:00:00") """) should be(ValBoolean(true))
+    eval(""" time("10:00:00") < time("10:00:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval(""" time("10:00:00") <= time("10:00:00") """) should be(ValBoolean(true))
+    eval(""" time("10:00:01") <= time("10:00:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval(""" time("11:00:00") > time("11:00:00") """) should be(ValBoolean(false))
+    eval(""" time("10:15:00") > time("10:00:00") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval(""" time("11:00:00") >= time("11:00:00") """) should be(ValBoolean(true))
+    eval(""" time("09:00:00") >= time("11:15:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with 'between _ and _'" in {
+    
+    eval(""" time("08:30:00") between time("08:00:00") and time("10:00:00") """) should be (ValBoolean(true))
+    eval(""" time("08:30:00") between time("09:00:00") and time("10:00:00") """) should be (ValBoolean(false))
+  }
+  
+  // TODO add tests for date, 2x duration
+//  "A number" should "add to '4'" in {
+//    
+//    eval("2+4") should be(ValNumber(6))
+//  }
+//  
+//  it should "add to '4' and '6'" in {
+//    
+//    eval("2+4+6") should be(ValNumber(12))
+//  }
+//  
+//  it should "subtract from '2'" in {
+//    
+//    eval("4-2") should be(ValNumber(2))
+//  }
+//  
+//  it should "add and subtract" in {
+//    
+//    eval("2+4-3+1") should be(ValNumber(4))
+//  }
+//  
+//  it should "multiply by '3'" in {
+//    
+//    eval("3*3") should be(ValNumber(9))
+//  }
+//  
+//  it should "divide by '4'" in {
+//    
+//    eval("8/4") should be(ValNumber(2))
+//  }
+//  
+//  it should "multiply and divide" in {
+//  	
+//  	eval("3*4/2*5") should be(ValNumber(30))
+//  }
+//  
+//  it should "exponentiate by '3'" in {
+//    
+//    eval("2**3") should be(ValNumber(8))
+//  }
+//  
+//  it should "exponentiate twice" in {
+//    // all operators are left associative
+//    eval("2**2**3") should be(ValNumber(64))
+//  }
+//  
+//  it should "negate" in {
+//    
+//    eval("-2") should be(ValNumber(-2))
+//  }
+//  
+//  it should "negate and multiply" in {
+//  	
+//  	eval("2 * -3") should be(ValNumber(-6))
+//  }
+//  
+//  it should "add and multiply" in {
+//  	
+//  	eval("2 + 3 * 4") should be(ValNumber(14))
+//  	
+//  	eval("2 * 3 + 4") should be(ValNumber(10))
+//  }
+//  
+//  it should "multiply and exponentiate" in {
+//  	
+//  	eval("2**3 * 4") should be(ValNumber(32))
+//  	
+//  	eval("3 * 4**2") should be(ValNumber(48))
+//  }
+//  
+//  it should "compare with '='" in {
+//    
+//    eval("x=2", Map("x" -> 2)) should be(ValBoolean(true))
+//    eval("x=2", Map("x" -> 3)) should be(ValBoolean(false))
+//    
+//    eval("(x * 2) = 4", Map("x" -> 2)) should be(ValBoolean(true))
+//    eval("(x * 2) = 4", Map("x" -> 3)) should be(ValBoolean(false))
+//  }
+//  
+//  it should "compare with '!='" in {
+//    
+//    eval("x!=2", Map("x" -> 2)) should be(ValBoolean(false))
+//    eval("x!=2", Map("x" -> 3)) should be(ValBoolean(true))
+//  }
+//  
+//  it should "compare with '<'" in {
+//    
+//    eval("x<2", Map("x" -> 1)) should be(ValBoolean(true))
+//    eval("x<2", Map("x" -> 2)) should be(ValBoolean(false))
+//  }
+//  
+//  it should "compare with '<='" in {
+//    
+//    eval("x<=2", Map("x" -> 2)) should be(ValBoolean(true))
+//    eval("x<=2", Map("x" -> 3)) should be(ValBoolean(false))
+//  }
+//  
+//  it should "compare with '>'" in {
+//    
+//    eval("x>2", Map("x" -> 2)) should be(ValBoolean(false))
+//    eval("x>2", Map("x" -> 3)) should be(ValBoolean(true))
+//  }
+//  
+//  it should "compare with '>='" in {
+//    
+//    eval("x>=2", Map("x" -> 2)) should be(ValBoolean(true))
+//    eval("x>=2", Map("x" -> 1)) should be(ValBoolean(false))
+//  }
+//  
+//  it should "compare with 'between _ and _'" in {
+//    
+//    eval("x between 2 and 4", Map("x" -> 1)) should be (ValBoolean(false))
+//    eval("x between 2 and 4", Map("x" -> 2)) should be (ValBoolean(true))
+//    eval("x between 2 and 4", Map("x" -> 3)) should be (ValBoolean(true))
+//    eval("x between 2 and 4", Map("x" -> 4)) should be (ValBoolean(true))
+//    eval("x between 2 and 4", Map("x" -> 5)) should be (ValBoolean(false))
+//  }
+//  
+//  it should "compare with 'in'" in {
+//    
+//    eval("x in < 2", Map("x" -> 1)) should be(ValBoolean(true))
+//    eval("x in < 2", Map("x" -> 2)) should be(ValBoolean(false))
+//    
+//    eval("x in (2 .. 4)", Map("x" -> 3)) should be (ValBoolean(true))
+//    eval("x in (2 .. 4)", Map("x" -> 4)) should be (ValBoolean(false))
+//
+//    eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
+//    eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))
+//    
+//    eval("3 in (2 .. 4)") should be(ValBoolean(true))
+//    eval("4 in (2 .. 4)") should be(ValBoolean(false))
+//  }
   
   "A function definition" should "be interpeted" in {
     

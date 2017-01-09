@@ -2,6 +2,8 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.parser._
+import com.sun.org.apache.xerces.internal.impl.dv.xs.DayTimeDurationDV
+import java.time.Duration
 
 /**
  * @author Philipp Ossler
@@ -29,11 +31,10 @@ class FeelInterpreter {
     case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
     // arithmetic operations
-    // TODO support duration, date and time for add. and sub.
     case Addition(x,y) => addOp(eval(x), eval(y))
-    case Subtraction(x,y) => dualNumericOp(eval(x), eval(y), _ - _, ValNumber)
-    case Multiplication(x,y) => dualNumericOp(eval(x), eval(y), _ * _, ValNumber)
-    case Division(x,y) => dualNumericOp(eval(x), eval(y), _ / _, ValNumber)
+    case Subtraction(x,y) => subOp(eval(x), eval(y))
+    case Multiplication(x,y) => mulOp(eval(x), eval(y))
+    case Division(x,y) => divOp(eval(x), eval(y))
     case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber)
     case ArithmeticNegation(x) => withNumber(eval(x), x => ValNumber(-x))
     // dual comparators
@@ -260,10 +261,61 @@ class FeelInterpreter {
   private def addOp(x: Val, y: Val): Val = x match {
   	case ValNumber(x) => withNumber(y, y => ValNumber(x + y))
   	case ValString(x) => withString(y, y => ValString(x + y))
-  	case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.plus(y) ))
-  	case ValDateTime(x) => withYearMonthDuration(y, y => ValDateTime( x.plus(y) ))
-  	// TODO add more types
+  	case ValTime(x) => withDayTimeDuration(y, y => ValTime( x.plus(y) ))
+  	case ValDateTime(x) => y match {
+  		case ValYearMonthDuration(y) => ValDateTime( x.plus(y) )
+  		case ValDayTimeDuration(y) => ValDateTime( x.plus(y) ) 										
+  		case _ => ValError(s"expect Year-Month-/Day-Time-Duration but found '$x'")
+  	}
+  	case ValYearMonthDuration(x) => y match {
+  		case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y) )
+  		case ValDateTime(y) => ValDateTime( y.plus(x) )										
+  		case _ => ValError(s"expect Date-Time, or Year-Month-Duration but found '$x'")
+  	}
+  	case ValDayTimeDuration(x) => y match {
+  		case ValDayTimeDuration(y) => ValDayTimeDuration( x.plus(y) )
+  		case ValDateTime(y) => ValDateTime( y.plus(x) )	
+  		case ValTime(y) => ValTime( y.plus(x) )	
+  		case _ => ValError(s"expect Date-Time, Time, or Day-Time-Duration but found '$x'")
+  	}
   	case _ => ValError(s"expected Number, String, Date, Time or Duration but found '$x'")
+  }
+  
+  private def subOp(x: Val, y: Val): Val = x match {
+  	case ValNumber(x) => withNumber(y, y => ValNumber(x - y))
+  	case ValTime(x) => y match {
+  		case ValTime(y) => ValDayTimeDuration( Duration.between(y, x) )
+  		case ValDayTimeDuration(y) => ValTime( x.minus(y) )
+  		case _ => ValError(s"expect Time, or Day-Time-Duration but found '$x'")
+  	}
+  	case ValDateTime(x) => y match {
+  		case ValDateTime(y) => ValDayTimeDuration( Duration.between(y, x) )
+  		case ValYearMonthDuration(y) => ValDateTime( x.minus(y) )
+  		case ValDayTimeDuration(y) => ValDateTime( x.minus(y) ) 										
+  		case _ => ValError(s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
+  	}
+  	case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.minus(y).normalized ))
+  	case ValDayTimeDuration(x) => withDayTimeDuration(y, y => ValDayTimeDuration( x.minus(y) ))
+  	case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
+  }
+  
+  private def mulOp(x: Val, y: Val): Val = x match {
+  	case ValNumber(x) => y match {
+  		case ValNumber(y) => ValNumber( x * y )
+  		case ValYearMonthDuration(y) => ValYearMonthDuration( y.multipliedBy(x.intValue).normalized )
+  		case ValDayTimeDuration(y) => ValDayTimeDuration( y.multipliedBy(x.intValue) )
+  		case _ => ValError(s"expect Number, or Year-Month-/Day-Time-Duration but found '$x'")
+  	}
+  	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( x.multipliedBy(y.intValue).normalized ))
+  	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( x.multipliedBy(y.intValue) ))
+  	case _ => ValError(s"expected Number, or Duration but found '$x'")
+  }
+  
+  private def divOp(x: Val, y: Val): Val = x match {
+  	case ValNumber(x) => withNumber(y, y => ValNumber(x / y))
+  	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( x.multipliedBy(1 / y.intValue).normalized ))
+  	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( x.multipliedBy(1 / y.intValue) ))
+  	case _ => ValError(s"expected Number, or Duration but found '$x'")
   }
   
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
