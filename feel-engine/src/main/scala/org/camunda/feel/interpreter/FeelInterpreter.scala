@@ -4,6 +4,7 @@ import org.camunda.feel._
 import org.camunda.feel.parser._
 import com.sun.org.apache.xerces.internal.impl.dv.xs.DayTimeDurationDV
 import java.time.Duration
+import java.time.Period
 
 /**
  * @author Philipp Ossler
@@ -313,8 +314,8 @@ class FeelInterpreter {
   
   private def divOp(x: Val, y: Val): Val = x match {
   	case ValNumber(x) => withNumber(y, y => ValNumber(x / y))
-  	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( x.multipliedBy(1 / y.intValue).normalized ))
-  	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( x.multipliedBy(1 / y.intValue) ))
+  	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized() ))
+  	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( Duration.ofMillis((x.toMillis() / y).intValue) ))
   	case _ => ValError(s"expected Number, or Duration but found '$x'")
   }
   

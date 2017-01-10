@@ -300,138 +300,259 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" time("08:30:00") between time("09:00:00") and time("10:00:00") """) should be (ValBoolean(false))
   }
   
-  // TODO add tests for date, 2x duration
-//  "A number" should "add to '4'" in {
-//    
-//    eval("2+4") should be(ValNumber(6))
-//  }
-//  
-//  it should "add to '4' and '6'" in {
-//    
-//    eval("2+4+6") should be(ValNumber(12))
-//  }
-//  
-//  it should "subtract from '2'" in {
-//    
-//    eval("4-2") should be(ValNumber(2))
-//  }
-//  
-//  it should "add and subtract" in {
-//    
-//    eval("2+4-3+1") should be(ValNumber(4))
-//  }
-//  
-//  it should "multiply by '3'" in {
-//    
-//    eval("3*3") should be(ValNumber(9))
-//  }
-//  
-//  it should "divide by '4'" in {
-//    
-//    eval("8/4") should be(ValNumber(2))
-//  }
-//  
-//  it should "multiply and divide" in {
-//  	
-//  	eval("3*4/2*5") should be(ValNumber(30))
-//  }
-//  
-//  it should "exponentiate by '3'" in {
-//    
-//    eval("2**3") should be(ValNumber(8))
-//  }
-//  
-//  it should "exponentiate twice" in {
-//    // all operators are left associative
-//    eval("2**2**3") should be(ValNumber(64))
-//  }
-//  
-//  it should "negate" in {
-//    
-//    eval("-2") should be(ValNumber(-2))
-//  }
-//  
-//  it should "negate and multiply" in {
-//  	
-//  	eval("2 * -3") should be(ValNumber(-6))
-//  }
-//  
-//  it should "add and multiply" in {
-//  	
-//  	eval("2 + 3 * 4") should be(ValNumber(14))
-//  	
-//  	eval("2 * 3 + 4") should be(ValNumber(10))
-//  }
-//  
-//  it should "multiply and exponentiate" in {
-//  	
-//  	eval("2**3 * 4") should be(ValNumber(32))
-//  	
-//  	eval("3 * 4**2") should be(ValNumber(48))
-//  }
-//  
-//  it should "compare with '='" in {
-//    
-//    eval("x=2", Map("x" -> 2)) should be(ValBoolean(true))
-//    eval("x=2", Map("x" -> 3)) should be(ValBoolean(false))
-//    
-//    eval("(x * 2) = 4", Map("x" -> 2)) should be(ValBoolean(true))
-//    eval("(x * 2) = 4", Map("x" -> 3)) should be(ValBoolean(false))
-//  }
-//  
-//  it should "compare with '!='" in {
-//    
-//    eval("x!=2", Map("x" -> 2)) should be(ValBoolean(false))
-//    eval("x!=2", Map("x" -> 3)) should be(ValBoolean(true))
-//  }
-//  
-//  it should "compare with '<'" in {
-//    
-//    eval("x<2", Map("x" -> 1)) should be(ValBoolean(true))
-//    eval("x<2", Map("x" -> 2)) should be(ValBoolean(false))
-//  }
-//  
-//  it should "compare with '<='" in {
-//    
-//    eval("x<=2", Map("x" -> 2)) should be(ValBoolean(true))
-//    eval("x<=2", Map("x" -> 3)) should be(ValBoolean(false))
-//  }
-//  
-//  it should "compare with '>'" in {
-//    
-//    eval("x>2", Map("x" -> 2)) should be(ValBoolean(false))
-//    eval("x>2", Map("x" -> 3)) should be(ValBoolean(true))
-//  }
-//  
-//  it should "compare with '>='" in {
-//    
-//    eval("x>=2", Map("x" -> 2)) should be(ValBoolean(true))
-//    eval("x>=2", Map("x" -> 1)) should be(ValBoolean(false))
-//  }
-//  
-//  it should "compare with 'between _ and _'" in {
-//    
-//    eval("x between 2 and 4", Map("x" -> 1)) should be (ValBoolean(false))
-//    eval("x between 2 and 4", Map("x" -> 2)) should be (ValBoolean(true))
-//    eval("x between 2 and 4", Map("x" -> 3)) should be (ValBoolean(true))
-//    eval("x between 2 and 4", Map("x" -> 4)) should be (ValBoolean(true))
-//    eval("x between 2 and 4", Map("x" -> 5)) should be (ValBoolean(false))
-//  }
-//  
-//  it should "compare with 'in'" in {
-//    
-//    eval("x in < 2", Map("x" -> 1)) should be(ValBoolean(true))
-//    eval("x in < 2", Map("x" -> 2)) should be(ValBoolean(false))
-//    
-//    eval("x in (2 .. 4)", Map("x" -> 3)) should be (ValBoolean(true))
-//    eval("x in (2 .. 4)", Map("x" -> 4)) should be (ValBoolean(false))
-//
-//    eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
-//    eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))
-//    
-//    eval("3 in (2 .. 4)") should be(ValBoolean(true))
-//    eval("4 in (2 .. 4)") should be(ValBoolean(false))
-//  }
+  "A date" should "compare with '='" in {
+    
+    eval(""" date("2017-01-10") = date("2017-01-10") """) should be(ValBoolean(true))
+    eval(""" date("2017-01-10") = date("2017-01-11") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" date("2017-01-10") != date("2017-01-10") """) should be(ValBoolean(false))
+    eval(""" date("2017-01-10") != date("2017-02-10") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval(""" date("2016-01-10") < date("2017-01-10") """) should be(ValBoolean(true))
+    eval(""" date("2017-01-10") < date("2017-01-10") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval(""" date("2017-01-10") <= date("2017-01-10") """) should be(ValBoolean(true))
+    eval(""" date("2017-01-20") <= date("2017-01-10") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval(""" date("2017-01-10") > date("2017-01-10") """) should be(ValBoolean(false))
+    eval(""" date("2017-02-17") > date("2017-01-10") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval(""" date("2017-01-10") >= date("2017-01-10") """) should be(ValBoolean(true))
+    eval(""" date("2017-01-10") >= date("2018-01-10") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with 'between _ and _'" in {
+    
+    eval(""" date("2017-01-10") between date("2017-01-01") and date("2018-01-10") """) should be (ValBoolean(true))
+    eval(""" date("2017-01-10") between date("2017-02-01") and date("2017-03-01") """) should be (ValBoolean(false))
+  }
+  
+  "A date-time" should "subtract from another date-time" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") - date and time("2017-01-01T10:00:00") """) should be(ValDayTimeDuration("P9DT30M"))
+    
+    eval(""" date and time("2017-01-10T10:00:00") - date and time("2017-01-10T10:30:00") """) should be(ValDayTimeDuration("PT-30M"))
+  }
+  
+  it should "compare with '='" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") = date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00") = date and time("2017-01-10T14:00:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") != date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+    eval(""" date and time("2017-01-10T10:30:00") != date and time("2017-01-11T10:30:00") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") < date and time("2017-02-10T10:00:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00") < date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") <= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-02-10T10:00:00") <= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") > date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+    eval(""" date and time("2018-01-10T10:30:00") > date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") >= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00") >= date and time("2017-01-10T10:30:01") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with 'between _ and _'" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") between date and time("2017-01-10T09:00:00") and date and time("2017-01-10T14:00:00") """) should be (ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00") between date and time("2017-01-10T11:00:00") and date and time("2017-01-11T08:00:00") """) should be (ValBoolean(false))
+  }
+  
+  "A year-month-duration" should "add to year-month-duration" in {
+    
+    eval(""" duration("P2M") + duration("P3M") """) should be(ValYearMonthDuration("P5M"))
+    eval(""" duration("P1Y") + duration("P6M") """) should be(ValYearMonthDuration("P1Y6M"))
+  }
+  
+  it should "add to date-time" in {
+    
+    eval(""" duration("P1M") + date and time("2017-01-10T10:30:00") """) should be(ValDateTime("2017-02-10T10:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") + duration("P1Y") """) should be(ValDateTime("2018-01-10T10:30:00"))
+  }
+  
+  it should "subtract from year-month-duration" in {
+    
+    eval(""" duration("P1Y") - duration("P3M") """) should be(ValYearMonthDuration("P9M"))
+    eval(""" duration("P5M") - duration("P6M") """) should be(ValYearMonthDuration("P-1M"))
+  }
+  
+  it should "subtract from date-time" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") - duration("P1M") """) should be(ValDateTime("2016-12-10T10:30:00"))
+  }
+  
+  it should "multiply by '3'" in {
+    
+    eval(""" duration("P1M") * 3 """) should be(ValYearMonthDuration("P3M"))
+    eval(""" 3 * duration("P2Y") """) should be(ValYearMonthDuration("P6Y"))
+  }
+  
+  it should "divide by '4'" in {
+    
+    eval(""" duration("P1Y") / 2 """) should be(ValYearMonthDuration("P6M"))
+  }
+  
+  it should "compare with '='" in {
+    
+    eval(""" duration("P2M") = duration("P2M") """) should be(ValBoolean(true))
+    eval(""" duration("P2M") = duration("P4M") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" duration("P2M") != duration("P2M") """) should be(ValBoolean(false))
+    eval(""" duration("P2M") != duration("P1Y") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval(""" duration("P2M") < duration("P3M") """) should be(ValBoolean(true))
+    eval(""" duration("P2M") < duration("P2M") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval(""" duration("P2M") <= duration("P2M") """) should be(ValBoolean(true))
+    eval(""" duration("P1Y2M") <= duration("P2M") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval(""" duration("P2M") > duration("P2M") """) should be(ValBoolean(false))
+    eval(""" duration("P2M") > duration("P1M") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval(""" duration("P2M") >= duration("P2M") """) should be(ValBoolean(true))
+    eval(""" duration("P2M") >= duration("P5M") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with 'between _ and _'" in {
+    
+    eval(""" duration("P3M") between duration("P2M") and duration("P6M") """) should be (ValBoolean(true))
+    eval(""" duration("P1Y") between duration("P2M") and duration("P6M") """) should be (ValBoolean(false))
+  }
+  
+  "A day-time-duration" should "add to day-time-duration" in {
+    
+    eval(""" duration("PT4H") + duration("PT2H") """) should be(ValDayTimeDuration("PT6H"))
+    eval(""" duration("P1D") + duration("PT6H") """) should be(ValDayTimeDuration("P1DT6H"))
+  }
+  
+  it should "add to date-time" in {
+    
+    eval(""" duration("PT1H") + date and time("2017-01-10T10:30:00") """) should be(ValDateTime("2017-01-10T11:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") + duration("P1D") """) should be(ValDateTime("2017-01-11T10:30:00"))
+  }
+  
+  it should "add to time" in {
+    
+    eval(""" duration("PT1H") + time("10:30:00") """) should be(ValTime("11:30:00"))
+    eval(""" time("10:30:00") + duration("P1D") """) should be(ValTime("10:30:00"))
+  }
+  
+  it should "subtract from day-time-duration" in {
+    
+    eval(""" duration("PT6H") - duration("PT2H") """) should be(ValDayTimeDuration("PT4H"))
+    eval(""" duration("PT22H") - duration("P1D") """) should be(ValDayTimeDuration("PT-2H"))
+  }
+  
+  it should "subtract from date-time" in {
+    
+    eval(""" date and time("2017-01-10T10:30:00") - duration("PT1H") """) should be(ValDateTime("2017-01-10T09:30:00"))
+  }
+  
+  it should "subtract from time" in {
+    
+    eval(""" time("10:30:00") - duration("PT1H") """) should be(ValTime("09:30:00"))
+  }
+  
+  it should "multiply by '3'" in {
+    
+    eval(""" duration("PT2H") * 3 """) should be(ValDayTimeDuration("PT6H"))
+    eval(""" 3 * duration("P1D") """) should be(ValDayTimeDuration("P3D"))
+  }
+  
+  it should "divide by '4'" in {
+    
+    eval(""" duration("P1D") / 4 """) should be(ValDayTimeDuration("PT6H"))
+  }
+  
+  it should "compare with '='" in {
+    
+    eval(""" duration("PT6H") = duration("PT6H") """) should be(ValBoolean(true))
+    eval(""" duration("PT6H") = duration("PT2H") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '!='" in {
+    
+    eval(""" duration("PT6H") != duration("PT6H") """) should be(ValBoolean(false))
+    eval(""" duration("PT6H") != duration("P1D") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '<'" in {
+    
+    eval(""" duration("PT6H") < duration("PT12H") """) should be(ValBoolean(true))
+    eval(""" duration("PT6H") < duration("PT6H") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '<='" in {
+    
+    eval(""" duration("PT6H") <= duration("PT6H") """) should be(ValBoolean(true))
+    eval(""" duration("PT6H") <= duration("PT1H") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with '>'" in {
+    
+    eval(""" duration("PT6H") > duration("PT6H") """) should be(ValBoolean(false))
+    eval(""" duration("P1D") > duration("PT6H") """) should be(ValBoolean(true))
+  }
+  
+  it should "compare with '>='" in {
+    
+    eval(""" duration("PT6H") >= duration("PT6H") """) should be(ValBoolean(true))
+    eval(""" duration("PT6H") >= duration("PT6H1M") """) should be(ValBoolean(false))
+  }
+  
+  it should "compare with 'between _ and _'" in {
+    
+    eval(""" duration("PT8H") between duration("PT6H") and duration("PT12H") """) should be (ValBoolean(true))
+    eval(""" duration("PT2H") between duration("PT6H") and duration("PT12H") """) should be (ValBoolean(false))
+  }
   
   "A function definition" should "be interpeted" in {
     
