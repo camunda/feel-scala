@@ -722,4 +722,37 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
             "b" -> ValNumber(4) )) )))
   }
   
+  "A bean" should "be handled as context" in {
+    
+    class A(val b: Int, c: Int)
+    
+    eval("a", Map("a" -> new A(2,3))) should be(ValContext(List(
+        "b" -> ValNumber(2) )))
+    
+  }
+  
+  it should "access a field" in {
+    
+    class A(val b: Int)
+    
+    eval("a.b", Map("a" -> new A(2))) should be(ValNumber(2))
+    
+  }
+  
+  it should "access a getter method as field" in {
+    
+    class A(b: Int) { def getFoo() = b + 1 }
+    
+    eval("a.foo", Map("a" -> new A(2))) should be(ValNumber(3))
+    
+  }
+  
+  it should "invoke a getter method" in {
+    
+    class A(b: Int) { def getFoo() = b + 1 }
+    
+    eval("a.getFoo", Map("a" -> new A(2))) should be(ValNumber(3))
+    
+  }
+  
 }
