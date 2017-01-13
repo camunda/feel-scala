@@ -39,7 +39,7 @@ object FeelParser extends JavaTokenParsers {
   
   private lazy val stringLiteralWithQuotes: Parser[String] = stringLiteral ^^ ( _.replaceAll("\"", "") ) 
     
-  private lazy val terminal =  literal | name ^^ Ref | list | context
+  private lazy val terminal =  literal | name ^^ ( Ref(_) ) | list | context
     
   // 1 a)
   private lazy val expression: Parser[Exp] = textualExpression
@@ -66,7 +66,7 @@ object FeelParser extends JavaTokenParsers {
   // 2 h)
   private lazy val expression8 = filterExpression | functionInvocation | expression9
   // 2 i)
-  private lazy val expression9 = literal | name ^^ Ref | simplePositiveUnaryTest | "(" ~> textualExpression <~ ")" | expression10
+  private lazy val expression9 = literal | name ^^ ( Ref(_) ) | simplePositiveUnaryTest | "(" ~> textualExpression <~ ")" | expression10
     
   // 6
   private lazy val simpleExpressions: Parser[ConstList] = rep1sep(simpleExpression, ",") ^^ ConstList
@@ -120,7 +120,7 @@ object FeelParser extends JavaTokenParsers {
   private lazy val endpoint: Parser[Exp] = simpleValue
     
   // 19
-  private lazy val simpleValue = simpleLiteral | qualifiedName ^^ Ref
+  private lazy val simpleValue = simpleLiteral | qualifiedName ^^ { case (name, qNames) => Ref(name, qNames) }
   
   // 33
   private lazy val literal: Parser[Exp] = "null" ^^^ ConstNull | simpleLiteral
@@ -152,7 +152,7 @@ object FeelParser extends JavaTokenParsers {
   private lazy val digit: Parser[String] = "[0-9]".r
   
   // 20 
-  private lazy val qualifiedName: Parser[String] = rep1sep(name, ".") ^^ (_ mkString ".")
+  private lazy val qualifiedName: Parser[(String, List[String])] = rep1sep(name, ".") ^^ ( names => (names.last, names.take(names.size - 1)) ) // (_ mkString ".")
   
   // 27 - simplified name definition
   private lazy val name: Parser[String] = identifier
@@ -239,7 +239,7 @@ object FeelParser extends JavaTokenParsers {
   private lazy val instanceOf: Parser[InstanceOf] = expression7 ~ "instance" ~! "of" ~! typeName ^^ { case x ~ _ ~ _ ~ typeName => InstanceOf(x, typeName) }
   
   // 54
-  private lazy val typeName: Parser[String] = qualifiedName
+  private lazy val typeName: Parser[String] = qualifiedName ^^ { case (name, qNames) => ( qNames ++ List(name) ).mkString(".") } 
   
   // 45 - allow nested path expressions
   private lazy val pathExpression: Parser[Exp] = chainl1(expression8, name, "." ^^^ PathExpression )
@@ -248,12 +248,11 @@ object FeelParser extends JavaTokenParsers {
   private lazy val filterExpression: Parser[Filter] = expression9 ~ "[" ~! expression <~ "]" ^^ { case list ~ _ ~ filter => Filter(list, filter) } 
   
   // 40
-  private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiternal) ~> 
-  //( name ~ parameters ) ^^ { case name ~ params => FunctionInvocation(name, params) } |
-    rep1sep(name, ".") ~ parameters^^ { case path ~ params => path match {      
-      case name :: Nil => FunctionInvocation(name, params)
-      case n :: ns => QualifiedFunctionInvocation( ((Ref(n): Exp) /: ns)( (a,b) => PathExpression(a,b) ), params)
-    } }
+  private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiternal) ~> qualifiedName ~ parameters ^^ { 
+    case Tuple2(name, qNames) ~ params => qNames match {      
+      case Nil => FunctionInvocation(name, params)
+      case _ => QualifiedFunctionInvocation( Ref(name, qNames), params)
+    }}
   
   // 41
   private lazy val parameters: Parser[FunctionParameters] = "(" ~> ")" ^^^ PositionalFunctionParameters(List()) |
@@ -292,7 +291,7 @@ object FeelParser extends JavaTokenParsers {
   	case methodName ~ _ ~ arguments => (methodName, arguments) 
   }
   
-  private lazy val functionMethodArgument = qualifiedName
+  private lazy val functionMethodArgument = qualifiedName ^^ { case (name, qNames) => ( qNames ++ List(name) ).mkString(".") }
     
   // 58
   private lazy val formalParameter = parameterName

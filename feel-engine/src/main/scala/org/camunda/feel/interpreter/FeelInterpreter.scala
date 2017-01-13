@@ -54,7 +54,10 @@ class FeelInterpreter {
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (context.inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
     // context
-    case Ref(name) => context(name)
+    case Ref(name, qualifiedNames) =>  qualifiedNames match {   // ref(context(name), qualifiedNames)
+      case Nil => context(name)
+      case n :: ns => ref(context(n), ns ++ List(name) )
+    }
     case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
     // list
     case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
@@ -396,9 +399,24 @@ class FeelInterpreter {
     })
   }
   
+  private def withContext(x: Val, f: ValContext => Val): Val = x match {
+    case x: ValContext => f(x)
+    case _ => ValError(s"expect Context but found '$x'")
+  }
+  
   private def filterContext(x: Val)(implicit context: Context): Context = x match {
     case ValContext(ctx) => context ++ ctx.toMap + ("item" -> x)
     case v => context + ("item" -> v)
+  }
+
+  private def ref(x: Val, names: List[String])(implicit context: Context): Val = names match {
+    case Nil => x
+    case n :: ns => withContext(x, { case ValContext(ctx) => 
+      ctx.toMap.get(n) match {
+        case Some(entry) => ref(entry, ns)
+        case None => ValError(s"context contains no entry with key '$n'")
+      }
+    })
   }
   
   private def path(v: Val, key: String): Val = v match {
