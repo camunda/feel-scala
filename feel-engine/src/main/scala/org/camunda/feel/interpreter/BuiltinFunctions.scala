@@ -12,7 +12,7 @@ import java.time.Period
 /**
  * @author Philipp
  */
-object BuiltinFunctions {
+object BuiltinFunctions extends FunctionProvider {
   
   // note that some function names has whitespaces in spec 
   // this will be changed in further version
