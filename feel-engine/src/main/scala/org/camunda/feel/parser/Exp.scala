@@ -45,7 +45,11 @@ case class AtLeastOne(xs: List[Exp]) extends Exp
 
 case class Not(x: Exp) extends Exp
 
-case class Ref(name: String, qualifiedNames: List[String] = List()) extends Exp
+case class Ref(names: List[String]) extends Exp 
+
+object Ref {
+  def apply(name: String) = new Ref(List(name))
+}
 
 case class PathExpression(path: Exp, key: String) extends Exp
 

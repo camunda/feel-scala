@@ -54,10 +54,7 @@ class FeelInterpreter {
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (context.inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
     // context
-    case Ref(name, qualifiedNames) =>  qualifiedNames match {   // ref(context(name), qualifiedNames)
-      case Nil => context(name)
-      case n :: ns => ref(context(n), ns ++ List(name) )
-    }
+    case Ref(names) => ref(context(names.head), names.tail)
     case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
     // list
     case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))

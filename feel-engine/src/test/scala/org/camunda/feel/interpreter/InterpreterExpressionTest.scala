@@ -747,7 +747,15 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     
   }
   
-  it should "invoke a method" in {
+  it should "invoke a method without arguments" in {
+    
+    class A { def foo() = "foo" }
+    
+    eval("a.foo()", Map("a" -> new A())) should be(ValString("foo"))
+    
+  }
+  
+  it should "invoke a method with one argument" in {
     
     class A { def incr(x: Int) = x + 1 }
     

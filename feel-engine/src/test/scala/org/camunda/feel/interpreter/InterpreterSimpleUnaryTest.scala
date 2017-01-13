@@ -85,10 +85,7 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
   it should "compare to a variable (qualified name)" in {
     
     eval(2,"var", variables = Map("var" -> 3)) should be (ValBoolean(false)) 
-    eval(3,"var", variables = Map("var" -> 3)) should be (ValBoolean(true)) 
-    
-    eval(2,"q.var", variables = Map("q.var" -> 3)) should be (ValBoolean(false)) 
-    eval(3,"q.var", variables = Map("q.var" -> 3)) should be (ValBoolean(true))
+    eval(3,"var", variables = Map("var" -> 3)) should be (ValBoolean(true))
     
     eval(2,"< var", variables = Map("var" -> 3)) should be (ValBoolean(true)) 
     eval(3,"< var", variables = Map("var" -> 3)) should be (ValBoolean(false))

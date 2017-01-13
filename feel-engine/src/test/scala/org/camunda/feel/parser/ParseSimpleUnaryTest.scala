@@ -153,7 +153,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   
   it should "parse 'qualified.var' (qualified name)" in {
     
-    parse("qualified.var") should be (InputEqualTo(Ref("qualified.var")))
+    parse("qualified.var") should be (InputEqualTo(Ref( List("qualified","var") )))
   }
   
   it should "parse '< var'" in {
