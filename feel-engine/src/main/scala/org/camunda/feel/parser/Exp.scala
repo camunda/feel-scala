@@ -75,6 +75,8 @@ case class FunctionInvocation(function: String, params: FunctionParameters) exte
 
 case class JavaFunctionInvocation(className: String, methodName: String, arguments: List[String]) extends Exp
 
+case class QualifiedFunctionInvocation(function: Exp, params: FunctionParameters) extends Exp
+
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp
 
 case class If(condition: Exp, then: Exp, otherwise: Exp) extends Exp

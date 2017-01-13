@@ -247,8 +247,13 @@ object FeelParser extends JavaTokenParsers {
   // 52
   private lazy val filterExpression: Parser[Filter] = expression9 ~ "[" ~! expression <~ "]" ^^ { case list ~ _ ~ filter => Filter(list, filter) } 
   
-  // 40 - name should be an expression but why?
-  private lazy val functionInvocation: Parser[FunctionInvocation] = not(dateTimeLiternal) ~> name ~ parameters ^^ { case name ~ params => FunctionInvocation(name, params) }
+  // 40
+  private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiternal) ~> 
+  //( name ~ parameters ) ^^ { case name ~ params => FunctionInvocation(name, params) } |
+    rep1sep(name, ".") ~ parameters^^ { case path ~ params => path match {      
+      case name :: Nil => FunctionInvocation(name, params)
+      case n :: ns => QualifiedFunctionInvocation( ((Ref(n): Exp) /: ns)( (a,b) => PathExpression(a,b) ), params)
+    } }
   
   // 41
   private lazy val parameters: Parser[FunctionParameters] = "(" ~> ")" ^^^ PositionalFunctionParameters(List()) |

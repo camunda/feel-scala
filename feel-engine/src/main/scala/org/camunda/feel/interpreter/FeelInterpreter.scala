@@ -63,6 +63,7 @@ class FeelInterpreter {
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
     // functions
     case FunctionInvocation(name, params) => withFunction(context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) ))
+    case QualifiedFunctionInvocation(path, params) => withFunction(eval(path), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => body match {
       case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues)
       case _ => eval(body)(context ++ (params zip paramValues).toMap)

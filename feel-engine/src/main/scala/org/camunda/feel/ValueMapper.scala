@@ -53,9 +53,16 @@ object ValueMapper {
         }
       }) toList
       
-      val methods= obj.getClass().getDeclaredMethods filter(!_.isSynthetic) toList
+      val fieldNames = fields map ( _._1 )
+      
+      val methods= obj.getClass().getDeclaredMethods filter(!_.isSynthetic) filter( m => !fieldNames.contains(m.getName)) toList
 
-      val getters = methods.filter(_.getName.startsWith("get")).filter(_.getParameterCount == 0).map( method => {
+      val getters = methods
+        .filter(_.getName.startsWith("get"))
+        .filter(_.getParameterCount == 0)
+        .map( method => getGetterName(method) -> method)
+        .filter{ case (name,_) => !fieldNames.contains(name) } 
+        .map{ case (name,method) => {
         
         method.setAccessible(true)
         val returnValue = method.invoke(obj)
@@ -66,11 +73,11 @@ object ValueMapper {
           ValError(s"can't access self-reference getter '${method.getName}'")
         }
         
-        getGetterName(method) -> value
-      })
+        name -> value
+      }}
 
-      // TODO add methods
-      val functions = methods map( method => {
+      // TODO copied from interpreter
+      val functions = methods.map( method => {
         
         val name = method.getName
         val paramNames = method.getParameters.map( param => param.getName) toList

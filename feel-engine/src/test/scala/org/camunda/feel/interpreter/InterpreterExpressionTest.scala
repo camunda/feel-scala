@@ -747,11 +747,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     
   }
   
-  it should "invoke a getter method" in {
+  it should "invoke a method" in {
     
-    class A(b: Int) { def getFoo() = b + 1 }
+    class A { def incr(x: Int) = x + 1 }
     
-    eval("a.getFoo", Map("a" -> new A(2))) should be(ValNumber(3))
+    eval("a.incr(1)", Map("a" -> new A())) should be(ValNumber(2))
     
   }
   
