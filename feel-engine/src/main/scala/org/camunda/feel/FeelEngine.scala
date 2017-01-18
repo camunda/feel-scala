@@ -8,11 +8,12 @@ import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.Exp
 import org.camunda.feel.script.CompiledFeelScript
 import org.camunda.feel.script.CompiledFeelScript
+import org.camunda.feel.interpreter.FunctionProvider.EmptyFunctionProvider
 
 /**
  * @author Philipp Ossler
  */
-class FeelEngine {
+class FeelEngine(functionProvider: FunctionProvider = EmptyFunctionProvider) {
 
   val interpreter = new FeelInterpreter
 
@@ -31,7 +32,7 @@ class FeelEngine {
     case e: NoSuccess => ParseFailure(s"failed to parse expression '$expression':\n$e")
   }
   
-  private def evalParsedExpression(exp: Exp, context: Map[String, Any]): EvalResult = interpreter.eval(exp)(Context(context)) match {
+  private def evalParsedExpression(exp: Exp, context: Map[String, Any]): EvalResult = interpreter.eval(exp)(Context(context, functionProvider)) match {
     case ValError(cause) => EvalFailure(s"failed to evaluate expression '$exp':\n$cause")
     case value => EvalValue( ValueMapper.unpackVal(value) )
   }

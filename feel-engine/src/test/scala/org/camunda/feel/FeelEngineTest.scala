@@ -3,6 +3,11 @@ package org.camunda.feel
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel.interpreter.Context
+import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.interpreter.ValFunction
+import org.camunda.feel.interpreter.ValNumber
+import org.camunda.feel.interpreter.ValString
+import org.camunda.feel.interpreter.ValBoolean
 
 /**
  * @author Philipp Ossler
@@ -41,6 +46,22 @@ class FeelEngineTest extends FlatSpec with Matchers {
   it should "failed while parsing '<'" in {
 
     evalUnaryTest("<", context = Map()) shouldBe a[ParseFailure]
+  }
+  
+  it should "be extend by a custom function provider" in {
+    
+    val customFunctionProvider = new FunctionProvider {
+      
+      val functions: Map[(String, Int), ValFunction] = Map(
+        ("foo", 1) -> ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 1) } )
+      )
+      
+      def getFunction(functionName: String, argumentCount: Int): Option[ValFunction] = functions.get((functionName, argumentCount))
+    }
+    
+    val engine = new FeelEngine(customFunctionProvider)
+    
+    engine.evalExpression("foo(2)", Map()) should be(EvalValue(3))
   }
 
   private def evalUnaryTest(expression: String, context: Map[String, Any]): EvalResult = {

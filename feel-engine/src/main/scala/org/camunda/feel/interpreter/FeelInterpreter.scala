@@ -325,29 +325,35 @@ class FeelInterpreter {
     case _ => ValError(s"expect Function but found '$x'")
   }
   
-  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val)(implicit context: Context): Val = params match {
-    case PositionalFunctionParameters(params) => {
-      
-      if (params.size != function.params.size) {
-        return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
-      } 
-      
-      f(params map eval)
+  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val)(implicit context: Context): Val = { 
+    val paramList = params match {
+      case PositionalFunctionParameters(params) => {
+        
+        if (params.size != function.params.size) {
+          return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
+        } 
+        
+        params map eval
+      }
+      case NamedFunctionParameters(params) => {
+        
+        val missingParameters = function.params.filter( p => !params.contains(p) )
+        if (!missingParameters.isEmpty) {
+          return ValError(s"expected parameter '${missingParameters.head}' but not found")  
+        }
+        
+        val unknownParameters = params.filter( p => !function.params.exists(_ == p._1) )
+        if (!unknownParameters.isEmpty) {
+          return ValError(s"unexpected parameter '${unknownParameters.head._1}'")  
+        }
+                
+       function.params map ( p => eval(params(p)) )
+      }
     }
-    case NamedFunctionParameters(params) => {
       
-      val missingParameters = function.params.filter( p => !params.contains(p) )
-      if (!missingParameters.isEmpty) {
-        return ValError(s"expected parameter '${missingParameters.head}' but not found")  
-      }
-      
-      val unknownParameters = params.filter( p => !function.params.exists(_ == p._1) )
-      if (!unknownParameters.isEmpty) {
-        return ValError(s"unexpected parameter '${unknownParameters.head._1}'")  
-      }
-              
-      val paramList = function.params map ( p => eval(params(p)) )
-      
+    if (function.requireInputVariable) {
+      f(context.input :: paramList)
+    } else {
       f(paramList)
     }
   }
@@ -364,7 +370,7 @@ class FeelInterpreter {
     case ValNull => f("null")
     case ValList(_) => f("list")
     case ValContext(_) => f("context")
-    case ValFunction(_, _) => f("function")
+    case ValFunction(_, _, _) => f("function")
     case _ => ValError(s"unexpected type '${x.getClass.getName}'")
   }
   
