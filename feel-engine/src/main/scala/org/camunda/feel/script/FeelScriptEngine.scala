@@ -11,6 +11,9 @@ import scala.annotation.tailrec
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.Exp
+import org.camunda.feel.spi.FunctionProvider
+import java.util.ServiceLoader
+import org.camunda.feel.spi.FunctionProvider.EmptyFunctionProvider
 
 trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
@@ -20,7 +23,28 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   
   val factory: ScriptEngineFactory
   
-  lazy val engine = new FeelEngine
+  lazy val engine = new FeelEngine(functionProvider)
+  
+  private def functionProvider: FunctionProvider = 
+    try {
+        val loader = ServiceLoader.load(classOf[FunctionProvider])
+                
+        val providerIterator = loader.iterator()
+        
+        if (providerIterator.hasNext()) {
+          // just use the first one for now
+          providerIterator.next()
+        } else {
+          EmptyFunctionProvider  
+        }
+    } catch {
+      case t: Throwable => {
+        System.err.println("Failed to load function provider")
+        t.printStackTrace()
+        
+        EmptyFunctionProvider
+      }
+    }
   
   def getFactory(): ScriptEngineFactory = factory
   

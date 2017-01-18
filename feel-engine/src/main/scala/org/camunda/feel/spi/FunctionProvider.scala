@@ -1,4 +1,6 @@
-package org.camunda.feel.interpreter
+package org.camunda.feel.spi
+
+import org.camunda.feel.interpreter.ValFunction
 
 trait FunctionProvider {
   

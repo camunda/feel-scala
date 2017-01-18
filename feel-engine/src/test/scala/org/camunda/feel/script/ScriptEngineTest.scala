@@ -84,6 +84,13 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     a[ScriptException] should be thrownBy compiledScript.eval(new SimpleScriptContext)
   }
 
+  it should "be extend by a custom function provider" in {
+
+    val context = new SimpleScriptContext
+
+    eval("foo(2)", context) should be(3)
+  }
+  
   private def eval(script: String, context: ScriptContext) = scriptEngine.eval(script, context)
   
 }
