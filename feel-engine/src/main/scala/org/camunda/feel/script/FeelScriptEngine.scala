@@ -14,6 +14,7 @@ import org.camunda.feel.parser.Exp
 import org.camunda.feel.spi.FunctionProvider
 import java.util.ServiceLoader
 import org.camunda.feel.spi.FunctionProvider.EmptyFunctionProvider
+import org.camunda.feel.spi.FunctionProvider.CompositeFunctionProvider
 
 trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
@@ -28,15 +29,14 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   private def functionProvider: FunctionProvider = 
     try {
         val loader = ServiceLoader.load(classOf[FunctionProvider])
-                
-        val providerIterator = loader.iterator()
+        val functionProviders = loader.iterator.toList
         
-        if (providerIterator.hasNext()) {
-          // just use the first one for now
-          providerIterator.next()
-        } else {
-          EmptyFunctionProvider  
+        functionProviders match {
+          case Nil => EmptyFunctionProvider
+          case p :: Nil => p
+          case ps => new CompositeFunctionProvider(ps)
         }
+        
     } catch {
       case t: Throwable => {
         System.err.println("Failed to load function provider")

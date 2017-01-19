@@ -8,7 +8,9 @@ import org.camunda.feel.interpreter.ValFunction
 import org.camunda.feel.interpreter.ValNumber
 import org.camunda.feel.interpreter.ValString
 import org.camunda.feel.interpreter.ValBoolean
+import org.camunda.feel.spi.FunctionProvider.CompositeFunctionProvider
 import org.camunda.feel.spi.CustomFunctionProvider
+import org.camunda.feel.spi.AnotherFunctionProvider
 
 /**
  * @author Philipp Ossler
@@ -54,6 +56,16 @@ class FeelEngineTest extends FlatSpec with Matchers {
     val engine = new FeelEngine(new CustomFunctionProvider)
     
     engine.evalExpression("foo(2)", Map()) should be(EvalValue(3))
+  }
+  
+  it should "be extend by multiple custom function providers" in {
+    
+    val engine = new FeelEngine(new CompositeFunctionProvider(
+      List(new CustomFunctionProvider, new AnotherFunctionProvider)
+    ))
+    
+    engine.evalExpression("foo(2)", Map()) should be(EvalValue(3))
+    engine.evalExpression("bar(2)", Map()) should be(EvalValue(4))
   }
 
   private def evalUnaryTest(expression: String, context: Map[String, Any]): EvalResult = {
