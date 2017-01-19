@@ -91,6 +91,17 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(3,"< var", variables = Map("var" -> 3)) should be (ValBoolean(false))
   }
   
+  it should "compare to a field of a bean" in {
+    
+    class A(val b: Int)
+    
+    eval(3, "a.b", Map("a" -> new A(3))) should be(ValBoolean(true))
+    eval(3, "a.b", Map("a" -> new A(4))) should be(ValBoolean(false))
+    
+    eval(3, "< a.b", Map("a" -> new A(4))) should be(ValBoolean(true))
+    eval(3, "< a.b", Map("a" -> new A(2))) should be(ValBoolean(false))
+  }
+  
   "A string" should "be equal to another string" in {
     
     eval("a", """ "b" """) should be (ValBoolean(false))
@@ -102,6 +113,17 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval("a", """ "a","b" """) should be (ValBoolean(true))
     eval("b", """ "a","b" """) should be (ValBoolean(true))
     eval("c", """ "a","b" """) should be (ValBoolean(false))
+  }
+  
+  it should "compared by a function" in {
+    
+    val startsWithFunction  = ValFunction(
+        params = List("y"), 
+        invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) }, 
+        requireInputVariable = true)
+    
+    eval("foo", """ startsWith("f") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
+    eval("foo", """ startsWith("b") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
   }
   
   "A boolean" should "be equal to another boolean" in {

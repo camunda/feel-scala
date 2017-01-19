@@ -107,14 +107,15 @@ object FeelParser extends JavaTokenParsers {
   private lazy val simplePositiveUnaryTests: Parser[Exp] = rep1sep(simplePositiveUnaryTest, ",") ^^ {  case test :: Nil => test
                                                                                                        case tests => AtLeastOne(tests) }
   
-  // 7
+  // 7 - note that method invocation is not part of the spec
   private lazy val simplePositiveUnaryTest: Parser[Exp] = 
     "<" ~> endpoint ^^ InputLessThan|
     "<=" ~> endpoint ^^ InputLessOrEqual |
     ">" ~> endpoint ^^ InputGreaterThan |
     ">=" ~> endpoint ^^ InputGreaterOrEqual |
-    endpoint ^^ InputEqualTo |
-    interval
+    interval |
+    functionInvocation |
+    endpoint ^^ InputEqualTo
     
   // 18
   private lazy val endpoint: Parser[Exp] = simpleValue
