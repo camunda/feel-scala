@@ -93,9 +93,9 @@ case class In(x: Exp, test: Exp) extends Exp
 
 case class InstanceOf(x: Exp, typeName: String) extends Exp
 
-case class SomeItem(name: String, list: Exp, condition: Exp) extends Exp
+case class SomeItem(iterators: List[(String, Exp)], condition: Exp) extends Exp
 
-case class EveryItem(name: String, list: Exp, condition: Exp) extends Exp
+case class EveryItem(iterators: List[(String, Exp)], condition: Exp) extends Exp
 
 case class For(iterators: List[(String, Exp)], exp: Exp) extends Exp
 

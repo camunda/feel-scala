@@ -679,6 +679,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   	
   	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
   	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2))) should be(ValBoolean(false))
+  	
+  	eval("some x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(true))
+  	eval("some x in [1,2], y in [1,1] satisfies x < y") should be(ValBoolean(false))
   }
   
   it should "be checked with 'every'" in {
@@ -688,6 +691,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   	
   	eval("every x in xs satisfies x >= 1", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
   	eval("every x in xs satisfies x >= 1", Map("xs" -> List(0,1,2,3))) should be(ValBoolean(false))
+  	
+  	eval("every x in [1,2], y in [3,4] satisfies x < y") should be(ValBoolean(true))
+  	eval("every x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(false))
   }
   
   it should "be a processed in a for-expression" in {

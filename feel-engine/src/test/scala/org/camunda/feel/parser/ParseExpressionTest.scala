@@ -317,17 +317,27 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   it should "parse a 'some' expression" in {
   	
   	parse("some x in [1,2] satisfies x < 3") should be(SomeItem(
-  			"x", 
-  			ConstList(List(ConstNumber(1), ConstNumber(2))),
+  			List("x" -> ConstList(List(ConstNumber(1), ConstNumber(2))) ),
   			LessThan(Ref("x"), ConstNumber(3)) ))
+  	
+  	parse("some x in [1,2], y in [3,4] satisfies x < y") should be(SomeItem(
+  			List(
+  			    "x" -> ConstList(List(ConstNumber(1), ConstNumber(2))),
+  			    "y" -> ConstList(List(ConstNumber(3), ConstNumber(4))) ),
+  			LessThan(Ref("x"), Ref("y")) ))
   }
   
   it should "parse an 'every' expression" in {
   	
   	parse("every x in [1,2] satisfies x < 3") should be(EveryItem(
-  			"x", 
-  			ConstList(List(ConstNumber(1), ConstNumber(2))),
+  			List("x" -> ConstList(List(ConstNumber(1), ConstNumber(2))) ),
   			LessThan(Ref("x"), ConstNumber(3)) ))
+  	
+  	parse("every x in [1,2], y in [3,4] satisfies x < y") should be(EveryItem(
+  			List(
+  			    "x" -> ConstList(List(ConstNumber(1), ConstNumber(2))),
+  			    "y" -> ConstList(List(ConstNumber(3), ConstNumber(4))) ),
+  			LessThan(Ref("x"), Ref("y")) ))
   }
   
   it should "parse a 'for' expression" in {

@@ -57,9 +57,9 @@ class FeelInterpreter {
     case Ref(names) => ref(context(names.head), names.tail)
     case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
     // list
-    case SomeItem(name, list, condition) => withList(eval(list), l => atLeastOne(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
-    case EveryItem(name, list, condition) => withList(eval(list), l => all(l.items map( item => () => eval(condition)(context + (name -> item) )), ValBoolean))
-    case For(iterators, exp) => withLists( iterators.map{ case (name, it) => name -> eval(it) }, lists => ValList( flattenAndZipLists(lists).map(vars => eval(exp)(context ++ vars)) ) )
+    case SomeItem(iterators, condition) => withCartesianProduct(iterators, p => atLeastOne( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean ))
+    case EveryItem(iterators, condition) => withCartesianProduct(iterators, p => all( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean))
+    case For(iterators, exp) => withCartesianProduct(iterators, p => ValList( p.map(vars => eval(exp)(context ++ vars) )) )
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
     // functions
     case FunctionInvocation(name, params) => withFunction(context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) ))
@@ -400,6 +400,10 @@ class FeelInterpreter {
         case None => f( lists.asInstanceOf[List[(String, ValList)]] )
       }
   }
+  
+  private def withCartesianProduct(iterators: List[(String, Exp)], f: List[Map[String, Val]] => Val)(implicit context: Context): Val = withLists(
+      iterators.map{ case (name, it) => name -> eval(it) }, lists => 
+        f( flattenAndZipLists(lists) ))      
   
   private def flattenAndZipLists(lists: List[(String, ValList)]): List[Map[String, Val]] = lists match {
     case Nil => List()

@@ -209,10 +209,10 @@ object FeelParser extends JavaTokenParsers {
     case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
   }
   
-  // 48 - TODO should be multiple lists - but how to separate them?
-  private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~! listIterator ~! "satisfies" ~! expression ^^ {
-  	case "some" ~ Tuple2(name, list) ~ _ ~ condition => SomeItem(name, list, condition)
-  	case "every" ~ Tuple2(name, list) ~ _ ~ condition => EveryItem(name, list, condition)
+  // 48 - no separator in spec grammar but in examples
+  private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~! rep1sep(listIterator, ",") ~! "satisfies" ~! expression ^^ {
+  	case "some" ~ iterators ~ _ ~ condition => SomeItem(iterators, condition)
+  	case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
   }
   
   // 49
