@@ -173,7 +173,7 @@ object BuiltinFunctions extends FunctionProvider {
 	
 	def notFunction = ValFunction(List("negand"), _ match {
 	  case List(ValBoolean(negand)) => ValBoolean(!negand)
-	  case e => error(e)
+	  case other => ValNull
 	})
 	
 	def substringFunction = ValFunction(List("string", "start"), _ match {

@@ -46,7 +46,7 @@ class FeelInterpreter {
     case GreaterOrEqual(x,y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
-    case Not(x) => withBoolean(eval(x), x => ValBoolean(!x))
+    case Not(x) => withBooleanOrNull(eval(x), x => ValBoolean(!x))
     case Disjunction(x,y) => atLeastOne(x :: y :: Nil, ValBoolean)
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
     // control structures
@@ -121,6 +121,11 @@ class FeelInterpreter {
   private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
     case _ => ValError(s"expected Boolean but found '$x'")
+  }
+  
+  private def withBooleanOrNull(x: Val, f: Boolean => Val): Val = x match {
+    case ValBoolean(x) => f(x)
+    case _ => ValNull
   }
 
   private def withString(x: Val, f: String => Val): Val = x match {
@@ -211,10 +216,14 @@ class FeelInterpreter {
   
   private def atLeastOne(xs: List[() => Val], f: Boolean => Val): Val = xs match {
     case Nil => f(false)
-    case x :: xs => withBoolean(x(), _ match {
-      case true => f(true)
-      case false => atLeastOne(xs, f)
-    })
+    case x :: xs => x() match {
+      case ValBoolean(true) => f(true)
+      case ValBoolean(false)  => atLeastOne(xs, f)
+      case other => atLeastOne(xs, f) match {
+        case ValBoolean(true) => f(true)
+        case _ => ValNull
+      }
+    }
   }
   
   private def all(xs: List[Exp], f: Boolean => Val)(implicit context: Context): Val =
@@ -222,10 +231,14 @@ class FeelInterpreter {
   
   private def all(xs: List[() => Val], f: Boolean => Val): Val = xs match {
     case Nil => f(true)
-    case x :: xs => withBoolean(x(), _ match {
-      case false => f(false)
-      case true => all(xs, f)
-    })
+    case x :: xs => x() match {
+      case ValBoolean(false) => f(false)
+      case ValBoolean(true)  => all(xs, f)
+      case other => all(xs, f) match {
+        case ValBoolean(false) => f(false)
+        case _ => ValNull
+      }
+    }
   }
 
   private def input(implicit context: Context): Val = context.input

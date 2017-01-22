@@ -39,22 +39,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(exp, Map("x" -> 7)) should be(ValString("high"))
   }
   
-  it should "be a disjunction" in {
-    
-    eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(true))) should be(ValBoolean(true))
-    eval("a or b", Map("a" -> ValBoolean(false), "b" -> ValBoolean(false))) should be(ValBoolean(false))
-    
-    eval("false or false or true") should be(ValBoolean(true))
-  }
-  
-  it should "be a conjunction" in {
-    
-    eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(true))) should be(ValBoolean(true))
-    eval("a and b", Map("a" -> ValBoolean(true), "b" -> ValBoolean(false))) should be(ValBoolean(false))
-    
-    eval("true and true and false") should be(ValBoolean(false))
-  }
-  
   it should "be a simple positive unary test" in {
     
     eval("< 3", Map(Context.defaultInputVariable -> 2)) should be(ValBoolean(true))
@@ -249,6 +233,52 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     
     eval(""" "a" != "a" """) should be(ValBoolean(false))
     eval(""" "a" != "b" """) should be(ValBoolean(true))
+  }
+  
+  "A boolean" should "compared with '='" in {
+    
+    eval("true = true") should be(ValBoolean(true))
+    eval("true = false") should be(ValBoolean(false))
+  }
+  
+  it should "in conjunction" in {
+    
+    eval("true and true") should be(ValBoolean(true))
+    eval("true and false") should be(ValBoolean(false))
+    
+    eval("true and true and false") should be(ValBoolean(false))
+    
+    eval("true and 2") should be(ValNull)
+    eval("false and 2") should be(ValBoolean(false))
+    
+    eval("2 and true") should be(ValNull)
+    eval("2 and false") should be(ValBoolean(false))
+    
+    eval("2 and 4") should be(ValNull)
+  }
+  
+  it should "in disjunction" in {
+    
+    eval("false or true") should be(ValBoolean(true))
+    eval("false or false") should be(ValBoolean(false))
+    
+    eval("false or false or true") should be(ValBoolean(true))
+    
+    eval("true or 2") should be(ValBoolean(true))
+    eval("false or 2") should be(ValNull)
+    
+    eval("2 or true") should be(ValBoolean(true))
+    eval("2 or false") should be(ValNull)
+    
+    eval("2 or 4") should be(ValNull)
+  }
+  
+  it should "negate" in {
+    
+    eval("not(true)") should be(ValBoolean(false))
+    eval("not(false)") should be(ValBoolean(true))
+
+    eval("not(2)") should be(ValNull)
   }
   
   "A time" should "subtract from another time" in {
