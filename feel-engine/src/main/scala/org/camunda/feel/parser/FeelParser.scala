@@ -39,8 +39,6 @@ object FeelParser extends JavaTokenParsers {
   
   private lazy val stringLiteralWithQuotes: Parser[String] = stringLiteral ^^ ( _.replaceAll("\"", "") ) 
     
-  private lazy val terminal =  literal | name ^^ ( n => Ref(List(n)) ) | list | context
-    
   // 1 a)
   private lazy val expression: Parser[Exp] = textualExpression
   // 1 b)

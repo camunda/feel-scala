@@ -6,8 +6,9 @@ import javax.script.Bindings
 import javax.script.ScriptEngine
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.parser.Exp
+import org.camunda.feel.ParsedExpression
 
-case class CompiledFeelScript(engine: FeelScriptEngine, val expression: Exp) extends CompiledScript {
+case class CompiledFeelScript(engine: FeelScriptEngine, val expression: ParsedExpression) extends CompiledScript {
   
   def getEngine: ScriptEngine = engine
   
