@@ -89,6 +89,17 @@ object BuiltinFunctions extends FunctionProvider {
 	  "ceiling" -> ceilingFunction
 	)
 	
+	private val builtinFunctionsByNameAndArgCount: Map[(String, Int), ValFunction] = builtinFunctions
+		.map { case (name, f) => (name, f.params.size) -> f }
+	  .toMap
+	  
+	def getFunction(name: String, argCount: Int) = builtinFunctionsByNameAndArgCount.get((name, argCount))
+	
+	private def error(e: List[Val]): ValError = e match {
+	    case vars if (vars.exists(_.isInstanceOf[ValError])) => vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
+	    case _ => ValError(s"illegal arguments: $e")
+  }
+	
 	def dateFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => ValDate(from)
 		case List(ValDateTime(from)) => ValDate(from.toLocalDate())
@@ -443,13 +454,5 @@ object BuiltinFunctions extends FunctionProvider {
         case None => f( list.asInstanceOf[List[ValBoolean]].map( _.value ) )
       }
   }
-	
-	private def error(e:List[Val]) = ValError(s"illegal arguments: $e")
-	
-	private val builtinFunctionsByNameAndArgCount: Map[(String, Int), ValFunction] = builtinFunctions
-		.map { case (name, f) => (name, f.params.size) -> f }
-	  .toMap
-	  
-	def getFunction(name: String, argCount: Int) = builtinFunctionsByNameAndArgCount.get((name, argCount))
 	
 }

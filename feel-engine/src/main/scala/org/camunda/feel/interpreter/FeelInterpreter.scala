@@ -71,6 +71,11 @@ class FeelInterpreter {
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
   }
+  
+  private def error(x: Val, message: String) = x match {
+    case e: ValError => e
+    case _ => ValError(message)
+  }
 
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
@@ -115,12 +120,12 @@ class FeelInterpreter {
 
   private def withNumber(x: Val, f: Number => Val): Val = x match {
     case ValNumber(x) => f(x)
-    case _ => ValError(s"expected Number but found '$x'")
+    case _ => error(x, s"expected Number but found '$x'")
   }
 
   private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
-    case _ => ValError(s"expected Boolean but found '$x'")
+    case _ => error(x, s"expected Boolean but found '$x'")
   }
   
   private def withBooleanOrNull(x: Val, f: Boolean => Val): Val = x match {
@@ -130,7 +135,7 @@ class FeelInterpreter {
 
   private def withString(x: Val, f: String => Val): Val = x match {
     case ValString(x) => f(x)
-    case _ => ValError(s"expected String but found '$x'")
+    case _ => error(x, s"expected String but found '$x'")
   }
   
   private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
@@ -142,7 +147,7 @@ class FeelInterpreter {
 
   private def withDate(x: Val, f: Date => Val): Val = x match {
     case ValDate(x) => f(x)
-    case _ => ValError(s"expected Date but found '$x'")
+    case _ => error(x, s"expected Date but found '$x'")
   }
 
   private def withTimes(x: Val, y: Val, f: (Time, Time) => Val): Val =
@@ -154,7 +159,7 @@ class FeelInterpreter {
   
   private def withTime(x: Val, f: Time => Val): Val = x match {
     case ValTime(x) => f(x)
-    case _ => ValError(s"expect Time but found '$x'")
+    case _ => error(x, s"expect Time but found '$x'")
   }
   
   private def withDateTimes(x: Val, y: Val, f: (DateTime, DateTime) => Val): Val =
@@ -166,7 +171,7 @@ class FeelInterpreter {
   
   private def withDateTime(x: Val, f: DateTime => Val): Val = x match {
     case ValDateTime(x) => f(x)
-    case _ => ValError(s"expect Date Time but found '$x'")
+    case _ => error(x, s"expect Date Time but found '$x'")
   }
   
   private def withYearMonthDurations(x: Val, y: Val, f: (YearMonthDuration, YearMonthDuration) => Val): Val =
@@ -185,16 +190,16 @@ class FeelInterpreter {
 
   private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val): Val = x match {
     case ValYearMonthDuration(x) => f(x)
-    case _ => ValError(s"expect Year-Month-Duration but found '$x'")
+    case _ => error(x, s"expect Year-Month-Duration but found '$x'")
   }
   
   private def withDayTimeDuration(x: Val, f: DayTimeDuration => Val): Val = x match {
     case ValDayTimeDuration(x) => f(x)
-    case _ => ValError(s"expect Day-Time-Duration but found '$x'")
+    case _ => error(x, s"expect Day-Time-Duration but found '$x'")
   }
 
   private def withVal(x: Val, f: Val => Val): Val = x match {
-    case ValError(_) => ValError(s"expected value but found '$x'")
+    case e: ValError => e
     case _ => f(x)
   }
 
@@ -246,7 +251,7 @@ class FeelInterpreter {
   private def dualNumericOp(x: Val, y: Val, op: (Number,Number) => Number, f: Number => Val)(implicit context: Context): Val =
     x match {
       case ValNumber(x) => withNumber(y, y => f(op(x,y)))
-      case _ => ValError(s"expected Number but found '$x'")
+      case _ => error(x, s"expected Number but found '$x'")
     }
   
   private def dualOpAny(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
@@ -259,7 +264,7 @@ class FeelInterpreter {
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
       case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
-      case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
+      case _ => error(x, s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
     }
   
   private def dualOp(x: Val, y: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
@@ -270,7 +275,7 @@ class FeelInterpreter {
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
       case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
-      case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
+      case _ => error(x, s"expected Number, Date, Time or Duration but found '$x'")
     }
   
   private def addOp(x: Val, y: Val): Val = x match {
@@ -280,20 +285,20 @@ class FeelInterpreter {
   	case ValDateTime(x) => y match {
   		case ValYearMonthDuration(y) => ValDateTime( x.plus(y) )
   		case ValDayTimeDuration(y) => ValDateTime( x.plus(y) ) 										
-  		case _ => ValError(s"expect Year-Month-/Day-Time-Duration but found '$x'")
+  		case _ => error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
   	}
   	case ValYearMonthDuration(x) => y match {
   		case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y) )
   		case ValDateTime(y) => ValDateTime( y.plus(x) )										
-  		case _ => ValError(s"expect Date-Time, or Year-Month-Duration but found '$x'")
+  		case _ => error(y, s"expect Date-Time, or Year-Month-Duration but found '$x'")
   	}
   	case ValDayTimeDuration(x) => y match {
   		case ValDayTimeDuration(y) => ValDayTimeDuration( x.plus(y) )
   		case ValDateTime(y) => ValDateTime( y.plus(x) )	
   		case ValTime(y) => ValTime( y.plus(x) )	
-  		case _ => ValError(s"expect Date-Time, Time, or Day-Time-Duration but found '$x'")
+  		case _ => error(y, s"expect Date-Time, Time, or Day-Time-Duration but found '$x'")
   	}
-  	case _ => ValError(s"expected Number, String, Date, Time or Duration but found '$x'")
+  	case _ => error(x, s"expected Number, String, Date, Time or Duration but found '$x'")
   }
   
   private def subOp(x: Val, y: Val): Val = x match {
@@ -301,17 +306,17 @@ class FeelInterpreter {
   	case ValTime(x) => y match {
   		case ValTime(y) => ValDayTimeDuration( Duration.between(y, x) )
   		case ValDayTimeDuration(y) => ValTime( x.minus(y) )
-  		case _ => ValError(s"expect Time, or Day-Time-Duration but found '$x'")
+  		case _ => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
   	}
   	case ValDateTime(x) => y match {
   		case ValDateTime(y) => ValDayTimeDuration( Duration.between(y, x) )
   		case ValYearMonthDuration(y) => ValDateTime( x.minus(y) )
   		case ValDayTimeDuration(y) => ValDateTime( x.minus(y) ) 										
-  		case _ => ValError(s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
+  		case _ => error(y, s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
   	}
   	case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.minus(y).normalized ))
   	case ValDayTimeDuration(x) => withDayTimeDuration(y, y => ValDayTimeDuration( x.minus(y) ))
-  	case _ => ValError(s"expected Number, Date, Time or Duration but found '$x'")
+  	case _ => error(x, s"expected Number, Date, Time or Duration but found '$x'")
   }
   
   private def mulOp(x: Val, y: Val): Val = x match {
@@ -319,23 +324,23 @@ class FeelInterpreter {
   		case ValNumber(y) => ValNumber( x * y )
   		case ValYearMonthDuration(y) => ValYearMonthDuration( y.multipliedBy(x.intValue).normalized )
   		case ValDayTimeDuration(y) => ValDayTimeDuration( y.multipliedBy(x.intValue) )
-  		case _ => ValError(s"expect Number, or Year-Month-/Day-Time-Duration but found '$x'")
+  		case _ => error(y, s"expect Number, or Year-Month-/Day-Time-Duration but found '$x'")
   	}
   	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( x.multipliedBy(y.intValue).normalized ))
   	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( x.multipliedBy(y.intValue) ))
-  	case _ => ValError(s"expected Number, or Duration but found '$x'")
+  	case _ => error(x, s"expected Number, or Duration but found '$x'")
   }
   
   private def divOp(x: Val, y: Val): Val = x match {
   	case ValNumber(x) => withNumber(y, y => ValNumber(x / y))
   	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized() ))
   	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( Duration.ofMillis((x.toMillis() / y).intValue) ))
-  	case _ => ValError(s"expected Number, or Duration but found '$x'")
+  	case _ => error(x, s"expected Number, or Duration but found '$x'")
   }
   
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)
-    case _ => ValError(s"expect Function but found '$x'")
+    case _ => error(x, s"expect Function but found '$x'")
   }
   
   private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val)(implicit context: Context): Val = { 
@@ -384,12 +389,12 @@ class FeelInterpreter {
     case ValList(_) => f("list")
     case ValContext(_) => f("context")
     case ValFunction(_, _, _) => f("function")
-    case _ => ValError(s"unexpected type '${x.getClass.getName}'")
+    case _ => error(x, s"unexpected type '${x.getClass.getName}'")
   }
   
   private def withList(x: Val, f: ValList => Val): Val = x match {
     case x: ValList => f(x)
-    case _ => ValError(s"expect List but found '$x'")
+    case _ => error(x, s"expect List but found '$x'")
   }
       
   private def withLists(lists: List[(String, Val)], f: List[(String, ValList)] => Val)(implicit context: Context): Val = {
@@ -421,7 +426,7 @@ class FeelInterpreter {
   
   private def withContext(x: Val, f: ValContext => Val): Val = x match {
     case x: ValContext => f(x)
-    case _ => ValError(s"expect Context but found '$x'")
+    case _ => error(x, s"expect Context but found '$x'")
   }
   
   private def filterContext(x: Val)(implicit context: Context): Context = x match {
@@ -445,7 +450,7 @@ class FeelInterpreter {
       case None => ValError(s"context contains no entry with key '$key'")
     }
     case ValList(list) => ValList( list map (item => path(item, key)) )
-    case e => ValError(s"expected Context or List of Contextes but found '$e'")
+    case e => error(e, s"expected Context or List of Contextes but found '$e'")
   }
   
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): List[(String, Val)] = 
