@@ -1,7 +1,5 @@
-organization := "org.camunda"
-
-name := "feel-scala"
-
+organization := "org.camunda.bpm.extension.feel.scala"
+name := "feel-engine"
 version := "1.0.0-SNAPSHOT"
 
 scalaVersion := "2.11.7"

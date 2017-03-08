@@ -8,19 +8,25 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>feel-engine</artifactId>
+  <artifactId>camunda-feel-engine-factory</artifactId>
   
-  <name>FEEL Scala Engine</name>
+  <name>FEEL Scala Engine Factory</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.scala-lang.modules</groupId>
-      <artifactId>scala-parser-combinators_2.11</artifactId>
+      <groupId>org.camunda.bpm.extension.feel.scala</groupId>
+      <artifactId>feel-engine</artifactId>
     </dependency>
     
     <dependency>
-      <groupId>com.github.nscala-time</groupId>
-      <artifactId>nscala-time_2.11</artifactId>
+      <groupId>org.camunda.bpm.dmn</groupId>
+      <artifactId>camunda-engine-feel-api</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.camunda.bpm.dmn</groupId>
+      <artifactId>camunda-engine-dmn</artifactId>
+      <scope>test</scope>
     </dependency>
     
     <dependency>
@@ -29,5 +35,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-        
+
 </project>
