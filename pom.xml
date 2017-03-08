@@ -28,6 +28,7 @@
       <module>feel-engine</module>
       <module>feel-engine-factory</module>
       <module>feel-engine-plugin</module>
+      <module>examples</module>
     </modules>
     
     <dependencyManagement>

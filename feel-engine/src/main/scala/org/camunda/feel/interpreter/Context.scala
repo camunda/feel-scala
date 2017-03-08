@@ -2,7 +2,7 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.spi.FunctionProvider
-import org.camunda.feel.spi.FunctionProvider.EmptyFunctionProvider
+import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
 
 /**
  * @author Philipp Ossler

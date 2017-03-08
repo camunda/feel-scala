@@ -8,7 +8,7 @@ import org.camunda.feel.interpreter.ValFunction
 import org.camunda.feel.interpreter.ValNumber
 import org.camunda.feel.interpreter.ValString
 import org.camunda.feel.interpreter.ValBoolean
-import org.camunda.feel.spi.FunctionProvider.CompositeFunctionProvider
+import org.camunda.feel.spi.DefaultFunctionProviders.CompositeFunctionProvider
 import org.camunda.feel.spi.CustomFunctionProvider
 import org.camunda.feel.spi.AnotherFunctionProvider
 

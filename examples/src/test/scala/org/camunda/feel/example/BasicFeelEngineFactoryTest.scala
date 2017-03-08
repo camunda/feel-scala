@@ -9,11 +9,11 @@ import org.camunda.bpm.dmn.engine.impl.DefaultDmnEngineConfiguration
 import org.camunda.feel.integration.CamundaFeelEngineFactory
 import org.camunda.bpm.model.dmn.Dmn
 
-class IntegrationTest extends FlatSpec with Matchers with DmnEvaluationTest {
+class BasicFeelEngineFactoryTest extends FlatSpec with Matchers with DmnEvaluationTest {
 
-  val DMN_DT_SIMPLE_UNARY_TEST = "/example/simpleUnaryTest.dmn"
-  val DMN_DT_OUTPUT_EXPRESSION = "/example/outputExpression.dmn"
-  val DMN_LITERAL_EXPRESSION = "/example/literalExpression.dmn"
+  val DMN_DT_SIMPLE_UNARY_TEST = "/basic/simpleUnaryTest.dmn"
+  val DMN_DT_OUTPUT_EXPRESSION = "/basic/outputExpression.dmn"
+  val DMN_LITERAL_EXPRESSION = "/basic/literalExpression.dmn"
 
   "The DMN engine" should "evaluate a decision table with a simple unary test" in {
 

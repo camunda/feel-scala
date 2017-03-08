@@ -11,19 +11,15 @@ import org.camunda.bpm.model.dmn.Dmn
 
 trait DmnEvaluationTest {
   
-  // use alternative name because of a bug in the DMN engine regarding FEEL expressions
-  val feelEngineName = "feel-scala"
-  
   val dmnEngine = {
-    val feelFactory = new CamundaFeelEngineFactory
     val dmnEngineConfig = DmnEngineConfiguration.createDefaultDmnEngineConfiguration().asInstanceOf[DefaultDmnEngineConfiguration]     
     
-    dmnEngineConfig.setDefaultInputEntryExpressionLanguage("feel");
-    dmnEngineConfig.setDefaultOutputEntryExpressionLanguage(feelEngineName);
-    dmnEngineConfig.setDefaultLiteralExpressionLanguage(feelEngineName);
-    // dmnEngineConfig.setDefaultInputExpressionExpressionLanguage(feelEngineName);
+    dmnEngineConfig.setDefaultInputEntryExpressionLanguage("feel-scala-unary-tests");
+    dmnEngineConfig.setDefaultOutputEntryExpressionLanguage("feel-scala");
+    dmnEngineConfig.setDefaultLiteralExpressionLanguage("feel-scala");
+    dmnEngineConfig.setDefaultInputExpressionExpressionLanguage("feel-scala");
     
-    dmnEngineConfig.feelEngineFactory(feelFactory).buildEngine()
+    dmnEngineConfig.feelEngineFactory(new CamundaFeelEngineFactory).buildEngine()
   }
   
   def decisionInstance(dmnFile: String) = {

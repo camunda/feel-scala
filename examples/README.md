@@ -1,1 +1,1 @@
-# camunda-feel-example
+# FEEL Scala Examples

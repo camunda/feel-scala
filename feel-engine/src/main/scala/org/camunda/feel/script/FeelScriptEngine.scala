@@ -13,8 +13,8 @@ import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.Exp
 import org.camunda.feel.spi.FunctionProvider
 import java.util.ServiceLoader
-import org.camunda.feel.spi.FunctionProvider.EmptyFunctionProvider
-import org.camunda.feel.spi.FunctionProvider.CompositeFunctionProvider
+import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
+import org.camunda.feel.spi.DefaultFunctionProviders.CompositeFunctionProvider
 
 trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 

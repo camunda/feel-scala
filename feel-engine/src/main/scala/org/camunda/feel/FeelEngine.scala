@@ -7,8 +7,7 @@ import org.camunda.feel.interpreter.Context
 import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.Exp
 import org.camunda.feel.script.CompiledFeelScript
-import org.camunda.feel.script.CompiledFeelScript
-import org.camunda.feel.spi.FunctionProvider.EmptyFunctionProvider
+import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
 import org.camunda.feel.spi.FunctionProvider
 
 /**

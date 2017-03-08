@@ -8,7 +8,7 @@ trait FunctionProvider {
   
 }
 
-object FunctionProvider {
+object DefaultFunctionProviders {
   
   object EmptyFunctionProvider extends FunctionProvider {
     def getFunction(functionName: String, argumentCount: Int) = None
