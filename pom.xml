@@ -27,6 +27,7 @@
     <modules>
       <module>feel-engine</module>
       <module>feel-engine-factory</module>
+      <module>feel-engine-plugin</module>
     </modules>
     
     <dependencyManagement>
@@ -46,6 +47,12 @@
             </dependency>
             
             <dependency>
+              <groupId>org.camunda.bpm.extension.feel.scala</groupId>
+              <artifactId>feel-engine-factory</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
               <groupId>org.scala-lang.modules</groupId>
               <artifactId>scala-parser-combinators_2.11</artifactId>
               <version>1.0.4</version>
@@ -61,7 +68,13 @@
               <groupId>org.scalatest</groupId>
               <artifactId>scalatest_2.11</artifactId>
               <version>2.2.4</version>
-            </dependency>                        
+            </dependency>     
+            
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.193</version>
+            </dependency>                   
         </dependencies>
     </dependencyManagement>
 

@@ -8,31 +8,32 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>feel-engine-factory</artifactId>
+  <artifactId>feel-engine-plugin</artifactId>
   
-  <name>FEEL Scala Engine Factory</name>
+  <name>FEEL Scala Engine Plugin</name>
   
   <dependencies>
     <dependency>
       <groupId>org.camunda.bpm.extension.feel.scala</groupId>
-      <artifactId>feel-engine</artifactId>
+      <artifactId>feel-engine-factory</artifactId>
     </dependency>
     
     <dependency>
-      <groupId>org.camunda.bpm.dmn</groupId>
-      <artifactId>camunda-engine-feel-api</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.camunda.bpm.dmn</groupId>
-      <artifactId>camunda-engine-dmn</artifactId>
-      <scope>test</scope>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine</artifactId>
+      <scope>provided</scope>
     </dependency>
     
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.11</artifactId>
       <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>test</scope>
     </dependency>
   </dependencies>
 
