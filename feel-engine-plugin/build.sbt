@@ -18,3 +18,4 @@ libraryDependencies ++= List(
 	"com.h2database" % "h2" % "1.4.193" % "test"
 )
 
+assemblyJarName in assembly :=  s"${name.value}-${version.value}-complete.jar"

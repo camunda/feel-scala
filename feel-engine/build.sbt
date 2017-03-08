@@ -15,3 +15,5 @@ libraryDependencies ++= List(
 	"org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
 	"junit" % "junit" % "4.11" % "test"
 )
+
+assemblyJarName in assembly :=  s"${name.value}-${version.value}-complete.jar"
