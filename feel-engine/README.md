@@ -2,8 +2,6 @@
 
 A parser and interpreter for FEEL (Friendly Enough Expression Language) written in Scala. 
 
-FEEL is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
-
 ## How to use it?
 
 Add the FEEL engine to your project by copying the jar file or adding the project as dependency.
