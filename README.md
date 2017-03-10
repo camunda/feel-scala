@@ -1,119 +1,27 @@
-# FEEL 
-A parser and interpreter for FEEL (friendly enough expression language) written in scala. 
+# FEEL Scala
 
-FEEL is a part of the [DMN Spec](http://www.omg.org/spec/DMN/) and is designed to write expressions and conditions in a simple way what can easily understand by business professionals and developers.
-S-FEEL is a subset of FEEL that can be used for simple expressions and conditions. Mostly, it should used for decision tables.
+A community extension for Camunda BPM which replaces the built-in FEEL engine of the Camunda DMN engine.
 
-## Currently Supported Language Features
-* data types: 
-  * number
-  * string
-  * boolean
-  * date
-  * time
-  * date time
-  * duration
-  * list
-  * context
-* simple unary tests: 
-  * compare operators ('<', '<=', '>', '>=', equal)
-  * interval
-  * negation
-  * combination of multiple tests with ','
-* expression:
-  * arithmetic expression ('+', '-', '*', '/', '**', negation) (numbers only)
-  * if-then-else
-  * disjunction and conjunction
-  * comparison (compare operators, 'between x and y', 'x in y') 
-  * list expressions ('some', 'every', 'for', filter)
-  * path expression (access context, transform list of contextes)
-  * function definition (FEEl + Java)
-  * function invocation (positional + named parameters)
-  * instance of (for build-in types)
-  * simple positive unary test (as expression)
-* built-in functions  
+*Features:*
 
-## Current Limitations
-* the input of the simple unary test should be given as context entry 'cellInput'
-* the interpreter returns a failure when the type of the expression doesn't match (regarding the spec it should just return `null`)
-* the string literal must be simple and doesn't match the exact definition regarding the specs 
+* comprehensive support for unary tests and expressions
+* built-in functions
+* extensible by own functions
 
-## Next Steps
-* extend support for date, time, date-time and duration
-* support script compilation
-* improve Java interoperability
-* improve Camunda DMN engine integration
-* improve parsing and failure messages
+## What is FEEL?
 
-## How to use 
-The parser and interpreter can be integrated as dependency (requires Scala in classpath) or as jar which include all dependencies (size of ~ 7mb).
+FEEL is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
 
-Make sure you have build and deploy it (locally) before. It is not deployed in a public repository yet. 
+## How to use it?
 
-Or just use a built jar of the released version found on [github release page](https://github.com/saig0/feel/releases).
+You can use the FEEL engine in different ways 
 
-### Native Way
-There is a class 'FeelEngine' that can be used to parse and evaluate a given expression. This class can be called from a scala or java program. 
-
-```scala
-object AnyProgram {
-  
-  val engine = new FeelEngine
-  
-  def feel(expression: String, context: Map[String, Any]) {
-    
-    val result: EvalResult = engine.evalSimpleUnaryTest(expression, context)
-    
-    result match {
-      case EvalValue(value)   =>  // ...
-      case EvalFailure(error) =>  // ...
-      case ParseFailure(error) => // ...
-    }
-  }
-  
-}
-```
-
-### As Script Engine
-The spec [JSR 223](https://www.jcp.org/en/jsr/detail?id=223) is implemented so that it can be used as script engine. It is registered by name 'feel'.
-
-```scala
-object AnyProgram {
-
-  val scriptEngineManager = new ScriptEngineManager
- 
-  def feel(script: String, context: ScriptContext) {
-  
-    val scriptEngine: FeelScriptEngine = scriptEngineManager.getEngineByName("feel")
-    
-    val result: Object = scriptEngine.eval(script, context)
-    // ...
-  }
-
-}
-```
-
-## How to build
-
-> Requirements
-* [SBT](http://www.scala-sbt.org) to build and test the application
-
-Run the tests with
-```
-sbt test
-```
-
-Build the jar including all dependencies with
-```
-sbt assemply
-```
-
-Deploy it locally with
-```
-sbt pulishLocal
-```
+* [standalone or as script engine](https://github.com/camunda/feel-scala/tree/master/feel-engine#how-to-use-it)
+* [together with a standalone / embedded Camunda DMN engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-factory#how-to-use-it) via feel engine factory spi
+* [together with a Camunda BPM engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-plugin#how-to-use-it) as process engine plugin
 
 ## Examples
+
 Just to have a feeling how an expression can look like:
 
 ### Simple Unary Test
@@ -138,5 +46,14 @@ not(2,4)                                    // input is not 2 or 4
 
 ```
 
-## Using the FEEL Engine to evaluate DMN decision tables
-Camunda provide a [DMN Engine](https://github.com/camunda/camunda-engine-dmn) what can evaluate DMN decision tables. You can use the FEEL engine inside of the DMN engine to evaluate expressions. See the [integration](https://github.com/saig0/camunda-feel-integration) for details.
+## Contribution
+
+Found a bug? Please report it using [Github Issues](https://github.com/camunda/feel-scala/issues).
+
+Want to extend, improve or fix a bug in the extension? [Pull Requests](https://github.com/camunda/feel-scala/pulls) are very welcome.
+
+Want to discuss something? The [Camunda Forum](https://forum.camunda.org/c/community-extensions) might be the best place for it.
+
+## License
+
+[Apache License, Version 2.0](./LICENSE)
