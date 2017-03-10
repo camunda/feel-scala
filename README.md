@@ -2,7 +2,7 @@
 
 A community extension for Camunda BPM which replaces the built-in FEEL engine of the Camunda DMN engine.
 
-*Features:*
+**Features:**
 
 * comprehensive support for unary tests and expressions
 * built-in functions
