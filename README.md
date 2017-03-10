@@ -14,11 +14,13 @@ FEEL (Friendly Enough Expression Language) is a part of the [DMN specification](
 
 ## How to use it?
 
-You can use the FEEL engine in different ways 
+You can integrate the FEEL engine in different ways 
 
 * [standalone or as script engine](https://github.com/camunda/feel-scala/tree/master/feel-engine#how-to-use-it)
 * [together with a standalone / embedded Camunda DMN engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-factory#how-to-use-it) via feel engine factory spi
 * [together with a Camunda BPM engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-plugin#how-to-use-it) as process engine plugin
+
+Then, you can use FEEL expressions in decision tables and decision literal expressions.
 
 ## Examples
 
@@ -45,6 +47,8 @@ not(2,4)                                    // input is not 2 or 4
 <= duration("P1D")                          // input is less or equal to 'P1D' (one day)
 
 ```
+
+See more [examples](https://github.com/camunda/feel-scala/tree/master/examples).
 
 ## Contribution
 
