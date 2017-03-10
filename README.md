@@ -10,7 +10,7 @@ A community extension for Camunda BPM which replaces the built-in FEEL engine of
 
 ## What is FEEL?
 
-FEEL is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
+FEEL (Friendly Enough Expression Language) is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
 
 ## How to use it?
 
