@@ -1,6 +1,6 @@
 organization := "org.camunda.bpm.extension.feel.scala"
 name := "examples"
-version := "1.0.0-SNAPSHOT"
+version := "1.1.0-SNAPSHOT"
  
 scalaVersion := "2.11.7"
 
@@ -9,7 +9,7 @@ resolvers ++= Seq(
 	"camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public"
 ) 
 
-libraryDependencies += "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.0.0-SNAPSHOT"
+libraryDependencies += "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.1.0-SNAPSHOT"
  
 libraryDependencies ++= List(
 	"org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",

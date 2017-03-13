@@ -1,6 +1,6 @@
 organization := "org.camunda.bpm.extension.feel.scala"
 name := "feel-engine-plugin"
-version := "1.0.0-SNAPSHOT"
+version := "1.1.0-SNAPSHOT"
 
 scalaVersion := "2.11.7"
 
@@ -8,7 +8,7 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public"
  
 libraryDependencies ++= List(
-  "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.0.0-SNAPSHOT",
+  "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.1.0-SNAPSHOT",
   "org.camunda.bpm" % "camunda-engine" % "7.7.0-alpha1" % "provided"
 ) 
  
