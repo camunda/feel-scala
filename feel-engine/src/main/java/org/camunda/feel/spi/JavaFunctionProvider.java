@@ -14,17 +14,24 @@ package org.camunda.feel.spi;
 
 import java.util.Optional;
 
+import org.camunda.feel.interpreter.Val;
 import org.camunda.feel.interpreter.ValFunction;
 import org.camunda.feel.spi.FunctionProvider;
 
+import scala.Function1;
 import scala.Option;
+import scala.collection.JavaConverters;
+import scala.collection.immutable.List;
+import scala.runtime.AbstractFunction1;
 
 public interface JavaFunctionProvider extends FunctionProvider
 {
+    Optional<JavaFunction> resolveFunction(String functionName, int argCount);
+
     @Override
     default Option<ValFunction> getFunction(String functionName, int argCount)
     {
-        final Optional<ValFunction> function = resolveFunction(functionName, argCount);
+        final Optional<JavaFunction> function = resolveFunction(functionName, argCount);
 
         if (function == null || !function.isPresent())
         {
@@ -32,10 +39,26 @@ public interface JavaFunctionProvider extends FunctionProvider
         }
         else
         {
-            return Option.apply(function.get());
+            return Option.apply(asFunction(function.get()));
         }
     }
 
-    Optional<ValFunction> resolveFunction(String functionName, int argCount);
+    default ValFunction asFunction(final JavaFunction function)
+    {
+        final List<String> paramList = JavaConverters.asScalaBufferConverter(function.getParams()).asScala().toList();
+
+        final Function1<List<Val>, Val> f = new AbstractFunction1<List<Val>, Val>()
+        {
+            public Val apply(List<Val> args) {
+
+                final java.util.List<Val> argList = JavaConverters.<Val> bufferAsJavaListConverter(args.toBuffer()).asJava();
+
+                return function.getFunction().apply(argList);
+            };
+
+        };
+
+        return new ValFunction(paramList, f, function.isInputVariableRequired());
+    }
 
 }
