@@ -4,8 +4,9 @@ A community extension for Camunda BPM which replaces the built-in FEEL engine of
 
 **Features:**
 
-* comprehensive support for unary tests and expressions
-* built-in functions
+* full support for unary tests and expressions
+* support all data types
+* include built-in functions
 * extensible by own functions
 
 ## What is FEEL?
@@ -24,28 +25,30 @@ Then, you can use FEEL expressions in decision tables and decision literal expre
 
 ## Examples
 
-Just to have a feeling how an expression can look like:
+### Unary Tests
 
-### Simple Unary Test
 ```
-< 42                                        // input less than 42
+< 7                                                 // input less than 7
 
-(2..4)                                      // input greater than 2 and less than 4
+not(2,4)                                            // input is not 2 or 4
 
-2,4                                         // input is 2 or 4
+[date("2015-09-17")..date("2015-09-19")]            // input is between '2015-09-17' and '2015-09-19'
 
-not(2,4)                                    // input is not 2 or 4
+<= duration("P1D")                                  // input is less or equal one day    
+```
 
->= a                                        // input is greater or equal to the value of variable 'a'
+### Expression
 
-"good"                                      // input is equal the string 'good'
+```
+applicant.monthly.income * 12                                           
 
-[date("2015-09-17")..date("2015-09-19")]    // input is after or equal '2015-09-17' and before or equal '2015-09-19'
+if applicant.maritalStatus in ("M","S") then "valid" else "not valid"    
 
-]time("08:00:00")..time("16:00:00")[        // input is after '08:00:00' and before '16:00:00'
+sum( [applicant.monthly.repayments, applicant.monthly.expenses] )        
 
-<= duration("P1D")                          // input is less or equal to 'P1D' (one day)
+sum( credit_history[record_date > date("2011-01-01")].weight )           
 
+some ch in credit_history satisfies ch.event = "bankruptcy"      
 ```
 
 See more [examples](https://github.com/camunda/feel-scala/tree/master/examples).
