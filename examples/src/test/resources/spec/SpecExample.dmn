@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/1.0" id="definitions_1q6665r" name="Decision" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="yearly_income" name="yearly income">
+    <extensionElements>
+      <biodi:bounds x="200" y="200" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_190xn7d" name="income" />
+    <literalExpression id="LiteralExpression_12298k9">    <text>applicant.monthly.income * 12</text>
+</literalExpression>
+  </decision>
+  <decision id="marital_status_check" name="marital status check">
+    <extensionElements>
+      <biodi:bounds x="271" y="326" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_1755pfb" name="isValid" />
+    <literalExpression id="LiteralExpression_0sruqgz">    <text><![CDATA[if applicant.maritalStatus in ("M","S") then "valid" else "not valid"]]></text>
+</literalExpression>
+  </decision>
+  <decision id="total_expenses" name="total expenses">
+    <extensionElements>
+      <biodi:bounds x="614" y="391" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_15ipzj5" name="expenses" />
+    <literalExpression id="LiteralExpression_1y9qvhr">    <text>sum( [applicant.monthly.repayments, applicant.monthly.expenses] )</text>
+</literalExpression>
+  </decision>
+  <decision id="sum_credit" name="sum of recent credit weights">
+    <extensionElements>
+      <biodi:bounds x="726" y="269" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_1yfutit" name="sum" />
+    <literalExpression id="LiteralExpression_1k74kj4">    <text><![CDATA[sum( credit_history[record_date > date("2011-01-01")].weight )]]></text>
+</literalExpression>
+  </decision>
+  <decision id="bankruptcy_check" name="bankruptcy check">
+    <extensionElements>
+      <biodi:bounds x="368" y="457" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_1huic61" name="hasBankruptcy" />
+    <literalExpression id="LiteralExpression_06mrnl2">    <text><![CDATA[some ch in credit_history satisfies ch.event = "bankruptcy"]]></text>
+</literalExpression>
+  </decision>
+</definitions>
