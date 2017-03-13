@@ -2,6 +2,7 @@ package org.camunda.feel.example.spi
 
 import org.camunda.feel.interpreter._
 import org.camunda.feel.spi.FunctionProvider
+import scala.math.BigDecimal.int2bigDecimal
 
 class CustomScalaFunctionProvider extends FunctionProvider {
   
