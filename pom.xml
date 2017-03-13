@@ -127,6 +127,7 @@
                 <goals>
                   <goal>compile</goal>
                   <goal>testCompile</goal>
+                  <goal>doc-jar</goal>
                 </goals>
               </execution>
             </executions>
@@ -151,26 +152,6 @@
         </plugins>
         
     </build>
-
-    <profiles>
-      <profile>
-        <id>sonatype-oss-release</id>
-        <build>
-          <plugins>
-            <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-release-plugin</artifactId>
-                  <configuration>
-                      <mavenExecutorId>forked-path</mavenExecutorId>
-                      <useReleaseProfile>false</useReleaseProfile>
-                      <arguments>${arguments} -Psonatype-oss-release</arguments>
-                      <goals>scala:doc-jar deploy</goals>
-                  </configuration>
-                </plugin>
-          </plugins>
-        </build>
-      </profile>
-    </profiles>
 
     <licenses>
         <license>
