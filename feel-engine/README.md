@@ -4,7 +4,7 @@ A parser and interpreter for FEEL (Friendly Enough Expression Language) written 
 
 ## How to use it?
 
-Add the FEEL engine to your project by copying the jar file or adding the project as dependency.
+Add the FEEL engine to your project by copying the [jar file](https://github.com/camunda/feel-scala/releases) _(feel-engine-${VERSION}-complete.jar)_ or adding the project as dependency.
 
 ```xml
 <dependency>
