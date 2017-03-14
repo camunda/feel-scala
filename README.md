@@ -27,6 +27,8 @@ You can integrate the FEEL engine in different ways
 
 Then, you can use FEEL expressions in decision tables and decision literal expressions.
 
+See the [Wiki](https://github.com/camunda/feel-scala/wiki) for more information about the FEEL engine and the supported FEEL expressions.
+
 ## Examples
 
 ### Unary Tests
