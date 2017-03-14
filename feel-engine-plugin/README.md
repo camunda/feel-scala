@@ -4,7 +4,7 @@ Provide an integration of the FEEL engine for Camunda BPM as Process Engine Plug
 
 ## How to use it?
 
-Add the plugin including the FEEL engine to your project by copying the jar file or adding the project as dependency.
+Add the plugin including the FEEL engine to your project by copying the [jar file](https://github.com/camunda/feel-scala/releases) _(feel-engine-plugin-${VERSION}-complete.jar)_ or adding the project as dependency.
 
 ```xml
 <dependency>
