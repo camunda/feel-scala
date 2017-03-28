@@ -16,7 +16,6 @@ FEEL (Friendly Enough Expression Language) is a part of the [DMN specification](
 ## How to use it?
 
 > Requirements:
-> * Camunda BPM >= 7.7.0-alpha1
 > * Java 8
 
 You can integrate the FEEL engine in different ways 
