@@ -46,6 +46,20 @@ You can also change a default expression language by overridding the property.
 </bean>
 ```
 
+> Using Camunda BPM < 7.7.0
+
+You have to override the default expression language of input entries and set it to `feel`. This creates the FEEL engine by the factory instead of using it as script engine. 
+
+```xml
+  <property name="processEnginePlugins">
+      <list>
+        <bean class="org.camunda.feel.CamundaFeelEnginePlugin">
+          <property name="defaultInputEntryExpressionLanguage" value="feel" />
+        </bean>
+      </list>
+    </property>
+```
+
 ## How to build it?
 
 You can build the project with [SBT](http://www.scala-sbt.org) or [Maven](http://maven.apache.org).
