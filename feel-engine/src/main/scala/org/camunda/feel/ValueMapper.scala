@@ -10,6 +10,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Field
 import java.time.Duration
 import java.time.Period
+import scala.collection.JavaConverters._
 
 object ValueMapper {
   
@@ -30,6 +31,8 @@ object ValueMapper {
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
     // extended java types
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+    case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
+    case x: java.util.Map[_,_] => ValContext( x.asScala map { case (key, value) => key.toString -> toVal(value)} toList)
     // joda-time
     case x: org.joda.time.LocalDate => ValDate(LocalDate.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth))
     case x: org.joda.time.LocalTime => ValTime(LocalTime.of(x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
@@ -76,7 +79,6 @@ object ValueMapper {
         name -> value
       }}
 
-      // TODO copied from interpreter
       val functions = methods.map( method => {
         
         val name = method.getName
