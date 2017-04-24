@@ -5,7 +5,8 @@ import org.scalatest.Matchers
 import org.camunda.feel._
 
 /**
- * @author Philipp
+ * @author Philipp Ossler
+ * @author Falko Menge
  */
 class ValueMapperTest extends FlatSpec with Matchers {
   
@@ -57,6 +58,16 @@ class ValueMapperTest extends FlatSpec with Matchers {
 	it should "convert from java.lang.Double" in {
 		
 		ValueMapper.toVal(new java.lang.Double(2.4)) should be(ValNumber(2.4))
+	}
+	
+	it should "convert from BigDecimal" in {
+		
+		ValueMapper.toVal(2.4: BigDecimal) should be(ValNumber(2.4))
+	}
+	
+	it should "convert from java.math.BigDecimal" in {
+		
+		ValueMapper.toVal(new java.math.BigDecimal(2.4)) should be(ValNumber(2.4))
 	}
 	
 	it should "convert from Boolean" in {

@@ -12,6 +12,10 @@ import java.time.Duration
 import java.time.Period
 import scala.collection.JavaConverters._
 
+/**
+ * @author Philipp Ossler
+ * @author Falko Menge
+ */
 object ValueMapper {
   
   def toVal(x: Any): Val = x match {
@@ -20,6 +24,7 @@ object ValueMapper {
     case x: Long => ValNumber(x)
     case x: Float => ValNumber(x)
     case x: Double => ValNumber(x)
+    case x: BigDecimal => ValNumber(x)
     case x: Boolean => ValBoolean(x)
     case x: String => ValString(x)
     case x: Date => ValDate(x)
