@@ -67,7 +67,7 @@ class ValueMapperTest extends FlatSpec with Matchers {
 	
 	it should "convert from java.math.BigDecimal" in {
 		
-		ValueMapper.toVal(new java.math.BigDecimal(2.4)) should be(ValNumber(2.4))
+		ValueMapper.toVal(new java.math.BigDecimal("2.4")) should be(ValNumber(2.4))
 	}
 	
 	it should "convert from Boolean" in {

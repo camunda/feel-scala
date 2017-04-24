@@ -19,7 +19,9 @@ import scala.collection.JavaConverters._
 object ValueMapper {
   
   def toVal(x: Any): Val = x match {
+    case x: Val => x
     case null => ValNull
+    // scala types
     case x: Int => ValNumber(x)
     case x: Long => ValNumber(x)
     case x: Float => ValNumber(x)
@@ -35,6 +37,7 @@ object ValueMapper {
     case x: List[_] => ValList( x map toVal )
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
     // extended java types
+    case x: java.math.BigDecimal => ValNumber(x)
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
     case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
     case x: java.util.Map[_,_] => ValContext( x.asScala map { case (key, value) => key.toString -> toVal(value)} toList)
@@ -45,6 +48,7 @@ object ValueMapper {
     case x: org.joda.time.Duration => ValDayTimeDuration( Duration.ofMillis( x.getMillis ) )
     case x: org.joda.time.Period => ValYearMonthDuration( Period.of(x.getYears, x.getMonths, 0) )
     // other objects
+    case x: Throwable => ValError(x.getMessage)
     case x => useObjectAsContext(x)
   }
 
@@ -54,7 +58,7 @@ object ValueMapper {
       val fields = obj.getClass().getDeclaredFields filter(!_.isSynthetic) map(field => field.getName -> {
         field.setAccessible(true)
         val value = field.get(obj)        
-        if (value != obj) {
+        if (value == null || value.getClass != obj.getClass) {
           toVal(value)        
         } else {
           ValError(s"can't access self-reference field '${field.getName}'")
@@ -107,11 +111,7 @@ object ValueMapper {
 
     } catch {
       case t: Throwable => {
-        // TODO remove me
-        System.err.println(s"failed to access object of class '${obj.getClass}'")
-        t.printStackTrace
-
-        ValError(s"unsupported type '$obj'")
+        ValError(s"unsupported type '$obj' of class '${obj.getClass}'")
       }
     }
     
