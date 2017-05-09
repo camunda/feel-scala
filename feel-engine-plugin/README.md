@@ -60,6 +60,10 @@ You have to override the default expression language of input entries and set it
     </property>
 ```
 
+**Using Camunda JBoss AS / Wildfly Distribution**
+
+Download the [module archive](https://github.com/camunda/feel-scala/releases) _(feel-engine-plugin-${VERSION}-jboss_wildfly_module.zip)_ and follow the instructions in the _README_ file.
+
 ## How to build it?
 
 You can build the project with [SBT](http://www.scala-sbt.org) or [Maven](http://maven.apache.org).
