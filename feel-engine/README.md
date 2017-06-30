@@ -87,7 +87,7 @@ sbt package
 
 Build the complete jar including all dependencies with
 ```
-sbt assemply
+sbt assembly
 ```
 
 ### Using Maven
