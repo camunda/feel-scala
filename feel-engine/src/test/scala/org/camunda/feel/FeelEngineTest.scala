@@ -25,12 +25,12 @@ class FeelEngineTest extends FlatSpec with Matchers {
     evalUnaryTest("< 3", context = Map(Context.defaultInputVariable -> 3)) should be(EvalValue(false))
   }
   
-  it should "evaluate a simpleExpression '2+4'" in {
+  it should "evaluate a expression '2+4'" in {
      
     engine.evalExpression("2+4", context = Map()) should be(EvalValue(6))
   }
   
-  it should "evaluate an simpleUnaryTest with custom input variable name" in {
+  it should "evaluate an unaryTest with custom input variable name" in {
      
     evalUnaryTest("< 3", context = Map("myInput" -> 2, Context.inputVariableKey -> "myInput")) should be(EvalValue(true))
     evalUnaryTest("< 3", context = Map("myInput" -> 3, Context.inputVariableKey -> "myInput")) should be(EvalValue(false))
@@ -69,7 +69,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   }
 
   private def evalUnaryTest(expression: String, context: Map[String, Any]): EvalResult = {
-    engine.evalSimpleUnaryTests(expression, context)
+    engine.evalUnaryTests(expression, context)
   }
 
 }

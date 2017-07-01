@@ -9,9 +9,9 @@ import org.scalatest.Matchers
 /**
  * @author Philipp Ossler
  */
-class ParserSimpleUnaryTest extends FlatSpec with Matchers {
+class ParserUnaryTest extends FlatSpec with Matchers {
 
-  "A parser for simple unary test" should "parse a number" in {
+  "A parser for unary test" should "parse a number" in {
 
     parse("3") should be(InputEqualTo(ConstNumber(3)))
     parse("3.2") should be(InputEqualTo(ConstNumber(3.2)))
@@ -138,6 +138,11 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
 
     parse("-") should be(ConstBool(true))
   }
+  
+  it should "parse 'null'" in {
+
+    parse("null") should be(InputEqualTo(ConstNull))
+  }
 
   it should "parse 'not(3)' (negation)" in {
 
@@ -162,7 +167,7 @@ class ParserSimpleUnaryTest extends FlatSpec with Matchers {
   }
 
    private def parse(expression: String): Exp = 
-    FeelParser.parseSimpleUnaryTests(expression) match {
+    FeelParser.parseUnaryTests(expression) match {
       case Success(exp, _) => exp
       case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")
     }

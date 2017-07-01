@@ -15,20 +15,9 @@ object FeelParser extends JavaTokenParsers {
   
   def parseExpression(exp: String): ParseResult[Exp] = parseExp(expression, exp)
   
-  def parseSimpleUnaryTests(expression: String): ParseResult[Exp] = parseExp(simpleUnaryTests, expression)
+  def parseUnaryTests(expression: String): ParseResult[Exp] = parseExp(unaryTests, expression)
   
-  private def parseExp[T](parser: Parser[T], exp: String) = {
-  	val start = System.currentTimeMillis
-  	
-  	val result = parseAll(parser, exp)
-  	
-  	val duration = System.currentTimeMillis - start  	
-  	if (duration > 1000) {
-  		System.err.println(s"parsing of expression takes $duration ms: $exp")
-  	}
-  	
-  	result
-  }
+  private def parseExp[T](parser: Parser[T], exp: String) = parseAll(parser, exp)
   
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
@@ -83,7 +72,7 @@ object FeelParser extends JavaTokenParsers {
                                                                         case None ~ e => e }
   
   // 17
-  private lazy val unaryTest: Parser[Exp] = 
+  private lazy val unaryTests: Parser[Exp] = 
     "-" ^^^ ConstBool(true) |
     "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
     positiveUnaryTests

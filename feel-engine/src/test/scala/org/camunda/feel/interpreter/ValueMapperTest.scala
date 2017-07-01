@@ -192,4 +192,9 @@ class ValueMapperTest extends FlatSpec with Matchers {
 		ValueMapper.toVal(WeekDay.Fri) should be(ValString("Fri"))
 	}
 	
+	it should "convert from null" in {
+
+		ValueMapper.toVal(null) should be(ValNull)
+	}
+	
 }

@@ -21,8 +21,8 @@ class FeelEngine(functionProvider: FunctionProvider = EmptyFunctionProvider) {
     eval(FeelParser.parseExpression, expression, context)
   }
 
-  def evalSimpleUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    eval(FeelParser.parseSimpleUnaryTests, expression, context)
+  def evalUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
+    eval(FeelParser.parseUnaryTests, expression, context)
   }
   
   def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = evalParsedExpression(exp, context)

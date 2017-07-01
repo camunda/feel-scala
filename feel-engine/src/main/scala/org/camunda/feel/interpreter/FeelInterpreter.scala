@@ -79,6 +79,8 @@ class FeelInterpreter {
 
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
+    	case ValNull => withVal(x, x => f(c(ValNull, x)))
+    	case i if (x == ValNull) => f(c(i, ValNull))
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValBoolean(i) => withBoolean(x, x => f(c(i, x)))
       case ValString(i) => withString(x, x => f(c(i, x)))
@@ -256,6 +258,8 @@ class FeelInterpreter {
   
   private def dualOpAny(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     x match {
+  		case ValNull => withVal(y, y => f(c(ValNull, y)))
+    	case x if (y == ValNull) => f(c(x, ValNull))
       case ValNumber(x) => withNumber(y, y => f(c(x, y)))
       case ValBoolean(x) => withBoolean(y, y => f(c(x, y)))
       case ValString(x) => withString(y, y => f(c(x, y)))

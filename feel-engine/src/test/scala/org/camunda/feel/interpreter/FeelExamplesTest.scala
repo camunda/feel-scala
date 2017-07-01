@@ -51,7 +51,7 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
   
   }
   
-  it should "evaluate a if,in" in {
+  it should "evaluate an if,in" in {
     
     evalWithContext(""" if applicant.maritalStatus in ("M","S") then "valid" else "not valid" """) should be(ValString("valid"))
     
@@ -85,7 +85,7 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
     
   }
   
-  it should "determ if list satisfies" in {
+  it should "determine if list satisfies" in {
     
     evalWithContext(""" some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(ValBoolean(false))
   }

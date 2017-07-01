@@ -86,6 +86,12 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
         ValList(List(ValNumber(2))) )))
   }
   
+  "Null" should "compare to null" in {
+  	
+  	eval("null = null") should be(ValBoolean(true))
+  	eval("null != null") should be(ValBoolean(false))
+  }
+  
   "A number" should "add to '4'" in {
     
     eval("2+4") should be(ValNumber(6))
@@ -194,6 +200,16 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("x>=2", Map("x" -> 1)) should be(ValBoolean(false))
   }
   
+  it should "compare with null" in {
+    
+    eval("2 = null") should be(ValBoolean(false))
+    eval("null = 2") should be(ValBoolean(false))
+    eval("null != 2") should be(ValBoolean(true))
+    
+    eval("2 > null") shouldBe a [ValError]
+    eval("null < 2") shouldBe a [ValError]
+  }
+  
   it should "compare with 'between _ and _'" in {
     
     eval("x between 2 and 4", Map("x" -> 1)) should be (ValBoolean(false))
@@ -235,13 +251,28 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" "a" != "b" """) should be(ValBoolean(true))
   }
   
-  "A boolean" should "compared with '='" in {
+  it should "compare with null" in {
+    
+    eval(""" "a" = null """) should be(ValBoolean(false))
+    eval(""" null = "a" """) should be(ValBoolean(false))
+    eval(""" "a" != null """) should be(ValBoolean(true))
+  }
+  
+  "A boolean" should "compare with '='" in {
     
     eval("true = true") should be(ValBoolean(true))
     eval("true = false") should be(ValBoolean(false))
   }
   
-  it should "in conjunction" in {
+  it should "compare with null" in {
+    
+    eval(""" true = null """) should be(ValBoolean(false))
+    eval(""" null = false """) should be(ValBoolean(false))
+    eval(""" true != null """) should be(ValBoolean(true))
+    eval(""" null != false """) should be(ValBoolean(true))
+  }
+  
+  it should "be in conjunction" in {
     
     eval("true and true") should be(ValBoolean(true))
     eval("true and false") should be(ValBoolean(false))
@@ -257,7 +288,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("2 and 4") should be(ValNull)
   }
   
-  it should "in disjunction" in {
+  it should "be in disjunction" in {
     
     eval("false or true") should be(ValBoolean(true))
     eval("false or false") should be(ValBoolean(false))
@@ -696,7 +727,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   	eval("every x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(false))
   }
   
-  it should "be a processed in a for-expression" in {
+  it should "be processed in a for-expression" in {
     
     eval("for x in [1,2] return x * 2") should be(ValList(List(
         ValNumber(2), 
@@ -798,5 +829,19 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("a.incr(1)", Map("a" -> new A())) should be(ValNumber(2))
     
   }
+  
+  it should "access a nullable field" in {
+ 
+     class A(val a: String, val b: String)
+ 
+     eval(""" a.a = null """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+     eval(""" a.b = null """, Map("a" -> new A("not null", null))) should be(ValBoolean(true))
+     eval(""" null = a.a """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+     eval(""" null = a.b""", Map("a" -> new A("not null", null))) should be(ValBoolean(true))
+     eval(""" a.a = a.b """, Map("a" -> new A("not null", "not null"))) should be(ValBoolean(true))
+     eval(""" a.a = a.b """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+     eval(""" a.a = a.b """, Map("a" -> new A(null, "not null"))) should be(ValBoolean(false))
+     eval(""" a.a = a.b """, Map("a" -> new A(null, null))) should be(ValBoolean(true))
+   }
   
 }

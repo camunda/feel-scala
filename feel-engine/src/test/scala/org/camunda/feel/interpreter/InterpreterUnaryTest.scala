@@ -9,7 +9,7 @@ import org.scalatest.Matchers
 /**
  * @author Philipp Ossler
  */
-class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
+class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   val interpreter = new FeelInterpreter
 
@@ -45,6 +45,11 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     
     eval(2, "3") should be (ValBoolean(false))
     eval(3, "3") should be (ValBoolean(true))
+  }
+  
+  it should "compare to null" in {
+  	
+  	eval(null, "3") should be (ValBoolean(false))
   }
   
   it should "be in interval '(2..4)'" in {
@@ -108,6 +113,11 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval("b", """ "b" """) should be (ValBoolean(true))
   }
   
+  it should "compare to null" in {
+  	
+  	eval(null, """ "a" """) should be (ValBoolean(false))
+  }
+  
   it should """be in '"a","b"' """ in {
     
     eval("a", """ "a","b" """) should be (ValBoolean(true))
@@ -115,7 +125,7 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval("c", """ "a","b" """) should be (ValBoolean(false))
   }
   
-  it should "compared by a function" in {
+  it should "be comparable with a function" in {
     
     val startsWithFunction  = ValFunction(
         params = List("y"), 
@@ -133,6 +143,12 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     
     eval(false, "false") should be (ValBoolean(true))
     eval(true, "true") should be (ValBoolean(true))
+  }
+  
+  it should "compare to null" in {
+  	
+  	eval(null, "true") should be (ValBoolean(false))
+  	eval(null, "false") should be (ValBoolean(false))
   }
 
   "A date" should "compare with '<'" in {
@@ -248,8 +264,17 @@ class InterpreterSimpleUnaryTest extends FlatSpec with Matchers {
     eval(None, "-") should be (ValBoolean(true))
   }
   
+  "A null expression" should "compare to null" in {
+  	
+  	eval(1, "null") should be(ValBoolean(false))
+    eval(true, "null") should be(ValBoolean(false))
+    eval("a", "null") should be(ValBoolean(false))
+    
+  	eval(null, "null") should be(ValBoolean(true))
+  }
+  
   private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
-    val exp = FeelParser.parseSimpleUnaryTests(expression)
+    val exp = FeelParser.parseUnaryTests(expression)
     interpreter.eval(exp.get)(Context(variables + ( Context.defaultInputVariable -> input)))
   }
 

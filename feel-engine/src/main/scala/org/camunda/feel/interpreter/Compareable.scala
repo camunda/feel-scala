@@ -25,8 +25,8 @@ trait Compareable[T] {
 
   def >=(x: T): Boolean
 
-  // txpe hacking to interpreter operators in a simple wax
-  // the interpreter should check the txpes
+  // type hacking to interpreter operators in a simple way
+  // the interpreter should check the types
   private def op(x: Compareable[_], f: T => Boolean): Boolean = x match {
     case i: Compareable[T] => f(i.value)
     case i => throw new IllegalArgumentException(s"expect '${value.getClass}' but found '${x.getClass}'")
