@@ -171,4 +171,14 @@ class ValueMapperTest extends FlatSpec with Matchers {
 		ValueMapper.toVal(Obj(2, "foo")) shouldBe a[ValContext]
 	}
 	
+	it should "convert from Some" in {
+		
+		ValueMapper.toVal(Some("foo")) should be(ValString("foo")) 
+	}
+	
+	it should "convert from None" in {
+		
+		ValueMapper.toVal(None) should be(ValNull)
+	}
+	
 }

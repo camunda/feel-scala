@@ -36,6 +36,8 @@ object ValueMapper {
     case x: DayTimeDuration => ValDayTimeDuration(x)
     case x: List[_] => ValList( x map toVal )
     case x: Map[_,_] => ValContext( x map { case (key, value) => key.toString -> toVal(value)} toList)
+    case Some(x) => toVal(x)
+    case None => ValNull
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
