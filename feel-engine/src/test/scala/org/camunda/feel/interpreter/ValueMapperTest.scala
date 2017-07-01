@@ -181,4 +181,15 @@ class ValueMapperTest extends FlatSpec with Matchers {
 		ValueMapper.toVal(None) should be(ValNull)
 	}
 	
+	it should "convert from Enumeration" in {
+		
+		object WeekDay extends Enumeration {
+      type WeekDay = Value
+      val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
+    }
+    		
+		ValueMapper.toVal(WeekDay.Mon) should be(ValString("Mon"))
+		ValueMapper.toVal(WeekDay.Fri) should be(ValString("Fri"))
+	}
+	
 }
