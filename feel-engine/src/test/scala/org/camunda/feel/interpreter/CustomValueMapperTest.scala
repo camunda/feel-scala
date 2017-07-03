@@ -46,7 +46,7 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 
 }
 
-trait Enumeration {
+trait Enum {
 	def items: Seq[Enumerated]
 }
 
@@ -56,7 +56,7 @@ trait Enumerated {
 
 case class Language(val id: String) extends Enumerated
 
-object Language extends Enumeration {
+object Language extends Enum {
 	object DE extends Language("DE")
 	object EN extends Language("EN")
 	def items = Seq(DE, EN)
@@ -78,7 +78,7 @@ class CustomValueMapper extends DefaultValueMapper {
 
 	override def toVal(x: Any): Val = x match {
 		case e: Enumerated => ValString(e.id)
-		case e: Enumeration => ValContext(e.items.map((e) => ((e.id, toVal(e)))).toList)
+		case e: Enum => ValContext(e.items.map((e) => ((e.id, toVal(e)))).toList)
 		case d: DomainObject => ValContext(d.properties.values.map((p) => ((p.name, toVal(p.value)))).toList)
 		case _ => super.toVal(x)
 	}
