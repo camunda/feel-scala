@@ -5,6 +5,7 @@ import org.camunda.feel.parser._
 import com.sun.org.apache.xerces.internal.impl.dv.xs.DayTimeDurationDV
 import java.time.Duration
 import java.time.Period
+import org.camunda.feel.spi.ValueMapper
 
 /**
  * @author Philipp Ossler
@@ -12,7 +13,8 @@ import java.time.Period
 class FeelInterpreter {
 
   def eval(expression: Exp)(implicit context: Context = Context.empty): Val = expression match {
-    // literals
+
+  	// literals
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
@@ -24,6 +26,7 @@ class FeelInterpreter {
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case ConstContext((k,v) :: entries) => ValContext( entries.foldLeft( evalContextEntry(k,v) ){ (ctx, entry) => ctx ++ evalContextEntry(entry._1, entry._2)(context ++ ctx.toMap) } )
+
     // simple unary tests
     case InputEqualTo(x) => unaryOpAny(eval(x), _ == _, ValBoolean)
     case InputLessThan(x) => unaryOp(eval(x), _ < _, ValBoolean)
@@ -31,6 +34,7 @@ class FeelInterpreter {
     case InputGreaterThan(x) => unaryOp(eval(x), _ > _, ValBoolean)
     case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
+
     // arithmetic operations
     case Addition(x,y) => addOp(eval(x), eval(y))
     case Subtraction(x,y) => subOp(eval(x), eval(y))
@@ -38,38 +42,46 @@ class FeelInterpreter {
     case Division(x,y) => divOp(eval(x), eval(y))
     case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber)
     case ArithmeticNegation(x) => withNumber(eval(x), x => ValNumber(-x))
+
     // dual comparators
     case Equal(x,y) => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
     case LessThan(x,y) => dualOp(eval(x), eval(y), _ < _, ValBoolean)
     case LessOrEqual(x,y) => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
     case GreaterThan(x,y) => dualOp(eval(x), eval(y), _ > _, ValBoolean)
     case GreaterOrEqual(x,y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
+
     // combinators
     case AtLeastOne(xs) => atLeastOne(xs, ValBoolean)
     case Not(x) => withBooleanOrNull(eval(x), x => ValBoolean(!x))
     case Disjunction(x,y) => atLeastOne(x :: y :: Nil, ValBoolean)
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
+
     // control structures
     case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } ) 
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (context.inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
+
     // context
     case Ref(names) => ref(context(names.head), names.tail)
     case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
+
     // list
     case SomeItem(iterators, condition) => withCartesianProduct(iterators, p => atLeastOne( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean ))
     case EveryItem(iterators, condition) => withCartesianProduct(iterators, p => all( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean))
     case For(iterators, exp) => withCartesianProduct(iterators, p => ValList( p.map(vars => eval(exp)(context ++ vars) )) )
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
+
     // functions
     case FunctionInvocation(name, params) => withFunction(context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) ))
     case QualifiedFunctionInvocation(path, params) => withFunction(eval(path), f => withParameters(params, f, params => f.invoke(params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => body match {
-      case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues)
+      case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues, context.valueMapper)
       case _ => eval(body)(context ++ (params zip paramValues).toMap)
     })
+
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
+
   }
   
   private def error(x: Val, message: String) = x match {
@@ -460,7 +472,7 @@ class FeelInterpreter {
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): List[(String, Val)] = 
     List( key -> withVal(eval(exp), value => value))  
   
-  private def invokeJavaFunction(className: String, methodName: String, arguments: List[String], paramValues: List[Val]): Val = {
+  private def invokeJavaFunction(className: String, methodName: String, arguments: List[String], paramValues: List[Val], valueMapper: ValueMapper): Val = {
     try {
     	
 	    val clazz = JavaClassMapper.loadClass(className)
@@ -469,12 +481,12 @@ class FeelInterpreter {
 	    
 	    val method = clazz.getDeclaredMethod(methodName, argTypes: _*)
 	    
-	    val argValues = paramValues map ValueMapper.unpackVal
+	    val argValues = paramValues map valueMapper.unpackVal
 	    val argJavaObjects = argValues zip argTypes map { case (obj,clazz) => JavaClassMapper.asJavaObject(obj, clazz) }
 	    
 	    val result = method.invoke(null, argJavaObjects: _*)
 	    
-	    ValueMapper.toVal(result)
+	    valueMapper.toVal(result)
 	    
     } catch {
     	case e: ClassNotFoundException => ValError(s"fail to load class '$className'")

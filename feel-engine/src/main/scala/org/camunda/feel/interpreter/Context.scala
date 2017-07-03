@@ -3,11 +3,13 @@ package org.camunda.feel.interpreter
 import org.camunda.feel._
 import org.camunda.feel.spi.FunctionProvider
 import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
+import org.camunda.feel.spi.ValueMapper
+import org.camunda.feel.spi.DefaultValueMapper
 
 /**
  * @author Philipp Ossler
  */
-case class Context(variables: Map[String, Any], functionProvider: FunctionProvider = EmptyFunctionProvider) {
+case class Context(variables: Map[String, Any], functionProvider: FunctionProvider = EmptyFunctionProvider, valueMapper: ValueMapper = new DefaultValueMapper) {
 	
 	def inputKey: String = variables.get(Context.inputVariableKey) match {
    	case Some(inputVariableName: String) => inputVariableName
@@ -19,12 +21,12 @@ case class Context(variables: Map[String, Any], functionProvider: FunctionProvid
   def apply(key: String): Val = variables.get(key) match {
     case None => ValError(s"no variable found for key '$key'")
     case Some(x : Val) => x
-    case Some(x) => ValueMapper.toVal(x)
+    case Some(x) => valueMapper.toVal(x)
   }
   
-  def ++(vars: Map[String, Any]) = Context(variables ++ vars, functionProvider)
+  def ++(vars: Map[String, Any]) = Context(variables ++ vars, functionProvider, valueMapper)
 
-  def +(variable : (String, Any)) = Context(variables + variable, functionProvider)
+  def +(variable : (String, Any)) = Context(variables + variable, functionProvider, valueMapper)
     
   def function(name: String, args: Int): Val = variables.get(name) orElse functionProvider.getFunction(name, args) orElse BuiltinFunctions.getFunction(name, args) match {
 	  case Some(f: Val) => f
@@ -39,6 +41,6 @@ object Context {
   
   val inputVariableKey = "inputVariableName"
   
-  def empty = Context(Map(), EmptyFunctionProvider)
+  def empty = Context(Map(), EmptyFunctionProvider, new DefaultValueMapper)
   
 }
