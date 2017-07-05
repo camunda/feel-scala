@@ -1,26 +1,24 @@
-package org.camunda.feel
+package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.interpreter._
+import org.camunda.feel.spi.ValueMapper
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.LocalTime
 import java.time.LocalDateTime
 import java.lang.reflect.Method
-import java.lang.reflect.Field
 import java.time.Duration
 import java.time.Period
 import scala.collection.JavaConverters._
 
-/**
- * @author Philipp Ossler
- * @author Falko Menge
- */
-object ValueMapper {
+class DefaultValueMapper extends ValueMapper {
   
   def toVal(x: Any): Val = x match {
+
     case x: Val => x
     case null => ValNull
+
     // scala types
     case x: Int => ValNumber(x)
     case x: Long => ValNumber(x)
@@ -39,21 +37,25 @@ object ValueMapper {
     case Some(x) => toVal(x)
     case None => ValNull
     case x: Enumeration$Val => ValString(x.toString)
+
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
     case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
     case x: java.util.Map[_,_] => ValContext( x.asScala map { case (key, value) => key.toString -> toVal(value)} toList)
     case x: java.lang.Enum[_] => ValString(x.name)
+
     // joda-time
     case x: org.joda.time.LocalDate => ValDate(LocalDate.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth))
     case x: org.joda.time.LocalTime => ValTime(LocalTime.of(x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
     case x: org.joda.time.LocalDateTime => ValDateTime(LocalDateTime.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth, x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
     case x: org.joda.time.Duration => ValDayTimeDuration( Duration.ofMillis( x.getMillis ) )
     case x: org.joda.time.Period => ValYearMonthDuration( Period.of(x.getYears, x.getMonths, 0) )
+
     // other objects
     case x: Throwable => ValError(x.getMessage)
     case x => useObjectAsContext(x)
+
   }
 
   private def useObjectAsContext(obj: Any): Val =
@@ -99,7 +101,7 @@ object ValueMapper {
         
         val function = ValFunction(paramNames, params => {
           
-          val paramValues = params map ValueMapper.unpackVal
+          val paramValues = params map unpackVal
           val paramJavaObjects = paramValues zip method.getParameterTypes map { case (obj,clazz) => JavaClassMapper.asJavaObject(obj, clazz) }
           
           val result = method.invoke(obj, paramJavaObjects: _*)
