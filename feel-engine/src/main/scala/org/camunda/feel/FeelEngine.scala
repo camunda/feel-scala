@@ -4,13 +4,13 @@ import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.interpreter.FeelInterpreter
 import org.camunda.feel.interpreter.Context
+import org.camunda.feel.interpreter.DefaultValueMapper
 import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.Exp
 import org.camunda.feel.script.CompiledFeelScript
 import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
 import org.camunda.feel.spi.FunctionProvider
 import org.camunda.feel.spi.ValueMapper
-import org.camunda.feel.spi.DefaultValueMapper
 
 /**
  * @author Philipp Ossler

@@ -4,7 +4,6 @@ import org.camunda.feel._
 import org.camunda.feel.spi.FunctionProvider
 import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
 import org.camunda.feel.spi.ValueMapper
-import org.camunda.feel.spi.DefaultValueMapper
 
 /**
  * @author Philipp Ossler
