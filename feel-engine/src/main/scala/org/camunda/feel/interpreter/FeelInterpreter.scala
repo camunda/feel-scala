@@ -440,8 +440,9 @@ class FeelInterpreter {
     })
   }
   
-  private def withContext(x: Val, f: ValContext => Val): Val = x match {
+  private def withContext(x: Val, f: Val => Val): Val = x match {
     case x: ValContext => f(x)
+    case x: ValVariableContext => f(x)
     case _ => error(x, s"expect Context but found '$x'")
   }
   
@@ -452,16 +453,25 @@ class FeelInterpreter {
 
   private def ref(x: Val, names: List[String])(implicit context: Context): Val = names match {
     case Nil => x
-    case n :: ns => withContext(x, { case ValContext(ctx) => 
-      ctx.toMap.get(n) match {
+    case n :: ns => withContext(x, {
+      case ValContext(ctx) => ctx.toMap.get(n) match {
         case Some(entry) => ref(entry, ns)
         case None => ValError(s"context contains no entry with key '$n'")
       }
+      case ValVariableContext(ctx) => ctx(n) match {
+        case Some(entry) => ref(entry, ns)
+        case None => ValError(s"context contains no entry with key '$n'")
+      }
+      case _ => ValError(s"context contains no entry with key '$n'")
     })
   }
   
   private def path(v: Val, key: String): Val = v match {
     case ValContext(ctx) => ctx.toMap.get(key) match {
+      case Some(entry) =>  entry
+      case None => ValError(s"context contains no entry with key '$key'")
+    }
+    case ValVariableContext(ctx) => ctx(key) match {
       case Some(entry) =>  entry
       case None => ValError(s"context contains no entry with key '$key'")
     }

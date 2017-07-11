@@ -42,4 +42,6 @@ case class ValFunction(params: List[String], invoke: List[Val] => Val, requireIn
 
 case class ValContext(entries: List[(String, Val)]) extends Val
 
+case class ValVariableContext(entry: (String) => Option[Val]) extends Val
+
 case class ValList(items: List[Val]) extends Val

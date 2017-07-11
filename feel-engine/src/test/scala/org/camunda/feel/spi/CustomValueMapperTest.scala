@@ -41,7 +41,7 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
   	override def toVal(x: Any): Val = x match {
   		case e: Enumerated => ValString(e.id)
   		case e: Enum => ValContext(e.items.map((e) => ((e.id, toVal(e)))).toList)
-  		case d: DomainObject => ValContext(d.properties.values.map((p) => ((p.name, toVal(p.value)))).toList)
+  		case d: DomainObject => ValVariableContext((s) => d.properties.get(s) map((p) => super.toVal(p.value)))
   		case _ => super.toVal(x)
   	}
   }
@@ -72,8 +72,8 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 	  val person = new Person
   	person.language.value = Some(Language.EN)
 	  
-		valueMapper.toVal(person) shouldBe a [ValContext]
-		valueMapper.toVal(person).asInstanceOf[ValContext].entries.filter(_._1 == "language").head._2 should be(ValString("EN"))
+		valueMapper.toVal(person) shouldBe a [ValVariableContext]
+		valueMapper.toVal(person).asInstanceOf[ValVariableContext].entry("language") should be(Some(ValString("EN")))
 	}
 
 	it should "allow domain expressions" in {

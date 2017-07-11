@@ -55,7 +55,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
     
     val engine = new FeelEngine(new CustomFunctionProvider)
     
-    engine.evalExpression("foo(2)", Map()) should be(EvalValue(3))
+    engine.evalExpression("foo(2)") should be(EvalValue(3))
   }
   
   it should "be extend by multiple custom function providers" in {
@@ -64,8 +64,8 @@ class FeelEngineTest extends FlatSpec with Matchers {
       List(new CustomFunctionProvider, new AnotherFunctionProvider)
     ))
     
-    engine.evalExpression("foo(2)", Map()) should be(EvalValue(3))
-    engine.evalExpression("bar(2)", Map()) should be(EvalValue(4))
+    engine.evalExpression("foo(2)") should be(EvalValue(3))
+    engine.evalExpression("bar(2)") should be(EvalValue(4))
   }
 
   private def evalUnaryTest(expression: String, context: Map[String, Any]): EvalResult = {

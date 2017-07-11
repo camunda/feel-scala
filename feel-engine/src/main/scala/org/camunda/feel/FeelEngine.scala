@@ -20,21 +20,29 @@ class FeelEngine(functionProvider: FunctionProvider = EmptyFunctionProvider, val
   val interpreter = new FeelInterpreter
 
   def evalExpression(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    eval(FeelParser.parseExpression, expression, context)
+    eval(FeelParser.parseExpression, expression, Context(context, (s) => None, functionProvider, valueMapper))
+  }
+
+  def evalExpression(expression: String, variableContext: (String) => Option[Any]): EvalResult = {
+    eval(FeelParser.parseExpression, expression, Context(Map(), variableContext, functionProvider, valueMapper))
   }
 
   def evalUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    eval(FeelParser.parseUnaryTests, expression, context)
+    eval(FeelParser.parseUnaryTests, expression, Context(context, (s) => None, functionProvider, valueMapper))
   }
   
-  def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = evalParsedExpression(exp, context)
+  def evalUnaryTests(expression: String, variableContext: (String) => Option[Any]): EvalResult = {
+    eval(FeelParser.parseUnaryTests, expression, Context(Map(), variableContext, functionProvider, valueMapper))
+  }
   
-  private def eval(parser: String => ParseResult[Exp], expression: String, context: Map[String, Any]) = parser(expression) match {
+  def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = evalParsedExpression(exp, Context(context, (s) => None, functionProvider, valueMapper))
+  
+  private def eval(parser: String => ParseResult[Exp], expression: String, context: Context) = parser(expression) match {
     case Success(exp, _) => evalParsedExpression(ParsedExpression(exp, expression), context)
     case e: NoSuccess => ParseFailure(s"failed to parse expression '$expression':\n$e")
   }
   
-  private def evalParsedExpression(exp: ParsedExpression, context: Map[String, Any]): EvalResult = interpreter.eval(exp.expression)(Context(context, functionProvider, valueMapper)) match {
+  private def evalParsedExpression(exp: ParsedExpression, context: Context): EvalResult = interpreter.eval(exp.expression)(context) match {
     case ValError(cause) => EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
     case value => EvalValue( valueMapper.unpackVal(value) )
   }
