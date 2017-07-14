@@ -5,6 +5,7 @@ import org.scalatest.Matchers
 import org.camunda.feel._
 import org.camunda.feel.interpreter._
 import org.camunda.feel.spi._
+import org.camunda.feel.spi.VariableContext._
 
 class ContextTest extends FlatSpec with Matchers {
 
@@ -20,12 +21,12 @@ class ContextTest extends FlatSpec with Matchers {
 	}
 
 	"A variable context" should "provide its members" in {
-		engine.evalExpression("a", (key: String) => if (key == "a") Some(2) else None) should be(EvalValue(2))
-		engine.evalUnaryTests("2", (key: String) => if (key == Context.defaultInputVariable) Some(2) else None) should be(EvalValue(true))
+		engine.evalExpression("a", DynamicVariableContext((key: String) => { if (key == "a") Some(2) else None })) should be(EvalValue(2))
+		engine.evalUnaryTests("2", DynamicVariableContext((key: String) => { if (key == Context.defaultInputVariable) Some(2) else None })) should be(EvalValue(true))
 	}
 
 	it should "crash on access to missing member" in {
-		engine.evalExpression("b", (key: String) => if (key == "a") Some(2) else None) shouldBe a [EvalFailure]
+		engine.evalExpression("b", DynamicVariableContext((key: String) => { if (key == "a") Some(2) else None })) shouldBe a [EvalFailure]
 	}
 
 }
