@@ -339,7 +339,7 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def sublistFunction3 = ValFunction(List("list", "start", "length"), _ match {
-	  case List(ValList(list), ValNumber(start), ValNumber(length)) => ValList(list.slice(listIndex(list, start.intValue), length.intValue))
+	  case List(ValList(list), ValNumber(start), ValNumber(length)) => ValList(list.slice(listIndex(list, start.intValue), listIndex(list, start.intValue) + length.intValue))
 	  case e => error(e)
 	})
 
