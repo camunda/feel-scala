@@ -11,10 +11,13 @@ import scala.annotation.tailrec
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.Exp
-import org.camunda.feel.spi.FunctionProvider
+import org.camunda.feel.interpreter.DefaultValueMapper
+import org.camunda.feel.spi._
 import java.util.ServiceLoader
 import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
 import org.camunda.feel.spi.DefaultFunctionProviders.CompositeFunctionProvider
+import scala.reflect.ClassTag
+import scala.reflect._
 
 trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
@@ -24,27 +27,14 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   
   val factory: ScriptEngineFactory
   
-  lazy val engine = new FeelEngine(functionProvider)
+  lazy val engine = new FeelEngine(functionProvider, valueMapper)
   
-  private def functionProvider: FunctionProvider = 
-    try {
-        val loader = ServiceLoader.load(classOf[FunctionProvider])
-        val functionProviders = loader.iterator.toList
-        
-        functionProviders match {
-          case Nil => EmptyFunctionProvider
-          case p :: Nil => p
-          case ps => new CompositeFunctionProvider(ps)
-        }
-        
-    } catch {
-      case t: Throwable => {
-        System.err.println("Failed to load function provider")
-        t.printStackTrace()
-        
-        EmptyFunctionProvider
-      }
-    }
+  private def functionProvider = loadServiceProvider[FunctionProvider](EmptyFunctionProvider, _ match {
+  		case p :: Nil => p
+      case ps => new CompositeFunctionProvider(ps)
+  })
+    
+  private def valueMapper = loadServiceProvider[ValueMapper](new DefaultValueMapper, _.head)
   
   def getFactory(): ScriptEngineFactory = factory
   
@@ -125,4 +115,23 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
     }
   }
 
+  private def loadServiceProvider[T: ClassTag](default: T, select: List[T] => T): T = 
+  	try {
+        val loader = ServiceLoader.load(classTag[T].runtimeClass.asInstanceOf[Class[T]])
+        val providers = loader.iterator.toList
+        
+        providers match {
+          case Nil => default
+          case ps => select(ps)
+        }
+        
+    } catch {
+      case t: Throwable => {
+        System.err.println(s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")
+        t.printStackTrace()
+        
+        default
+      }
+    }
+  
 }

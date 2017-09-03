@@ -4,11 +4,6 @@ import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
-/**
- * @author Philipp Ossler
- *
- * @ss DMN 1.0 (S.99)
- */
 object FeelParser extends JavaTokenParsers {
 
   def parseSimpleExpression(exp: String): ParseResult[Exp] = parseExp(simpleExpression, exp)

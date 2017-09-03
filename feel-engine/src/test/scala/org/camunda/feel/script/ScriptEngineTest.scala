@@ -91,6 +91,13 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     eval("foo(2)", context) should be(3)
   }
   
+  it should "be configured by a custom value mapper" in {
+
+    val context = new SimpleScriptContext
+
+    eval("null", context) should be("foobar")
+  }
+  
   private def eval(script: String, context: ScriptContext) = scriptEngine.eval(script, context)
   
 }
