@@ -220,6 +220,26 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
     eval(time("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
   }
 
+  "A date-time" should "compare with '<'" in {
+
+    eval(dateTime("2015-09-17T08:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(true))
+    eval(dateTime("2015-09-17T10:10:00"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T11:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+  }
+
+  it should "be equal to another date-time" in {
+
+    eval(dateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T08:31:14")""") should be(ValBoolean(true))
+  }
+
+  it should """be in interval '[dante and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]'""" in {
+
+    eval(dateTime("2015-09-17T07:45:10"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T09:15:20"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(true))
+    eval(dateTime("2015-09-17T11:30:30"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
+  }
+
   "A year-month-duration" should "compare with '<'" in {
 
     eval(yearMonthDuration("P1Y"), """< duration("P2Y")""") should be(ValBoolean(true))
@@ -282,6 +302,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
   private def date(date: String): Date = date
 
   private def time(time: String): Time = time
+
+  private def dateTime(dateTime: String): DateTime = dateTime
 
   private def yearMonthDuration(duration: String): YearMonthDuration = duration
 

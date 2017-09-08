@@ -109,6 +109,7 @@ class FeelInterpreter {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
       case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
       case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
