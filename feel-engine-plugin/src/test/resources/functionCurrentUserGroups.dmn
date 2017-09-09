@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/1.0" id="definitions_0184n4z" name="Decision" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="functionCurrentUserGroups" name="functionCurrentUserGroups">
+    <extensionElements>
+      <biodi:bounds x="200" y="200" width="180" height="80" />
+    </extensionElements>
+    <variable id="InformationItem_0vg1xpm" name="result" />
+    <literalExpression id="LiteralExpression_1nikvx1">    <text>currentUserGroups()</text>
+</literalExpression>
+  </decision>
+</definitions>
