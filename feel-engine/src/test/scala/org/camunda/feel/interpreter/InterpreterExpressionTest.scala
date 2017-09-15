@@ -686,6 +686,23 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("sub(y:2,x:4)", variables) should be(ValNumber(2))
   }
 
+  it should "be invoked with an expression as parameter" in {
+
+    val variables = Map("f" -> eval("function(x) x + 1"))
+
+    eval("f(2 + 3)", variables) should be(ValNumber(6))
+  }
+
+  it should "be invoked as parameter of another function" in {
+
+    val variables = Map(
+      "a" -> eval("function(x) x + 1"),
+      "b" -> eval("function(x) x + 2")
+    )
+
+    eval("a(b(1))", variables) should be(ValNumber(4))
+  }
+
   it should "fail to invoke with wrong number of parameters" in {
 
     val variables = Map("f" -> eval("function(x,y) true"))
