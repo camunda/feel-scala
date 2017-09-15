@@ -97,10 +97,10 @@ object FeelParser extends JavaTokenParsers {
     ">=" ~> endpoint ^^ InputGreaterOrEqual |
     interval |
     functionInvocation |
-    endpoint ^^ InputEqualTo
+    simpleValue ^^ InputEqualTo
 
   // 18
-  private lazy val endpoint: Parser[Exp] = simpleValue
+  private lazy val endpoint: Parser[Exp] = functionInvocation | simpleValue
 
   // 19
   private lazy val simpleValue = simpleLiteral | qualifiedName ^^ ( Ref(_) )

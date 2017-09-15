@@ -126,17 +126,6 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
     eval("c", """ "a","b" """) should be (ValBoolean(false))
   }
 
-  it should "be comparable with a function" in {
-
-    val startsWithFunction  = ValFunction(
-        params = List("y"),
-        invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) },
-        requireInputVariable = true)
-
-    eval("foo", """ startsWith("f") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
-    eval("foo", """ startsWith("b") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
-  }
-
   "A boolean" should "be equal to another boolean" in {
 
     eval(false, "true") should be (ValBoolean(false))
@@ -292,6 +281,31 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
     eval("a", "null") should be(ValBoolean(false))
 
   	eval(null, "null") should be(ValBoolean(true))
+  }
+
+  "A function" should "be invoked as test" in {
+
+    val startsWithFunction  = ValFunction(
+        params = List("y"),
+        invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) },
+        requireInputVariable = true)
+
+    eval("foo", """ startsWith("f") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
+    eval("foo", """ startsWith("b") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
+  }
+
+  it should "be invoked as end point" in {
+
+    val function = ValFunction(
+      params = List("x"),
+      invoke = { case List(ValNumber(x)) => ValNumber(x + 1) }
+    )
+
+    eval(2, "< f(2)", Map("f" -> function)) should be(ValBoolean(true))
+    eval(3, "< f(2)", Map("f" -> function)) should be(ValBoolean(false))
+
+    eval(3, "[f(1)..f(2)]", Map("f" -> function)) should be(ValBoolean(true))
+    eval(4, "[f(1)..f(2)]", Map("f" -> function)) should be(ValBoolean(false))
   }
 
   private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
