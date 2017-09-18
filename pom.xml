@@ -15,7 +15,7 @@
     </parent>
 
     <name>FEEL Scala Root</name>
-    
+
     <properties>
         <camunda.version>7.7.0-alpha1</camunda.version>
         <version.java>1.8</version.java>
@@ -30,9 +30,9 @@
       <module>feel-engine-plugin</module>
       <module>examples</module>
     </modules>
-    
+
     <dependencyManagement>
-        <dependencies>        
+        <dependencies>
             <dependency>
                 <groupId>org.camunda.bpm</groupId>
                 <artifactId>camunda-bom</artifactId>
@@ -40,105 +40,79 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <dependency>
               <groupId>org.camunda.bpm.extension.feel.scala</groupId>
               <artifactId>feel-engine</artifactId>
               <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.camunda.bpm.extension.feel.scala</groupId>
               <artifactId>feel-engine-factory</artifactId>
               <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.scala-lang.modules</groupId>
               <artifactId>scala-parser-combinators_2.11</artifactId>
               <version>1.0.4</version>
             </dependency>
-            
+
             <dependency>
               <groupId>com.github.nscala-time</groupId>
               <artifactId>nscala-time_2.11</artifactId>
               <version>2.2.0</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.scalatest</groupId>
               <artifactId>scalatest_2.11</artifactId>
               <version>2.2.4</version>
-            </dependency>     
-            
+            </dependency>
+
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>1.4.193</version>
-            </dependency>                   
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
         <defaultGoal>clean install</defaultGoal>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-       
-       <resources>
-          <resource>
-            <directory>src/main/scala</directory>
-            <excludes>
-              <exclude>**/*.java</exclude>
-            </excludes>
-          </resource>
-          <resource>
-            <directory>src/main/resources</directory>
-            <excludes>
-              <exclude>**/*.java</exclude>
-            </excludes>
-          </resource>
-        </resources>
-        
-        <testResources>
-          <testResource>
-            <directory>src/test/scala</directory>
-            <excludes>
-              <exclude>**/*.java</exclude>
-            </excludes>
-          </testResource>
-        </testResources>
-        
-        <plugins>        
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.5.1</version>
-            <configuration>
-              <source />
-              <target />
-            </configuration>
-          </plugin>
-          
+
+        <plugins>
+
           <plugin>
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
             <version>3.2.1</version>
             <executions>
-              <execution>
-                <goals>
-                  <goal>compile</goal>
-                  <goal>testCompile</goal>
-                  <goal>doc-jar</goal>
-                </goals>
-              </execution>
-            </executions>
+		          <execution>
+			          <id>scala-compile-first</id>
+			          <phase>process-resources</phase>
+			          <goals>
+			            <goal>add-source</goal>
+			            <goal>compile</goal>
+		            </goals>
+			        </execution>
+			        <execution>
+			          <id>scala-test-compile</id>
+			          <phase>process-test-resources</phase>
+			          <goals>
+				          <goal>testCompile</goal>
+			          </goals>
+			        </execution>
+		        </executions>
           </plugin>
-          
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>2.7</version>
           </plugin>
-          
+
           <plugin>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest-maven-plugin</artifactId>
@@ -150,7 +124,7 @@
             </configuration>
           </plugin>
         </plugins>
-        
+
     </build>
 
     <licenses>
@@ -181,5 +155,5 @@
             <uniqueVersion>true</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
-    
+
 </project>
