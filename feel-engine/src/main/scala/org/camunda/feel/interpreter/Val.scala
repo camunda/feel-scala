@@ -1,6 +1,7 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
+import org.camunda.feel.spi._
 
 /**
  * FEEL supports the following datatypes:
@@ -40,8 +41,6 @@ case object ValNull extends Val
 
 case class ValFunction(params: List[String], invoke: List[Val] => Val, requireInputVariable: Boolean = false) extends Val
 
-case class ValContext(entries: List[(String, Val)]) extends Val
-
-case class ValVariableContext(entry: (String) => Option[Val]) extends Val
+case class ValContext(context: Context) extends Val
 
 case class ValList(items: List[Val]) extends Val

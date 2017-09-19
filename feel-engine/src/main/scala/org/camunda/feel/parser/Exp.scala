@@ -45,7 +45,7 @@ case class AtLeastOne(xs: List[Exp]) extends Exp
 
 case class Not(x: Exp) extends Exp
 
-case class Ref(names: List[String]) extends Exp 
+case class Ref(names: List[String]) extends Exp
 
 object Ref {
   def apply(name: String) = new Ref(List(name))
@@ -79,7 +79,7 @@ case class FunctionInvocation(function: String, params: FunctionParameters) exte
 
 case class JavaFunctionInvocation(className: String, methodName: String, arguments: List[String]) extends Exp
 
-case class QualifiedFunctionInvocation(function: Exp, params: FunctionParameters) extends Exp
+case class QualifiedFunctionInvocation(path: Exp, function: String, params: FunctionParameters) extends Exp
 
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp
 

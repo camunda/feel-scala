@@ -1,10 +1,10 @@
 package org.camunda.feel.example.spi
 
 import org.camunda.feel.interpreter._
-import org.camunda.feel.spi.FunctionProvider
+import org.camunda.feel.spi.CustomFunctionProvider
 import scala.math.BigDecimal.int2bigDecimal
 
-class CustomScalaFunctionProvider extends FunctionProvider {
+class CustomScalaFunctionProvider extends CustomFunctionProvider {
   
    val functions: Map[(String, Int), ValFunction] = Map(
         ("foo", 1) -> ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 1) } ),

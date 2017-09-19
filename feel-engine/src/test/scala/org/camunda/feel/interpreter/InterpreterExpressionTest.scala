@@ -3,8 +3,6 @@ package org.camunda.feel.interpreter
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel._
-import org.camunda.feel.parser.FeelParser
-
 
 /**
  * @author Philipp Ossler
@@ -41,9 +39,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(Context.defaultInputVariable -> 2)) should be(ValBoolean(true))
+    eval("< 3", Map(RootContext.defaultInputVariable -> 2)) should be(ValBoolean(true))
 
-    eval("(2 .. 4)", Map(Context.defaultInputVariable -> 5)) should be(ValBoolean(false))
+    eval("(2 .. 4)", Map(RootContext.defaultInputVariable -> 5)) should be(ValBoolean(false))
   }
 
   it should "be an instance of" in {
@@ -60,16 +58,13 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be a context" in {
 
-    eval("{ a : 1 }") should be(ValContext(List( "a" -> ValNumber(1) )))
+    eval("{ a : 1 }") should be(ValContext(DefaultContext(Map("a" -> ValNumber(1)))))
 
-    eval("""{ a:1, b:"foo" }""") should be(ValContext(List(
-        "a" -> ValNumber(1),
-        "b" -> ValString("foo") )))
+    eval("""{ a:1, b:"foo" }""") should be(ValContext(DefaultContext(Map("a" -> ValNumber(1), "b" -> ValString("foo")))))
 
     // nested
-    eval("{ a : { b : 1 } }") should be(ValContext(List(
-        "a" -> ValContext(List(
-            "b" -> ValNumber(1) )))))
+    eval("{ a : { b : 1 } }") should be(ValContext(DefaultContext(Map("a" -> ValContext(DefaultContext(Map("b" -> ValNumber(1))))))))
+
   }
 
   it should "be a list" in {
@@ -88,8 +83,8 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   "Null" should "compare to null" in {
 
-  	eval("null = null") should be(ValBoolean(true))
-  	eval("null != null") should be(ValBoolean(false))
+    eval("null = null") should be(ValBoolean(true))
+    eval("null != null") should be(ValBoolean(false))
   }
 
   "A number" should "add to '4'" in {
@@ -153,7 +148,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "multiply and divide" in {
 
-  	eval("3*4/2*5") should be(ValNumber(30))
+    eval("3*4/2*5") should be(ValNumber(30))
   }
 
   it should "exponentiate by '3'" in {
@@ -173,21 +168,21 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "negate and multiply" in {
 
-  	eval("2 * -3") should be(ValNumber(-6))
+    eval("2 * -3") should be(ValNumber(-6))
   }
 
   it should "add and multiply" in {
 
-  	eval("2 + 3 * 4") should be(ValNumber(14))
+    eval("2 + 3 * 4") should be(ValNumber(14))
 
-  	eval("2 * 3 + 4") should be(ValNumber(10))
+    eval("2 * 3 + 4") should be(ValNumber(10))
   }
 
   it should "multiply and exponentiate" in {
 
-  	eval("2**3 * 4") should be(ValNumber(32))
+    eval("2**3 * 4") should be(ValNumber(32))
 
-  	eval("3 * 4**2") should be(ValNumber(48))
+    eval("3 * 4**2") should be(ValNumber(48))
   }
 
   it should "compare with '='" in {
@@ -689,123 +684,124 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked without parameter" in {
 
-    val variables = Map("f" -> eval("""function() "invoked" """))
+    val functions = Map(("f", 0) -> eval("""function() "invoked" """).asInstanceOf[ValFunction])
 
-    eval("f()", variables) should be(ValString("invoked"))
+    eval("f()", functions = functions) should be(ValString("invoked"))
   }
 
   it should "be invoked with one positional parameter" in {
 
-    val variables = Map("f" -> eval("function(x) x + 1"))
+    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
-    eval("f(1)", variables) should be(ValNumber(2))
-    eval("f(2)", variables) should be(ValNumber(3))
+    eval("f(1)", functions = functions) should be(ValNumber(2))
+    eval("f(2)", functions = functions) should be(ValNumber(3))
   }
 
   it should "be invoked with positional parameters" in {
 
-    val variables = Map("add" -> eval("function(x,y) x + y"))
+    val functions = Map(("add", 2) -> eval("function(x,y) x + y").asInstanceOf[ValFunction])
 
-    eval("add(1,2)", variables) should be(ValNumber(3))
-    eval("add(2,3)", variables) should be(ValNumber(5))
+    eval("add(1,2)", functions = functions) should be(ValNumber(3))
+    eval("add(2,3)", functions = functions) should be(ValNumber(5))
   }
 
   it should "be invoked with one named parameter" in {
 
-    val variables = Map("f" -> eval("function(x) x + 1"))
+    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
-    eval("f(x:1)", variables) should be(ValNumber(2))
-    eval("f(x:2)", variables) should be(ValNumber(3))
+    eval("f(x:1)", functions = functions) should be(ValNumber(2))
+    eval("f(x:2)", functions = functions) should be(ValNumber(3))
   }
 
   it should "be invoked with named parameters" in {
 
-    val variables = Map("sub" -> eval("function(x,y) x - y"))
+    val functions = Map(("sub", 2) -> eval("function(x,y) x - y").asInstanceOf[ValFunction])
 
-    eval("sub(x:4,y:2)", variables) should be(ValNumber(2))
-    eval("sub(y:2,x:4)", variables) should be(ValNumber(2))
+    eval("sub(x:4,y:2)", functions = functions) should be(ValNumber(2))
+    eval("sub(y:2,x:4)", functions = functions) should be(ValNumber(2))
   }
 
   it should "be invoked with an expression as parameter" in {
 
-    val variables = Map("f" -> eval("function(x) x + 1"))
+    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
-    eval("f(2 + 3)", variables) should be(ValNumber(6))
+    eval("f(2 + 3)", functions = functions) should be(ValNumber(6))
   }
 
   it should "be invoked as parameter of another function" in {
 
-    val variables = Map(
-      "a" -> eval("function(x) x + 1"),
-      "b" -> eval("function(x) x + 2")
+    val functions = Map(
+      ("a", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction],
+      ("b", 1) -> eval("function(x) x + 2").asInstanceOf[ValFunction]
     )
 
-    eval("a(b(1))", variables) should be(ValNumber(4))
+    eval("a(b(1))", functions = functions) should be(ValNumber(4))
   }
 
   it should "fail to invoke with wrong number of parameters" in {
 
-    val variables = Map("f" -> eval("function(x,y) true"))
+    val functions = Map(("f", 2) -> eval("function(x,y) true").asInstanceOf[ValFunction])
 
-    eval("f()", variables) should be(ValError("expected 2 parameters but found 0"))
-    eval("f(1)", variables) should be(ValError("expected 2 parameters but found 1"))
+    eval("f()", functions = functions) should be(ValError("no function found with name 'f' and 0 arguments"))
+    eval("f(1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
 
-    eval("f(x:1)", variables) should be(ValError("expected parameter 'y' but not found"))
-    eval("f(y:1)", variables) should be(ValError("expected parameter 'x' but not found"))
-    eval("f(x:1,y:2,z:3)", variables) should be(ValError("unexpected parameter 'z'"))
+    eval("f(x:1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
+    eval("f(y:1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
+    eval("f(x:1,z:3)", functions = functions) should be(ValError("expected parameter 'y' but not found"))
+    eval("f(x:1,y:2,z:3)", functions = functions) should be(ValError("no function found with name 'f' and 3 arguments"))
   }
 
   "An external java function definition" should "be invoked with one double parameter" in {
 
-    val variables = Map("cos" -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """))
+    val functions = Map(("cos", 1) -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """).asInstanceOf[ValFunction])
 
-    eval("cos(0)", variables) should be(ValNumber(1))
-    eval("cos(1)", variables) should be(ValNumber( Math.cos(1) ))
+    eval("cos(0)", functions = functions) should be(ValNumber(1))
+    eval("cos(1)", functions = functions) should be(ValNumber( Math.cos(1) ))
   }
 
   it should "be invoked with two int parameters" in {
 
-    val variables = Map("max" -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """))
+    val functions = Map(("max", 2) -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """).asInstanceOf[ValFunction])
 
-    eval("max(1,2)", variables) should be(ValNumber(2))
+    eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
 
   it should "be invoked with one long parameters" in {
 
-    val variables = Map("abs" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """))
+    val functions = Map(("abs", 1) -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """).asInstanceOf[ValFunction])
 
-    eval("abs(-1)", variables) should be(ValNumber(1))
+    eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
 
   it should "be invoked with one float parameters" in {
 
-    val variables = Map("round" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """))
+    val functions = Map(("round", 1) -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """).asInstanceOf[ValFunction])
 
-    eval("round(3.2)", variables) should be(ValNumber(3))
+    eval("round(3.2)", functions = functions) should be(ValNumber(3))
   }
 
   "A list" should "be checked with 'some'" in {
 
-  	eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
-  	eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
+    eval("some x in [1,2,3] satisfies x > 2") should be(ValBoolean(true))
+    eval("some x in [1,2,3] satisfies x > 3") should be(ValBoolean(false))
 
-  	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
-  	eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2))) should be(ValBoolean(false))
+    eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
+    eval("some x in xs satisfies x > 2", Map("xs" -> List(1,2))) should be(ValBoolean(false))
 
-  	eval("some x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(true))
-  	eval("some x in [1,2], y in [1,1] satisfies x < y") should be(ValBoolean(false))
+    eval("some x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(true))
+    eval("some x in [1,2], y in [1,1] satisfies x < y") should be(ValBoolean(false))
   }
 
   it should "be checked with 'every'" in {
 
-  	eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
-  	eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
+    eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
+    eval("every x in [1,2,3] satisfies x >= 2") should be(ValBoolean(false))
 
-  	eval("every x in xs satisfies x >= 1", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
-  	eval("every x in xs satisfies x >= 1", Map("xs" -> List(0,1,2,3))) should be(ValBoolean(false))
+    eval("every x in xs satisfies x >= 1", Map("xs" -> List(1,2,3))) should be(ValBoolean(true))
+    eval("every x in xs satisfies x >= 1", Map("xs" -> List(0,1,2,3))) should be(ValBoolean(false))
 
-  	eval("every x in [1,2], y in [3,4] satisfies x < y") should be(ValBoolean(true))
-  	eval("every x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(false))
+    eval("every x in [1,2], y in [3,4] satisfies x < y") should be(ValBoolean(true))
+    eval("every x in [1,2], y in [2,3] satisfies x < y") should be(ValBoolean(false))
   }
 
   it should "be processed in a for-expression" in {
@@ -843,8 +839,8 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be accessed in a nested context" in {
 
-    eval("{ a: { b:1 } }.a") should be(ValContext(List(
-        "b" -> ValNumber(1)) ))
+    eval("{ a: { b:1 } }.a") should be(ValContext(DefaultContext(Map(
+        "b" -> ValNumber(1))) ))
 
     eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))
   }
@@ -865,17 +861,30 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   it should "be filtered in a list" in {
 
     eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]") should be(ValList(List(
-        ValContext(List(
+        ValContext(DefaultContext(Map(
             "a" -> ValNumber(3),
-            "b" -> ValNumber(4) )) )))
+            "b" -> ValNumber(4) )) ))))
   }
 
   "A bean" should "be handled as context" in {
 
-    class A(val b: Int, c: Int)
+    class A {
+      val b: Int = 0
+      val c: Int = 1
+      def foo() = "foo"
+      def getBar() = "bar"
+      def incr(x: Int) = x + 1
+    }
 
-    eval("a", Map("a" -> new A(2,3))) should be(ValContext(List(
-        "b" -> ValNumber(2) )))
+    val obj = new A
+    val c = eval("a", Map("a" -> obj))
+    c should be(ValContext(ObjectContext(obj)))
+    c.asInstanceOf[ValContext].context.variable("b") shouldBe a [ValNumber]
+    c.asInstanceOf[ValContext].context.variable("foo") shouldBe a [ValString]
+    c.asInstanceOf[ValContext].context.variable("bar") shouldBe a [ValString]
+    c.asInstanceOf[ValContext].context.function("foo", 0) shouldBe a [ValFunction]
+    c.asInstanceOf[ValContext].context.function("getBar", 0) shouldBe a [ValFunction]
+    c.asInstanceOf[ValContext].context.function("incr", 1) shouldBe a [ValFunction]
 
   }
 

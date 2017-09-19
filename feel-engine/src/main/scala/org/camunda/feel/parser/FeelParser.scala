@@ -74,7 +74,7 @@ object FeelParser extends JavaTokenParsers {
 
   // 16
   private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest, ",") ^^ {  case test :: Nil => test
-  	                                                                                       case tests => AtLeastOne(tests) }
+                                                                                           case tests => AtLeastOne(tests) }
 
   // 15
   private lazy val positiveUnaryTest: Parser[Exp] = "null" ^^^ InputEqualTo(ConstNull) | simplePositiveUnaryTest
@@ -109,13 +109,13 @@ object FeelParser extends JavaTokenParsers {
   private lazy val literal: Parser[Exp] = "null" ^^^ ConstNull | simpleLiteral
 
   // 34
-  private lazy val simpleLiteral = booleanLiteral | dateTimeLiternal | stringLiteraL | numericLiteral
+  private lazy val simpleLiteral = booleanLiteral | dateTimeLiteral | stringLiteraL | numericLiteral
 
   // 36
   private lazy val booleanLiteral: Parser[ConstBool] = "true" ^^^ ConstBool(true) | "false" ^^^ ConstBool(false)
 
   // 62
-  private lazy val dateTimeLiternal: Parser[Exp] =
+  private lazy val dateTimeLiteral: Parser[Exp] =
     "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDate(_) ) |
     "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstTime(_) ) |
     "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDateTime(_) ) |
@@ -171,13 +171,13 @@ object FeelParser extends JavaTokenParsers {
   private lazy val openIntervalStart = "(" | "]"
 
   // 10
-	private lazy val closedIntervalStart = "["
+  private lazy val closedIntervalStart = "["
 
-	// 11
-	private lazy val openIntervalEnd = ")" | "["
+  // 11
+  private lazy val openIntervalEnd = ")" | "["
 
-	// 12
-	private lazy val closedIntervalEnd = "]"
+  // 12
+  private lazy val closedIntervalEnd = "]"
 
   // 46
   private lazy val forExpression: Parser[For] = "for" ~> rep1sep(listIterator, ",") ~! "return" ~! expression ^^ {
@@ -193,8 +193,8 @@ object FeelParser extends JavaTokenParsers {
 
   // 48 - no separator in spec grammar but in examples
   private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~! rep1sep(listIterator, ",") ~! "satisfies" ~! expression ^^ {
-  	case "some" ~ iterators ~ _ ~ condition => SomeItem(iterators, condition)
-  	case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
+    case "some" ~ iterators ~ _ ~ condition => SomeItem(iterators, condition)
+    case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
   }
 
   // 49
@@ -231,10 +231,10 @@ object FeelParser extends JavaTokenParsers {
   private lazy val filterExpression: Parser[Filter] = expression9 ~ "[" ~! expression <~ "]" ^^ { case list ~ _ ~ filter => Filter(list, filter) }
 
   // 40
-  private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiternal) ~> qualifiedName ~ parameters ^^ {
+  private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiteral) ~> qualifiedName ~ parameters ^^ {
     case names ~ params => names match {
       case name :: Nil => FunctionInvocation(name, params)
-      case _ => QualifiedFunctionInvocation(Ref(names), params)
+      case _ => QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, params)
     }}
 
   // 41
@@ -257,21 +257,21 @@ object FeelParser extends JavaTokenParsers {
 
   // 56
   private lazy val list: Parser[ConstList] = "[" ~> "]" ^^^ ConstList(List()) |
-  	"[" ~> rep1sep(expression7, ",") <~ "]" ^^ ( ConstList )
+    "[" ~> rep1sep(expression7, ",") <~ "]" ^^ ( ConstList )
 
   // 57
   private lazy val functionDefinition: Parser[FunctionDefinition] = "function" ~! "(" ~> repsep(formalParameter, ",") ~! ")" ~! (externalJavaFunction | expression) ^^ {
-  	case params ~ _ ~ body => FunctionDefinition(params, body)
+    case params ~ _ ~ body => FunctionDefinition(params, body)
   }
 
   private lazy val externalJavaFunction: Parser[JavaFunctionInvocation] = "external" ~ "{" ~ "java" ~ ":" ~ "{" ~> functionClassName ~ "," ~ functionMethodSignature <~ "}" ~ "}" ^^ {
-  	case className ~ _ ~ Tuple2(methodName, arguments) => JavaFunctionInvocation(className, methodName, arguments)
+    case className ~ _ ~ Tuple2(methodName, arguments) => JavaFunctionInvocation(className, methodName, arguments)
   }
 
   private lazy val functionClassName = "class" ~! ":" ~> stringLiteralWithQuotes
 
   private lazy val functionMethodSignature = "method_signature" ~! ":" ~! "\"" ~> name ~! "(" ~! repsep(functionMethodArgument, ",") <~ ")" ~! "\"" ^^ {
-  	case methodName ~ _ ~ arguments => (methodName, arguments)
+    case methodName ~ _ ~ arguments => (methodName, arguments)
   }
 
   private lazy val functionMethodArgument = qualifiedName ^^ ( _.mkString(".") )

@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import org.camunda.feel.interpreter.Val;
 import org.camunda.feel.interpreter.ValFunction;
-import org.camunda.feel.spi.FunctionProvider;
 
 import scala.Function1;
 import scala.Option;
@@ -24,7 +23,7 @@ import scala.collection.JavaConverters;
 import scala.collection.immutable.List;
 import scala.runtime.AbstractFunction1;
 
-public interface JavaFunctionProvider extends FunctionProvider
+public interface JavaFunctionProvider extends CustomFunctionProvider
 {
     Optional<JavaFunction> resolveFunction(String functionName, int argCount);
 

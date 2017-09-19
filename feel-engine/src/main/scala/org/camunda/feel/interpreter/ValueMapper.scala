@@ -1,9 +1,7 @@
-package org.camunda.feel.spi
-
-import org.camunda.feel.interpreter._
+package org.camunda.feel.interpreter
 
 trait ValueMapper {
-	
+
   def toVal(x: Any): Val
 
   def unpackVal(value: Val): Any

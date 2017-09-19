@@ -3,39 +3,40 @@ package org.camunda.feel
 import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.interpreter.FeelInterpreter
-import org.camunda.feel.interpreter.Context
 import org.camunda.feel.interpreter.DefaultValueMapper
 import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.Exp
-import org.camunda.feel.script.CompiledFeelScript
 import org.camunda.feel.spi._
-import org.camunda.feel.spi.DefaultFunctionProviders.EmptyFunctionProvider
-import org.camunda.feel.spi.VariableContext.StaticVariableContext
 
 /**
  * @author Philipp Ossler
  */
-class FeelEngine(functionProvider: FunctionProvider = EmptyFunctionProvider, valueMapper: ValueMapper = new DefaultValueMapper) {
+class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider, val valueMapper: ValueMapper = DefaultValueMapper.instance) {
 
-  val interpreter = new FeelInterpreter
+  val interpreter: org.camunda.feel.interpreter.FeelInterpreter = new FeelInterpreter
 
   def evalExpression(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    eval(FeelParser.parseExpression, expression, Context(StaticVariableContext(context), functionProvider, valueMapper))
+    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
+    eval(FeelParser.parseExpression, expression, ctx)
   }
 
-  def evalExpression(expression: String, variableContext: VariableContext): EvalResult = {
-    eval(FeelParser.parseExpression, expression, Context(variableContext, functionProvider, valueMapper))
+  def evalExpression(expression: String, context: Context): EvalResult = {
+    eval(FeelParser.parseExpression, expression, context)
   }
 
   def evalUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    eval(FeelParser.parseUnaryTests, expression, Context(StaticVariableContext(context), functionProvider, valueMapper))
+    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
+    eval(FeelParser.parseUnaryTests, expression, ctx)
   }
 
-  def evalUnaryTests(expression: String, variableContext: VariableContext): EvalResult = {
-    eval(FeelParser.parseUnaryTests, expression, Context(variableContext, functionProvider, valueMapper))
+  def evalUnaryTests(expression: String, context: Context): EvalResult = {
+    eval(FeelParser.parseUnaryTests, expression, context)
   }
 
-  def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = evalParsedExpression(exp, Context(StaticVariableContext(context), functionProvider, valueMapper))
+  def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = {
+    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
+    evalParsedExpression(exp, ctx)
+  }
 
   private def eval(parser: String => ParseResult[Exp], expression: String, context: Context) = parser(expression) match {
     case Success(exp, _) => evalParsedExpression(ParsedExpression(exp, expression), context)
