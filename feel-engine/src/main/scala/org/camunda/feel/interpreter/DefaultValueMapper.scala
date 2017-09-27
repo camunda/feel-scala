@@ -13,7 +13,7 @@ import java.time.Period
 import scala.collection.JavaConverters._
 
 class DefaultValueMapper extends ValueMapper {
-  
+
   def toVal(x: Any): Val = x match {
 
     case x: Val => x
@@ -22,7 +22,9 @@ class DefaultValueMapper extends ValueMapper {
     // scala types
     case x: Int => ValNumber(x)
     case x: Long => ValNumber(x)
+    case x: Float if (x.isNaN || x.isInfinity) => ValNull
     case x: Float => ValNumber(x)
+    case x: Double if (x.isNaN || x.isInfinity) => ValNull
     case x: Double => ValNumber(x)
     case x: BigDecimal => ValNumber(x)
     case x: Boolean => ValBoolean(x)
@@ -60,59 +62,59 @@ class DefaultValueMapper extends ValueMapper {
 
   private def useObjectAsContext(obj: Any): Val =
     try {
-      
+
       val fields = obj.getClass().getDeclaredFields filter(!_.isSynthetic) map(field => field.getName -> {
         field.setAccessible(true)
-        val value = field.get(obj)        
+        val value = field.get(obj)
         if (value == null || value.getClass != obj.getClass) {
-          toVal(value)        
+          toVal(value)
         } else {
           ValError(s"can't access self-reference field '${field.getName}'")
         }
       }) toList
-      
+
       val fieldNames = fields map ( _._1 )
-      
+
       val methods= obj.getClass().getDeclaredMethods filter(!_.isSynthetic) filter( m => !fieldNames.contains(m.getName)) toList
 
       val getters = methods
         .filter(_.getName.startsWith("get"))
         .filter(_.getParameterCount == 0)
         .map( method => getGetterName(method) -> method)
-        .filter{ case (name,_) => !fieldNames.contains(name) } 
+        .filter{ case (name,_) => !fieldNames.contains(name) }
         .map{ case (name,method) => {
-        
+
         method.setAccessible(true)
         val returnValue = method.invoke(obj)
-        
+
         val value = if (returnValue != obj) {
-          toVal(returnValue)        
+          toVal(returnValue)
         } else {
           ValError(s"can't access self-reference getter '${method.getName}'")
         }
-        
+
         name -> value
       }}
 
       val functions = methods.map( method => {
-        
+
         val name = method.getName
         val paramNames = method.getParameters.map( param => param.getName) toList
-        
+
         val function = ValFunction(paramNames, params => {
-          
+
           val paramValues = params map unpackVal
           val paramJavaObjects = paramValues zip method.getParameterTypes map { case (obj,clazz) => JavaClassMapper.asJavaObject(obj, clazz) }
-          
+
           val result = method.invoke(obj, paramJavaObjects: _*)
-          
+
           toVal(result)
         })
-        
+
         name -> function
       })
-      
-      
+
+
       ValContext(fields ++ getters ++ functions)
 
     } catch {
@@ -120,18 +122,18 @@ class DefaultValueMapper extends ValueMapper {
         ValError(s"unsupported type '$obj' of class '${obj.getClass}'")
       }
     }
-    
+
   private def getGetterName(method: Method): String = {
     val methodName = method.getName
     val firstChar = methodName.charAt(3) toLower
-    
+
     if (methodName.size == 4) {
       firstChar toString
     } else {
       firstChar + methodName.substring(4)
     }
   }
-  
+
   def unpackVal(value: Val): Any = value match {
     case ValNull => null
     case ValBoolean(boolean) => boolean
@@ -147,5 +149,5 @@ class DefaultValueMapper extends ValueMapper {
     case ValError(error) => new Exception(error)
     case _ => throw new IllegalArgumentException(s"unexpected val '$value'")
   }
-  
+
 }

@@ -102,9 +102,21 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("2+4+6") should be(ValNumber(12))
   }
 
+  it should "add to not-a-number" in {
+
+    eval("2 + true") should be(ValNull)
+    eval("false + 3") should be(ValNull)
+  }
+
   it should "subtract from '2'" in {
 
     eval("4-2") should be(ValNumber(2))
+  }
+
+  it should "subtract to not-a-number" in {
+
+    eval("2 - true") should be(ValNull)
+    eval("false - 3") should be(ValNull)
   }
 
   it should "add and subtract" in {
@@ -117,9 +129,26 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("3*3") should be(ValNumber(9))
   }
 
+  it should "multiply to not-a-number" in {
+
+    eval("2 * true") should be(ValNull)
+    eval("false * 3") should be(ValNull)
+  }
+
   it should "divide by '4'" in {
 
     eval("8/4") should be(ValNumber(2))
+  }
+
+  it should "be null if divide by zero" in {
+
+    eval("2 / 0") should be(ValNull)
+  }
+
+  it should "divide to not-a-number" in {
+
+    eval("2 / true") should be(ValNull)
+    eval("false / 3") should be(ValNull)
   }
 
   it should "multiply and divide" in {
@@ -232,6 +261,17 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
     eval("3 in (2 .. 4)") should be(ValBoolean(true))
     eval("4 in (2 .. 4)") should be(ValBoolean(false))
+  }
+
+  it should "be null if nAn" in {
+
+    eval("x", Map("x" -> Double.NaN)) should be(ValNull)
+  }
+
+  it should "be null if infinity" in {
+
+    eval("x", Map("x" -> Double.PositiveInfinity)) should be(ValNull)
+    eval("x", Map("x" -> Double.NegativeInfinity)) should be(ValNull)
   }
 
   "A string" should "concatenates to another String" in {

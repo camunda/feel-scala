@@ -6,11 +6,14 @@ import com.sun.org.apache.xerces.internal.impl.dv.xs.DayTimeDurationDV
 import java.time.Duration
 import java.time.Period
 import org.camunda.feel.spi.ValueMapper
+import org.slf4j._
 
 /**
  * @author Philipp Ossler
  */
 class FeelInterpreter {
+
+  val logger = LoggerFactory.getLogger(classOf[FeelInterpreter])
 
   def eval(expression: Exp)(implicit context: Context = Context.empty): Val = expression match {
 
@@ -36,12 +39,12 @@ class FeelInterpreter {
     case interval @ Interval(start, end) => unaryOpDual(eval(start.value), eval(end.value), isInInterval(interval), ValBoolean)
 
     // arithmetic operations
-    case Addition(x,y) => addOp(eval(x), eval(y))
-    case Subtraction(x,y) => subOp(eval(x), eval(y))
-    case Multiplication(x,y) => mulOp(eval(x), eval(y))
-    case Division(x,y) => divOp(eval(x), eval(y))
-    case Exponentiation(x,y) => dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber)
-    case ArithmeticNegation(x) => withNumber(eval(x), x => ValNumber(-x))
+    case Addition(x,y) => withValOrNull( addOp(eval(x), eval(y)))
+    case Subtraction(x,y) => withValOrNull( subOp(eval(x), eval(y)) )
+    case Multiplication(x,y) => withValOrNull( mulOp(eval(x), eval(y)) )
+    case Division(x,y) => withValOrNull( divOp(eval(x), eval(y)) )
+    case Exponentiation(x,y) => withValOrNull( dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber) )
+    case ArithmeticNegation(x) => withValOrNull( withNumber(eval(x), x => ValNumber(-x)) )
 
     // dual comparators
     case Equal(x,y) => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
@@ -89,6 +92,15 @@ class FeelInterpreter {
     case _ => ValError(message)
   }
 
+
+  private def withValOrNull(x: Val): Val = x match {
+      case ValError(e)  => {
+          logger.warn(s"Suppressed failure: $e")
+          ValNull
+      }
+      case _ => x
+    }
+
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
     	case ValNull => withVal(x, x => f(c(ValNull, x)))
@@ -101,7 +113,7 @@ class FeelInterpreter {
       case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
       case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
-      case _ => ValError(s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
+      case e => error(e, s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
     })
 
   private def unaryOp(x: Val, c: (Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
@@ -112,7 +124,7 @@ class FeelInterpreter {
       case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
       case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
-      case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
+      case e => error(e, s"expected Number, Date, Time or Duration but found '$input'")
     })
 
   private def unaryOpDual(x: Val, y: Val, c: (Compareable[_], Compareable[_], Compareable[_]) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
@@ -123,7 +135,7 @@ class FeelInterpreter {
       case ValDateTime(i) => withDateTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValYearMonthDuration(i) => withYearMonthDurations(x, y, (x,y) => f(c(i, x, y)))
       case ValDayTimeDuration(i) => withDayTimeDurations(x, y, (x,y) => f(c(i, x, y)))
-      case _ => ValError(s"expected Number, Date, Time or Duration but found '$input'")
+      case e => error(e, s"expected Number, Date, Time or Duration but found '$input'")
     })
 
   private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
@@ -349,12 +361,18 @@ class FeelInterpreter {
   	case _ => error(x, s"expected Number, or Duration but found '$x'")
   }
 
-  private def divOp(x: Val, y: Val): Val = x match {
-  	case ValNumber(x) => withNumber(y, y => ValNumber(x / y))
-  	case ValYearMonthDuration(x) => withNumber(y, y => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized() ))
-  	case ValDayTimeDuration(x) => withNumber(y, y => ValDayTimeDuration( Duration.ofMillis((x.toMillis() / y).intValue) ))
-  	case _ => error(x, s"expected Number, or Duration but found '$x'")
-  }
+  private def divOp(x: Val, y: Val): Val = withNumber(y, y =>
+    if (y == 0) {
+      ValError("division by zero")
+    } else {
+      x match {
+      	case ValNumber(x) => ValNumber(x / y)
+        case ValYearMonthDuration(x) => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized() )
+      	case ValDayTimeDuration(x) => ValDayTimeDuration( Duration.ofMillis((x.toMillis() / y).intValue) )
+      	case _ => error(x, s"expected Number, or Duration but found '$x'")
+      }
+    }
+  )
 
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)

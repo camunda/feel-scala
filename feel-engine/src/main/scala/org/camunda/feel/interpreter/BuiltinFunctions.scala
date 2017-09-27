@@ -185,6 +185,7 @@ object BuiltinFunctions extends FunctionProvider {
 
 	def notFunction = ValFunction(List("negand"), _ match {
 	  case List(ValBoolean(negand)) => ValBoolean(!negand)
+    case List(other: Val) => ValNull
 	  case other => ValNull
 	})
 

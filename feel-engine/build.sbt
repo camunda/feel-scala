@@ -8,12 +8,16 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 libraryDependencies ++= List(
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" ,
-  "com.github.nscala-time" %% "nscala-time" % "2.2.0"
+  "com.github.nscala-time" %% "nscala-time" % "2.2.0",
+  "org.slf4j" % "slf4j-api" % "1.7.25"
 )
 
 libraryDependencies ++= List(
 	"org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
-	"junit" % "junit" % "4.11" % "test"
+  "junit" % "junit" % "4.11" % "test",
+  "org.apache.logging.log4j" % "log4j-api" % "2.9.0" % "test",
+  "org.apache.logging.log4j" % "log4j-core" % "2.9.0" % "test",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.9.0" % "test"
 )
 
 assemblyJarName in assembly :=  s"${name.value}-${version.value}-complete.jar"
