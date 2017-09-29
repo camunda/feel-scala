@@ -8,8 +8,8 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public"
 
 libraryDependencies ++= List(
-  "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.1.0-SNAPSHOT",
-  "org.camunda.bpm" % "camunda-engine" % "7.7.0-alpha1" % "provided"
+  "org.camunda.bpm.extension.feel.scala" %% "feel-engine-factory" % "1.3.0-SNAPSHOT",
+  "org.camunda.bpm" % "camunda-engine" % "7.7.0" % "provided"
 )
 
 libraryDependencies ++= List(
