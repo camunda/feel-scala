@@ -22,10 +22,6 @@ class CamundaFeelEnginePluginTest extends FlatSpec with Matchers with BeforeAndA
 
   val dmnEngineConfig = processEngine.getProcessEngineConfiguration.asInstanceOf[ProcessEngineConfigurationImpl].getDmnEngineConfiguration
 
-  after {
-    processEngine.close
-  }
-
   "A Camunda engine with FEEL Scala plugin" should "has FEEL Scala Factory" in {
 
     Option(dmnEngineConfig.getFeelEngineFactory) should not be None

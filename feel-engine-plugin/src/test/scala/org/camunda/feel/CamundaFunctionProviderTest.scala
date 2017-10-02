@@ -40,7 +40,7 @@ class CamundaFunctionProviderTest extends FlatSpec with Matchers with BeforeAndA
 
 		val result = decisionService.evaluateDecisionByKey("functionNow").evaluate()
 
-		result.getSingleEntry[Any] shouldBe a [LocalDateTime]
+		result.getSingleEntry[Any] shouldBe a [java.util.Date]
 	}
 
 	"The function 'currentUser()'" should "return the current user id" in {
