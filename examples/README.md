@@ -8,8 +8,10 @@ You can run the tests with [SBT](http://www.scala-sbt.org) or [Maven](http://mav
 
 ### Using SBT
 
+In the root directory:
+
 ```
-sbt test
+sbt examples/test
 ```
 
 ### Using Maven
