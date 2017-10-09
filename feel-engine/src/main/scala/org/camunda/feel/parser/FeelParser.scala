@@ -17,7 +17,13 @@ object FeelParser extends JavaTokenParsers {
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  private lazy val reservedWord = "null" | "true" | "false" | "function" | "if" | "then" | "else" | "for" | "between" | "instance" | "of"
+  private lazy val reservedWord: Parser[String] = ( "null\\b".r 
+    | "true\\b".r | "false\\b".r
+    | "function\\b".r
+    | "if\\b".r | "then\\b".r | "else\\b".r
+    | "for\\b".r
+    | "between\\b".r
+    | "instance\\b".r | "of\\b".r )
 
   private lazy val identifier = not(reservedWord) ~> ident
 
