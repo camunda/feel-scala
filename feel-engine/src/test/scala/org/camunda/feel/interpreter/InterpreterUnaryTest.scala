@@ -2,7 +2,6 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.parser.FeelParser
-import org.camunda.feel.spi.VariableContext._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -50,7 +49,7 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   it should "compare to null" in {
 
-  	eval(null, "3") should be (ValBoolean(false))
+    eval(null, "3") should be (ValBoolean(false))
   }
 
   it should "be in interval '(2..4)'" in {
@@ -90,11 +89,11 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   it should "compare to a variable (qualified name)" in {
 
-    eval(2,"var", variables = Map("var" -> 3)) should be (ValBoolean(false))
-    eval(3,"var", variables = Map("var" -> 3)) should be (ValBoolean(true))
+    eval(2,"var", Map("var" -> 3)) should be (ValBoolean(false))
+    eval(3,"var", Map("var" -> 3)) should be (ValBoolean(true))
 
-    eval(2,"< var", variables = Map("var" -> 3)) should be (ValBoolean(true))
-    eval(3,"< var", variables = Map("var" -> 3)) should be (ValBoolean(false))
+    eval(2,"< var", Map("var" -> 3)) should be (ValBoolean(true))
+    eval(3,"< var", Map("var" -> 3)) should be (ValBoolean(false))
   }
 
   it should "compare to a field of a bean" in {
@@ -116,7 +115,7 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   it should "compare to null" in {
 
-  	eval(null, """ "a" """) should be (ValBoolean(false))
+    eval(null, """ "a" """) should be (ValBoolean(false))
   }
 
   it should """be in '"a","b"' """ in {
@@ -137,8 +136,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   it should "compare to null" in {
 
-  	eval(null, "true") should be (ValBoolean(false))
-  	eval(null, "false") should be (ValBoolean(false))
+    eval(null, "true") should be (ValBoolean(false))
+    eval(null, "false") should be (ValBoolean(false))
   }
 
   "A date" should "compare with '<'" in {
@@ -276,11 +275,11 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   "A null expression" should "compare to null" in {
 
-  	eval(1, "null") should be(ValBoolean(false))
+    eval(1, "null") should be(ValBoolean(false))
     eval(true, "null") should be(ValBoolean(false))
     eval("a", "null") should be(ValBoolean(false))
 
-  	eval(null, "null") should be(ValBoolean(true))
+    eval(null, "null") should be(ValBoolean(true))
   }
 
   "A function" should "be invoked as test" in {
@@ -290,8 +289,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
         invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) },
         requireInputVariable = true)
 
-    eval("foo", """ startsWith("f") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
-    eval("foo", """ startsWith("b") """, Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
+    eval("foo", """ startsWith("f") """, functions = Map(("startsWith", 1) -> startsWithFunction)) should be(ValBoolean(true))
+    eval("foo", """ startsWith("b") """, functions = Map(("startsWith", 1) -> startsWithFunction)) should be(ValBoolean(false))
   }
 
   it should "be invoked as end point" in {
@@ -301,16 +300,17 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
       invoke = { case List(ValNumber(x)) => ValNumber(x + 1) }
     )
 
-    eval(2, "< f(2)", Map("f" -> function)) should be(ValBoolean(true))
-    eval(3, "< f(2)", Map("f" -> function)) should be(ValBoolean(false))
+    eval(2, "< f(2)", functions = Map(("f", 1) -> function)) should be(ValBoolean(true))
+    eval(3, "< f(2)", functions = Map(("f", 1) -> function)) should be(ValBoolean(false))
 
-    eval(3, "[f(1)..f(2)]", Map("f" -> function)) should be(ValBoolean(true))
-    eval(4, "[f(1)..f(2)]", Map("f" -> function)) should be(ValBoolean(false))
+    eval(3, "[f(1)..f(2)]", functions = Map(("f", 1) -> function)) should be(ValBoolean(true))
+    eval(4, "[f(1)..f(2)]", functions = Map(("f", 1) -> function)) should be(ValBoolean(false))
   }
 
-  private def eval(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
+  private def eval(input: Any, expression: String, variables: Map[String, Any] = Map(), functions: Map[(String, Int), ValFunction] = Map()): Val = {
     val exp = FeelParser.parseUnaryTests(expression)
-    interpreter.eval(exp.get)(Context(StaticVariableContext(variables) + ( Context.defaultInputVariable -> input)))
+    val ctx = RootContext(variables + (RootContext.defaultInputVariable -> input), functions)
+    interpreter.eval(exp.get)(ctx)
   }
 
   private def date(date: String): Date = date

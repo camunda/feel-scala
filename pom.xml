@@ -19,6 +19,8 @@
     <properties>
         <camunda.version>7.7.0-alpha1</camunda.version>
         <version.java>1.8</version.java>
+        <scala.version>2.11.7</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
@@ -112,6 +114,10 @@
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
             <version>3.2.1</version>
+            <configuration>
+              <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
+              <scalaVersion>${scala.version}</scalaVersion>
+            </configuration>
             <executions>
 		          <execution>
 			          <id>scala-compile-first</id>
