@@ -1,15 +1,14 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
+import org.camunda.feel.spi._
+
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
-import java.math.MathContext
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.time.Period
 import java.util.regex._
-import org.camunda.feel.spi.FunctionProvider
 
 /**
  * @author Philipp
@@ -90,11 +89,11 @@ object BuiltinFunctions extends FunctionProvider {
 	  "ceiling" -> ceilingFunction
 	)
 
-	private val builtinFunctionsByNameAndArgCount: Map[(String, Int), ValFunction] = builtinFunctions
+	val functions: Map[(String, Int), ValFunction] = builtinFunctions
 		.map { case (name, f) => (name, f.params.size) -> f }
 	  .toMap
 
-	def getFunction(name: String, argCount: Int) = builtinFunctionsByNameAndArgCount.get((name, argCount))
+	override def getFunction(name: String, argCount: Int) = functions.get((name, argCount))
 
 	private def error(e: List[Val]): ValError = e match {
 	    case vars if (vars.exists(_.isInstanceOf[ValError])) => vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
