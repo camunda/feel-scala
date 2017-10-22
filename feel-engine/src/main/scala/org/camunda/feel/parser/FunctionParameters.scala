@@ -1,16 +1,7 @@
 package org.camunda.feel.parser
 
-sealed trait FunctionParameters {
-	
-	def size: Int
-}
+sealed trait FunctionParameters
 
-case class PositionalFunctionParameters(params: List[Exp]) extends FunctionParameters {
-	
-	def size = params.size
-}
+case class PositionalFunctionParameters(params: List[Exp]) extends FunctionParameters
 
-case class NamedFunctionParameters(params: Map[String, Exp]) extends FunctionParameters {
-	
-	def size = params.size
-}
+case class NamedFunctionParameters(params: Map[String, Exp]) extends FunctionParameters

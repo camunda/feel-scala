@@ -15,6 +15,8 @@ package org.camunda.feel.example.spi;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.camunda.feel.interpreter.ValNumber;
@@ -23,35 +25,34 @@ import org.camunda.feel.spi.JavaFunctionProvider;
 
 import scala.math.BigDecimal;
 
-public class CustomJavaFunctionProvider implements JavaFunctionProvider
+public class CustomJavaFunctionProvider extends JavaFunctionProvider
 {
-    private static final Map<String, JavaFunction> functions = new HashMap<>();
+    private static final Map<String, List<JavaFunction>> functions = new HashMap<>();
 
     static {
 
-        functions.put("bar", new JavaFunction(Arrays.asList("x"), args -> {
+        final JavaFunction function = new JavaFunction(Arrays.asList("x"), args -> {
             final ValNumber arg = (ValNumber) args.get(0);
 
             int x = arg.value().intValue();
 
             return new ValNumber(BigDecimal.valueOf(x - 1));
-        }));
+        });
 
+        functions.put("bar", Collections.singletonList(function));
     }
 
     @Override
-    public Optional<JavaFunction> resolveFunction(String functionName, int argCount)
+    public List<JavaFunction> resolveFunctions(String functionName)
     {
-        final JavaFunction function = functions.get(functionName);
-
-        if (function != null && function.getParams().size() == argCount)
-        {
-            return Optional.of(function);
-        }
-        else
-        {
-            return Optional.empty();
-        }
+      if (functions.containsKey(functionName))
+      {
+        return functions.get(functionName);
+      }
+      else
+      {
+          return Collections.emptyList();
+      }
     }
 
 }

@@ -4,6 +4,6 @@ import org.camunda.feel.interpreter._
 
 trait CustomFunctionProvider extends FunctionProvider {
 
-  override def getFunction(name: String, argumentCount: Int): Option[ValFunction]
+  override def getFunction(name: String): List[ValFunction]
 
 }

@@ -20,12 +20,15 @@ class CustomContextTest extends FlatSpec with Matchers {
 
   "A custom context" should "provide its members" in {
     val myCustomContext = new CustomContext {
+
       override def variable(name: String): Val = name match {
         case "a" => ValNumber(2)
         case RootContext.defaultInputVariable => ValNumber(2)
         case _ => super.variable(name)
       }
-      override def function(name: String, argumentCount: Int): Val = BuiltinFunctions.getFunction(name, argumentCount).getOrElse(super.function(name, argumentCount))
+
+      override def functions = BuiltinFunctions.functions
+
     }
     engine.evalExpression("a", myCustomContext) should be(EvalValue(2))
     engine.evalExpression("floor(3.8)", myCustomContext) should be(EvalValue(3))
@@ -48,7 +51,7 @@ class CustomContextTest extends FlatSpec with Matchers {
     val myFunctionProvider = new FunctionProvider {
       var callCount = 0
       val f = ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 2) } )
-      override def getFunction(name: String, argumentCount: Int): Option[ValFunction] = { callCount += 1; if (name == "f" && argumentCount == 1) Some(f) else None }
+      override def getFunction(name: String): List[ValFunction] = { callCount += 1; if (name == "f") List(f) else List.empty }
     }
 
     val myCustomContext = new CustomContext {

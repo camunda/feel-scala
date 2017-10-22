@@ -22,17 +22,24 @@ public class JavaFunction
 
     private final List<String> params;
     private final Function<List<Val>, Val> function;
+    private final boolean hasVarArgs;
     private final boolean requireInputVariable;
 
     public JavaFunction(List<String> params, Function<List<Val>, Val> function)
     {
-        this(params, function, false);
+        this(params, function, false, false);
     }
 
-    public JavaFunction(List<String> params, Function<List<Val>, Val> function, boolean requireInputVariable)
+    public JavaFunction(List<String> params, Function<List<Val>, Val> function, boolean hasVarArgs)
+    {
+        this(params, function, hasVarArgs, false);
+    }
+
+    public JavaFunction(List<String> params, Function<List<Val>, Val> function, boolean hasVarArgs, boolean requireInputVariable)
     {
         this.params = params;
         this.function = function;
+        this.hasVarArgs = hasVarArgs;
         this.requireInputVariable = requireInputVariable;
     }
 
@@ -49,6 +56,11 @@ public class JavaFunction
     public boolean isInputVariableRequired()
     {
         return requireInputVariable;
+    }
+
+    public boolean hasVarArgs()
+    {
+      return hasVarArgs;
     }
 
 }

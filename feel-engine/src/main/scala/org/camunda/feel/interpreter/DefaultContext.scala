@@ -14,9 +14,9 @@ abstract class ContextBase extends Context {
 
   def variableProvider: VariableProvider = VariableProvider.EmptyVariableProvider
 
-  def functions: Map[(String, Int), ValFunction] = Map.empty
+  def functions: Map[String, List[ValFunction]] = Map.empty
 
-  private val cachedFunctions: mutable.Map[(String, Int), ValFunction] = mutable.Map.empty
+  private val cachedFunctions: mutable.Map[String, List[ValFunction]] = mutable.Map.empty
 
   def functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider
 
@@ -28,13 +28,43 @@ abstract class ContextBase extends Context {
     }
   }
 
-  override def function(name: String, argumentCount: Int): Val = functions.get((name, argumentCount)) orElse cachedFunctions.get((name, argumentCount)) match {
-    case Some(f: ValFunction) => f
-    case _ => functionProvider.getFunction(name, argumentCount) match {
-      case Some(f: ValFunction) => cachedFunctions.put((name, argumentCount), f); f
-      case _ => ValError(s"no function found with name '$name' and $argumentCount arguments")
-    }
+  override def function(name: String, paramCount: Int): Val =
+    findFunction(functions.getOrElse(name, List.empty), paramCount) orElse findFunction(cachedFunctions.getOrElse(name, List.empty), paramCount) match {
+      case Some(f: ValFunction) => f
+      case _ => {
+        val providerFunctions = functionProvider.getFunction(name)
+
+        val functionsByName = cachedFunctions getOrElse(name, List.empty)
+        cachedFunctions.put(name, functionsByName ++ providerFunctions)
+
+        findFunction(providerFunctions, paramCount) getOrElse {
+          ValError(s"no function found with name '$name' and $paramCount parameters")
+        }
+      }
   }
+
+  override def function(name: String, params: Set[String]): Val =
+    findFunction(functions.getOrElse(name, List.empty), params) orElse findFunction(cachedFunctions.getOrElse(name, List.empty), params) match {
+      case Some(f: ValFunction) => f
+      case _ => {
+        val providerFunctions = functionProvider.getFunction(name)
+
+        val functionsByName = cachedFunctions getOrElse(name, List.empty)
+        cachedFunctions.put(name, functionsByName ++ providerFunctions)
+
+        findFunction(providerFunctions, params) getOrElse {
+          ValError(s"no function found with name '$name' and parameters: ${params.mkString(",")}")
+        }
+      }
+  }
+
+  private def findFunction(functions: List[ValFunction], paramCount: Int): Option[ValFunction] = functions.find ( f =>
+        f.params.size == paramCount || (f.params.size < paramCount && f.hasVarArgs)
+  )
+
+  private def findFunction(functions: List[ValFunction], params: Set[String]): Option[ValFunction] = functions.find ( f =>
+    f.paramSet == params || params.subsetOf(f.paramSet)
+  )
 
 }
 
@@ -50,15 +80,26 @@ case class CompositeContext(contexts: Seq[Context], override val valueMapper: Va
     ValError(s"no variable found for name '$name'")
   }
 
-  override def function(name: String, argumentCount: Int): Val = {
+  override def function(name: String, paramCount: Int): Val = {
     for (context <- contexts) {
-      context.function(name, argumentCount) match {
+      context.function(name, paramCount) match {
         case _: ValError =>
         case f: ValFunction => return f
         case _: Val =>
       }
     }
-    ValError(s"no function found with name '$name' and $argumentCount arguments")
+    ValError(s"no function found with name '$name' and $paramCount parameters")
+  }
+
+  override def function(name: String, params: Set[String]): Val = {
+    for (context <- contexts) {
+      context.function(name, params) match {
+        case _: ValError =>
+        case f: ValFunction => return f
+        case _: Val =>
+      }
+    }
+    ValError(s"no function found with name '$name' and parameters: ${params.mkString(",")}")
   }
 
 }
@@ -83,7 +124,7 @@ object CompositeContext {
 
 case class DefaultContext(
   override val variables: Map[String, Any] = Map.empty,
-  override val functions: Map[(String, Int), ValFunction] = Map.empty,
+  override val functions: Map[String, List[ValFunction]] = Map.empty,
   override val variableProvider: VariableProvider = VariableProvider.EmptyVariableProvider,
   override val functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider,
   override val valueMapper: ValueMapper = DefaultValueMapper.instance
@@ -91,13 +132,13 @@ case class DefaultContext(
 
 case class RootContext(
   override val variables: Map[String, Any] = Map.empty,
-  additionalFunctions: Map[(String, Int), ValFunction] = Map.empty,
+  additionalFunctions: Map[String, List[ValFunction]] = Map.empty,
   override val variableProvider: VariableProvider = VariableProvider.EmptyVariableProvider,
   override val functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider,
   override val valueMapper: ValueMapper = DefaultValueMapper.instance
 ) extends ContextBase {
 
-  override val functions = additionalFunctions ++ BuiltinFunctions.functions
+  override val functions = BuiltinFunctions.functions ++ additionalFunctions
 }
 
 object RootContext {

@@ -4,10 +4,15 @@ import org.camunda.feel.interpreter._
 
 class AnotherFunctionProvider extends CustomFunctionProvider {
 
-   val functions: Map[(String, Int), ValFunction] = Map(
-      ("bar", 1) -> ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 2) } )
-    )
+  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
 
-    override def getFunction(functionName: String, argumentCount: Int): Option[ValFunction] = functions.get((functionName, argumentCount))
+   val functions: Map[String, List[ValFunction]] = Map(
+      "bar" -> List(
+        ValFunction(
+          params = List("x"),
+          invoke = { case List(ValNumber(x)) => ValNumber(x + 2) }
+        )
+      )
+    )
 
 }

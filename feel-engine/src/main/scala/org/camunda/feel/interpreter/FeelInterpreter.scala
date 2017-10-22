@@ -13,7 +13,7 @@ import org.slf4j._
  */
 class FeelInterpreter {
 
-  val logger = LoggerFactory.getLogger(classOf[FeelInterpreter])
+  val logger = LoggerFactory.getLogger("org.camunda.feel.interpreter")
 
   def eval(expression: Exp)(implicit context: Context): Val = expression match {
 
@@ -30,7 +30,7 @@ class FeelInterpreter {
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case ConstContext(entries) => {
       val dc: DefaultContext = entries.foldLeft( DefaultContext() ){ (ctx, entry) => evalContextEntry(entry._1, entry._2)(ctx + context) match {
-        case f: ValFunction => DefaultContext(ctx.variables, ctx.functions + ((entry._1, f.params.length) -> f))
+        case f: ValFunction => DefaultContext(ctx.variables, addFunction(ctx.functions, entry._1, f))
         case v: Val => DefaultContext(ctx.variables + (entry._1 -> v), ctx.functions)
       }}
       ValContext(dc)
@@ -81,8 +81,8 @@ class FeelInterpreter {
     case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
 
     // functions
-    case FunctionInvocation(name, params) => withFunction(context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) ))
-    case QualifiedFunctionInvocation(path, name, params) => withContext(eval(path), c => withFunction(c.context.function(name, params.size), f => withParameters(params, f, params => f.invoke(params) )))
+    case FunctionInvocation(name, params) => withFunction(findFunction(context, name, params), f => invokeFunction(f, params))
+    case QualifiedFunctionInvocation(path, name, params) => withContext(eval(path), c => withFunction(findFunction(c.context, name, params), f => invokeFunction(f, params) ))
     case FunctionDefinition(params, body) => ValFunction(params, paramValues => body match {
       case JavaFunctionInvocation(className, methodName, arguments) => invokeJavaFunction(className, methodName, arguments, paramValues, context.valueMapper)
       case _ => eval(body)(context ++ (params zip paramValues).toMap)
@@ -389,37 +389,49 @@ class FeelInterpreter {
     case _ => error(x, s"expect Function but found '$x'")
   }
 
-  private def withParameters(params: FunctionParameters, function: ValFunction, f: List[Val] => Val)(implicit context: Context): Val = {
-    val paramList = params match {
+  private def invokeFunction(function: ValFunction, params: FunctionParameters)(implicit context: Context): Val = {
+    val paramList: List[Val] = params match {
       case PositionalFunctionParameters(params) => {
 
-        if (params.size != function.params.size) {
-          return ValError(s"expected ${function.params.size} parameters but found ${params.size}")
-        }
+        if (function.hasVarArgs && function.params.size > 0) {
+          val size = function.params.size - 1
 
-        params map eval
+          val args: List[Val] = params take(size) map eval
+
+          val varArgs: Val = (params drop(size) map eval) match {
+            case Nil                  => ValList(List())
+            case ValList(list) :: Nil => ValList(list)
+            case list                 => ValList(list)
+          }
+
+          args :+ varArgs
+
+        } else {
+          params map eval
+        }
       }
       case NamedFunctionParameters(params) => {
 
-        val missingParameters = function.params.filter( p => !params.contains(p) )
-        if (!missingParameters.isEmpty) {
-          return ValError(s"expected parameter '${missingParameters.head}' but not found")
-        }
-
-        val unknownParameters = params.filter( p => !function.params.exists(_ == p._1) )
-        if (!unknownParameters.isEmpty) {
-          return ValError(s"unexpected parameter '${unknownParameters.head._1}'")
-        }
-
-       function.params map ( p => eval(params(p)) )
+       // if a parameter is not set then it's replaced with null
+       function.params map ( p => (params.get(p).map(eval _)) getOrElse ValNull )
       }
     }
 
     if (function.requireInputVariable) {
-      f(input :: paramList)
+      function.invoke(input :: paramList)
     } else {
-      f(paramList)
+      function.invoke(paramList)
     }
+  }
+
+  private def findFunction(ctx: Context, name: String, params: FunctionParameters): Val = params match {
+      case PositionalFunctionParameters(params) => ctx.function(name, params.size)
+      case NamedFunctionParameters(params) => ctx.function(name, params.keySet)
+  }
+
+  private def addFunction(functions: Map[String, List[ValFunction]], name: String, f: ValFunction): Map[String, List[ValFunction]] = {
+      val functionsByName = functions getOrElse(name, List.empty)
+      functions + (name -> (f :: functionsByName))
   }
 
   private def withType(x: Val, f: String => ValBoolean): Val = x match {
@@ -434,7 +446,7 @@ class FeelInterpreter {
     case ValNull => f("null")
     case ValList(_) => f("list")
     case ValContext(_) => f("context")
-    case ValFunction(_, _, _) => f("function")
+    case ValFunction(_, _, _, _) => f("function")
     case _ => error(x, s"unexpected type '${x.getClass.getName}'")
   }
 

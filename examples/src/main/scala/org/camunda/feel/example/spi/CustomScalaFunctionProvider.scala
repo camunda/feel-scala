@@ -5,12 +5,23 @@ import org.camunda.feel.spi.CustomFunctionProvider
 import scala.math.BigDecimal.int2bigDecimal
 
 class CustomScalaFunctionProvider extends CustomFunctionProvider {
-  
-   val functions: Map[(String, Int), ValFunction] = Map(
-        ("foo", 1) -> ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 1) } ),
-        ("isBlack", 0) -> ValFunction(List(), { case List(ValString(s)) => if(s == "black") ValBoolean(true) else ValBoolean(false) }, requireInputVariable = true)
+
+  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
+
+   val functions: Map[String, List[ValFunction]] = Map(
+        "foo" -> List(
+          ValFunction(
+            params = List("x"),
+            invoke = { case List(ValNumber(x)) => ValNumber(x + 1) }
+          )
+        ),
+        "isBlack" -> List(
+          ValFunction(
+            params = List(),
+            invoke = { case List(ValString(s)) => if(s == "black") ValBoolean(true) else ValBoolean(false) },
+            requireInputVariable = true
+          )
+        )
       )
-      
-    def getFunction(functionName: String, argumentCount: Int): Option[ValFunction] = functions.get((functionName, argumentCount))
-  
+
 }

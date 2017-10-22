@@ -684,14 +684,14 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked without parameter" in {
 
-    val functions = Map(("f", 0) -> eval("""function() "invoked" """).asInstanceOf[ValFunction])
+    val functions = Map("f" -> eval("""function() "invoked" """).asInstanceOf[ValFunction])
 
     eval("f()", functions = functions) should be(ValString("invoked"))
   }
 
   it should "be invoked with one positional parameter" in {
 
-    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
+    val functions = Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
     eval("f(1)", functions = functions) should be(ValNumber(2))
     eval("f(2)", functions = functions) should be(ValNumber(3))
@@ -699,7 +699,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked with positional parameters" in {
 
-    val functions = Map(("add", 2) -> eval("function(x,y) x + y").asInstanceOf[ValFunction])
+    val functions = Map("add" -> eval("function(x,y) x + y").asInstanceOf[ValFunction])
 
     eval("add(1,2)", functions = functions) should be(ValNumber(3))
     eval("add(2,3)", functions = functions) should be(ValNumber(5))
@@ -707,7 +707,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked with one named parameter" in {
 
-    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
+    val functions = Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
     eval("f(x:1)", functions = functions) should be(ValNumber(2))
     eval("f(x:2)", functions = functions) should be(ValNumber(3))
@@ -715,7 +715,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked with named parameters" in {
 
-    val functions = Map(("sub", 2) -> eval("function(x,y) x - y").asInstanceOf[ValFunction])
+    val functions = Map("sub" -> eval("function(x,y) x - y").asInstanceOf[ValFunction])
 
     eval("sub(x:4,y:2)", functions = functions) should be(ValNumber(2))
     eval("sub(y:2,x:4)", functions = functions) should be(ValNumber(2))
@@ -723,7 +723,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked with an expression as parameter" in {
 
-    val functions = Map(("f", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction])
+    val functions = Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
 
     eval("f(2 + 3)", functions = functions) should be(ValNumber(6))
   }
@@ -731,8 +731,8 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   it should "be invoked as parameter of another function" in {
 
     val functions = Map(
-      ("a", 1) -> eval("function(x) x + 1").asInstanceOf[ValFunction],
-      ("b", 1) -> eval("function(x) x + 2").asInstanceOf[ValFunction]
+      "a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
+      "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction]
     )
 
     eval("a(b(1))", functions = functions) should be(ValNumber(4))
@@ -740,20 +740,34 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "fail to invoke with wrong number of parameters" in {
 
-    val functions = Map(("f", 2) -> eval("function(x,y) true").asInstanceOf[ValFunction])
+    val functions = Map("f" -> eval("function(x,y) true").asInstanceOf[ValFunction])
 
-    eval("f()", functions = functions) should be(ValError("no function found with name 'f' and 0 arguments"))
-    eval("f(1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
+    eval("f()", functions = functions) should be(ValError("no function found with name 'f' and 0 parameters"))
+    eval("f(1)", functions = functions) should be(ValError("no function found with name 'f' and 1 parameters"))
 
-    eval("f(x:1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
-    eval("f(y:1)", functions = functions) should be(ValError("no function found with name 'f' and 1 arguments"))
-    eval("f(x:1,z:3)", functions = functions) should be(ValError("expected parameter 'y' but not found"))
-    eval("f(x:1,y:2,z:3)", functions = functions) should be(ValError("no function found with name 'f' and 3 arguments"))
+    eval("f(x:1,z:3)", functions = functions) should be(ValError("no function found with name 'f' and parameters: x,z"))
+    eval("f(x:1,y:2,z:3)", functions = functions) should be(ValError("no function found with name 'f' and parameters: x,y,z"))
+  }
+
+  it should "replace not set parameters with null" in {
+
+    val functions = Map("f" -> eval("""
+      function(x,y)
+        if x = null
+        then "x"
+        else if y = null
+        then "y"
+        else "ok"
+        """).asInstanceOf[ValFunction])
+
+    eval("f(x:1)", functions = functions) should be(ValString("y"))
+    eval("f(y:1)", functions = functions) should be(ValString("x"))
+    eval("f(x:1,y:1)", functions = functions) should be(ValString("ok"))
   }
 
   "An external java function definition" should "be invoked with one double parameter" in {
 
-    val functions = Map(("cos", 1) -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("cos" -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """).asInstanceOf[ValFunction])
 
     eval("cos(0)", functions = functions) should be(ValNumber(1))
     eval("cos(1)", functions = functions) should be(ValNumber( Math.cos(1) ))
@@ -761,21 +775,21 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "be invoked with two int parameters" in {
 
-    val functions = Map(("max", 2) -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("max" -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """).asInstanceOf[ValFunction])
 
     eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
 
   it should "be invoked with one long parameters" in {
 
-    val functions = Map(("abs", 1) -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("abs" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """).asInstanceOf[ValFunction])
 
     eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
 
   it should "be invoked with one float parameters" in {
 
-    val functions = Map(("round", 1) -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("round" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """).asInstanceOf[ValFunction])
 
     eval("round(3.2)", functions = functions) should be(ValNumber(3))
   }
@@ -888,6 +902,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
     val obj = new A
     val c = eval("a", Map("a" -> obj))
+
     c should be(ValContext(ObjectContext(obj)))
     c.asInstanceOf[ValContext].context.variable("b") shouldBe a [ValNumber]
     c.asInstanceOf[ValContext].context.variable("foo") shouldBe a [ValString]
@@ -895,7 +910,6 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     c.asInstanceOf[ValContext].context.function("foo", 0) shouldBe a [ValFunction]
     c.asInstanceOf[ValContext].context.function("getBar", 0) shouldBe a [ValFunction]
     c.asInstanceOf[ValContext].context.function("incr", 1) shouldBe a [ValFunction]
-
   }
 
   it should "access a field" in {

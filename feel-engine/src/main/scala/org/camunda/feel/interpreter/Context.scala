@@ -9,6 +9,8 @@ trait Context {
 
   def variable(name: String): Val
 
-  def function(name: String, argumentCount: Int): Val
+  def function(name: String, paramCount: Int): Val
+
+  def function(name: String, parameters: Set[String]): Val
 
 }

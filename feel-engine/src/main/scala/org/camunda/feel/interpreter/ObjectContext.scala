@@ -26,20 +26,23 @@ case class ObjectContext(obj: Any, override val valueMapper: ValueMapper = Defau
   }
 
   override val functionProvider = new FunctionProvider {
-    override def getFunction(name: String, argumentCount: Int): Option[ValFunction] = {
+    override def getFunction(name: String): List[ValFunction] = {
       obj.getClass.getMethods
-        .find(method => { method.getName == name && method.getParameterCount == argumentCount })
+        .find(method => { method.getName == name })
         .map(method => {
+          // parameter names should be accessable with Scala 2.12.0
           val params = method.getParameters.map(param => param.getName).toList
+
           ValFunction(params, params => {
+
             val paramValues = params map valueMapper.unpackVal
             val paramJavaObjects = paramValues zip method.getParameterTypes map { case (obj, clazz) => JavaClassMapper.asJavaObject(obj, clazz) }
             val result = method.invoke(obj, paramJavaObjects: _*)
             valueMapper.toVal(result)
           })
         })
+        .toList
     }
-
   }
 
   private def getGetterName(fieldName: String) = "get" + fieldName.charAt(0).toUpper + fieldName.substring(1)

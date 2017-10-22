@@ -91,7 +91,7 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
 
   private def evalWithContext(exp: String) = {
     val ctx = context.asInstanceOf[ValContext].context.asInstanceOf[DefaultContext]
-    eval(exp, ctx.variables, ctx.functions)
+    eval(exp, ctx)
   }
 
 }

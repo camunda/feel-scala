@@ -289,8 +289,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
         invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) },
         requireInputVariable = true)
 
-    eval("foo", """ startsWith("f") """, functions = Map(("startsWith", 1) -> startsWithFunction)) should be(ValBoolean(true))
-    eval("foo", """ startsWith("b") """, functions = Map(("startsWith", 1) -> startsWithFunction)) should be(ValBoolean(false))
+    eval("foo", """ startsWith("f") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
+    eval("foo", """ startsWith("b") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
   }
 
   it should "be invoked as end point" in {
@@ -300,16 +300,17 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
       invoke = { case List(ValNumber(x)) => ValNumber(x + 1) }
     )
 
-    eval(2, "< f(2)", functions = Map(("f", 1) -> function)) should be(ValBoolean(true))
-    eval(3, "< f(2)", functions = Map(("f", 1) -> function)) should be(ValBoolean(false))
+    eval(2, "< f(2)", functions = Map("f" -> function)) should be(ValBoolean(true))
+    eval(3, "< f(2)", functions = Map("f" -> function)) should be(ValBoolean(false))
 
-    eval(3, "[f(1)..f(2)]", functions = Map(("f", 1) -> function)) should be(ValBoolean(true))
-    eval(4, "[f(1)..f(2)]", functions = Map(("f", 1) -> function)) should be(ValBoolean(false))
+    eval(3, "[f(1)..f(2)]", functions = Map("f" -> function)) should be(ValBoolean(true))
+    eval(4, "[f(1)..f(2)]", functions = Map("f" -> function)) should be(ValBoolean(false))
   }
 
-  private def eval(input: Any, expression: String, variables: Map[String, Any] = Map(), functions: Map[(String, Int), ValFunction] = Map()): Val = {
+  private def eval(input: Any, expression: String, variables: Map[String, Any] = Map(), functions: Map[String, ValFunction] = Map()): Val = {
     val exp = FeelParser.parseUnaryTests(expression)
-    val ctx = RootContext(variables + (RootContext.defaultInputVariable -> input), functions)
+    val fs = functions.map{ case (n,f) => n -> List(f) }.toMap
+    val ctx = RootContext(variables + (RootContext.defaultInputVariable -> input), fs)
     interpreter.eval(exp.get)(ctx)
   }
 

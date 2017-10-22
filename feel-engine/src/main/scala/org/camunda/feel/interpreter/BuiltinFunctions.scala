@@ -9,95 +9,89 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
 import java.util.regex._
+import org.slf4j._
 
 /**
  * @author Philipp
  */
 object BuiltinFunctions extends FunctionProvider {
 
+  val logger = LoggerFactory.getLogger("org.camunda.feel.functions")
+
   // note that some function names has whitespaces in spec
   // this will be changed in further version
 
-  val builtinFunctions: List[(String, ValFunction)] =
+  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
+
+  val functions: Map[String, List[ValFunction]] =
     conversionFunctions ++
     booleanFunctions ++
     stringFunctions ++
     listFunctions ++
     numericFunctions
 
-	def conversionFunctions = List(
-	  "date" -> dateFunction,
-		"date" -> dateFunction3,
-		"date_and_time" -> dateTime,
-		"date_and_time" -> dateTime2,
-		"time" -> timeFunction,
-		"time" -> timeFunction3,
-		"time" -> timeFunction4,
-		"number" -> numberFunction,
-		"number" -> numberFunction2,
-		"number" -> numberFunction3,
-		"string" -> stringFunction,
-		"duration" -> durationFunction,
-		"years_and_months_duration" -> durationFunction2
+	private def conversionFunctions = Map(
+	  "date" -> List(dateFunction, dateFunction3),
+		"date_and_time" -> List(dateTime, dateTime2),
+		"time" -> List(timeFunction, timeFunction3, timeFunction4),
+		"number" -> List(numberFunction, numberFunction2, numberFunction3),
+		"string" -> List(stringFunction),
+		"duration" -> List(durationFunction),
+		"years_and_months_duration" -> List(durationFunction2)
 	)
 
-	def booleanFunctions = List(
-	  "not" -> notFunction
+	private def booleanFunctions = Map(
+	  "not" -> List(notFunction)
 	)
 
-	def stringFunctions = List(
-	  "substring" -> substringFunction,
-	  "substring" -> substringFunction3,
-	  "string_length" -> stringLengthFunction,
-	  "upper_case" -> upperCaseFunction,
-	  "lower_case" -> lowerCaseFunction,
-	  "substring_before" -> substringBeforeFunction,
-	  "substring_after" -> substringAfterFunction,
-	  "replace" -> replaceFunction,
-	  "contains" -> containsFunction,
-	  "starts_with" -> startsWithFunction,
-	  "ends_with" -> endsWithFunction,
-	  "matches" -> matchesFunction
+	private def stringFunctions = Map(
+	  "substring" -> List(substringFunction, substringFunction3),
+	  "string_length" -> List(stringLengthFunction),
+	  "upper_case" -> List(upperCaseFunction),
+	  "lower_case" -> List(lowerCaseFunction),
+	  "substring_before" -> List(substringBeforeFunction),
+	  "substring_after" -> List(substringAfterFunction),
+	  "replace" -> List(replaceFunction),
+	  "contains" -> List(containsFunction),
+	  "starts_with" -> List(startsWithFunction),
+	  "ends_with" -> List(endsWithFunction),
+	  "matches" -> List(matchesFunction)
 	)
 
-	def listFunctions = List(
-	  "list_contains" -> listContainsFunction,
-	  "count" -> countFunction,
-	  "min" -> minFunction,
-	  "max" -> maxFunction,
-	  "sum" -> sumFunction,
-	  "mean" -> meanFunction,
-	  "and" -> andFunction,
-	  "or" -> orFunction,
-	  "sublist" -> sublistFunction,
-	  "sublist" -> sublistFunction3,
-	  "append" -> appendFunction,
-	  "concatenate" -> concatenateFunction,
-	  "insert_before" -> insertBeforeFunction,
-	  "remove" -> removeFunction,
-	  "reverse" -> reverseFunction,
-	  "index_of" -> indexOfFunction,
-	  "union" -> unionFunction,
-	  "distinct_values" -> distinctValuesFunction,
-	  "flatten" -> flattenFunction,
-	  "sort" -> sortFunction
+	private def listFunctions = Map(
+	  "list_contains" -> List(listContainsFunction),
+	  "count" -> List(countFunction),
+	  "min" -> List(minFunction),
+	  "max" -> List(maxFunction),
+	  "sum" -> List(sumFunction),
+	  "mean" -> List(meanFunction),
+	  "and" -> List(andFunction),
+	  "or" -> List(orFunction),
+	  "sublist" -> List(sublistFunction, sublistFunction3),
+	  "append" -> List(appendFunction),
+	  "concatenate" -> List(concatenateFunction),
+	  "insert_before" -> List(insertBeforeFunction),
+	  "remove" -> List(removeFunction),
+	  "reverse" -> List(reverseFunction),
+	  "index_of" -> List(indexOfFunction),
+	  "union" -> List(unionFunction),
+	  "distinct_values" -> List(distinctValuesFunction),
+	  "flatten" -> List(flattenFunction),
+	  "sort" -> List(sortFunction)
 	)
 
-	def numericFunctions = List(
-	  "decimal" -> decimalFunction,
-	  "floor" -> floorFunction,
-	  "ceiling" -> ceilingFunction
+	private def numericFunctions = Map(
+	  "decimal" -> List(decimalFunction),
+	  "floor" -> List(floorFunction),
+	  "ceiling" -> List(ceilingFunction)
 	)
 
-	val functions: Map[(String, Int), ValFunction] = builtinFunctions
-		.map { case (name, f) => (name, f.params.size) -> f }
-	  .toMap
-
-	override def getFunction(name: String, argCount: Int) = functions.get((name, argCount))
-
-	private def error(e: List[Val]): ValError = e match {
+	private def error(e: List[Val]): Val = e match {
 	    case vars if (vars.exists(_.isInstanceOf[ValError])) => vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
-	    case _ => ValError(s"illegal arguments: $e")
+	    case e => {
+        logger.warn(s"Suppressed failure: illegal arguments: $e")
+        ValNull
+      }
   }
 
 	def dateFunction = ValFunction(List("from"), _ match {
@@ -291,7 +285,7 @@ object BuiltinFunctions extends FunctionProvider {
 	    }
 	  }
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def maxFunction = ValFunction(List("list"), _ match {
 	  case List(ValList(list)) => list match {
@@ -302,12 +296,12 @@ object BuiltinFunctions extends FunctionProvider {
 	    }
 	  }
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def sumFunction = ValFunction(List("list"), _ match {
 	  case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber( numbers.sum ))
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def meanFunction = ValFunction(List("list"), _ match {
 	  case List(ValList(list)) => list match {
@@ -315,23 +309,41 @@ object BuiltinFunctions extends FunctionProvider {
 	    case l => withListOfNumbers(list, numbers => ValNumber( numbers.sum / numbers.size ))
 	  }
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def andFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => list match {
-	    case Nil => ValBoolean(true)
-	    case l => withListOfBooleans(list, numbers => ValBoolean( numbers.reduce(_ && _) ))
-	  }
+	  case List(ValList(list)) => all(list)
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
+
+  private def all(xs: List[Val]): Val = xs match {
+    case Nil => ValBoolean(true)
+    case x :: xs => x match {
+      case ValBoolean(false) => ValBoolean(false)
+      case ValBoolean(true)  => all(xs)
+      case other => all(xs) match {
+        case ValBoolean(false) => ValBoolean(false)
+        case _ => ValNull
+      }
+    }
+  }
 
 	def orFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => list match {
-	    case Nil => ValBoolean(false)
-	    case l => withListOfBooleans(list, numbers => ValBoolean( numbers.reduce(_ || _) ))
-	  }
+	  case List(ValList(list)) => atLeastOne(list)
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
+
+  private def atLeastOne(xs: List[Val]): Val = xs match {
+    case Nil => ValBoolean(false)
+    case x :: xs => x match {
+      case ValBoolean(true) => ValBoolean(true)
+      case ValBoolean(false)  => atLeastOne(xs)
+      case other => atLeastOne(xs) match {
+        case ValBoolean(true) => ValBoolean(true)
+        case _ => ValNull
+      }
+    }
+  }
 
 	def sublistFunction = ValFunction(List("list", "start"), _ match {
 	  case List(ValList(list), ValNumber(start)) => ValList(list.slice(listIndex(list, start.intValue), list.length))
@@ -349,15 +361,19 @@ object BuiltinFunctions extends FunctionProvider {
 	  list.size + index
 	}
 
-  def appendFunction = ValFunction(List("list", "item"), _ match {
-	  case List(ValList(list), item: Val) => ValList(list ++ (item :: Nil))
+  def appendFunction = ValFunction(List("list", "items"), _ match {
+	  case List(ValList(list), ValList(items)) => ValList(list ++ items)
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
-	def concatenateFunction = ValFunction(List("list", "other"), _ match {
-	  case List(ValList(list), ValList(other)) => ValList(list ++ other)
+	def concatenateFunction = ValFunction(List("lists"), _ match {
+	  case List(ValList(lists)) => ValList( lists.flatMap(_ match {
+          case ValList(list) => list
+          case v => List(v)
+      }).toList
+    )
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def insertBeforeFunction = ValFunction(List("list", "position", "newItem"), _ match {
 	  case List(ValList(list), ValNumber(position), newItem: Val) => ValList(list.take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list.drop(listIndex(list, position.intValue)))
@@ -390,10 +406,14 @@ object BuiltinFunctions extends FunctionProvider {
 	  }
   }
 
-  def unionFunction = ValFunction(List("list", "other"), _ match {
-	  case List(ValList(list), ValList(other)) => ValList((list ++ other) distinct)
+  def unionFunction = ValFunction(List("lists"), _ match {
+    case List(ValList(lists)) => ValList( lists.flatMap(_ match {
+          case ValList(list) => list
+          case v => List(v)
+      }).toList.distinct
+    )
 	  case e => error(e)
-	})
+	}, hasVarArgs = true)
 
 	def distinctValuesFunction = ValFunction(List("list"), _ match {
 	  case List(ValList(list)) => ValList(list distinct)
@@ -412,12 +432,12 @@ object BuiltinFunctions extends FunctionProvider {
   }
 
   def sortFunction = ValFunction(List("list", "precedes"), _ match {
-	  case List(ValList(list), ValFunction(params, f, _)) if (params.size == 2) => try {
+	  case List(ValList(list), ValFunction(params, f, _, _)) if (params.size == 2) => try {
 	    ValList( list.sortWith{ case (x,y) => f(List(x,y)).asInstanceOf[ValBoolean].value })
 	  } catch {
 	    case e: Throwable => ValError(s"fail to sort list by given precedes function: $e")
 	  }
-	  case List(ValList(list), ValFunction(params, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
+	  case List(ValList(list), ValFunction(params, _, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
 	  case e => error(e)
 	})
 
@@ -445,18 +465,6 @@ object BuiltinFunctions extends FunctionProvider {
       .find( _.isInstanceOf[ValError]) match {
         case Some(e) => e
         case None => f( list.asInstanceOf[List[ValNumber]].map( _.value ) )
-      }
-  }
-
-  private def withListOfBooleans(list: List[Val], f: List[Boolean] => Val): Val = {
-    list
-      .map( _ match {
-        case b: ValBoolean => b
-        case x => ValError(s"expected boolean but found '$x'")
-      })
-      .find( _.isInstanceOf[ValError]) match {
-        case Some(e) => e
-        case None => f( list.asInstanceOf[List[ValBoolean]].map( _.value ) )
       }
   }
 

@@ -12,11 +12,13 @@ import org.camunda.bpm.engine.impl.interceptor.CommandContext
  */
 class CamundaFunctionProvider extends CustomFunctionProvider {
 
-  private val functions: Map[(String, Int), ValFunction] = Map(
-    ("now", 0) -> nowFunction,
-    ("currentUser", 0) -> currentUserFunction,
-    ("currentUserGroups", 0) -> currentUserGroupsFunction
-  )
+  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
+
+  val functions: Map[String, List[ValFunction]] = Map(
+     "now" -> List(nowFunction),
+     "currentUser" -> List(currentUserFunction),
+     "currentUserGroups" -> List(currentUserGroupsFunction)
+   )
 
   private def nowFunction = ValFunction(
     params = List(),
@@ -46,8 +48,5 @@ class CamundaFunctionProvider extends CustomFunctionProvider {
   )
 
   private def getContext = Option(Context.getCommandContext)
-
-  override def getFunction(functionName: String, argumentCount: Int): Option[ValFunction] =
-    functions.get((functionName, argumentCount))
 
 }

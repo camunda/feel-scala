@@ -5,10 +5,15 @@ import org.camunda.feel.interpreter._
 // DO NOT DELETE, used in ScriptEngineTest through src/test/resources/META-INF/services
 class TestFunctionProvider extends CustomFunctionProvider {
 
-  val functions: Map[(String, Int), ValFunction] = Map(
-    ("foo", 1) -> ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 1) } )
-  )
+  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
 
-  override def getFunction(functionName: String, argumentCount: Int): Option[ValFunction] = functions.get((functionName, argumentCount))
+  val functions: Map[String, List[ValFunction]] = Map(
+    "foo" -> List(
+      ValFunction(
+        params = List("x"),
+        invoke = { case List(ValNumber(x)) => ValNumber(x + 1) }
+      )
+    )
+  )
 
 }
