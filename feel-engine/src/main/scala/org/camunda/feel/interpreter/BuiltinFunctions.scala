@@ -18,9 +18,6 @@ object BuiltinFunctions extends FunctionProvider {
 
   val logger = LoggerFactory.getLogger("org.camunda.feel.functions")
 
-  // note that some function names has whitespaces in spec
-  // this will be changed in further version
-
   def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
 
   val functions: Map[String, List[ValFunction]] =
@@ -32,12 +29,12 @@ object BuiltinFunctions extends FunctionProvider {
 
 	private def conversionFunctions = Map(
 	  "date" -> List(dateFunction, dateFunction3),
-		"date_and_time" -> List(dateTime, dateTime2),
+		"date and time" -> List(dateTime, dateTime2),
 		"time" -> List(timeFunction, timeFunction3, timeFunction4),
 		"number" -> List(numberFunction, numberFunction2, numberFunction3),
 		"string" -> List(stringFunction),
 		"duration" -> List(durationFunction),
-		"years_and_months_duration" -> List(durationFunction2)
+		"years and months duration" -> List(durationFunction2)
 	)
 
 	private def booleanFunctions = Map(
@@ -46,20 +43,20 @@ object BuiltinFunctions extends FunctionProvider {
 
 	private def stringFunctions = Map(
 	  "substring" -> List(substringFunction, substringFunction3),
-	  "string_length" -> List(stringLengthFunction),
-	  "upper_case" -> List(upperCaseFunction),
-	  "lower_case" -> List(lowerCaseFunction),
-	  "substring_before" -> List(substringBeforeFunction),
-	  "substring_after" -> List(substringAfterFunction),
+	  "string length" -> List(stringLengthFunction),
+	  "upper case" -> List(upperCaseFunction),
+	  "lower case" -> List(lowerCaseFunction),
+	  "substring before" -> List(substringBeforeFunction),
+	  "substring after" -> List(substringAfterFunction),
 	  "replace" -> List(replaceFunction),
 	  "contains" -> List(containsFunction),
-	  "starts_with" -> List(startsWithFunction),
-	  "ends_with" -> List(endsWithFunction),
+	  "starts with" -> List(startsWithFunction),
+	  "ends with" -> List(endsWithFunction),
 	  "matches" -> List(matchesFunction)
 	)
 
 	private def listFunctions = Map(
-	  "list_contains" -> List(listContainsFunction),
+	  "list contains" -> List(listContainsFunction),
 	  "count" -> List(countFunction),
 	  "min" -> List(minFunction),
 	  "max" -> List(maxFunction),
@@ -70,12 +67,12 @@ object BuiltinFunctions extends FunctionProvider {
 	  "sublist" -> List(sublistFunction, sublistFunction3),
 	  "append" -> List(appendFunction),
 	  "concatenate" -> List(concatenateFunction),
-	  "insert_before" -> List(insertBeforeFunction),
+	  "insert before" -> List(insertBeforeFunction),
 	  "remove" -> List(removeFunction),
 	  "reverse" -> List(reverseFunction),
-	  "index_of" -> List(indexOfFunction),
+	  "index of" -> List(indexOfFunction),
 	  "union" -> List(unionFunction),
-	  "distinct_values" -> List(distinctValuesFunction),
+	  "distinct values" -> List(distinctValuesFunction),
 	  "flatten" -> List(flattenFunction),
 	  "sort" -> List(sortFunction)
 	)

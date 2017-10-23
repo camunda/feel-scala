@@ -17,13 +17,29 @@ object FeelParser extends JavaTokenParsers {
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  private lazy val reservedWord: Parser[String] = ( "null\\b".r 
+  private lazy val reservedWord: Parser[String] = ( "null\\b".r
     | "true\\b".r | "false\\b".r
     | "function\\b".r
     | "if\\b".r | "then\\b".r | "else\\b".r
     | "for\\b".r
     | "between\\b".r
     | "instance\\b".r | "of\\b".r )
+
+  // list of built-in function names with whitespaces
+  // -- other names match the 'function name' pattern
+  private lazy val builtinFunctionName: Parser[String] = ("date and time"
+    | "years and months duration"
+    | "string length"
+    | "upper case"
+    | "lower case"
+    | "substring before"
+    | "substring after"
+    | "starts with"
+    | "ends with"
+    | "list contains"
+    | "insert before"
+    | "index of"
+    | "distinct values")
 
   private lazy val identifier = not(reservedWord) ~> ident
 
@@ -52,7 +68,7 @@ object FeelParser extends JavaTokenParsers {
   // 2 g)
   private lazy val expression7 = pathExpression
   // 2 h)
-  private lazy val expression8 = filterExpression | functionInvocation | expression9
+  private lazy val expression8 = filterExpression | functionInvocation | builtinFunctionInvocation | expression9
   // 2 i)
   private lazy val expression9 = literal | name ^^ ( n => Ref(List(n)) ) | simplePositiveUnaryTest | "(" ~> textualExpression <~ ")" | expression10
 
@@ -103,6 +119,7 @@ object FeelParser extends JavaTokenParsers {
     ">=" ~> endpoint ^^ InputGreaterOrEqual |
     interval |
     functionInvocation |
+    builtinFunctionInvocation |
     simpleValue ^^ InputEqualTo
 
   // 18
@@ -242,6 +259,10 @@ object FeelParser extends JavaTokenParsers {
       case name :: Nil => FunctionInvocation(name, params)
       case _ => QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, params)
     }}
+
+  private lazy val builtinFunctionInvocation: Parser[Exp] = not(dateTimeLiteral) ~> builtinFunctionName ~ parameters ^^ {
+    case name ~ params => FunctionInvocation(name, params)
+  }
 
   // 41
   private lazy val parameters: Parser[FunctionParameters] = "(" ~> ")" ^^^ PositionalFunctionParameters(List()) |

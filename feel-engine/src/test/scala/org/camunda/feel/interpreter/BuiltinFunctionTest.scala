@@ -31,19 +31,19 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(""" date(2012, 12, 25) """) should be(ValDate("2012-12-25"))
 	}
 
-	"A date-and-time() function" should "convert String" in {
+	"A date and time() function" should "convert String" in {
 
-		eval(""" date_and_time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(ValDateTime("2012-12-24T23:59:00"))
 	}
 
 	it should "convert (Date,Time)" in {
 
-		eval(""" date_and_time(date("2012-12-24"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date("2012-12-24"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
 	}
 
 	it should "convert (DateTime,Time)" in {
 
-		eval(""" date_and_time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
 	}
 
 	"A time() function" should "convert String" in {
@@ -138,7 +138,7 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 
 	"A years and months duration(from,to) function" should "convert (Date,Date)" in {
 
-		eval(""" years_and_months_duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValYearMonthDuration("P1Y8M"))
+		eval(""" years and months duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValYearMonthDuration("P1Y8M"))
 	}
 
 	"A not() function" should "negate Boolean" in {
@@ -162,33 +162,33 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	  eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
 	}
 
-	"A string_length() function" should "return the length of a String" in {
+	"A string length() function" should "return the length of a String" in {
 
-	  eval(""" string_length("foo") """) should be(ValNumber(3))
+	  eval(""" string length("foo") """) should be(ValNumber(3))
 	}
 
-	"A upper_case() function" should "return uppercased String" in {
+	"A upper case() function" should "return uppercased String" in {
 
-	  eval(""" upper_case("aBc4") """) should be(ValString("ABC4"))
+	  eval(""" upper case("aBc4") """) should be(ValString("ABC4"))
 	}
 
-	"A lower_case() function" should "return lowercased String" in {
+	"A lower case() function" should "return lowercased String" in {
 
-	  eval(""" lower_case("aBc4") """) should be(ValString("abc4"))
+	  eval(""" lower case("aBc4") """) should be(ValString("abc4"))
 	}
 
-	"A substring_before() function" should "return substring before match" in {
+	"A substring before() function" should "return substring before match" in {
 
-	  eval(""" substring_before("foobar", "bar") """) should be(ValString("foo"))
+	  eval(""" substring before("foobar", "bar") """) should be(ValString("foo"))
 
-	  eval(""" substring_before("foobar", "xyz") """) should be(ValString(""))
+	  eval(""" substring before("foobar", "xyz") """) should be(ValString(""))
 	}
 
-	"A substring_after() function" should "return substring after match" in {
+	"A substring after() function" should "return substring after match" in {
 
-	  eval(""" substring_after("foobar", "ob") """) should be(ValString("ar"))
+	  eval(""" substring after("foobar", "ob") """) should be(ValString("ar"))
 
-	  eval(""" substring_after("", "a") """) should be(ValString(""))
+	  eval(""" substring after("", "a") """) should be(ValString(""))
 	}
 
 	"A replace() function" should "replace a String" in {
@@ -203,18 +203,18 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	  eval(""" contains("foobar", "of") """) should be(ValBoolean(false))
 	}
 
-	"A starts_with() function" should "return if starts with match" in {
+	"A starts with() function" should "return if starts with match" in {
 
-	  eval(""" starts_with("foobar", "fo") """) should be(ValBoolean(true))
+	  eval(""" starts with("foobar", "fo") """) should be(ValBoolean(true))
 
-	  eval(""" starts_with("foobar", "ba") """) should be(ValBoolean(false))
+	  eval(""" starts with("foobar", "ba") """) should be(ValBoolean(false))
 	}
 
-	"A ends_with() function" should "return if ends with match" in {
+	"A ends with() function" should "return if ends with match" in {
 
-	  eval(""" ends_with("foobar", "r") """) should be(ValBoolean(true))
+	  eval(""" ends with("foobar", "r") """) should be(ValBoolean(true))
 
-	  eval(""" ends_with("foobar", "o") """) should be(ValBoolean(false))
+	  eval(""" ends with("foobar", "o") """) should be(ValBoolean(false))
 	}
 
 	"A matches() function" should "return if String matches a pattern" in {
@@ -224,18 +224,18 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(""" matches("foobar", "^fo*z") """) should be(ValBoolean(false))
 	}
 
-	"A list_contains() function" should "return if the list contains Number" in {
+	"A list contains() function" should "return if the list contains Number" in {
 
-	  eval(" list_contains([1,2,3], 2) ") should be(ValBoolean(true))
+	  eval(" list contains([1,2,3], 2) ") should be(ValBoolean(true))
 
-	  eval(" list_contains([1,2,3], 4) ") should be(ValBoolean(false))
+	  eval(" list contains([1,2,3], 4) ") should be(ValBoolean(false))
 	}
 
 	it should "return if the list contains String" in {
 
-	  eval(""" list_contains(["a","b"], "a") """) should be(ValBoolean(true))
+	  eval(""" list contains(["a","b"], "a") """) should be(ValBoolean(true))
 
-	  eval(""" list_contains(["a","b"], "c") """) should be(ValBoolean(false))
+	  eval(""" list contains(["a","b"], "c") """) should be(ValBoolean(false))
 	}
 
 	"A count() function" should "return the size of a list" in {
@@ -347,9 +347,9 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(" concatenate([1],[2],[3]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 
-	"A insert_before() function" should "return list with new item at _" in {
+	"A insert before() function" should "return list with new item at _" in {
 
-	  eval(" insert_before([1,3],2,2) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+	  eval(" insert before([1,3],2,2) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 
 	"A remove() function" should "return list with item at _ removed" in {
@@ -362,14 +362,14 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	  eval(" reverse([1,2,3]) ") should be(ValList(List(ValNumber(3), ValNumber(2), ValNumber(1))))
 	}
 
-	"A index_of() function" should "return empty list if no match" in {
+	"A index of() function" should "return empty list if no match" in {
 
-	  eval(" index_of([1,2,3,2], 4) ") should be(ValList(List()))
+	  eval(" index of([1,2,3,2], 4) ") should be(ValList(List()))
 	}
 
 	it should "return list of positions containing the match" in {
 
-	  eval(" index_of([1,2,3,2], 2) ") should be(ValList(List(ValNumber(2), ValNumber(4))))
+	  eval(" index of([1,2,3,2], 2) ") should be(ValList(List(ValNumber(2), ValNumber(4))))
 	}
 
 	"A union() function" should "concatenate with duplicate removal" in {
@@ -378,9 +378,9 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(" union([1,2],[2,3], [4]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
 	}
 
-	"A distinct_values() function" should "remove duplicates" in {
+	"A distinct values() function" should "remove duplicates" in {
 
-	  eval(" distinct_values([1,2,3,2,1]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+	  eval(" distinct values([1,2,3,2,1]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
 	}
 
 	"A flatten() function" should "flatten nested lists" in {
