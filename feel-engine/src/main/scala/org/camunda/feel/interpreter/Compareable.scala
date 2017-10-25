@@ -60,7 +60,18 @@ object Compareable {
 
 	}
 
-	implicit class CompareableTime(val value: Time) extends Compareable[Time] {
+	implicit class CompareableLocalTime(val value: LocalTime) extends Compareable[LocalTime] {
+
+	  def <(x: LocalTime) = value isBefore x
+
+	  def <=(x: LocalTime) = value == x || (value isBefore x)
+
+	  def >(x: LocalTime) = value isAfter x
+
+	  def >=(x: LocalTime) = value == x || (value isAfter x)
+	}
+
+  implicit class CompareableTime(val value: Time) extends Compareable[Time] {
 
 	  def <(x: Time) = value isBefore x
 
@@ -71,7 +82,18 @@ object Compareable {
 	  def >=(x: Time) = value == x || (value isAfter x)
 	}
 
-	implicit class CompareableDateTime(val value: DateTime) extends Compareable[DateTime] {
+	implicit class CompareableLocalDateTime(val value: LocalDateTime) extends Compareable[LocalDateTime] {
+
+	  def <(x: LocalDateTime) = value isBefore x
+
+	  def <=(x: LocalDateTime) = value == x || (value isBefore x)
+
+	  def >(x: LocalDateTime) = value isAfter x
+
+	  def >=(x: LocalDateTime) = value == x || (value isAfter x)
+	}
+
+  implicit class CompareableDateTime(val value: DateTime) extends Compareable[DateTime] {
 
 	  def <(x: DateTime) = value isBefore x
 

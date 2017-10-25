@@ -27,7 +27,11 @@ case class ValString(value: String) extends Val
 
 case class ValDate(value: Date) extends Val
 
+case class ValLocalTime(value: LocalTime) extends Val
+
 case class ValTime(value: Time) extends Val
+
+case class ValLocalDateTime(value: LocalDateTime) extends Val
 
 case class ValDateTime(value: DateTime) extends Val
 
@@ -46,7 +50,7 @@ case class ValFunction(
     requireInputVariable: Boolean = false) extends Val {
 
 
-    val paramSet: Set[String] = params.toSet    
+    val paramSet: Set[String] = params.toSet
 }
 
 case class ValContext(context: Context) extends Val

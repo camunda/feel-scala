@@ -3,6 +3,7 @@ package org.camunda.feel.interpreter
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel._
+import java.time._
 
 /**
  * @author Philipp Ossler
@@ -113,19 +114,35 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
 
   it should "convert from LocalTime" in {
 
-    valueMapper.toVal(java.time.LocalTime.parse("12:04:30")) should be(ValTime("12:04:30"))
+    valueMapper.toVal(java.time.LocalTime.parse("12:04:30")) should be(ValLocalTime("12:04:30"))
+  }
+
+  it should "convert from OffsetTime" in {
+
+    valueMapper.toVal(java.time.OffsetTime.parse("12:04:30+01:00")) should be(ValTime("12:04:30+01:00"))
   }
 
   it should "convert from LocalDateTime" in {
 
-    valueMapper.toVal(java.time.LocalDateTime.parse("2017-04-02T12:04:30")) should be(ValDateTime("2017-04-02T12:04:30"))
+    valueMapper.toVal(java.time.LocalDateTime.parse("2017-04-02T12:04:30")) should be(ValLocalDateTime("2017-04-02T12:04:30"))
+  }
+
+  it should "convert from OffsetDateTime" in {
+
+    valueMapper.toVal(java.time.OffsetDateTime.parse("2017-04-02T12:04:30+01:00")) should be(ValDateTime("2017-04-02T12:04:30+01:00"))
+  }
+
+  it should "convert from ZonedDateTime" in {
+
+    valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30+01:00")) should be(ValDateTime("2017-04-02T12:04:30+01:00"))
   }
 
   it should "convert from java.util.Date" in {
 
     val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+    val dateTime = LocalDateTime.parse("2017-04-02T12:04:30").atZone(ZoneId.systemDefault()).toOffsetDateTime
 
-    valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(ValDateTime("2017-04-02T12:04:30"))
+    valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(ValDateTime(dateTime))
   }
 
   it should "convert from Period" in {
@@ -136,31 +153,6 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
   it should "convert from Duration" in {
 
     valueMapper.toVal(java.time.Duration.parse("PT4H22M")) should be(ValDayTimeDuration("PT4H22M"))
-  }
-
-  it should "convert from org.joda.time.LocalDate" in {
-
-    valueMapper.toVal(org.joda.time.LocalDate.parse("2017-04-02")) should be(ValDate("2017-04-02"))
-  }
-
-  it should "convert from org.joda.time.LocalTime" in {
-
-    valueMapper.toVal(org.joda.time.LocalTime.parse("12:04:30")) should be(ValTime("12:04:30"))
-  }
-
-  it should "convert from org.joda.time.LocalDateTime" in {
-
-    valueMapper.toVal(org.joda.time.LocalDateTime.parse("2017-04-02T12:04:30")) should be(ValDateTime("2017-04-02T12:04:30"))
-  }
-
-  it should "convert from org.joda.time.Period" in {
-
-    valueMapper.toVal(org.joda.time.Period.parse("P2Y4M")) should be(ValYearMonthDuration("P2Y4M"))
-  }
-
-  it should "convert from org.joda.time.Duration" in {
-
-    valueMapper.toVal(org.joda.time.Duration.standardHours(4)) should be(ValDayTimeDuration("PT4H"))
   }
 
   it should "convert from object" in {

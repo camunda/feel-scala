@@ -29,8 +29,7 @@ lazy val engine = (project in file("feel-engine")).
   settings(
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.4" ,
-      "com.github.nscala-time" % "nscala-time_2.12" % "2.16.0"
+      "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.4"
     )
   )
 
@@ -40,6 +39,7 @@ lazy val factory = (project in file("feel-engine-factory")).
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
       "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
+      "com.github.nscala-time" % "nscala-time_2.12" % "2.16.0",
 
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "test"
     )

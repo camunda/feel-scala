@@ -190,42 +190,62 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   "A time" should "compare with '<'" in {
 
-    eval(time("08:31:14"), """< time("10:00:00")""") should be(ValBoolean(true))
-    eval(time("10:10:00"), """< time("10:00:00")""") should be(ValBoolean(false))
-    eval(time("11:31:14"), """< time("10:00:00")""") should be(ValBoolean(false))
+    eval(localTime("08:31:14"), """< time("10:00:00")""") should be(ValBoolean(true))
+    eval(localTime("10:10:00"), """< time("10:00:00")""") should be(ValBoolean(false))
+    eval(localTime("11:31:14"), """< time("10:00:00")""") should be(ValBoolean(false))
+
+    eval(time("10:00:00+01:00"), """< time("11:00:00+01:00")""") should be(ValBoolean(true))
+    eval(time("10:00:00+01:00"), """< time("10:00:00+01:00")""") should be(ValBoolean(false))
   }
 
   it should "be equal to another time" in {
 
-    eval(time("08:31:14"), """time("10:00:00")""") should be(ValBoolean(false))
-    eval(time("08:31:14"), """time("08:31:14")""") should be(ValBoolean(true))
+    eval(localTime("08:31:14"), """time("10:00:00")""") should be(ValBoolean(false))
+    eval(localTime("08:31:14"), """time("08:31:14")""") should be(ValBoolean(true))
+
+    eval(time("10:00:00+01:00"), """time("10:00:00+02:00")""") should be(ValBoolean(false))
+    eval(time("10:00:00+01:00"), """time("11:00:00+02:00")""") should be(ValBoolean(false))
+    eval(time("10:00:00+01:00"), """time("10:00:00+01:00")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '[time("08:00:00")..time("10:00:00")]'""" in {
 
-    eval(time("07:45:10"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
-    eval(time("09:15:20"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(true))
-    eval(time("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
+    eval(localTime("07:45:10"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
+    eval(localTime("09:15:20"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(true))
+    eval(localTime("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(ValBoolean(false))
+
+    eval(time("11:30:00+01:00"), """[time("08:00:00+01:00")..time("10:00:00+01:00")]""") should be(ValBoolean(false))
+    eval(time("09:30:00+01:00"), """[time("08:00:00+01:00")..time("10:00:00+01:00")]""") should be(ValBoolean(true))
   }
 
   "A date-time" should "compare with '<'" in {
 
-    eval(dateTime("2015-09-17T08:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(true))
-    eval(dateTime("2015-09-17T10:10:00"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
-    eval(dateTime("2015-09-17T11:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+    eval(localDateTime("2015-09-17T08:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(true))
+    eval(localDateTime("2015-09-17T10:10:00"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+    eval(localDateTime("2015-09-17T11:31:14"), """< date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+
+    eval(dateTime("2015-09-17T10:00:00+01:00"), """< date and time("2015-09-17T12:00:00+01:00")""") should be(ValBoolean(true))
+    eval(dateTime("2015-09-17T10:00:00+01:00"), """< date and time("2015-09-17T09:00:00+01:00")""") should be(ValBoolean(false))
   }
 
   it should "be equal to another date-time" in {
 
-    eval(dateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
-    eval(dateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T08:31:14")""") should be(ValBoolean(true))
+    eval(localDateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T10:00:00")""") should be(ValBoolean(false))
+    eval(localDateTime("2015-09-17T08:31:14"), """date and time("2015-09-17T08:31:14")""") should be(ValBoolean(true))
+
+    eval(dateTime("2015-09-17T08:30:00+01:00"), """date and time("2015-09-17T09:30:00+01:00")""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T08:30:00+01:00"), """date and time("2015-09-17T08:30:00+02:00")""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T08:30:00+01:00"), """date and time("2015-09-17T08:30:00+01:00")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '[dante and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]'""" in {
 
-    eval(dateTime("2015-09-17T07:45:10"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
-    eval(dateTime("2015-09-17T09:15:20"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(true))
-    eval(dateTime("2015-09-17T11:30:30"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
+    eval(localDateTime("2015-09-17T07:45:10"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
+    eval(localDateTime("2015-09-17T09:15:20"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(true))
+    eval(localDateTime("2015-09-17T11:30:30"), """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(ValBoolean(false))
+
+    eval(dateTime("2015-09-17T08:30:00+01:00"), """[date and time("2015-09-17T09:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]""") should be(ValBoolean(false))
+    eval(dateTime("2015-09-17T08:30:00+01:00"), """[date and time("2015-09-17T08:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]""") should be(ValBoolean(true))
   }
 
   "A year-month-duration" should "compare with '<'" in {
@@ -316,7 +336,11 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
   private def date(date: String): Date = date
 
+  private def localTime(time: String): LocalTime = time
+
   private def time(time: String): Time = time
+
+  private def localDateTime(dateTime: String): LocalDateTime = dateTime
 
   private def dateTime(dateTime: String): DateTime = dateTime
 

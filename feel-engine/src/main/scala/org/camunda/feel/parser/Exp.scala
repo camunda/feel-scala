@@ -15,7 +15,11 @@ case class ConstString(value: String) extends Exp
 
 case class ConstDate(value: Date) extends Exp
 
+case class ConstLocalTime(value: LocalTime) extends Exp
+
 case class ConstTime(value: Time) extends Exp
+
+case class ConstLocalDateTime(value: LocalDateTime) extends Exp
 
 case class ConstDateTime(value: DateTime) extends Exp
 

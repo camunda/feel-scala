@@ -1,12 +1,7 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.LocalTime
-import java.time.LocalDateTime
-import java.time.Duration
-import java.time.Period
+import java.time._
 
 import scala.collection.JavaConverters._
 
@@ -28,7 +23,9 @@ class DefaultValueMapper extends ValueMapper {
     case x: Boolean => ValBoolean(x)
     case x: String => ValString(x)
     case x: Date => ValDate(x)
+    case x: LocalTime => ValLocalTime(x)
     case x: Time => ValTime(x)
+    case x: LocalDateTime => ValLocalDateTime(x)
     case x: DateTime => ValDateTime(x)
     case x: YearMonthDuration => ValYearMonthDuration(x)
     case x: DayTimeDuration => ValDayTimeDuration(x)
@@ -40,17 +37,11 @@ class DefaultValueMapper extends ValueMapper {
 
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
-    case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+    case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime )
+    case x: java.time.ZonedDateTime => ValDateTime(x.toOffsetDateTime)
     case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
     case x: java.util.Map[_,_] => ValContext(DefaultContext(x.asScala map { case (key, value) => key.toString -> toVal(value)} toMap))
     case x: java.lang.Enum[_] => ValString(x.name)
-
-    // joda-time
-    case x: org.joda.time.LocalDate => ValDate(LocalDate.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth))
-    case x: org.joda.time.LocalTime => ValTime(LocalTime.of(x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
-    case x: org.joda.time.LocalDateTime => ValDateTime(LocalDateTime.of(x.getYear, x.getMonthOfYear, x.getDayOfMonth, x.getHourOfDay, x.getMinuteOfHour, x.getSecondOfMinute))
-    case x: org.joda.time.Duration => ValDayTimeDuration( Duration.ofMillis( x.getMillis ) )
-    case x: org.joda.time.Period => ValYearMonthDuration( Period.of(x.getYears, x.getMonths, 0) )
 
     // other objects
     case x: Throwable => ValError(x.getMessage)
@@ -68,7 +59,9 @@ class DefaultValueMapper extends ValueMapper {
     case ValNumber(number) => number
     case ValString(string) => string
     case ValDate(date) => date
+    case ValLocalTime(time) => time
     case ValTime(time) => time
+    case ValLocalDateTime(dateTime) => dateTime
     case ValDateTime(dateTime) => dateTime
     case ValYearMonthDuration(duration) => duration
     case ValDayTimeDuration(duration) => duration

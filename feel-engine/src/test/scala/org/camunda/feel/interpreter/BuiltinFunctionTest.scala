@@ -24,6 +24,8 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	it should "convert Date-Time" in {
 
 		eval(""" date( date and time("2012-12-25T11:00:00") ) """) should be(ValDate("2012-12-25"))
+
+		eval(""" date( date and time("2012-12-25T11:00:00+01:00") ) """) should be(ValDate("2012-12-25"))
 	}
 
 	it should "convert (year,month,day)" in {
@@ -33,37 +35,48 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 
 	"A date and time() function" should "convert String" in {
 
-		eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(ValLocalDateTime("2012-12-24T23:59:00"))
+
+		eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00+01:00")) should be(ValDateTime("2012-12-24T23:59:00+01:00"))
 	}
 
 	it should "convert (Date,Time)" in {
 
-		eval(""" date and time(date("2012-12-24"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date("2012-12-24"),time("T23:59:00")) """) should be(ValLocalDateTime("2012-12-24T23:59:00"))
+
+		eval(""" date and time(date("2012-12-24"),time("T23:59:00+01:00")) """) should be(ValDateTime("2012-12-24T23:59:00+01:00"))
 	}
 
 	it should "convert (DateTime,Time)" in {
 
-		eval(""" date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) """) should be(ValDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) """) should be(ValLocalDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00+01:00")) """) should be(ValDateTime("2012-12-24T23:59:00+01:00"))
+		eval(""" date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00")) """) should be(ValLocalDateTime("2012-12-24T23:59:00"))
+		eval(""" date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00+01:00")) """) should be(ValDateTime("2012-12-24T23:59:00+01:00"))
 	}
 
 	"A time() function" should "convert String" in {
 
-		eval(""" time(x) """, Map("x" -> "23:59:00")) should be(ValTime("23:59:00"))
+		eval(""" time(x) """, Map("x" -> "23:59:00")) should be(ValLocalTime("23:59:00"))
+
+		eval(""" time(x) """, Map("x" -> "23:59:00+01:00")) should be(ValTime("23:59:00+01:00"))
 	}
 
 	it should "convert Date-Time" in {
 
-		eval(""" time( date and time("2012-12-25T11:00:00") ) """) should be(ValTime("11:00:00"))
+		eval(""" time( date and time("2012-12-25T11:00:00") ) """) should be(ValLocalTime("11:00:00"))
+
+		eval(""" time( date and time("2012-12-25T11:00:00+01:00") ) """) should be(ValTime("11:00:00+01:00"))
 	}
 
 	it should "convert (hour,minute,second)" in {
 
-		eval(""" time(23, 59, 0) """) should be(ValTime("23:59:00"))
+		eval(""" time(23, 59, 0) """) should be(ValLocalTime("23:59:00"))
 	}
 
 	it should "convert (hour,minute,second, offset)" in {
 
-		eval(""" time(14, 30, 0, duration("PT1H")) """) should be(ValTime("15:30:00"))
+		eval(""" time(14, 30, 0, duration("PT1H")) """) should be(ValTime("14:30:00+01:00"))
 	}
 
 	"A number() function" should "convert String" in {
@@ -114,11 +127,13 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	it should "convert Time" in {
 
 		eval(""" string(time("23:59:00")) """) should be(ValString("23:59:00"))
+		eval(""" string(time("23:59:00+01:00")) """) should be(ValString("23:59:00+01:00"))
 	}
 
 	it should "convert Date-Time" in {
 
 		eval(""" string(date and time("2012-12-25T11:00:00")) """) should be(ValString("2012-12-25T11:00:00"))
+		eval(""" string(date and time("2012-12-25T11:00:00+02:00")) """) should be(ValString("2012-12-25T11:00:00+02:00"))
 	}
 
 	it should "convert Duration" in {

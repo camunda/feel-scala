@@ -15,7 +15,7 @@ class ParserUnaryTest extends FlatSpec with Matchers {
 
     parse("3") should be(InputEqualTo(ConstNumber(3)))
     parse("3.2") should be(InputEqualTo(ConstNumber(3.2)))
-    parse(".2") should be(InputEqualTo(ConstNumber(.2))) 
+    parse(".2") should be(InputEqualTo(ConstNumber(.2)))
   }
 
   it should "parse a boolean" in {
@@ -35,20 +35,37 @@ class ParserUnaryTest extends FlatSpec with Matchers {
   }
 
   it should "parse a time" in {
-    
-    parse("""time("15:41:10")""") should be(InputEqualTo(ConstTime("15:41:10")))
+
+    parse("""time("10:31:10")""") should be(InputEqualTo(ConstLocalTime("10:31:10")))
   }
-  
+
+  it should "parse a time with offset" in {
+
+    parse("""time("10:31:10+01:00")""") should be(InputEqualTo(ConstTime("10:31:10+01:00")))
+    parse("""time("10:31:10-02:00")""") should be(InputEqualTo(ConstTime("10:31:10-02:00")))
+  }
+
+  it should "parse a date-time" in {
+
+    parse("""date and time("2015-09-18T10:31:10")""") should be(InputEqualTo(ConstLocalDateTime("2015-09-18T10:31:10")))
+  }
+
+  it should "parse a date-time with offset" in {
+
+    parse("""date and time("2015-09-18T10:31:10+01:00")""") should be(InputEqualTo(ConstDateTime("2015-09-18T10:31:10+01:00")))
+    parse("""date and time("2015-09-18T10:31:10-02:00")""") should be(InputEqualTo(ConstDateTime("2015-09-18T10:31:10-02:00")))
+  }
+
   it should "parse a day-time-duration" in {
-    
+
     parse("""duration("P4DT2H")""") should be(InputEqualTo(ConstDayTimeDuration("P4DT2H")))
   }
-  
+
   it should "parse a year-month-duration" in {
-    
+
     parse("""duration("P2Y1M")""") should be(InputEqualTo(ConstYearMonthDuration("P2Y1M")))
   }
-  
+
   it should "parse '< 3'" in {
     parse("< 3") should be(InputLessThan(ConstNumber(3)))
   }
@@ -70,13 +87,13 @@ class ParserUnaryTest extends FlatSpec with Matchers {
   }
 
   it should """parse '< time("15:41:10")'""" in {
-    parse("""< time("15:41:10")""") should be(InputLessThan(ConstTime("15:41:10")))
+    parse("""< time("15:41:10")""") should be(InputLessThan(ConstLocalTime("15:41:10")))
   }
-  
+
   it should """parse '< duration("P1D")'""" in {
     parse("""< duration("P1D")""") should be(InputLessThan(ConstDayTimeDuration("P1D")))
   }
-  
+
   it should "parse '(2..4)'" in {
 
     parse("(2..4)") should be(
@@ -138,7 +155,7 @@ class ParserUnaryTest extends FlatSpec with Matchers {
 
     parse("-") should be(ConstBool(true))
   }
-  
+
   it should "parse 'null'" in {
 
     parse("null") should be(InputEqualTo(ConstNull))
@@ -150,23 +167,23 @@ class ParserUnaryTest extends FlatSpec with Matchers {
       Not(
         InputEqualTo(ConstNumber(3))))
   }
-  
+
   it should "parse 'var' (qualified name)" in {
-    
+
     parse("var") should be (InputEqualTo(Ref("var")))
   }
-  
+
   it should "parse 'qualified.var' (qualified name)" in {
-    
+
     parse("qualified.var") should be (InputEqualTo(Ref( List("qualified","var") )))
   }
-  
+
   it should "parse '< var'" in {
-    
+
     parse("< var") should be (InputLessThan(Ref("var")))
   }
 
-   private def parse(expression: String): Exp = 
+   private def parse(expression: String): Exp =
     FeelParser.parseUnaryTests(expression) match {
       case Success(exp, _) => exp
       case e: NoSuccess => throw new RuntimeException(s"failed to parse expression '$expression':\n$e")

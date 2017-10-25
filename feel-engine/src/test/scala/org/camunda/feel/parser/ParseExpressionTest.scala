@@ -46,12 +46,24 @@ class ParseExpressionTest extends FlatSpec with Matchers {
 
   it should "parse a time" in {
 
-    parse("""time("10:31:10")""") should be(ConstTime("10:31:10"))
+    parse("""time("10:31:10")""") should be(ConstLocalTime("10:31:10"))
+  }
+
+  it should "parse a time with offset" in {
+
+    parse("""time("10:31:10+01:00")""") should be(ConstTime("10:31:10+01:00"))
+    parse("""time("10:31:10-02:00")""") should be(ConstTime("10:31:10-02:00"))
   }
 
   it should "parse a date-time" in {
 
-    parse("""date and time("2015-09-18T10:31:10")""") should be(ConstDateTime("2015-09-18T10:31:10"))
+    parse("""date and time("2015-09-18T10:31:10")""") should be(ConstLocalDateTime("2015-09-18T10:31:10"))
+  }
+
+  it should "parse a date-time with offset" in {
+
+    parse("""date and time("2015-09-18T10:31:10+01:00")""") should be(ConstDateTime("2015-09-18T10:31:10+01:00"))
+    parse("""date and time("2015-09-18T10:31:10-02:00")""") should be(ConstDateTime("2015-09-18T10:31:10-02:00"))
   }
 
   it should "parse a year-month-duration" in {
@@ -132,7 +144,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a=date("2015-09-18")""") should be(Equal(Ref("a"), ConstDate("2015-09-18")))
     // time
-    parse("""a=time("10:00:00")""") should be(Equal(Ref("a"), ConstTime("10:00:00")))
+    parse("""a=time("10:00:00")""") should be(Equal(Ref("a"), ConstLocalTime("10:00:00")))
   }
 
   it should "parse a '!=' comparison" in {
@@ -146,7 +158,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a!=date("2015-09-18")""") should be(Not(Equal(Ref("a"), ConstDate("2015-09-18"))))
     // time
-    parse("""a!=time("10:00:00")""") should be(Not(Equal(Ref("a"), ConstTime("10:00:00"))))
+    parse("""a!=time("10:00:00")""") should be(Not(Equal(Ref("a"), ConstLocalTime("10:00:00"))))
   }
 
   it should "parse a '<' comparison" in {
@@ -156,7 +168,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a<date("2015-09-18")""") should be(LessThan(Ref("a"), ConstDate("2015-09-18")))
     // time
-    parse("""a<time("10:00:00")""") should be(LessThan(Ref("a"), ConstTime("10:00:00")))
+    parse("""a<time("10:00:00")""") should be(LessThan(Ref("a"), ConstLocalTime("10:00:00")))
   }
 
   it should "parse a '<=' comparison" in {
@@ -166,7 +178,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a<=date("2015-09-18")""") should be(LessOrEqual(Ref("a"), ConstDate("2015-09-18")))
     // time
-    parse("""a<=time("10:00:00")""") should be(LessOrEqual(Ref("a"), ConstTime("10:00:00")))
+    parse("""a<=time("10:00:00")""") should be(LessOrEqual(Ref("a"), ConstLocalTime("10:00:00")))
   }
 
   it should "parse a '>' comparison" in {
@@ -176,7 +188,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a>date("2015-09-18")""") should be(GreaterThan(Ref("a"), ConstDate("2015-09-18")))
     // time
-    parse("""a>time("10:00:00")""") should be(GreaterThan(Ref("a"), ConstTime("10:00:00")))
+    parse("""a>time("10:00:00")""") should be(GreaterThan(Ref("a"), ConstLocalTime("10:00:00")))
   }
 
   it should "parse a '>=' comparison" in {
@@ -186,7 +198,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     // date
     parse("""a>=date("2015-09-18")""") should be(GreaterOrEqual(Ref("a"), ConstDate("2015-09-18")))
     // time
-    parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")))
+    parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstLocalTime("10:00:00")))
   }
 
   it should "parse a 'between _ and _' comparison " in {
@@ -197,7 +209,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
 
     // time
     parse(""" a between time("10:00:00") and time("14:00:00") """) should be(
-        Conjunction(GreaterOrEqual(Ref("a"), ConstTime("10:00:00")), LessOrEqual(Ref("a"), ConstTime("14:00:00"))))
+        Conjunction(GreaterOrEqual(Ref("a"), ConstLocalTime("10:00:00")), LessOrEqual(Ref("a"), ConstLocalTime("14:00:00"))))
   }
 
   it should "parse a 'in' comparision" in {

@@ -5,9 +5,8 @@ import org.camunda.feel.spi._
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.Period
+import java.time._
+import java.time.temporal.ChronoUnit
 import java.util.regex._
 import org.slf4j._
 
@@ -93,7 +92,8 @@ object BuiltinFunctions extends FunctionProvider {
 
 	def dateFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => ValDate(from)
-		case List(ValDateTime(from)) => ValDate(from.toLocalDate())
+		case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
+    case List(ValDateTime(from)) => ValDate(from.toLocalDate())
 		case e => error(e)
 	})
 
@@ -103,29 +103,39 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def dateTime = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => ValDateTime(from)
+		case List(ValString(from)) => if(isOffsetDateTime(from)) ValDateTime(from) else ValLocalDateTime(from)
 		case e => error(e)
 	})
 
 	def dateTime2 = ValFunction(List("date", "time"), _ match {
-		case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time))
-		case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
+		case List(ValDate(date), ValLocalTime(time)) => ValLocalDateTime(date.atTime(time))
+    case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time))
+		case List(ValLocalDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
 		case e => error(e)
 	})
 
 	def timeFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => ValTime(from)
-		case List(ValDateTime(from)) => ValTime(from.toLocalTime())
+		case List(ValString(from)) => if (isOffsetTime(from)) ValTime(from) else ValLocalTime(from)
+		case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
+    case List(ValDateTime(from)) => ValTime(from.toOffsetTime())
 		case e => error(e)
 	})
 
 	def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => ValTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
 		case e => error(e)
 	})
 
 	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => ValTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()).plus(offset))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => {
+      val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue())
+      val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
+
+      ValTime(localTime.atOffset(zonedOffset))
+    }
 		case e => error(e)
 	})
 
@@ -156,8 +166,10 @@ object BuiltinFunctions extends FunctionProvider {
 		case List(ValBoolean(from)) => ValString(from.toString)
 		case List(ValNumber(from)) => ValString(from.toString)
 		case List(ValDate(from)) => ValString(from.format(dateFormatter))
-		case List(ValTime(from)) => ValString(from.format(timeFormatter))
-		case List(ValDateTime(from)) => ValString(from.format(dateTimeFormatter))
+		case List(ValLocalTime(from)) => ValString(from.format(localTimeFormatter))
+    case List(ValTime(from)) => ValString(from.format(timeFormatter))
+		case List(ValLocalDateTime(from)) => ValString(from.format(localDateTimeFormatter))
+    case List(ValDateTime(from)) => ValString(from.format(dateTimeFormatter))
 		case List(ValYearMonthDuration(from)) => ValString(from.toString)
 		case List(ValDayTimeDuration(from)) => ValString(from.toString)
 		case e => error(e)

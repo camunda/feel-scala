@@ -376,48 +376,72 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" time("10:30:00") - time("09:00:00") """) should be(ValDayTimeDuration("PT1H30M"))
 
     eval(""" time("09:00:00") - time("10:00:00") """) should be(ValDayTimeDuration("PT-1H"))
+
+    eval(""" time("12:00:00+01:00") - time("10:00:00+01:00") """) should be(ValDayTimeDuration("PT2H"))
   }
 
   it should "compare with '='" in {
 
     eval(""" time("10:00:00") = time("10:00:00") """) should be(ValBoolean(true))
     eval(""" time("10:00:00") = time("10:30:00") """) should be(ValBoolean(false))
+
+    eval(""" time("10:00:00+01:00") = time("10:30:00+01:00") """) should be(ValBoolean(false))
+    eval(""" time("10:00:00+01:00") = time("10:00:00+02:00") """) should be(ValBoolean(false))
+    eval(""" time("10:00:00+01:00") = time("10:00:00+01:00") """) should be(ValBoolean(true))
   }
 
   it should "compare with '!='" in {
 
     eval(""" time("10:00:00") != time("10:00:00") """) should be(ValBoolean(false))
     eval(""" time("10:00:00") != time("22:00:00") """) should be(ValBoolean(true))
+
+    eval(""" time("10:00:00+01:00") != time("10:00:00+01:00") """) should be(ValBoolean(false))
+    eval(""" time("10:00:00+01:00") != time("22:00:00+01:00") """) should be(ValBoolean(true))
   }
 
   it should "compare with '<'" in {
 
     eval(""" time("10:00:00") < time("11:00:00") """) should be(ValBoolean(true))
     eval(""" time("10:00:00") < time("10:00:00") """) should be(ValBoolean(false))
+
+    eval(""" time("10:00:00+01:00") < time("11:00:00+01:00") """) should be(ValBoolean(true))
+    eval(""" time("10:00:00+01:00") < time("10:00:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
     eval(""" time("10:00:00") <= time("10:00:00") """) should be(ValBoolean(true))
     eval(""" time("10:00:01") <= time("10:00:00") """) should be(ValBoolean(false))
+
+    eval(""" time("10:00:00+01:00") <= time("10:00:00+01:00") """) should be(ValBoolean(true))
+    eval(""" time("11:00:00+01:00") <= time("10:00:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with '>'" in {
 
     eval(""" time("11:00:00") > time("11:00:00") """) should be(ValBoolean(false))
     eval(""" time("10:15:00") > time("10:00:00") """) should be(ValBoolean(true))
+
+    eval(""" time("11:00:00+01:00") > time("11:00:00+01:00") """) should be(ValBoolean(false))
+    eval(""" time("10:15:00+01:00") > time("10:00:00+01:00") """) should be(ValBoolean(true))
   }
 
   it should "compare with '>='" in {
 
     eval(""" time("11:00:00") >= time("11:00:00") """) should be(ValBoolean(true))
     eval(""" time("09:00:00") >= time("11:15:00") """) should be(ValBoolean(false))
+
+    eval(""" time("11:00:00+01:00") >= time("11:00:00+01:00") """) should be(ValBoolean(true))
+    eval(""" time("09:00:00+01:00") >= time("11:15:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with 'between _ and _'" in {
 
     eval(""" time("08:30:00") between time("08:00:00") and time("10:00:00") """) should be (ValBoolean(true))
     eval(""" time("08:30:00") between time("09:00:00") and time("10:00:00") """) should be (ValBoolean(false))
+
+    eval(""" time("08:30:00+01:00") between time("08:00:00+01:00") and time("10:00:00+01:00") """) should be (ValBoolean(true))
+    eval(""" time("08:30:00+01:00") between time("09:00:00+01:00") and time("10:00:00+01:00") """) should be (ValBoolean(false))
   }
 
   "A date" should "compare with '='" in {
@@ -465,50 +489,73 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   "A date-time" should "subtract from another date-time" in {
 
     eval(""" date and time("2017-01-10T10:30:00") - date and time("2017-01-01T10:00:00") """) should be(ValDayTimeDuration("P9DT30M"))
-
     eval(""" date and time("2017-01-10T10:00:00") - date and time("2017-01-10T10:30:00") """) should be(ValDayTimeDuration("PT-30M"))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") - date and time("2017-01-01T10:00:00+01:00") """) should be(ValDayTimeDuration("P9DT30M"))
+    eval(""" date and time("2017-01-10T10:00:00+01:00") - date and time("2017-01-10T10:30:00+01:00") """) should be(ValDayTimeDuration("PT-30M"))
   }
 
   it should "compare with '='" in {
 
     eval(""" date and time("2017-01-10T10:30:00") = date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
     eval(""" date and time("2017-01-10T10:30:00") = date and time("2017-01-10T14:00:00") """) should be(ValBoolean(false))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") = date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") = date and time("2017-01-10T14:00:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with '!='" in {
 
     eval(""" date and time("2017-01-10T10:30:00") != date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
     eval(""" date and time("2017-01-10T10:30:00") != date and time("2017-01-11T10:30:00") """) should be(ValBoolean(true))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") != date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(false))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") != date and time("2017-01-11T10:30:00+01:00") """) should be(ValBoolean(true))
   }
 
   it should "compare with '<'" in {
 
     eval(""" date and time("2017-01-10T10:30:00") < date and time("2017-02-10T10:00:00") """) should be(ValBoolean(true))
     eval(""" date and time("2017-01-10T10:30:00") < date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") < date and time("2017-02-10T10:00:00+01:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") < date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
     eval(""" date and time("2017-01-10T10:30:00") <= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
     eval(""" date and time("2017-02-10T10:00:00") <= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") <= date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-02-10T10:00:00+01:00") <= date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with '>'" in {
 
     eval(""" date and time("2017-01-10T10:30:00") > date and time("2017-01-10T10:30:00") """) should be(ValBoolean(false))
     eval(""" date and time("2018-01-10T10:30:00") > date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") > date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(false))
+    eval(""" date and time("2018-01-10T10:30:00+01:00") > date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(true))
   }
 
   it should "compare with '>='" in {
 
     eval(""" date and time("2017-01-10T10:30:00") >= date and time("2017-01-10T10:30:00") """) should be(ValBoolean(true))
     eval(""" date and time("2017-01-10T10:30:00") >= date and time("2017-01-10T10:30:01") """) should be(ValBoolean(false))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") >= date and time("2017-01-10T10:30:00+01:00") """) should be(ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") >= date and time("2017-01-10T10:30:01+01:00") """) should be(ValBoolean(false))
   }
 
   it should "compare with 'between _ and _'" in {
 
     eval(""" date and time("2017-01-10T10:30:00") between date and time("2017-01-10T09:00:00") and date and time("2017-01-10T14:00:00") """) should be (ValBoolean(true))
     eval(""" date and time("2017-01-10T10:30:00") between date and time("2017-01-10T11:00:00") and date and time("2017-01-11T08:00:00") """) should be (ValBoolean(false))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") between date and time("2017-01-10T09:00:00+01:00") and date and time("2017-01-10T14:00:00+01:00") """) should be (ValBoolean(true))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") between date and time("2017-01-10T11:00:00+01:00") and date and time("2017-01-11T08:00:00+01:00") """) should be (ValBoolean(false))
   }
 
   "A year-month-duration" should "add to year-month-duration" in {
@@ -519,8 +566,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "add to date-time" in {
 
-    eval(""" duration("P1M") + date and time("2017-01-10T10:30:00") """) should be(ValDateTime("2017-02-10T10:30:00"))
-    eval(""" date and time("2017-01-10T10:30:00") + duration("P1Y") """) should be(ValDateTime("2018-01-10T10:30:00"))
+    eval(""" duration("P1M") + date and time("2017-01-10T10:30:00") """) should be(ValLocalDateTime("2017-02-10T10:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") + duration("P1Y") """) should be(ValLocalDateTime("2018-01-10T10:30:00"))
+
+    eval(""" duration("P1M") + date and time("2017-01-10T10:30:00+01:00") """) should be(ValDateTime("2017-02-10T10:30:00+01:00"))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") + duration("P1Y") """) should be(ValDateTime("2018-01-10T10:30:00+01:00"))
   }
 
   it should "subtract from year-month-duration" in {
@@ -531,7 +581,9 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "subtract from date-time" in {
 
-    eval(""" date and time("2017-01-10T10:30:00") - duration("P1M") """) should be(ValDateTime("2016-12-10T10:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") - duration("P1M") """) should be(ValLocalDateTime("2016-12-10T10:30:00"))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") - duration("P1M") """) should be(ValDateTime("2016-12-10T10:30:00+01:00"))
   }
 
   it should "multiply by '3'" in {
@@ -595,14 +647,20 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "add to date-time" in {
 
-    eval(""" duration("PT1H") + date and time("2017-01-10T10:30:00") """) should be(ValDateTime("2017-01-10T11:30:00"))
-    eval(""" date and time("2017-01-10T10:30:00") + duration("P1D") """) should be(ValDateTime("2017-01-11T10:30:00"))
+    eval(""" duration("PT1H") + date and time("2017-01-10T10:30:00") """) should be(ValLocalDateTime("2017-01-10T11:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") + duration("P1D") """) should be(ValLocalDateTime("2017-01-11T10:30:00"))
+
+    eval(""" duration("PT1H") + date and time("2017-01-10T10:30:00+01:00") """) should be(ValDateTime("2017-01-10T11:30:00+01:00"))
+    eval(""" date and time("2017-01-10T10:30:00+01:00") + duration("P1D") """) should be(ValDateTime("2017-01-11T10:30:00+01:00"))
   }
 
   it should "add to time" in {
 
-    eval(""" duration("PT1H") + time("10:30:00") """) should be(ValTime("11:30:00"))
-    eval(""" time("10:30:00") + duration("P1D") """) should be(ValTime("10:30:00"))
+    eval(""" duration("PT1H") + time("10:30:00") """) should be(ValLocalTime("11:30:00"))
+    eval(""" time("10:30:00") + duration("P1D") """) should be(ValLocalTime("10:30:00"))
+
+    eval(""" duration("PT1H") + time("10:30:00+01:00") """) should be(ValTime("11:30:00+01:00"))
+    eval(""" time("10:30:00+01:00") + duration("P1D") """) should be(ValTime("10:30:00+01:00"))
   }
 
   it should "subtract from day-time-duration" in {
@@ -613,12 +671,16 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
   it should "subtract from date-time" in {
 
-    eval(""" date and time("2017-01-10T10:30:00") - duration("PT1H") """) should be(ValDateTime("2017-01-10T09:30:00"))
+    eval(""" date and time("2017-01-10T10:30:00") - duration("PT1H") """) should be(ValLocalDateTime("2017-01-10T09:30:00"))
+
+    eval(""" date and time("2017-01-10T10:30:00+01:00") - duration("PT1H") """) should be(ValDateTime("2017-01-10T09:30:00+01:00"))
   }
 
   it should "subtract from time" in {
 
-    eval(""" time("10:30:00") - duration("PT1H") """) should be(ValTime("09:30:00"))
+    eval(""" time("10:30:00") - duration("PT1H") """) should be(ValLocalTime("09:30:00"))
+
+    eval(""" time("10:30:00+01:00") - duration("PT1H") """) should be(ValTime("09:30:00+01:00"))
   }
 
   it should "multiply by '3'" in {

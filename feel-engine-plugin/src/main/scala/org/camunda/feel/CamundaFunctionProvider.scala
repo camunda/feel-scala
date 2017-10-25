@@ -3,7 +3,7 @@ package org.camunda.feel
 import scala.collection.JavaConversions._
 import org.camunda.feel.interpreter._
 import org.camunda.feel.spi.CustomFunctionProvider
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.interceptor.CommandContext
 
@@ -22,7 +22,7 @@ class CamundaFunctionProvider extends CustomFunctionProvider {
 
   private def nowFunction = ValFunction(
     params = List(),
-    invoke = { case _ => ValDateTime(LocalDateTime.now()) }
+    invoke = { case _ => ValDateTime(OffsetDateTime.now()) }
   )
 
   private def currentUserFunction = ValFunction(

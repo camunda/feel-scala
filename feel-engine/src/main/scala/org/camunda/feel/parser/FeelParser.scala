@@ -140,8 +140,8 @@ object FeelParser extends JavaTokenParsers {
   // 62
   private lazy val dateTimeLiteral: Parser[Exp] =
     "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDate(_) ) |
-    "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstTime(_) ) |
-    "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDateTime(_) ) |
+    "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( t => if(isOffsetTime(t)) ConstTime(t) else ConstLocalTime(t) ) |
+    "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( d => if(isOffsetDateTime(d)) ConstDateTime(d) else ConstLocalDateTime(d) ) |
     "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( d => if(isYearMonthDuration(d)) ConstYearMonthDuration(d) else ConstDayTimeDuration(d)) |
     failure("expected date time literal")
 

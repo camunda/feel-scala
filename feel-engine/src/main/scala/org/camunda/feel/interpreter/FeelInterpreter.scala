@@ -22,7 +22,9 @@ class FeelInterpreter {
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
     case ConstDate(d) => ValDate(d)
+    case ConstLocalTime(t) => ValLocalTime(t)
     case ConstTime(t) => ValTime(t)
+    case ConstLocalDateTime(dt) => ValLocalDateTime(dt)
     case ConstDateTime(dt) => ValDateTime(dt)
     case ConstYearMonthDuration(d) => ValYearMonthDuration(d)
     case ConstDayTimeDuration(d) => ValDayTimeDuration(d)
@@ -114,7 +116,9 @@ class FeelInterpreter {
       case ValBoolean(i) => withBoolean(x, x => f(c(i, x)))
       case ValString(i) => withString(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
+      case ValLocalTime(i) => withLocalTime(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValLocalDateTime(i) => withLocalDateTime(x, x => f(c(i, x)))
       case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
       case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
@@ -125,7 +129,9 @@ class FeelInterpreter {
     withVal(input, _ match {
       case ValNumber(i) => withNumber(x, x => f(c(i, x)))
       case ValDate(i) => withDate(x, x => f(c(i, x)))
+      case ValLocalTime(i) => withLocalTime(x, x => f(c(i, x)))
       case ValTime(i) => withTime(x, x => f(c(i, x)))
+      case ValLocalDateTime(i) => withLocalDateTime(x, x => f(c(i, x)))
       case ValDateTime(i) => withDateTime(x, x => f(c(i, x)))
       case ValYearMonthDuration(i) => withYearMonthDuration(x, x => f(c(i,x)))
       case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i,x)))
@@ -136,7 +142,9 @@ class FeelInterpreter {
     withVal(input, _ match {
       case ValNumber(i) => withNumbers(x, y, (x, y) => f(c(i, x, y)))
       case ValDate(i) => withDates(x, y, (x, y) => f(c(i, x, y)))
+      case ValLocalTime(i) => withLocalTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValTime(i) => withTimes(x, y, (x,y) => f(c(i, x, y)))
+      case ValLocalDateTime(i) => withLocalDateTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValDateTime(i) => withDateTimes(x, y, (x,y) => f(c(i, x, y)))
       case ValYearMonthDuration(i) => withYearMonthDurations(x, y, (x,y) => f(c(i, x, y)))
       case ValDayTimeDuration(i) => withDayTimeDurations(x, y, (x,y) => f(c(i, x, y)))
@@ -189,6 +197,18 @@ class FeelInterpreter {
       })
     })
 
+  private def withLocalTimes(x: Val, y: Val, f: (LocalTime, LocalTime) => Val): Val =
+    withLocalTime(x, x => {
+      withLocalTime(y, y => {
+        f(x, y)
+      })
+    })
+
+  private def withLocalTime(x: Val, f: LocalTime => Val): Val = x match {
+    case ValLocalTime(x) => f(x)
+    case _ => error(x, s"expect Local Time but found '$x'")
+  }
+
   private def withTime(x: Val, f: Time => Val): Val = x match {
     case ValTime(x) => f(x)
     case _ => error(x, s"expect Time but found '$x'")
@@ -201,9 +221,21 @@ class FeelInterpreter {
       })
     })
 
+  private def withLocalDateTimes(x: Val, y: Val, f: (LocalDateTime, LocalDateTime) => Val): Val =
+    withLocalDateTime(x, x => {
+      withLocalDateTime(y, y => {
+        f(x, y)
+      })
+    })
+
   private def withDateTime(x: Val, f: DateTime => Val): Val = x match {
     case ValDateTime(x) => f(x)
     case _ => error(x, s"expect Date Time but found '$x'")
+  }
+
+  private def withLocalDateTime(x: Val, f: LocalDateTime => Val): Val = x match {
+    case ValLocalDateTime(x) => f(x)
+    case _ => error(x, s"expect Local Date Time but found '$x'")
   }
 
   private def withYearMonthDurations(x: Val, y: Val, f: (YearMonthDuration, YearMonthDuration) => Val): Val =
@@ -299,7 +331,9 @@ class FeelInterpreter {
       case ValBoolean(x) => withBoolean(y, y => f(c(x, y)))
       case ValString(x) => withString(y, y => f(c(x, y)))
       case ValDate(x) => withDate(y, y => f(c(x, y)))
+      case ValLocalTime(x) => withLocalTime(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValLocalDateTime(x) => withLocalDateTime(y, y => f(c(x, y)))
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
       case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
@@ -310,7 +344,9 @@ class FeelInterpreter {
     x match {
       case ValNumber(x) => withNumber(y, y => f(c(x, y)))
       case ValDate(x) => withDate(y, y => f(c(x, y)))
+      case ValLocalTime(x) => withLocalTime(y, y => f(c(x, y)))
       case ValTime(x) => withTime(y, y => f(c(x, y)))
+      case ValLocalDateTime(x) => withLocalDateTime(y, y => f(c(x, y)))
       case ValDateTime(x) => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x,y)))
       case ValDayTimeDuration(x) => withDayTimeDuration(y, y => f(c(x,y)))
@@ -321,7 +357,13 @@ class FeelInterpreter {
   private def addOp(x: Val, y: Val): Val = x match {
     case ValNumber(x) => withNumber(y, y => ValNumber(x + y))
     case ValString(x) => withString(y, y => ValString(x + y))
+    case ValLocalTime(x) => withDayTimeDuration(y, y => ValLocalTime( x.plus(y) ))
     case ValTime(x) => withDayTimeDuration(y, y => ValTime( x.plus(y) ))
+    case ValLocalDateTime(x) => y match {
+      case ValYearMonthDuration(y) => ValLocalDateTime( x.plus(y) )
+      case ValDayTimeDuration(y) => ValLocalDateTime( x.plus(y) )
+      case _ => error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
+    }
     case ValDateTime(x) => y match {
       case ValYearMonthDuration(y) => ValDateTime( x.plus(y) )
       case ValDayTimeDuration(y) => ValDateTime( x.plus(y) )
@@ -329,12 +371,15 @@ class FeelInterpreter {
     }
     case ValYearMonthDuration(x) => y match {
       case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y) )
+      case ValLocalDateTime(y) => ValLocalDateTime( y.plus(x) )
       case ValDateTime(y) => ValDateTime( y.plus(x) )
       case _ => error(y, s"expect Date-Time, or Year-Month-Duration but found '$x'")
     }
     case ValDayTimeDuration(x) => y match {
       case ValDayTimeDuration(y) => ValDayTimeDuration( x.plus(y) )
+      case ValLocalDateTime(y) => ValLocalDateTime( y.plus(x) )
       case ValDateTime(y) => ValDateTime( y.plus(x) )
+      case ValLocalTime(y) => ValLocalTime( y.plus(x) )
       case ValTime(y) => ValTime( y.plus(x) )
       case _ => error(y, s"expect Date-Time, Time, or Day-Time-Duration but found '$x'")
     }
@@ -343,10 +388,21 @@ class FeelInterpreter {
 
   private def subOp(x: Val, y: Val): Val = x match {
     case ValNumber(x) => withNumber(y, y => ValNumber(x - y))
+    case ValLocalTime(x) => y match {
+      case ValLocalTime(y) => ValDayTimeDuration( Duration.between(y, x) )
+      case ValDayTimeDuration(y) => ValLocalTime( x.minus(y) )
+      case _ => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
+    }
     case ValTime(x) => y match {
       case ValTime(y) => ValDayTimeDuration( Duration.between(y, x) )
       case ValDayTimeDuration(y) => ValTime( x.minus(y) )
       case _ => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
+    }
+    case ValLocalDateTime(x) => y match {
+      case ValLocalDateTime(y) => ValDayTimeDuration( Duration.between(y, x) )
+      case ValYearMonthDuration(y) => ValLocalDateTime( x.minus(y) )
+      case ValDayTimeDuration(y) => ValLocalDateTime( x.minus(y) )
+      case _ => error(y, s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
     }
     case ValDateTime(x) => y match {
       case ValDateTime(y) => ValDayTimeDuration( Duration.between(y, x) )
@@ -439,7 +495,9 @@ class FeelInterpreter {
     case ValBoolean(_) => f("boolean")
     case ValString(_) => f("string")
     case ValDate(_) => f("date")
+    case ValLocalTime(_) => f("time")
     case ValTime(_) => f("time")
+    case ValLocalDateTime(_) => f("date time")
     case ValDateTime(_) => f("date time")
     case ValYearMonthDuration(_) => f("year-month-duration")
     case ValDayTimeDuration(_) => f("day-time-duration")
