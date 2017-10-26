@@ -1,24 +1,20 @@
 package org.camunda.feel.script
 
-import java.io.Reader
-import javax.script._
-
-import scala.collection.JavaConversions._
 import org.camunda.feel._
-import java.io.IOException
-import java.io.Closeable
-
-import scala.annotation.tailrec
+import org.camunda.feel.spi._
+import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.Exp
-import org.camunda.feel.interpreter.DefaultValueMapper
-import java.util.ServiceLoader
 
-import org.camunda.feel.interpreter._
-import org.camunda.feel.spi._
-
-import scala.reflect.ClassTag
+import scala.annotation.tailrec
 import scala.reflect._
+import scala.collection.JavaConverters._
+
+import java.io.Reader
+import java.io.IOException
+import java.io.Closeable
+import javax.script._
+import java.util.ServiceLoader
 
 trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
@@ -85,7 +81,7 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   private def getEngineContext(context: ScriptContext): Map[String, Any] = {
     List(ScriptContext.GLOBAL_SCOPE, ScriptContext.ENGINE_SCOPE)
       .flatMap(scope => Option(context.getBindings(scope)))
-      .flatMap(_.toMap)
+      .flatMap(_.asScala)
       .toMap
   }
 
@@ -123,7 +119,7 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   private def loadServiceProvider[T: ClassTag](): List[T] =
     try {
       val loader = ServiceLoader.load(classTag[T].runtimeClass.asInstanceOf[Class[T]])
-      loader.iterator.toList
+      loader.iterator.asScala.toList
     } catch {
       case t: Throwable => {
         System.err.println(s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")

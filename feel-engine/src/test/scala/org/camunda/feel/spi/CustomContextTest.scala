@@ -43,15 +43,16 @@ class CustomContextTest extends FlatSpec with Matchers {
 
   it should "cache its feature access" in {
 
+    var variableCallCount = 0
+    var functionCallCount = 0
+
     val myVariableProvider = new VariableProvider {
-      var callCount = 0
-      override def getVariable(name: String): Option[Val] = { callCount += 1; if (name == "a") Some(ValNumber(2)) else None }
+      override def getVariable(name: String): Option[Val] = { variableCallCount += 1; if (name == "a") Some(ValNumber(2)) else None }
     }
 
     val myFunctionProvider = new FunctionProvider {
-      var callCount = 0
       val f = ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 2) } )
-      override def getFunction(name: String): List[ValFunction] = { callCount += 1; if (name == "f") List(f) else List.empty }
+      override def getFunction(name: String): List[ValFunction] = { functionCallCount += 1; if (name == "f") List(f) else List.empty }
     }
 
     val myCustomContext = new CustomContext {
@@ -60,8 +61,8 @@ class CustomContextTest extends FlatSpec with Matchers {
     }
 
     engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(EvalValue(18))
-    myVariableProvider.callCount should be(1)
-    myFunctionProvider.callCount should be(1)
+    variableCallCount should be(1)
+    functionCallCount should be(1)
 
   }
 

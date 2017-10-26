@@ -30,7 +30,6 @@ case class ObjectContext(obj: Any, override val valueMapper: ValueMapper = Defau
       obj.getClass.getMethods
         .find(method => { method.getName == name })
         .map(method => {
-          // parameter names should be accessable with Scala 2.12.0
           val params = method.getParameters.map(param => param.getName).toList
 
           ValFunction(params, params => {

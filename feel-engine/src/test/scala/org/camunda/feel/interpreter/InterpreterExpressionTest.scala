@@ -972,6 +972,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     c.asInstanceOf[ValContext].context.function("foo", 0) shouldBe a [ValFunction]
     c.asInstanceOf[ValContext].context.function("getBar", 0) shouldBe a [ValFunction]
     c.asInstanceOf[ValContext].context.function("incr", 1) shouldBe a [ValFunction]
+    c.asInstanceOf[ValContext].context.function("incr", Set("x")) shouldBe a [ValFunction]
   }
 
   it should "access a field" in {

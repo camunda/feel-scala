@@ -5,7 +5,6 @@ import org.camunda.feel.parser.FeelParser._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import com.sun.org.apache.xpath.internal.objects.LessThanOrEqualComparator
 
 /**
  * @author Philipp Ossler
@@ -295,8 +294,8 @@ class ParseExpressionTest extends FlatSpec with Matchers {
 
     parse(""" if (x < 5) then "low" else "high" """) should be(If(
       condition = LessThan(Ref("x"), ConstNumber(5)),
-      then = ConstString("low"),
-      otherwise = ConstString("high")
+      statement = ConstString("low"),
+      elseStatement = ConstString("high")
     ))
   }
 

@@ -26,6 +26,8 @@ package object feel {
 
   type DayTimeDuration = java.time.Duration
 
+  import scala.language.implicitConversions
+
   implicit def stringToNumber(number: String): Number = BigDecimal(number)
 
   implicit def stringToDate(date: String): Date = LocalDate.parse(date)

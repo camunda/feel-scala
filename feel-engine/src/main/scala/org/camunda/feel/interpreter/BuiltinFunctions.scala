@@ -425,7 +425,7 @@ object BuiltinFunctions extends FunctionProvider {
 	}, hasVarArgs = true)
 
 	def distinctValuesFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => ValList(list distinct)
+	  case List(ValList(list)) => ValList(list.distinct)
 	  case e => error(e)
 	})
 

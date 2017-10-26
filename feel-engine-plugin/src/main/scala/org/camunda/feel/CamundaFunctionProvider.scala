@@ -1,11 +1,11 @@
 package org.camunda.feel
 
-import scala.collection.JavaConversions._
 import org.camunda.feel.interpreter._
 import org.camunda.feel.spi.CustomFunctionProvider
-import java.time.OffsetDateTime
 import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.interceptor.CommandContext
+import scala.collection.JavaConverters._
+import java.time.OffsetDateTime
 
 /**
  * @author Philipp
@@ -42,7 +42,7 @@ class CamundaFunctionProvider extends CustomFunctionProvider {
       case _ =>
         getContext
           .flatMap(ctx => Option(ctx.getAuthenticatedGroupIds))
-          .map(ids => ValList(ids.map(id => ValString(id)).toList))
+          .map(ids => ValList(ids.asScala.map(id => ValString(id)).toList))
           .getOrElse(ValNull)
     }
   )

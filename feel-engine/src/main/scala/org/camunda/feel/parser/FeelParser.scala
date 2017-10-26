@@ -211,7 +211,7 @@ object FeelParser extends JavaTokenParsers {
 
   // 47
   private lazy val ifExpression: Parser[If] = "if" ~> expression ~! "then" ~! expression ~ "else" ~! expression ^^ {
-    case condition ~ _ ~ then ~ _ ~ otherwise => If(condition, then, otherwise)
+    case condition ~ _ ~ statement ~ _ ~ elseStatement => If(condition, statement, elseStatement)
   }
 
   // 48 - no separator in spec grammar but in examples

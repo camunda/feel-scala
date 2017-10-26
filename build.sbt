@@ -2,17 +2,19 @@
 lazy val commonSettings = Seq(
   organization := "org.camunda.bpm.extension.feel.scala",
   version := "1.3.0-SNAPSHOT",
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.12.4",
 
   resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-  resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public"
+  resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public",
+
+  scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 )
 
 val commonDependencies = Seq(
   "org.slf4j" % "slf4j-api" % "1.7.25",
 
   "junit" % "junit" % "4.11" % "test",
-  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
+  "org.scalatest" % "scalatest_2.12" % "3.0.4" % "test",
   "org.apache.logging.log4j" % "log4j-api" % "2.9.0" % "test",
   "org.apache.logging.log4j" % "log4j-core" % "2.9.0" % "test",
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.9.0" % "test"
@@ -29,7 +31,7 @@ lazy val engine = (project in file("feel-engine")).
   settings(
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.4"
+      "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.6"
     )
   )
 

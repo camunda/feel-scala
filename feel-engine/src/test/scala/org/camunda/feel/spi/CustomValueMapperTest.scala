@@ -45,6 +45,7 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
   }
 
   class MyCustomValueMapper extends CustomValueMapper {
+
     override def toVal(x: Any): Val = {
       x match {
         case e: Enumerated => ValString(e.id)

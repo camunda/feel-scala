@@ -17,10 +17,10 @@
     <name>FEEL Scala Root</name>
 
     <properties>
-        <camunda.version>7.7.0-alpha1</camunda.version>
+        <camunda.version>7.7.0</camunda.version>
         <version.java>1.8</version.java>
-        <scala.version>2.11.7</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.12.4</scala.version>
+        <scala.binary.version>2.12.4</scala.binary.version>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
@@ -57,20 +57,20 @@
 
             <dependency>
               <groupId>org.scala-lang.modules</groupId>
-              <artifactId>scala-parser-combinators_2.11</artifactId>
-              <version>1.0.4</version>
+              <artifactId>scala-parser-combinators_2.12</artifactId>
+              <version>1.0.6</version>
             </dependency>
 
             <dependency>
               <groupId>com.github.nscala-time</groupId>
-              <artifactId>nscala-time_2.11</artifactId>
-              <version>2.2.0</version>
+              <artifactId>nscala-time_2.12</artifactId>
+              <version>2.16.0</version>
             </dependency>
 
             <dependency>
               <groupId>org.scalatest</groupId>
-              <artifactId>scalatest_2.11</artifactId>
-              <version>2.2.4</version>
+              <artifactId>scalatest_2.12</artifactId>
+              <version>3.0.4</version>
             </dependency>
 
             <dependency>

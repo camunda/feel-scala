@@ -40,7 +40,7 @@ class DefaultValueMapper extends ValueMapper {
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime )
     case x: java.time.ZonedDateTime => ValDateTime(x.toOffsetDateTime)
     case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
-    case x: java.util.Map[_,_] => ValContext(DefaultContext(x.asScala map { case (key, value) => key.toString -> toVal(value)} toMap))
+    case x: java.util.Map[_,_] => ValContext(DefaultContext(x.asScala.map { case (key, value) => key.toString -> toVal(value)}.toMap))
     case x: java.lang.Enum[_] => ValString(x.name)
 
     // other objects
@@ -66,7 +66,7 @@ class DefaultValueMapper extends ValueMapper {
     case ValYearMonthDuration(duration) => duration
     case ValDayTimeDuration(duration) => duration
     case ValList(list) => list map unpackVal
-    case ValContext(dc: DefaultContext) => dc.variables map { case (key, value) => key -> unpackVal(toVal(value)) } toMap
+    case ValContext(dc: DefaultContext) => dc.variables.map { case (key, value) => key -> unpackVal(toVal(value)) }.toMap
     case ValError(error) => new Exception(error)
     case _ => throw new IllegalArgumentException(s"unexpected val '$value'")
   }

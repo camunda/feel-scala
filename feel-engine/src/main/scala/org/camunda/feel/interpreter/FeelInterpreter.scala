@@ -68,7 +68,7 @@ class FeelInterpreter {
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
 
     // control structures
-    case If(condition, then, otherwise) => withBoolean(eval(condition), isMet => if(isMet) { eval(then) } else { eval(otherwise) } )
+    case If(condition, statement, elseStatement) => withBoolean(eval(condition), isMet => if(isMet) { eval(statement) } else { eval(elseStatement) } )
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
 

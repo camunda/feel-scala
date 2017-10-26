@@ -1,11 +1,8 @@
 package org.camunda.feel
 
-import scala.collection.JavaConversions._
-
+import scala.collection.JavaConverters._
 import org.scalatest._
 import org.camunda.bpm.engine.ProcessEngineConfiguration
-import java.time.LocalDate
-import java.time.LocalDateTime
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.impl.interceptor.CommandContext
 import org.camunda.bpm.engine.impl.interceptor.Command
@@ -63,11 +60,11 @@ class CamundaFunctionProviderTest extends FlatSpec with Matchers with BeforeAndA
 
 	"The function 'currentUserGoups()'" should "return list of current group ids" in {
 
-		config.getIdentityService.setAuthentication("demo", List("foo", "bar"))
+		config.getIdentityService.setAuthentication("demo", List("foo", "bar").asJava)
 
 		val result = decisionService.evaluateDecisionByKey("functionCurrentUserGroups").evaluate()
 
-		result.getSingleEntry[java.util.List[String]].toList should be (List("foo", "bar"))
+		result.getSingleEntry[java.util.List[String]] should be (List("foo", "bar").asJava)
 	}
 
 	it should "return null if no group is authenticated" in {
