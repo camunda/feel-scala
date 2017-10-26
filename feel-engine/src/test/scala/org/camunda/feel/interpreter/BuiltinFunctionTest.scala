@@ -204,6 +204,8 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	  eval(""" substring after("foobar", "ob") """) should be(ValString("ar"))
 
 	  eval(""" substring after("", "a") """) should be(ValString(""))
+
+		eval(""" substring after("foo", "") """) should be(ValString("foo"))
 	}
 
 	"A replace() function" should "replace a String" in {

@@ -35,6 +35,8 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
     eval(exp, Map("x" -> 2)) should be(ValString("low"))
     eval(exp, Map("x" -> 7)) should be(ValString("high"))
+    
+    eval(exp, Map("x" -> "foo")) should be(ValString("high"))
   }
 
   it should "be a simple positive unary test" in {

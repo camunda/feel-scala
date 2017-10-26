@@ -237,7 +237,7 @@ object BuiltinFunctions extends FunctionProvider {
 	def substringAfterFunction = ValFunction(List("string", "match"), _ match {
 	  case List(ValString(string), ValString(m)) => {
 	    val index = string.indexOf(m)
-	    if (index > 0) {
+	    if (index >= 0) {
 	      ValString(string.substring(index + m.length))
 	    } else {
 	      ValString("")

@@ -68,7 +68,7 @@ class FeelInterpreter {
     case Conjunction(x,y) => all(x :: y :: Nil, ValBoolean)
 
     // control structures
-    case If(condition, statement, elseStatement) => withBoolean(eval(condition), isMet => if(isMet) { eval(statement) } else { eval(elseStatement) } )
+    case If(condition, statement, elseStatement) => withBooleanOrFalse(eval(condition), isMet => if(isMet) { eval(statement) } else { eval(elseStatement) } )
     case In(x, test) => withVal(eval(x), x => eval(test)(context + (inputKey -> x)) )
     case InstanceOf(x, typeName) => withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
 
@@ -106,7 +106,7 @@ class FeelInterpreter {
           ValNull
       }
       case _ => x
-    }
+  }
 
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit context: Context): Val =
     withVal(input, _ match {
@@ -171,6 +171,14 @@ class FeelInterpreter {
   private def withBooleanOrNull(x: Val, f: Boolean => Val): Val = x match {
     case ValBoolean(x) => f(x)
     case _ => ValNull
+  }
+
+  private def withBooleanOrFalse(x: Val, f: Boolean => Val): Val = x match {
+    case ValBoolean(x) => f(x)
+    case _ => {
+      logger.warn(s"Suppressed failure: expected Boolean but found '$x'")
+      f(false)
+    }
   }
 
   private def withString(x: Val, f: String => Val): Val = x match {
@@ -456,7 +464,7 @@ class FeelInterpreter {
 
           val varArgs: Val = (params drop(size) map eval) match {
             case Nil                  => ValList(List())
-            case ValList(list) :: Nil => ValList(list)
+            case ValList(list) :: Nil if(size == 0) => ValList(list)
             case list                 => ValList(list)
           }
 
