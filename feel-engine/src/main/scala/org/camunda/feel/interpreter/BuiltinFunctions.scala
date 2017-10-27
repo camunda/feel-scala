@@ -182,6 +182,8 @@ object BuiltinFunctions extends FunctionProvider {
 
 	def durationFunction2 = ValFunction(List("from", "to"), _ match {
 	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0) )
+    case List(ValLocalDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0) )
+    case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0) )
 		case e => error(e)
 	})
 

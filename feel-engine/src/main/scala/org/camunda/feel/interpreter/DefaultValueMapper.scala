@@ -68,6 +68,7 @@ class DefaultValueMapper extends ValueMapper {
     case ValList(list) => list map unpackVal
     case ValContext(dc: DefaultContext) => dc.variables.map { case (key, value) => key -> unpackVal(toVal(value)) }.toMap
     case ValError(error) => new Exception(error)
+    case f: ValFunction => f
     case _ => throw new IllegalArgumentException(s"unexpected val '$value'")
   }
 

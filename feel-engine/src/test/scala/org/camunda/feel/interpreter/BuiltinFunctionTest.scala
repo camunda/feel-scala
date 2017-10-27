@@ -154,6 +154,8 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 	"A years and months duration(from,to) function" should "convert (Date,Date)" in {
 
 		eval(""" years and months duration( date("2011-12-22"), date("2013-08-24") ) """) should be(ValYearMonthDuration("P1Y8M"))
+		eval(""" years and months duration( date and time("2011-12-22T10:00:00"), date and time("2013-08-24T10:00:00") ) """) should be(ValYearMonthDuration("P1Y8M"))
+		eval(""" years and months duration( date and time("2011-12-22T10:00:00+01:00"), date and time("2013-08-24T10:00:00+01:00") ) """) should be(ValYearMonthDuration("P1Y8M"))
 	}
 
 	"A not() function" should "negate Boolean" in {
