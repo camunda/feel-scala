@@ -47,11 +47,11 @@ object BuiltinFunctions extends FunctionProvider {
 	  "lower case" -> List(lowerCaseFunction),
 	  "substring before" -> List(substringBeforeFunction),
 	  "substring after" -> List(substringAfterFunction),
-	  "replace" -> List(replaceFunction),
+	  "replace" -> List(replaceFunction, replaceFunction4),
 	  "contains" -> List(containsFunction),
 	  "starts with" -> List(startsWithFunction),
 	  "ends with" -> List(endsWithFunction),
-	  "matches" -> List(matchesFunction)
+	  "matches" -> List(matchesFunction, matchesFunction3)
 	)
 
 	private def listFunctions = Map(
@@ -253,6 +253,34 @@ object BuiltinFunctions extends FunctionProvider {
 	  case e => error(e)
 	})
 
+  def replaceFunction4 = ValFunction(List("input", "pattern", "replacement", "flags"), _ match {
+	  case List(ValString(input), ValString(pattern), ValString(replacement), ValString(flags)) => {
+      val p = Pattern.compile(pattern, patternFlags(flags))
+      val m = p.matcher(input)
+      ValString(m.replaceAll(replacement))
+    }
+	  case e => error(e)
+	})
+
+  private def patternFlags(flags: String): Int = {
+    var f = 0
+
+    if (flags.contains("s")) {
+      f |= Pattern.DOTALL
+    }
+    if (flags.contains("m")) {
+      f |= Pattern.MULTILINE
+    }
+    if (flags.contains("i")) {
+      f |= Pattern.CASE_INSENSITIVE
+    }
+    if (flags.contains("x")) {
+      f |= Pattern.COMMENTS
+    }
+
+    f
+  }
+
 	def containsFunction = ValFunction(List("string", "match"), _ match {
 	  case List(ValString(string), ValString(m)) => ValBoolean(string.contains(m))
 	  case e => error(e)
@@ -271,6 +299,15 @@ object BuiltinFunctions extends FunctionProvider {
 	def matchesFunction = ValFunction(List("input", "pattern"), _ match {
 	  case List(ValString(input), ValString(pattern)) => {
       val p = Pattern.compile(pattern)
+      val m = p.matcher(input)
+      ValBoolean(m.find)
+    }
+	  case e => error(e)
+	})
+
+  def matchesFunction3 = ValFunction(List("input", "pattern", "flags"), _ match {
+	  case List(ValString(input), ValString(pattern), ValString(flags)) => {
+      val p = Pattern.compile(pattern, patternFlags(flags))
       val m = p.matcher(input)
       ValBoolean(m.find)
     }
