@@ -8,6 +8,7 @@ import org.camunda.bpm.dmn.engine.impl.DefaultDmnEngineConfiguration
 import org.camunda.feel.script.FeelScriptEngineFactory
 import org.camunda.feel.script.FeelUnaryTestsScriptEngineFactory
 import scala.beans.BeanProperty
+import org.camunda.feel.integration.transformer.FeelDataTypeTransformerRegistry
 
 class CamundaFeelEnginePlugin extends AbstractProcessEnginePlugin {
   
@@ -26,6 +27,9 @@ class CamundaFeelEnginePlugin extends AbstractProcessEnginePlugin {
     dmnEngineConfig.setDefaultInputExpressionExpressionLanguage(defaultInputExpressionExpressionLanguage)
     
     dmnEngineConfig.feelEngineFactory(new CamundaFeelEngineFactory)
+    
+    val dataTypeRegistry =  dmnEngineConfig.getTransformer.getDataTypeTransformerRegistry
+    FeelDataTypeTransformerRegistry.registerBy(dataTypeRegistry)
     
     config.setDmnEngineConfiguration(dmnEngineConfig)    
   }

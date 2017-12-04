@@ -1,7 +1,7 @@
 
 lazy val commonSettings = Seq(
   organization := "org.camunda.bpm.extension.feel.scala",
-  version := "1.3.0-SNAPSHOT",
+  version := "1.4.0-SNAPSHOT",
   scalaVersion := "2.12.4",
 
   resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -40,10 +40,9 @@ lazy val factory = (project in file("feel-engine-factory")).
   settings(
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
       "com.github.nscala-time" % "nscala-time_2.12" % "2.16.0",
-
-      "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "test"
+      "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
+      "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided"
     )
   ).
   dependsOn(engine % "test->test;compile->compile")

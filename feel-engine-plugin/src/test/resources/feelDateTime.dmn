@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="definitions_0twd8yz" name="definitions" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="date-time-decision" name="Decision">
+    <decisionTable id="decisionTable" hitPolicy="FIRST">
+      <input id="input1" label="Date" camunda:inputVariable="">
+        <inputExpression id="inputExpression1" typeRef="feel-date-time">        <text>date</text>
+</inputExpression>
+      </input>
+      <output id="output1" label="Result" name="result" typeRef="boolean" />
+      <rule id="row-419681904-1">
+        <inputEntry id="UnaryTests_0vnaf08">        <text><![CDATA[> date and time("2000-01-01T12:00:00+01:00")]]></text>
+</inputEntry>
+        <outputEntry id="LiteralExpression_1s0batl">        <text>true</text>
+</outputEntry>
+      </rule>
+      <rule id="row-419681904-2">
+        <inputEntry id="UnaryTests_0jwlwpq">        <text></text>
+</inputEntry>
+        <outputEntry id="LiteralExpression_0s08w6f">        <text>false</text>
+</outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
