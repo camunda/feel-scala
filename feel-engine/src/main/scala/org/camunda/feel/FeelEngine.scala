@@ -35,15 +35,15 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
 
   def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = {
     val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
-    evalParsedExpression(exp, ctx)
+    eval(exp, ctx)
   }
 
-  private def eval(parser: String => ParseResult[Exp], expression: String, context: Context) = parser(expression) match {
-    case Success(exp, _) => evalParsedExpression(ParsedExpression(exp, expression), context)
+  private def eval(parser: String => ParseResult[Exp], expression: String, context: Context): EvalResult = parser(expression) match {
+    case Success(exp, _) => eval(ParsedExpression(exp, expression), context)
     case e: NoSuccess => ParseFailure(s"failed to parse expression '$expression':\n$e")
   }
 
-  private def evalParsedExpression(exp: ParsedExpression, context: Context): EvalResult = interpreter.eval(exp.expression)(context) match {
+  def eval(exp: ParsedExpression, context: Context): EvalResult = interpreter.eval(exp.expression)(context) match {
     case ValError(cause) => EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
     case value => EvalValue( valueMapper.unpackVal(value) )
   }
