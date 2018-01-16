@@ -248,8 +248,11 @@ object FeelParser extends JavaTokenParsers {
   private lazy val typeName: Parser[String] = qualifiedName ^^ ( _.mkString(".") )
 
   // 45 - allow nested path expressions
-  private lazy val pathExpression: Parser[Exp] = chainl1(expression8, name, "." ^^^ PathExpression )
-
+  private lazy val pathExpression: Parser[Exp] = chainl1(expression8, name, "." ^^^ PathExpression ) ~ opt("[" ~> expression <~ "]") ^^ { 
+    case path ~ None => path
+    case path ~ Some(filter) => Filter(path, filter)
+  }
+  
   // 52
   private lazy val filterExpression: Parser[Filter] = expression9 ~ "[" ~! expression <~ "]" ^^ { case list ~ _ ~ filter => Filter(list, filter) }
 

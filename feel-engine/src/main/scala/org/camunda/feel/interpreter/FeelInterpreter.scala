@@ -80,7 +80,11 @@ class FeelInterpreter {
     case SomeItem(iterators, condition) => withCartesianProduct(iterators, p => atLeastOne( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean ))
     case EveryItem(iterators, condition) => withCartesianProduct(iterators, p => all( p.map(vars => () => eval(condition)(context ++ vars)), ValBoolean))
     case For(iterators, exp) => withCartesianProduct(iterators, p => ValList( p.map(vars => eval(exp)(context ++ vars) )) )
-    case Filter(list, filter) => withList(eval(list), l => filterList(l.items, item => eval(filter)(filterContext(item)) ))
+    case Filter(list, filter) => withList(eval(list), l => filter match {
+      case ConstNumber(index)                     => filterList(l.items, index)
+      case ArithmeticNegation(ConstNumber(index)) => filterList(l.items, -index)
+      case _                                      => filterList(l.items, item => eval(filter)(filterContext(item)) )
+    })
 
     // functions
     case FunctionInvocation(name, params) => withFunction(findFunction(context, name, params), f => invokeFunction(f, params))
@@ -546,6 +550,23 @@ class FeelInterpreter {
       case false => filterList(xs, filter)
       case true => withList(filterList(xs, filter), l => ValList(x :: l.items) )
     })
+  }
+  
+  private def filterList(list: List[Val], index: Number): Val = {
+    
+    val i = {
+      if (index > 0) {
+        index - 1
+      } else {
+        list.size + index
+      }
+    }
+    
+    if (i < 0 || i >= list.size) {
+      ValNull
+    } else {
+      list(i.toInt)
+    }
   }
 
   private def withContext(x: Val, f: ValContext => Val): Val = x match {

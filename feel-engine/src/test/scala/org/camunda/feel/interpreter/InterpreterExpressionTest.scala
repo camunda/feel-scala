@@ -899,7 +899,7 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
         ValNumber(4) )))
   }
 
-  it should "be filtered" in {
+  it should "be filtered via boolean expression" in {
 
     eval("[1,2,3,4][item > 2]") should be(ValList(List(
         ValNumber(3), ValNumber(4))))
@@ -907,7 +907,22 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("xs [item > 2]", Map("xs" -> List(1,2,3,4))) should be(ValList(List(
         ValNumber(3), ValNumber(4))))
   }
-
+  
+  it should "be filtered via index" in {
+   
+    eval("[1,2,3,4][1]") should be(ValNumber(1))
+    
+    eval("[1,2,3,4][2]") should be(ValNumber(2))
+    
+    eval("[1,2,3,4][-1]") should be(ValNumber(4))
+    
+    eval("[1,2,3,4][-2]") should be(ValNumber(3))
+    
+    eval("[1,2,3,4][5]") should be(ValNull)
+    
+    eval("[1,2,3,4][-5]") should be(ValNull)
+  }  
+  
   "A context" should "be accessed" in {
 
     eval("ctx.a", Map("ctx" -> Map("a" -> 1))) should be(ValNumber(1))
@@ -942,6 +957,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
         ValContext(DefaultContext(Map(
             "a" -> ValNumber(3),
             "b" -> ValNumber(4) )) ))))
+  }
+  
+  it should "be accessed and filtered in a list" in {
+    
+    eval("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should be(ValNumber(1))
   }
 
   it should "access a variable in a nested context" in {
