@@ -109,15 +109,15 @@ object CompositeContext {
   implicit class ContextComposition(ctx: Context) {
 
       def +(c: Context): Context = {
-        CompositeContext(Seq(ctx, c), ctx.valueMapper)
+        CompositeContext(Seq(c, ctx), ctx.valueMapper)
       }
 
       def +(v: (String, Any)): Context = {
-        CompositeContext(Seq(ctx, DefaultContext(Map(v))), ctx.valueMapper)
+        CompositeContext(Seq(DefaultContext(Map(v)), ctx), ctx.valueMapper)
       }
 
       def ++(v: Map[String, Any]): Context = {
-        CompositeContext(Seq(ctx, DefaultContext(v)), ctx.valueMapper)
+        CompositeContext(Seq(DefaultContext(v), ctx), ctx.valueMapper)
       }
     }
 }

@@ -31,7 +31,7 @@ class FeelInterpreter {
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case ConstContext(entries) => {
-      val dc: DefaultContext = entries.foldLeft( DefaultContext() ){ (ctx, entry) => evalContextEntry(entry._1, entry._2)(ctx + context) match {
+      val dc: DefaultContext = entries.foldLeft( DefaultContext() ){ (ctx, entry) => evalContextEntry(entry._1, entry._2)(context + ctx) match {
         case f: ValFunction => DefaultContext(ctx.variables, addFunction(ctx.functions, entry._1, f))
         case v: Val => DefaultContext(ctx.variables + (entry._1 -> v), ctx.functions)
       }}
