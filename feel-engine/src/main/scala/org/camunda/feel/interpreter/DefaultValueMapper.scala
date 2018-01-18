@@ -30,7 +30,17 @@ class DefaultValueMapper extends ValueMapper {
     case x: YearMonthDuration => ValYearMonthDuration(x)
     case x: DayTimeDuration => ValDayTimeDuration(x)
     case x: List[_] => ValList( x map toVal )
-    case x: Map[_,_] => ValContext(DefaultContext(x map { case (key, value) => key.toString -> toVal(value)}))
+    case x: Map[_,_] => 
+    {
+      val (functions, variables) =x
+        .map{ case (key, value) => key.toString -> toVal(value)}
+        .partition{ case (key, value) => value.isInstanceOf[ValFunction]}
+      
+      ValContext(DefaultContext(
+          variables = variables, 
+          functions = functions.map{ case (key, f) => key -> List(f.asInstanceOf[ValFunction])}
+      )) 
+    }
     case Some(x) => toVal(x)
     case None => ValNull
     case x: Enumeration$Val => ValString(x.toString)
