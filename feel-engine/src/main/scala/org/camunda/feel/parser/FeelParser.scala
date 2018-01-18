@@ -43,7 +43,10 @@ object FeelParser extends JavaTokenParsers {
 
   private lazy val identifier = not(reservedWord) ~> ident
 
-  private lazy val stringLiteralWithQuotes: Parser[String] = stringLiteral ^^ ( _.replaceAll("\"", "") )
+  // Java-like string literal: ("\""+"""([^"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*"""+"\"")
+  // modification: allow '\'
+  private lazy val stringLiteralWithQuotes: Parser[String] = 
+    ("\""+"""([^"\x00-\x1F\x7F]|\\u[a-fA-F0-9]{4})*"""+"\"").r ^^ ( _.replaceAll("\"", "") )
 
   // 1 a)
   private lazy val expression: Parser[Exp] = textualExpression

@@ -214,6 +214,10 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 
 	  eval(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should be(ValString("[1=ab][2=]cd"))
 	}
+	
+	it should "replace a String with regex pattern" in (
+	  eval(""" replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """) should be(ValString("(012) 345-6789"))    
+  )
 
 	"A contains() function" should "return if contains the match" in {
 
