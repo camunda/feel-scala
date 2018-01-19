@@ -30,15 +30,15 @@ package object feel {
 
   implicit def stringToNumber(number: String): Number = BigDecimal(number)
 
-  implicit def stringToDate(date: String): Date = LocalDate.parse(date)
+  implicit def stringToDate(date: String): Date = LocalDate.parse(date, dateFormatter)
 
   implicit def stringToLocalTime(time: String): LocalTime = LocalTime.parse(time, timeFormatterWithOptionalPrefix)
 
   implicit def stringToTime(time: String): Time = OffsetTime.parse(time, timeFormatterWithOffsetAndOptionalPrefix)
 
-  implicit def stringToLocalDateTime(dateTime: String): LocalDateTime = LocalDateTime.parse(dateTime)
+  implicit def stringToLocalDateTime(dateTime: String): LocalDateTime = LocalDateTime.parse(dateTime, localDateTimeFormatter)
 
-  implicit def stringToDateTime(dateTime: String): DateTime = OffsetDateTime.parse(dateTime)
+  implicit def stringToDateTime(dateTime: String): DateTime = OffsetDateTime.parse(dateTime, dateTimeFormatter)
 
   implicit def stringToYearMonthDuration(duration: String): YearMonthDuration = Period.parse(duration)
 
@@ -50,27 +50,67 @@ package object feel {
 
   def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")
 
-  val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-	val localDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssxxx")
-	val localTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-  val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ssxxx")
-
+  val timeFormatterWithPrefix = new DateTimeFormatterBuilder()
+		.appendLiteral('T')
+    .appendValue(HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(MINUTE_OF_HOUR, 2)
+    .optionalStart()
+    .appendLiteral(':')
+    .appendValue(SECOND_OF_MINUTE, 2)
+    .appendFraction(NANO_OF_SECOND, 0, 9, true)
+    .toFormatter();
+	
 	val timeFormatterWithOptionalPrefix = new DateTimeFormatterBuilder()
-  							.optionalStart()
-                .appendLiteral('T')
-                .optionalEnd()
-                .appendValue(HOUR_OF_DAY, 2)
-                .appendLiteral(':')
-                .appendValue(MINUTE_OF_HOUR, 2)
-                .optionalStart()
-                .appendLiteral(':')
-                .appendValue(SECOND_OF_MINUTE, 2)
-                .toFormatter();
+		.optionalStart()
+    .appendLiteral('T')
+    .optionalEnd()
+    .appendValue(HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(MINUTE_OF_HOUR, 2)
+    .optionalStart()
+    .appendLiteral(':')
+    .appendValue(SECOND_OF_MINUTE, 2)
+    .appendFraction(NANO_OF_SECOND, 0, 9, true)
+    .toFormatter();
 
   val timeFormatterWithOffsetAndOptionalPrefix = new DateTimeFormatterBuilder()
-  							.append(timeFormatterWithOptionalPrefix)
-                .appendOffsetId()
-                .toFormatter();
+		.append(timeFormatterWithOptionalPrefix)
+    .appendOffsetId()
+    .toFormatter();
 
+  val localTimeFormatter = new DateTimeFormatterBuilder()
+		.appendValue(HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(MINUTE_OF_HOUR, 2)
+    .optionalStart()
+    .appendLiteral(':')
+    .appendValue(SECOND_OF_MINUTE, 2)
+    .appendFraction(NANO_OF_SECOND, 0, 9, true)
+    .toFormatter();
+  
+  val timeFormatter = new DateTimeFormatterBuilder()
+    .append(localTimeFormatter)
+    .appendOffsetId()
+    .toFormatter();
+  
+  val dateFormatter = new DateTimeFormatterBuilder()
+    .appendValue(YEAR, 4, 9, SignStyle.NORMAL)
+    .appendLiteral("-")
+    .appendValue(MONTH_OF_YEAR, 2)
+    .appendLiteral("-")
+    .appendValue(DAY_OF_MONTH, 2)
+    .toFormatter();
+    
+  val localDateTimeFormatter = new DateTimeFormatterBuilder()
+    .append(dateFormatter)
+    .append(timeFormatterWithPrefix)
+    .toFormatter();
+	
+  val dateTimeFormatter = new DateTimeFormatterBuilder()
+    .append(dateFormatter)
+    .append(timeFormatterWithPrefix)
+    .appendOffsetId()
+    .toFormatter();
+  
 }
