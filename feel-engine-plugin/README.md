@@ -60,6 +60,21 @@ You have to override the default expression language of input entries and set it
     </property>
 ```
 
+**Using Camunda-Spring-Boot-Starter**
+
+Add a configuration bean with the process engine plugin to your project.
+
+```java
+@Configuration
+public class BpmPlatformConfiguration {
+
+  @Bean
+  public static ProcessEnginePlugin feelScalaPlugin() {
+    return new CamundaFeelEnginePlugin();
+  }
+}
+```
+
 **Using Camunda JBoss AS / Wildfly Distribution**
 
 Download the [module archive](https://github.com/camunda/feel-scala/releases) _(feel-engine-plugin-${VERSION}-jboss_wildfly_module.zip)_ and follow the instructions in the _README_ file.
