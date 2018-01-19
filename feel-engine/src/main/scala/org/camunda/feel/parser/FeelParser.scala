@@ -3,6 +3,7 @@ package org.camunda.feel.parser
 import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
+import scala.util.Try
 
 object FeelParser extends JavaTokenParsers {
 
@@ -142,12 +143,44 @@ object FeelParser extends JavaTokenParsers {
 
   // 62
   private lazy val dateTimeLiteral: Parser[Exp] =
-    "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( ConstDate(_) ) |
-    "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( t => if(isOffsetTime(t)) ConstTime(t) else ConstLocalTime(t) ) |
-    "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( d => if(isOffsetDateTime(d)) ConstDateTime(d) else ConstLocalDateTime(d) ) |
-    "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ ( d => if(isYearMonthDuration(d)) ConstYearMonthDuration(d) else ConstDayTimeDuration(d)) |
+    "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDate |
+    "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseTime |
+    "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDateTime |
+    "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDuration |
     failure("expected date time literal")
 
+  private def parseDate(d: String): Exp = 
+  {
+      Try(ConstDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
+  }
+    
+  private def parseTime(t: String): Exp = 
+  {
+    if(isOffsetTime(t)) { 
+      Try(ConstTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ConstNull }
+    } else { 
+      Try(ConstLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ConstNull }
+    }
+  }
+  
+  private def parseDateTime(dt: String): Exp = 
+  {
+    if(isOffsetDateTime(dt)) { 
+      Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
+    } else { 
+      Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
+    }
+  }
+  
+  private def parseDuration(d: String): Exp = 
+  {
+    if(isYearMonthDuration(d)) { 
+      Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
+    } else { 
+      Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
+    }
+  }
+    
   // 35 -
   private lazy val stringLiteraL: Parser[ConstString] = stringLiteralWithQuotes ^^ ConstString
 

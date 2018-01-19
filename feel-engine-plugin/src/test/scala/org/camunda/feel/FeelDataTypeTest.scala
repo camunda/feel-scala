@@ -52,6 +52,15 @@ class FeelDataTypeTest extends FlatSpec with Matchers with BeforeAndAfter {
 		result.getSingleEntry[Boolean] should be(true)
 	}
 	
+	it should "accept java.time.ZonedDateTime" in {
+
+		val result = decisionService.evaluateDecisionByKey("local-date-time-decision")
+		  .variables(Map[String,Object]("date" -> java.time.OffsetDateTime.parse("2001-01-17T00:00:00+01:00")).asJava)
+		  .evaluate()
+
+		result.getSingleEntry[Boolean] should be(true)
+	}
+	
 	it should "accept java.time.LocalDateTime" in {
 
 		val result = decisionService.evaluateDecisionByKey("local-date-time-decision")
@@ -74,6 +83,15 @@ class FeelDataTypeTest extends FlatSpec with Matchers with BeforeAndAfter {
 
 		val result = decisionService.evaluateDecisionByKey("date-time-decision")
 		  .variables(Map[String,Object]("date" -> java.time.OffsetDateTime.parse("2001-01-17T00:00:00+01:00")).asJava)
+		  .evaluate()
+
+		result.getSingleEntry[Boolean] should be(true)
+	}
+	
+	it should "accept java.time.ZonedDateTime" in {
+
+		val result = decisionService.evaluateDecisionByKey("date-time-decision")
+		  .variables(Map[String,Object]("date" -> java.time.ZonedDateTime.parse("2001-01-17T00:00:00+01:00")).asJava)
 		  .evaluate()
 
 		result.getSingleEntry[Boolean] should be(true)

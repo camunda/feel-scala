@@ -9,13 +9,12 @@ import java.time._
 import java.time.temporal.ChronoUnit
 import java.util.regex._
 import org.slf4j._
+import scala.util.Try
 
 /**
  * @author Philipp
  */
 object BuiltinFunctions extends FunctionProvider {
-
-  val logger = LoggerFactory.getLogger("org.camunda.feel.functions")
 
   def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
 
@@ -90,8 +89,40 @@ object BuiltinFunctions extends FunctionProvider {
       }
   }
 
+  private def parseDate(d: String): Val = 
+  {
+      Try(ValDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull }
+  }
+    
+  private def parseTime(t: String): Val = 
+  {
+    if(isOffsetTime(t)) { 
+      Try(ValTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ValNull }
+    } else { 
+      Try(ValLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ValNull }
+    }
+  }
+  
+  private def parseDateTime(dt: String): Val = 
+  {
+    if(isOffsetDateTime(dt)) { 
+      Try(ValDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ValNull }
+    } else { 
+      Try(ValLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ValNull }
+    }
+  }
+  
+  private def parseDuration(d: String): Val = 
+  {
+    if(isYearMonthDuration(d)) { 
+      Try(ValYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ValNull }
+    } else { 
+      Try(ValDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ValNull }
+    }
+  }
+  
 	def dateFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => ValDate(from)
+		case List(ValString(from)) => parseDate(from)
 		case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
     case List(ValDateTime(from)) => ValDate(from.toLocalDate())
 		case e => error(e)
@@ -103,24 +134,24 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def dateTime = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => if(isOffsetDateTime(from)) ValDateTime(from) else ValLocalDateTime(from)
+		case List(ValString(from)) => parseDateTime(from)
 		case e => error(e)
 	})
 
 	def dateTime2 = ValFunction(List("date", "time"), _ match {
 		case List(ValDate(date), ValLocalTime(time)) => ValLocalDateTime(date.atTime(time))
-    case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time))
+    case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time).toZonedDateTime())
 		case List(ValLocalDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-    case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time).toZonedDateTime())
     case List(ValDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-    case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time).toZonedDateTime())
 		case e => error(e)
 	})
 
 	def timeFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => if (isOffsetTime(from)) ValTime(from) else ValLocalTime(from)
+		case List(ValString(from)) => parseTime(from)
 		case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
-    case List(ValDateTime(from)) => ValTime(from.toOffsetTime())
+    case List(ValDateTime(from)) => ValTime(from.toOffsetDateTime().toOffsetTime())
 		case e => error(e)
 	})
 
@@ -176,7 +207,7 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def durationFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => if(isYearMonthDuration(from)) ValYearMonthDuration(from) else ValDayTimeDuration(from)
+		case List(ValString(from)) => parseDuration(from)
 		case e => error(e)
 	})
 

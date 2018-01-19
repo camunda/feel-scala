@@ -4,12 +4,13 @@ import scala.math.BigDecimal
 import java.time._
 import java.time.format._
 import java.time.temporal.ChronoField._
+import org.slf4j.LoggerFactory
 
 /**
  * @author Philipp Ossler
  */
 package object feel {
-
+  
   type Number = BigDecimal
 
   type Date = java.time.LocalDate
@@ -20,7 +21,7 @@ package object feel {
 
   type Time = java.time.OffsetTime
 
-  type DateTime = java.time.OffsetDateTime
+  type DateTime = java.time.ZonedDateTime
 
   type YearMonthDuration = java.time.Period
 
@@ -38,15 +39,15 @@ package object feel {
 
   implicit def stringToLocalDateTime(dateTime: String): LocalDateTime = LocalDateTime.parse(dateTime, localDateTimeFormatter)
 
-  implicit def stringToDateTime(dateTime: String): DateTime = OffsetDateTime.parse(dateTime, dateTimeFormatter)
+  implicit def stringToDateTime(dateTime: String): DateTime = ZonedDateTime.parse(dateTime, dateTimeFormatter)
 
   implicit def stringToYearMonthDuration(duration: String): YearMonthDuration = Period.parse(duration)
 
   implicit def stringToDayTimeDuration(duration: String): DayTimeDuration = Duration.parse(duration)
 
-  def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}""")
+  def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
 
-  def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}""")
+  def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
 
   def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")
 
@@ -58,6 +59,7 @@ package object feel {
     .optionalStart()
     .appendLiteral(':')
     .appendValue(SECOND_OF_MINUTE, 2)
+    .optionalEnd()
     .appendFraction(NANO_OF_SECOND, 0, 9, true)
     .toFormatter();
 	
@@ -71,12 +73,23 @@ package object feel {
     .optionalStart()
     .appendLiteral(':')
     .appendValue(SECOND_OF_MINUTE, 2)
+    .optionalEnd()
     .appendFraction(NANO_OF_SECOND, 0, 9, true)
     .toFormatter();
 
+	val offsetFormatter = new DateTimeFormatterBuilder()
+	  .optionalStart()
+		.appendOffsetId()
+		.optionalEnd()
+    .optionalStart()
+    .appendLiteral("@")
+    .appendZoneRegionId()
+    .optionalEnd()
+    .toFormatter();
+	
   val timeFormatterWithOffsetAndOptionalPrefix = new DateTimeFormatterBuilder()
 		.append(timeFormatterWithOptionalPrefix)
-    .appendOffsetId()
+		.append(offsetFormatter)
     .toFormatter();
 
   val localTimeFormatter = new DateTimeFormatterBuilder()
@@ -86,12 +99,13 @@ package object feel {
     .optionalStart()
     .appendLiteral(':')
     .appendValue(SECOND_OF_MINUTE, 2)
+    .optionalEnd()
     .appendFraction(NANO_OF_SECOND, 0, 9, true)
     .toFormatter();
   
   val timeFormatter = new DateTimeFormatterBuilder()
     .append(localTimeFormatter)
-    .appendOffsetId()
+    .append(offsetFormatter)
     .toFormatter();
   
   val dateFormatter = new DateTimeFormatterBuilder()
@@ -110,7 +124,9 @@ package object feel {
   val dateTimeFormatter = new DateTimeFormatterBuilder()
     .append(dateFormatter)
     .append(timeFormatterWithPrefix)
-    .appendOffsetId()
+    .append(offsetFormatter)
     .toFormatter();
+  
+  val logger = LoggerFactory.getLogger("org.camunda.feel.FeelEngine")
   
 }

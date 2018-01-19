@@ -47,8 +47,8 @@ class DefaultValueMapper extends ValueMapper {
 
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
-    case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime )
-    case x: java.time.ZonedDateTime => ValDateTime(x.toOffsetDateTime)
+    case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()) )
+    case x: java.time.OffsetDateTime => ValDateTime(x.toZonedDateTime())
     case x: java.util.List[_] => ValList( x.asScala.toList map toVal )
     case x: java.util.Map[_,_] => ValContext(DefaultContext(x.asScala.map { case (key, value) => key.toString -> toVal(value)}.toMap))
     case x: java.lang.Enum[_] => ValString(x.name)

@@ -6,6 +6,7 @@ import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.interceptor.CommandContext
 import scala.collection.JavaConverters._
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 
 /**
  * @author Philipp
@@ -22,7 +23,7 @@ class CamundaFunctionProvider extends CustomFunctionProvider {
 
   private def nowFunction = ValFunction(
     params = List(),
-    invoke = { case _ => ValDateTime(OffsetDateTime.now()) }
+    invoke = { case _ => ValDateTime(ZonedDateTime.now()) }
   )
 
   private def currentUserFunction = ValFunction(

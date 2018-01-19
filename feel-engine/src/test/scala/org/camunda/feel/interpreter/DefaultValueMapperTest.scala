@@ -132,15 +132,25 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
     valueMapper.toVal(java.time.OffsetDateTime.parse("2017-04-02T12:04:30+01:00")) should be(ValDateTime("2017-04-02T12:04:30+01:00"))
   }
 
-  it should "convert from ZonedDateTime" in {
+  it should "convert from ZonedDateTime with zone offset" in {
 
     valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30+01:00")) should be(ValDateTime("2017-04-02T12:04:30+01:00"))
+  }
+  
+  it should "convert from ZonedDateTime with zone offset 'Z'" in {
+
+    valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30Z")) should be(ValDateTime("2017-04-02T12:04:30Z"))
+  }
+  
+  it should "convert from ZonedDateTime with zone id" in {
+
+    valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30+01:00[Europe/Paris]")) should be(ValDateTime("2017-04-02T12:04:30@Europe/Paris"))
   }
 
   it should "convert from java.util.Date" in {
 
     val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-    val dateTime = LocalDateTime.parse("2017-04-02T12:04:30").atZone(ZoneId.systemDefault()).toOffsetDateTime
+    val dateTime = LocalDateTime.parse("2017-04-02T12:04:30").atZone(ZoneId.systemDefault())
 
     valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(ValDateTime(dateTime))
   }

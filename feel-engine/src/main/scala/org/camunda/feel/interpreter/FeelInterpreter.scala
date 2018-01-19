@@ -12,9 +12,7 @@ import org.slf4j._
  * @author Philipp Ossler
  */
 class FeelInterpreter {
-
-  val logger = LoggerFactory.getLogger("org.camunda.feel.interpreter")
-
+  
   def eval(expression: Exp)(implicit context: Context): Val = expression match {
 
     // literals
