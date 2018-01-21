@@ -45,11 +45,13 @@ package object feel {
 
   implicit def stringToDayTimeDuration(duration: String): DayTimeDuration = Duration.parse(duration)
 
+  def isValidDate(date: String): Boolean = date matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\d""")
+
   def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
 
   def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
 
-  def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")
+  def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")  
 
   val timeFormatterWithPrefix = new DateTimeFormatterBuilder()
 		.appendLiteral('T')

@@ -4,6 +4,7 @@ import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.Try
+import java.time.DateTimeException
 
 object FeelParser extends JavaTokenParsers {
 
@@ -151,7 +152,13 @@ object FeelParser extends JavaTokenParsers {
 
   private def parseDate(d: String): Exp = 
   {
-      Try(ConstDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
+      Try {
+        if (!isValidDate(d)) {
+        	throw new DateTimeException("invalid date format")
+        }
+        ConstDate(d)
+      }
+      .getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
   }
     
   private def parseTime(t: String): Exp = 

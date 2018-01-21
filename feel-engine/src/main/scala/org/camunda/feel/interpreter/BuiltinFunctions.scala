@@ -91,7 +91,13 @@ object BuiltinFunctions extends FunctionProvider {
 
   private def parseDate(d: String): Val = 
   {
-      Try(ValDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull }
+     Try {
+        if (!isValidDate(d)) {
+          throw new DateTimeException("invalid date format")
+        }
+        ValDate(d)
+      }
+      .getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull } 
   }
     
   private def parseTime(t: String): Val = 
@@ -129,7 +135,10 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def dateFunction3 = ValFunction(List("year", "month", "day"), _ match {
-		case List(ValNumber(year), ValNumber(month), ValNumber(day)) => ValDate(LocalDate.of(year.intValue(), month.intValue(), day.intValue()))
+		case List(ValNumber(year), ValNumber(month), ValNumber(day)) => Try 
+		{  
+		  ValDate(LocalDate.of(year.intValue(), month.intValue(), day.intValue())) 
+	  }.getOrElse { logger.warn(s"Failed to parse date from: year=$year, month=$month, day=$day"); ValNull } 
 		case e => error(e)
 	})
 
