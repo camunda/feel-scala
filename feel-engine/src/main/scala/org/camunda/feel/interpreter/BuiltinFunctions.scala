@@ -165,17 +165,25 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => Try
+		{  
+		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+	  }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull } 
 		case e => error(e)
 	})
 
 	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => {
-      val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue())
+	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => Try
+		{  
+		  val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue())
       val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
       ValTime(localTime.atOffset(zonedOffset))
-    }
+	  }.getOrElse { logger.warn(s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset"); ValNull } 
+	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValNull) => Try
+		{  
+		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+	  }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull } 
 		case e => error(e)
 	})
 
