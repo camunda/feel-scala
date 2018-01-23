@@ -47,9 +47,11 @@ package object feel {
 
   def isValidDate(date: String): Boolean = date matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\d""")
 
-  def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
+  def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
 
-  def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z|@.*)""")
+  def isValidDateTime(dateTime: String): Boolean = dateTime matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)?""")
+  
+  def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""-?([1-9]\d{0,4})?\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
 
   def isYearMonthDuration(duration: String): Boolean = duration matches("""P(\d+Y)?(\d+M)?""")  
 

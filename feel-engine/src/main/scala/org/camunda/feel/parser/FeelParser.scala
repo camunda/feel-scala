@@ -172,7 +172,11 @@ object FeelParser extends JavaTokenParsers {
   
   private def parseDateTime(dt: String): Exp = 
   {
-    if(isOffsetDateTime(dt)) { 
+    if (isValidDate(dt)) {
+      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
+    } else if (!isValidDateTime(dt)) {
+      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+    } else if(isOffsetDateTime(dt)) { 
       Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
     } else { 
       Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }

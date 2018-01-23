@@ -111,7 +111,11 @@ object BuiltinFunctions extends FunctionProvider {
   
   private def parseDateTime(dt: String): Val = 
   {
-    if(isOffsetDateTime(dt)) { 
+    if (isValidDate(dt)) {
+      Try(ValLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ValNull }
+    } else if (!isValidDateTime(dt)) {
+      logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
+    } else if(isOffsetDateTime(dt)) { 
       Try(ValDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ValNull }
     } else { 
       Try(ValLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ValNull }
