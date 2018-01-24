@@ -174,12 +174,12 @@ object FeelParser extends JavaTokenParsers {
   {
     if (isValidDate(dt)) {
       Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
-    } else if (!isValidDateTime(dt)) {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
-    } else if(isOffsetDateTime(dt)) { 
+    } else if (isOffsetDateTime(dt)) { 
       Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
-    } else { 
+    } else if (isLocalDateTime(dt)) { 
       Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
+    } else {
+      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
     }
   }
   
@@ -187,8 +187,10 @@ object FeelParser extends JavaTokenParsers {
   {
     if(isYearMonthDuration(d)) { 
       Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
-    } else { 
+    } else if(isDayTimeDuration(d)) { 
       Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
+    } else {
+      logger.warn(s"Failed to parse duration from '$d'"); ConstNull
     }
   }
     

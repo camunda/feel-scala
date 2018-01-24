@@ -113,21 +113,23 @@ object BuiltinFunctions extends FunctionProvider {
   {
     if (isValidDate(dt)) {
       Try(ValLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ValNull }
-    } else if (!isValidDateTime(dt)) {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
-    } else if(isOffsetDateTime(dt)) { 
+    } else if (isOffsetDateTime(dt)) { 
       Try(ValDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ValNull }
-    } else { 
+    } else if (isLocalDateTime(dt)) { 
       Try(ValLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ValNull }
+    } else {
+      logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
     }
   }
   
   private def parseDuration(d: String): Val = 
   {
     if(isYearMonthDuration(d)) { 
-      Try(ValYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ValNull }
-    } else { 
+      Try(ValYearMonthDuration((d : YearMonthDuration).normalized)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ValNull }
+    } else if (isDayTimeDuration(d)) { 
       Try(ValDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ValNull }
+    } else {
+      logger.warn(s"Failed to parse duration from '$d'"); ValNull
     }
   }
   
@@ -233,9 +235,9 @@ object BuiltinFunctions extends FunctionProvider {
 	})
 
 	def durationFunction2 = ValFunction(List("from", "to"), _ match {
-	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0) )
-    case List(ValLocalDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0) )
-    case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0) )
+	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0).normalized )
+    case List(ValLocalDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
+    case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
 		case e => error(e)
 	})
 

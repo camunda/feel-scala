@@ -24,7 +24,7 @@ class FeelInterpreter {
     case ConstTime(t) => ValTime(t)
     case ConstLocalDateTime(dt) => ValLocalDateTime(dt)
     case ConstDateTime(dt) => ValDateTime(dt)
-    case ConstYearMonthDuration(d) => ValYearMonthDuration(d)
+    case ConstYearMonthDuration(d) => ValYearMonthDuration(d.normalized)
     case ConstDayTimeDuration(d) => ValDayTimeDuration(d)
     case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
@@ -380,7 +380,7 @@ class FeelInterpreter {
       case _ => error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
     }
     case ValYearMonthDuration(x) => y match {
-      case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y) )
+      case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y).normalized )
       case ValLocalDateTime(y) => ValLocalDateTime( y.plus(x) )
       case ValDateTime(y) => ValDateTime( y.plus(x) )
       case _ => error(y, s"expect Date-Time, or Year-Month-Duration but found '$x'")
@@ -443,7 +443,7 @@ class FeelInterpreter {
     } else {
       x match {
         case ValNumber(x) => ValNumber(x / y)
-        case ValYearMonthDuration(x) => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized() )
+        case ValYearMonthDuration(x) => ValYearMonthDuration( Period.ofMonths((x.toTotalMonths() / y).intValue).normalized )
         case ValDayTimeDuration(x) => ValDayTimeDuration( Duration.ofMillis((x.toMillis() / y).intValue) )
         case _ => error(x, s"expected Number, or Duration but found '$x'")
       }
