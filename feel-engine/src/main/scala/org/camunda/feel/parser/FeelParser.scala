@@ -149,50 +149,6 @@ object FeelParser extends JavaTokenParsers {
     "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDateTime |
     "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDuration |
     failure("expected date time literal")
-
-  private def parseDate(d: String): Exp = 
-  {
-      Try {
-        if (!isValidDate(d)) {
-        	throw new DateTimeException("invalid date format")
-        }
-        ConstDate(d)
-      }
-      .getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
-  }
-    
-  private def parseTime(t: String): Exp = 
-  {
-    if(isOffsetTime(t)) { 
-      Try(ConstTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ConstNull }
-    } else { 
-      Try(ConstLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ConstNull }
-    }
-  }
-  
-  private def parseDateTime(dt: String): Exp = 
-  {
-    if (isValidDate(dt)) {
-      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
-    } else if (isOffsetDateTime(dt)) { 
-      Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
-    } else if (isLocalDateTime(dt)) { 
-      Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
-    } else {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
-    }
-  }
-  
-  private def parseDuration(d: String): Exp = 
-  {
-    if(isYearMonthDuration(d)) { 
-      Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
-    } else if(isDayTimeDuration(d)) { 
-      Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
-    } else {
-      logger.warn(s"Failed to parse duration from '$d'"); ConstNull
-    }
-  }
     
   // 35 -
   private lazy val stringLiteraL: Parser[ConstString] = stringLiteralWithQuotes ^^ ConstString
@@ -367,4 +323,46 @@ object FeelParser extends JavaTokenParsers {
   // 61
   private lazy val key = name | stringLiteralWithQuotes
 
+  private def parseDate(d: String): Exp = 
+  {
+    if (isValidDate(d)) {
+      Try(ConstDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
+    } else {
+      logger.warn(s"Failed to parse date from '$d'"); ConstNull  
+    }
+  }
+    
+  private def parseTime(t: String): Exp = 
+  {
+    if(isOffsetTime(t)) { 
+      Try(ConstTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ConstNull }
+    } else { 
+      Try(ConstLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ConstNull }
+    }
+  }
+  
+  private def parseDateTime(dt: String): Exp = 
+  {
+    if (isValidDate(dt)) {
+      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
+    } else if (isOffsetDateTime(dt)) { 
+      Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
+    } else if (isLocalDateTime(dt)) { 
+      Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
+    } else {
+      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+    }
+  }
+  
+  private def parseDuration(d: String): Exp = 
+  {
+    if(isYearMonthDuration(d)) { 
+      Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
+    } else if(isDayTimeDuration(d)) { 
+      Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
+    } else {
+      logger.warn(s"Failed to parse duration from '$d'"); ConstNull
+    }
+  }
+  
 }

@@ -91,13 +91,11 @@ object BuiltinFunctions extends FunctionProvider {
 
   private def parseDate(d: String): Val = 
   {
-     Try {
-        if (!isValidDate(d)) {
-          throw new DateTimeException("invalid date format")
-        }
-        ValDate(d)
-      }
-      .getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull } 
+    if (isValidDate(d)) {
+      Try(ValDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull } 
+    } else {
+       logger.warn(s"Failed to parse date from '$d'"); ValNull
+    } 
   }
     
   private def parseTime(t: String): Val = 

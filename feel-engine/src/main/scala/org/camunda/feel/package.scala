@@ -5,11 +5,18 @@ import java.time._
 import java.time.format._
 import java.time.temporal.ChronoField._
 import org.slf4j.LoggerFactory
+import java.util.regex.Pattern
 
 /**
  * @author Philipp Ossler
  */
 package object feel {
+  
+  //// common
+  
+  val logger = LoggerFactory.getLogger("org.camunda.feel.FeelEngine")
+  
+  //// type definitions
   
   type Number = BigDecimal
 
@@ -27,6 +34,8 @@ package object feel {
 
   type DayTimeDuration = java.time.Duration
 
+  //// string to type conversions
+  
   import scala.language.implicitConversions
 
   implicit def stringToNumber(number: String): Number = BigDecimal(number)
@@ -45,17 +54,31 @@ package object feel {
 
   implicit def stringToDayTimeDuration(duration: String): DayTimeDuration = Duration.parse(duration)
 
-  def isValidDate(date: String): Boolean = date matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\d""")
-
-  def isOffsetTime(time: String): Boolean = time matches("""T?\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
+  //// date/time/duration type parsing and formatting
   
-  def isOffsetDateTime(dateTime: String): Boolean = dateTime matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-][01][0-9]:[0-5][0-9]|Z|@.*)""")
-
-  def isLocalDateTime(dateTime: String): Boolean = dateTime matches("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?""")
+  private lazy val datePatter = Pattern.compile("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\d""")
   
-  def isYearMonthDuration(duration: String): Boolean = duration matches("""-?P(\d+Y)?(\d+M)?""")  
+  def isValidDate(date: String): Boolean = datePatter.matcher(date).matches
 
-  def isDayTimeDuration(duration: String): Boolean = duration matches("""-?P((\d+D)?(T(\d+H)?(\d+M)?(\d+(.\d*)?S)?)?)""")
+  private lazy val offsetTimePattern = Pattern.compile("""T?\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
+  
+  def isOffsetTime(time: String): Boolean = offsetTimePattern.matcher(time).matches
+  
+  private lazy val offsetDateTimePattern = Pattern.compile("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-][01][0-9]:[0-5][0-9]|Z|@.*)""")
+  
+  def isOffsetDateTime(dateTime: String): Boolean = offsetDateTimePattern.matcher(dateTime).matches
+
+  private lazy val localDateTimePatter = Pattern.compile("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?""")
+  
+  def isLocalDateTime(dateTime: String): Boolean = localDateTimePatter.matcher(dateTime).matches
+  
+  private lazy val yearMonthDurationPattern = Pattern.compile("""-?P(\d+Y)?(\d+M)?""")
+  
+  def isYearMonthDuration(duration: String): Boolean = yearMonthDurationPattern.matcher(duration).matches  
+
+  private lazy val dayTimeDurationPattern = Pattern.compile("""-?P((\d+D)?(T(\d+H)?(\d+M)?(\d+(.\d*)?S)?)?)""")
+  
+  def isDayTimeDuration(duration: String): Boolean = dayTimeDurationPattern.matcher(duration).matches
   
   val timeFormatterWithPrefix = new DateTimeFormatterBuilder()
 		.appendLiteral('T')
@@ -132,7 +155,5 @@ package object feel {
     .append(timeFormatterWithPrefix)
     .append(offsetFormatter)
     .toFormatter();
-  
-  val logger = LoggerFactory.getLogger("org.camunda.feel.FeelEngine")
   
 }
