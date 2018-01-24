@@ -215,6 +215,8 @@ object BuiltinFunctions extends FunctionProvider {
 
 	private def isValidDecimalSeparator(separator: String) = separator == "," || separator == "."
 
+	lazy val dateTimeOffsetZoneIdPattern = Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
+	
 	def stringFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => ValString(from)
 		case List(ValBoolean(from)) => ValString(from.toString)
@@ -223,7 +225,13 @@ object BuiltinFunctions extends FunctionProvider {
 		case List(ValLocalTime(from)) => ValString(from.format(localTimeFormatter))
     case List(ValTime(from)) => ValString(from.format(timeFormatter))
 		case List(ValLocalDateTime(from)) => ValString(from.format(localDateTimeFormatter))
-    case List(ValDateTime(from)) => ValString(from.format(dateTimeFormatter))
+    case List(ValDateTime(from)) => 
+    {
+      val formattedDateTime = from.format(dateTimeFormatter)
+      // remove offset-id if zone-id is present
+      val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern.matcher(formattedDateTime).replaceAll("$1$3")   
+      ValString(dateTimeWithOffsetOrZoneId)
+    } 
 		case List(ValYearMonthDuration(from)) => ValString(from.toString)
 		case List(ValDayTimeDuration(from)) => ValString(from.toString)
 		case e => error(e)
@@ -238,6 +246,8 @@ object BuiltinFunctions extends FunctionProvider {
 	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0).normalized )
     case List(ValLocalDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
     case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
+    case List(ValDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
+    case List(ValLocalDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
 		case e => error(e)
 	})
 
