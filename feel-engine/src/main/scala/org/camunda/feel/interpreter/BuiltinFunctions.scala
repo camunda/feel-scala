@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit
 import java.util.regex._
 import org.slf4j._
 import scala.util.Try
+import java.math.BigDecimal
 
 /**
  * @author Philipp
@@ -170,8 +171,9 @@ object BuiltinFunctions extends FunctionProvider {
 
 	def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
 		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => Try
-		{  
-		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+		{ 
+		  val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
+		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos))
 	  }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull } 
 		case e => error(e)
 	})
@@ -179,7 +181,8 @@ object BuiltinFunctions extends FunctionProvider {
 	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
 	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => Try
 		{  
-		  val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue())
+		  val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
+		  val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos)
       val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
       ValTime(localTime.atOffset(zonedOffset))

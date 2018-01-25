@@ -3,8 +3,7 @@ package org.camunda.feel.interpreter
 import org.camunda.feel._
 import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.parser._
-import java.time.Duration
-import java.time.Period
+import java.time.{Duration,Period}
 
 import org.slf4j._
 
@@ -596,6 +595,62 @@ class FeelInterpreter {
       case _ => ValError(s"context contains no entry with key '$key'")
     }
     case ValList(list) => ValList( list map (item => path(item, key)) )
+    case ValDate(date) => key match {
+      case "year"   => ValNumber(date.getYear)
+      case "month"  => ValNumber(date.getMonthValue)
+      case "day"    => ValNumber(date.getDayOfMonth)
+      case e        => error(v, s"expected one of the date properies {year, month, day} but fount '$e'")
+    }
+    case ValTime(time) => key match {
+      case "hour"          => ValNumber(time.getHour)
+      case "minute"        => ValNumber(time.getMinute)
+      case "second"        => ValNumber(time.getSecond)
+      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(time.getOffset.getTotalSeconds))
+      case "timezone"      => ValNull // currently, not supported
+      case e               => error(v, s"expected one of the time properies {hour, minute, second, time_offset, timezone} but fount '$e'")
+    }
+    case ValLocalTime(time) => key match {
+      case "hour"          => ValNumber(time.getHour)
+      case "minute"        => ValNumber(time.getMinute)
+      case "second"        => ValNumber(time.getSecond)
+      case "time_offset"   => ValNull
+      case "timezone"      => ValNull
+      case e               => error(v, s"expected one of the (local) time properies {hour, minute, second} but fount '$e'")
+    }
+    case ValDateTime(dateTime) => key match {
+      case "year"          => ValNumber(dateTime.getYear)
+      case "month"         => ValNumber(dateTime.getMonthValue)
+      case "day"           => ValNumber(dateTime.getDayOfMonth)
+      case "hour"          => ValNumber(dateTime.getHour)
+      case "minute"        => ValNumber(dateTime.getMinute)
+      case "second"        => ValNumber(dateTime.getSecond)
+      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
+      case "timezone"      => ValString(dateTime.getZone.getId)
+      case e               => error(v, s"expected one of the date-time properies {year, month, day, hour, minute, second, time_offset, timezone} but fount '$e'")
+    }
+    case ValLocalDateTime(dateTime) => key match {
+      case "year"          => ValNumber(dateTime.getYear)
+      case "month"         => ValNumber(dateTime.getMonthValue)
+      case "day"           => ValNumber(dateTime.getDayOfMonth)
+      case "hour"          => ValNumber(dateTime.getHour)
+      case "minute"        => ValNumber(dateTime.getMinute)
+      case "second"        => ValNumber(dateTime.getSecond)
+      case "time_offset"   => ValNull
+      case "timezone"      => ValNull
+      case e               => error(v, s"expected one of the (local) date-time properies {year, month, day, hour, minute, second} but fount '$e'")
+    }
+    case ValYearMonthDuration(duration) => key match {
+      case "years"    => ValNumber(duration.getYears)
+      case "months"   => ValNumber(duration.getMonths)
+      case e          => error(v, s"expected one of the duration properies {years, months} but fount '$e'")
+    }
+    case ValDayTimeDuration(duration) => key match {
+      case "days"    => ValNumber(duration.toDays)
+      case "hours"   => ValNumber(duration.toHours % 24)
+      case "minutes" => ValNumber(duration.toMinutes % 60)
+      case "seconds" => ValNumber(duration.getSeconds % 60)
+      case e         => error(v, s"expected one of the duration properies {days, hours, minutes, seconds} but fount '$e'")
+    }
     case e => error(e, s"expected Context or List of Contextes but found '$e'")
   }
 
