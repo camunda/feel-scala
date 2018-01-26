@@ -1,5 +1,6 @@
 package org.camunda
 
+import org.camunda.feel.datatype.ZonedTime
 import scala.math.BigDecimal
 import java.time._
 import java.time.format._
@@ -26,7 +27,7 @@ package object feel {
 
   type LocalDateTime = java.time.LocalDateTime
 
-  type Time = java.time.OffsetTime
+  type Time = ZonedTime
 
   type DateTime = java.time.ZonedDateTime
 
@@ -44,7 +45,7 @@ package object feel {
 
   implicit def stringToLocalTime(time: String): LocalTime = LocalTime.parse(time, timeFormatterWithOptionalPrefix)
 
-  implicit def stringToTime(time: String): Time = OffsetTime.parse(time, timeFormatterWithOffsetAndOptionalPrefix)
+  implicit def stringToTime(time: String): Time = ZonedTime.parse(time)
 
   implicit def stringToLocalDateTime(dateTime: String): LocalDateTime = LocalDateTime.parse(dateTime, localDateTimeFormatter)
 

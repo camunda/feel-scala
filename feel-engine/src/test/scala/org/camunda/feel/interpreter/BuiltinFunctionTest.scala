@@ -60,6 +60,8 @@ class BuiltinFunctionTest extends FlatSpec with Matchers with FeelIntegrationTes
 		eval(""" time(x) """, Map("x" -> "23:59:00")) should be(ValLocalTime("23:59:00"))
 
 		eval(""" time(x) """, Map("x" -> "23:59:00+01:00")) should be(ValTime("23:59:00+01:00"))
+		
+		eval(""" time(x) """, Map("x" -> "23:59:00@Europe/Paris")) should be(ValTime("23:59:00@Europe/Paris"))
 	}
 
 	it should "convert Date-Time" in {

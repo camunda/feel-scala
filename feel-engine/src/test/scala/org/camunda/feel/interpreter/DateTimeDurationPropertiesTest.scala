@@ -48,6 +48,7 @@ class DateTimeDurationPropertiesTest extends FlatSpec with Matchers with FeelInt
   
   it should "has a timezone property" in {
 
+    eval(""" time("11:45:30@Europe/Paris").timezone """) should be(ValString("Europe/Paris"))
     eval(""" time("11:45:30+02:00").timezone """) should be(ValNull)
   }
   
@@ -118,6 +119,7 @@ class DateTimeDurationPropertiesTest extends FlatSpec with Matchers with FeelInt
   it should "has a timezone property" in {
 
     eval(""" date and time("2017-03-10T11:45:30@Europe/Paris").timezone """) should be(ValString("Europe/Paris"))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").timezone """) should be(ValNull)
   }
   
   ///// -----

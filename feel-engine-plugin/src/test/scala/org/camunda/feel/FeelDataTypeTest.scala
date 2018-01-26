@@ -1,5 +1,6 @@
 package org.camunda.feel
 
+import org.camunda.feel.datatype.ZonedTime
 import scala.collection.JavaConverters._
 import org.scalatest._
 import org.camunda.bpm.engine.ProcessEngineConfiguration
@@ -106,7 +107,16 @@ class FeelDataTypeTest extends FlatSpec with Matchers with BeforeAndAfter {
 		result.getSingleEntry[Boolean] should be(true)
 	}
 
-	"The data type 'feel:local-time'" should "accept java.time.OffsetTime" in {
+	"The data type 'feel:local-time'" should "accept ZonedTime" in {
+
+		val result = decisionService.evaluateDecisionByKey("local-time-decision")
+		  .variables(Map[String,Object]("time" -> ZonedTime.parse("13:00:00@Europe/Berlin")).asJava)
+		  .evaluate()
+
+		result.getSingleEntry[Boolean] should be(true)
+	}
+	
+	it should "accept java.time.OffsetTime" in {
 
 		val result = decisionService.evaluateDecisionByKey("local-time-decision")
 		  .variables(Map[String,Object]("time" -> java.time.OffsetTime.parse("13:00:00+01:00")).asJava)
@@ -124,7 +134,16 @@ class FeelDataTypeTest extends FlatSpec with Matchers with BeforeAndAfter {
 		result.getSingleEntry[Boolean] should be(true)
 	}
 	
-	"The data type 'feel:time'" should "accept java.time.OffsetTime" in {
+	"The data type 'feel:time'" should "accept ZonedTime" in {
+
+		val result = decisionService.evaluateDecisionByKey("time-decision")
+		  .variables(Map[String,Object]("time" -> ZonedTime.parse("13:00:00@Europe/Berlin")).asJava)
+		  .evaluate()
+
+		result.getSingleEntry[Boolean] should be(true)
+	}
+	
+	it should "accept java.time.OffsetTime" in {
 
 		val result = decisionService.evaluateDecisionByKey("time-decision")
 		  .variables(Map[String,Object]("time" -> java.time.OffsetTime.parse("13:00:00+01:00")).asJava)

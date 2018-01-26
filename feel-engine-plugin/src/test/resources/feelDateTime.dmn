@@ -8,7 +8,7 @@
       </input>
       <output id="output1" label="Result" name="result" typeRef="boolean" />
       <rule id="row-419681904-1">
-        <inputEntry id="UnaryTests_0vnaf08">        <text><![CDATA[> date and time("2000-01-01T12:00:00+01:00")]]></text>
+        <inputEntry id="UnaryTests_0vnaf08">        <text><![CDATA[> date and time("2000-01-01T12:00:00@Europe/Berlin")]]></text>
 </inputEntry>
         <outputEntry id="LiteralExpression_1s0batl">        <text>true</text>
 </outputEntry>

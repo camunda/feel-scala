@@ -2,6 +2,7 @@ package org.camunda.feel.interpreter
 
 import org.camunda.feel._
 import org.camunda.feel.spi._
+import org.camunda.feel.datatype.ZonedTime
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
@@ -154,18 +155,18 @@ object BuiltinFunctions extends FunctionProvider {
 
 	def dateTime2 = ValFunction(List("date", "time"), _ match {
 		case List(ValDate(date), ValLocalTime(time)) => ValLocalDateTime(date.atTime(time))
-    case List(ValDate(date), ValTime(time)) => ValDateTime(date.atTime(time).toZonedDateTime())
+    case List(ValDate(date), ValTime(time)) => ValDateTime(time.withDate(date))
 		case List(ValLocalDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-    case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time).toZonedDateTime())
+    case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(time.withDate(dateTime.toLocalDate()))
     case List(ValDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-    case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(dateTime.toLocalDate().atTime(time).toZonedDateTime())
+    case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(time.withDate(dateTime.toLocalDate()))
 		case e => error(e)
 	})
 
 	def timeFunction = ValFunction(List("from"), _ match {
 		case List(ValString(from)) => parseTime(from)
 		case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
-    case List(ValDateTime(from)) => ValTime(from.toOffsetDateTime().toOffsetTime())
+    case List(ValDateTime(from)) => ValTime(ZonedTime.of(from))
 		case e => error(e)
 	})
 
@@ -185,7 +186,7 @@ object BuiltinFunctions extends FunctionProvider {
 		  val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos)
       val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
-      ValTime(localTime.atOffset(zonedOffset))
+      ValTime(ZonedTime.of(localTime, zonedOffset))
 	  }.getOrElse { logger.warn(s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset"); ValNull } 
 	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValNull) => Try
 		{  
@@ -224,7 +225,7 @@ object BuiltinFunctions extends FunctionProvider {
 		case List(ValNumber(from)) => ValString(from.toString)
 		case List(ValDate(from)) => ValString(from.format(dateFormatter))
 		case List(ValLocalTime(from)) => ValString(from.format(localTimeFormatter))
-    case List(ValTime(from)) => ValString(from.format(timeFormatter))
+    case List(ValTime(from)) => ValString(from.format)
 		case List(ValLocalDateTime(from)) => ValString(from.format(localDateTimeFormatter))
     case List(ValDateTime(from)) => 
     {

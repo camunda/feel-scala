@@ -1,6 +1,7 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
+import org.camunda.feel.datatype.ZonedTime
 import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.parser._
 import java.time.{Duration,Period}
@@ -403,7 +404,7 @@ class FeelInterpreter {
       case _ => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
     }
     case ValTime(x) => y match {
-      case ValTime(y) => ValDayTimeDuration( Duration.between(y, x) )
+      case ValTime(y) => ValDayTimeDuration( ZonedTime.between(x, y) )
       case ValDayTimeDuration(y) => ValTime( x.minus(y) )
       case _ => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
     }
@@ -605,8 +606,8 @@ class FeelInterpreter {
       case "hour"          => ValNumber(time.getHour)
       case "minute"        => ValNumber(time.getMinute)
       case "second"        => ValNumber(time.getSecond)
-      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(time.getOffset.getTotalSeconds))
-      case "timezone"      => ValNull // currently, not supported
+      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
+      case "timezone"      => time.getZoneId.map(ValString(_)).getOrElse(ValNull)
       case e               => error(v, s"expected one of the time properies {hour, minute, second, time_offset, timezone} but fount '$e'")
     }
     case ValLocalTime(time) => key match {
@@ -625,7 +626,7 @@ class FeelInterpreter {
       case "minute"        => ValNumber(dateTime.getMinute)
       case "second"        => ValNumber(dateTime.getSecond)
       case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
-      case "timezone"      => ValString(dateTime.getZone.getId)
+      case "timezone"      => if (hasTimeZone(dateTime)) ValString(dateTime.getZone.getId) else ValNull
       case e               => error(v, s"expected one of the date-time properies {year, month, day, hour, minute, second, time_offset, timezone} but fount '$e'")
     }
     case ValLocalDateTime(dateTime) => key match {
@@ -653,6 +654,8 @@ class FeelInterpreter {
     }
     case e => error(e, s"expected Context or List of Contextes but found '$e'")
   }
+  
+  private def hasTimeZone(dateTime: DateTime) = !dateTime.getOffset.equals(dateTime.getZone)
 
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): Val =
     withVal(eval(exp), value => value)

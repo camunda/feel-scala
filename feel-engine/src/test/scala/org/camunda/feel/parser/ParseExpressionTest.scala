@@ -53,6 +53,12 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("""time("10:31:10+01:00")""") should be(ConstTime("10:31:10+01:00"))
     parse("""time("10:31:10-02:00")""") should be(ConstTime("10:31:10-02:00"))
   }
+  
+  it should "parse a time with zone" in {
+
+    parse("""time("10:31:10@Europe/Paris")""") should be(ConstTime("10:31:10@Europe/Paris"))
+    parse("""time("10:31:10@Etc/UTC")""") should be(ConstTime("10:31:10@Etc/UTC"))
+  }
 
   it should "parse a date-time" in {
 
