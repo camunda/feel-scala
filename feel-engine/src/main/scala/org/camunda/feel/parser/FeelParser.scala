@@ -4,7 +4,6 @@ import org.camunda.feel._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.Try
-import java.time.DateTimeException
 
 object FeelParser extends JavaTokenParsers {
 
@@ -65,15 +64,15 @@ object FeelParser extends JavaTokenParsers {
   // 2 c)
   private lazy val expression3 = conjunction
   // 2 d)
-  private lazy val expression4 = comparison | expression5
+  private lazy val expression4: Parser[Exp] = expression5 >> optionalComparison
   // 2 e)
   private lazy val expression5 = arithmeticExpression
   // 2 f)
-  private lazy val expression6 = instanceOf | expression7
+  private lazy val expression6 = expression7 >> ( x => instanceOf.? ^^ (_.fold(x)(InstanceOf(x, _))))
   // 2 g)
   private lazy val expression7 = pathExpression
   // 2 h)
-  private lazy val expression8 = filterExpression | functionInvocation | builtinFunctionInvocation | expression9
+  private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
   // 2 i)
   private lazy val expression9 = literal | name ^^ ( n => Ref(List(n)) ) | simplePositiveUnaryTest | "(" ~> textualExpression <~ ")" | expression10
 
@@ -232,22 +231,26 @@ object FeelParser extends JavaTokenParsers {
   private lazy val conjunction: Parser[Exp] = chainl1(expression4, "and" ^^^ Conjunction)
 
   // 51
-  private lazy val comparison: Parser[Exp] = simpleComparison |
-    expression5 ~ "between" ~! expression5 ~! "and" ~! expression5 ^^ { case x ~ _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) } |
-    expression5 ~ "in" ~ "(" ~! positiveUnaryTests <~ ")" ^^ { case x ~ _ ~ _ ~ tests => In(x, tests) } |
-    expression5 ~ "in" ~! positiveUnaryTest ^^ { case x ~ _ ~ test => In(x, test) }
+  private lazy val optionalComparison: Exp => Parser[Exp] = (x: Exp) => {
+    simpleComparison(x) |
+    "between" ~! expression5 ~! "and" ~! expression5 ^^ { case _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) } |
+    "in" ~ "(" ~! positiveUnaryTests <~ ")" ^^ { case _ ~ _ ~ tests => In(x, tests) } |
+    "in" ~! positiveUnaryTest ^^ { case _ ~ test => In(x, test) } |
+    success(x) // no comparison
+  }
 
-  private lazy val simpleComparison = expression5 ~ ("<=" | ">=" | "<" | ">" | "!=" | "=") ~! expression5 ^^ {
-    case x ~ "=" ~ y => Equal(x, y)
-    case x ~ "!=" ~ y => Not(Equal(x, y))
-    case x ~ "<" ~ y => LessThan(x, y)
-    case x ~ "<=" ~ y => LessOrEqual(x, y)
-    case x ~ ">" ~ y => GreaterThan(x, y)
-    case x ~ ">=" ~ y => GreaterOrEqual(x, y)
+
+  private lazy val simpleComparison = (x: Exp) => ("<=" | ">=" | "<" | ">" | "!=" | "=") ~! expression5 ^^ {
+    case "=" ~ y => Equal(x, y)
+    case "!=" ~ y => Not(Equal(x, y))
+    case "<" ~ y => LessThan(x, y)
+    case "<=" ~ y => LessOrEqual(x, y)
+    case ">" ~ y => GreaterThan(x, y)
+    case ">=" ~ y => GreaterOrEqual(x, y)
   }
 
   // 53
-  private lazy val instanceOf: Parser[InstanceOf] = expression7 ~ "instance" ~! "of" ~! typeName ^^ { case x ~ _ ~ _ ~ typeName => InstanceOf(x, typeName) }
+  private lazy val instanceOf: Parser[String] = "instance" ~! "of" ~! typeName ^^ { case _ ~ _ ~ typeName => typeName }
 
   // 54
   private lazy val typeName: Parser[String] = qualifiedName ^^ ( _.mkString(".") )
@@ -259,7 +262,10 @@ object FeelParser extends JavaTokenParsers {
   }
   
   // 52
-  private lazy val filterExpression: Parser[Filter] = expression9 ~ "[" ~! expression <~ "]" ^^ { case list ~ _ ~ filter => Filter(list, filter) }
+  private lazy val filteredExpression9: Parser[Exp] = expression9 ~ ("[" ~! expression <~ "]").? ^^ {
+    case list ~ Some(_ ~ filter) => Filter(list, filter)
+    case list ~ None => list
+  }
 
   // 40
   private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiteral) ~> qualifiedName ~ parameters ^^ {
