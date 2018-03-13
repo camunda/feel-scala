@@ -23,7 +23,7 @@ abstract class ContextBase extends Context {
   override def variable(name: String): Val = variables.get(name) orElse cachedVariables.get(name) match {
     case Some(x) => valueMapper.toVal(x)
     case None => variableProvider.getVariable(name) match {
-      case Some(x) => val v = valueMapper.toVal(x); cachedVariables.put(name, v); v
+      case Some(v) => cachedVariables.put(name, v); v
       case None => ValError(s"no variable found for name '$name'")
     }
   }
@@ -69,7 +69,7 @@ abstract class ContextBase extends Context {
 }
 
 case class CompositeContext(contexts: Seq[Context], override val valueMapper: ValueMapper) extends Context {
-
+  
   override def variable(name: String): Val = {
     for (context <- contexts) {
       context.variable(name) match {
@@ -106,9 +106,10 @@ case class CompositeContext(contexts: Seq[Context], override val valueMapper: Va
 
 object CompositeContext {
 
-  implicit class ContextComposition(ctx: Context) {
-
-      def +(c: Context): Context = {
+  implicit class ContextComposition(ctx: Context) {      
+    
+      def +(c: Context): Context = 
+      {        
         CompositeContext(Seq(c, ctx), ctx.valueMapper)
       }
 

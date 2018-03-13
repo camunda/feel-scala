@@ -4,6 +4,7 @@ import org.camunda.feel.parser.FeelParser
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.interpreter.FeelInterpreter
 import org.camunda.feel.interpreter.DefaultValueMapper
+import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.Exp
 import org.camunda.feel.spi._
@@ -13,11 +14,10 @@ import org.camunda.feel.spi._
  */
 class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider, val valueMapper: ValueMapper = DefaultValueMapper.instance) {
 
-  val interpreter: org.camunda.feel.interpreter.FeelInterpreter = new FeelInterpreter
-
+  val interpreter = new FeelInterpreter
+  
   def evalExpression(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
-    eval(FeelParser.parseExpression, expression, ctx)
+    eval(FeelParser.parseExpression, expression, rootContext(context))
   }
 
   def evalExpression(expression: String, context: Context): EvalResult = {
@@ -25,8 +25,7 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
   }
 
   def evalUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
-    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
-    eval(FeelParser.parseUnaryTests, expression, ctx)
+    eval(FeelParser.parseUnaryTests, expression, rootContext(context))
   }
 
   def evalUnaryTests(expression: String, context: Context): EvalResult = {
@@ -34,8 +33,7 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
   }
 
   def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = {
-    val ctx = RootContext(context, functionProvider = functionProvider, valueMapper = valueMapper)
-    eval(exp, ctx)
+    eval(exp, rootContext(context))
   }
 
   private def eval(parser: String => ParseResult[Exp], expression: String, context: Context): EvalResult = parser(expression) match {
@@ -43,9 +41,43 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
     case e: NoSuccess => ParseFailure(s"failed to parse expression '$expression':\n$e")
   }
 
-  def eval(exp: ParsedExpression, context: Context): EvalResult = interpreter.eval(exp.expression)(context) match {
-    case ValError(cause) => EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
-    case value => EvalValue( valueMapper.unpackVal(value) )
+  def eval(exp: ParsedExpression, context: Context): EvalResult = 
+  {
+    interpreter.eval(exp.expression)(rootContext(context)) match {
+      case ValError(cause) => EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
+      case value => EvalValue( valueMapper.unpackVal(value) )
+    }
+  }
+  
+  private def rootContext(variables: Map[String, Any]) = RootContext(
+    variables = variables,
+    functionProvider = functionProvider,
+    valueMapper = valueMapper)
+    
+  private def rootContext(context: Context): Context = 
+  {
+    context match {
+      case c: RootContext => c
+      case c: DefaultContext => 
+      {
+        val fp = if (c.functionProvider == FunctionProvider.EmptyFunctionProvider) {
+          functionProvider
+        } else if (functionProvider == FunctionProvider.EmptyFunctionProvider) {
+          c.functionProvider
+        } else {
+          new FunctionProvider.CompositeFunctionProvider(List(functionProvider, c.functionProvider))
+        }       
+        
+        RootContext(
+          variables = c.variables,
+          additionalFunctions = c.functions,
+          variableProvider = c.variableProvider,
+          functionProvider = fp,
+          valueMapper = valueMapper        
+        )
+      }
+      case c => RootContext(functionProvider = functionProvider, valueMapper = valueMapper) + c
+    }
   }
 
 }
