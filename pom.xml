@@ -18,6 +18,7 @@
 
     <properties>
         <camunda.version>7.7.0</camunda.version>
+        <spin.version>1.5.0</spin.version>
         <version.java>1.8</version.java>
         <scala.version>2.12.4</scala.version>
         <scala.binary.version>2.12.4</scala.binary.version>
@@ -42,6 +43,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            
+            <dependency>
+		      <groupId>org.camunda.spin</groupId>
+		      <artifactId>camunda-spin-bom</artifactId>
+		      <scope>import</scope>
+		      <type>pom</type>
+		      <version>${spin.version}</version>
+		    </dependency>
 
             <dependency>
               <groupId>org.camunda.bpm.extension.feel.scala</groupId>
