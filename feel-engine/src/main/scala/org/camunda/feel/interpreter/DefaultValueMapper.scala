@@ -4,6 +4,7 @@ import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
 import scala.collection.JavaConverters._
 import java.time._
+import scala.math.BigDecimal
 
 class DefaultValueMapper extends ValueMapper {
 
@@ -20,6 +21,7 @@ class DefaultValueMapper extends ValueMapper {
     case x: Double if (x.isNaN || x.isInfinity) => ValNull
     case x: Double => ValNumber(x)
     case x: BigDecimal => ValNumber(x)
+    case x: BigInt => ValNumber(BigDecimal(x))
     case x: Boolean => ValBoolean(x)
     case x: String => ValString(x)
     case x: Date => ValDate(x)
@@ -47,6 +49,7 @@ class DefaultValueMapper extends ValueMapper {
 
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
+    case x: java.math.BigInteger => ValNumber(BigDecimal(x))
     case x: java.util.Date => ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()) )
     case x: java.time.OffsetDateTime => ValDateTime(x.toZonedDateTime())
     case x: java.time.OffsetTime => ValTime(ZonedTime.of(x))
