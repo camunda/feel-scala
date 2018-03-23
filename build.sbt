@@ -20,7 +20,7 @@ val commonDependencies = Seq(
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.9.0" % "test"
 )
 
-val camundaVersion = "7.7.0"
+val camundaVersion = "7.9.0-alpha2"
 
 lazy val root = (project in file(".")).
   settings(commonSettings).
@@ -43,7 +43,7 @@ lazy val factory = (project in file("feel-engine-factory")).
       "com.github.nscala-time" % "nscala-time_2.12" % "2.16.0",
       "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided",
-      "org.camunda.spin" % "camunda-spin-core" % "1.5.0",
+      "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",
 
       "org.camunda.spin" % "camunda-spin-dataformat-json-jackson" % "1.5.0" % "test"
     )
