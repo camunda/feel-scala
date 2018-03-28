@@ -445,8 +445,19 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" time("08:30:00+01:00") between time("08:00:00+01:00") and time("10:00:00+01:00") """) should be (ValBoolean(true))
     eval(""" time("08:30:00+01:00") between time("09:00:00+01:00") and time("10:00:00+01:00") """) should be (ValBoolean(false))
   }
+  
+  
+  "A date" should "subtract from another date" in {
 
-  "A date" should "compare with '='" in {
+    eval(""" date("2012-12-25") - date("2012-12-24") """) should be(ValYearMonthDuration("P-1D"))
+
+    eval(""" date("2012-12-24") - date("2012-12-25") """) should be(ValYearMonthDuration("P1D"))
+
+    eval(""" date("2013-02-25") - date("2012-12-24") """) should be(ValYearMonthDuration("P-2M-1D"))
+  }
+
+
+  it should "compare with '='" in {
 
     eval(""" date("2017-01-10") = date("2017-01-10") """) should be(ValBoolean(true))
     eval(""" date("2017-01-10") = date("2017-01-11") """) should be(ValBoolean(false))
@@ -586,6 +597,15 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" date and time("2017-01-10T10:30:00") - duration("P1M") """) should be(ValLocalDateTime("2016-12-10T10:30:00"))
 
     eval(""" date and time("2017-01-10T10:30:00+01:00") - duration("P1M") """) should be(ValDateTime("2016-12-10T10:30:00+01:00"))
+  }
+  
+  it should "subtract from date" in {
+
+    eval(""" date("2017-01-10") - duration("P1M") """) should be(ValDate("2016-12-10"))
+
+    eval(""" date("2017-01-10") - duration("P1Y") """) should be(ValDate("2016-01-10"))
+
+    eval(""" date("2017-01-10") - duration("P1Y1M") """) should be(ValDate("2015-12-10"))
   }
 
   it should "multiply by '3'" in {

@@ -420,6 +420,11 @@ class FeelInterpreter {
       case ValDayTimeDuration(y) => ValDateTime( x.minus(y) )
       case _ => error(y, s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
     }
+    case ValDate(x) => y match {
+      case ValDate(y) => ValYearMonthDuration( Period.between(x, y) )
+      case ValYearMonthDuration(y) => ValDate( x.minus(y) )
+      case _ => error(y, s"expect Date, or Year-Month-Duration but found '$x'")
+    }
     case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.minus(y).normalized ))
     case ValDayTimeDuration(x) => withDayTimeDuration(y, y => ValDayTimeDuration( x.minus(y) ))
     case _ => error(x, s"expected Number, Date, Time or Duration but found '$x'")
