@@ -82,6 +82,15 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
         ValList(List(ValNumber(1))),
         ValList(List(ValNumber(2))) )))
   }
+  
+  it should "be an escaped identifier" in {
+    // regular identifier
+    eval(" 'x' ", Map("x" -> "foo")) should be(ValString("foo"))
+    // with whitespace
+    eval(" 'a b' ", Map("a b" -> "foo")) should be(ValString("foo"))
+    // with operator
+    eval(" 'a-b' ", Map("a-b" -> 3)) should be(ValNumber(3))
+  }
 
   "Null" should "compare to null" in {
 

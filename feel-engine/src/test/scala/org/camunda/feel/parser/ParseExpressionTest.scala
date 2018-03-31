@@ -31,6 +31,13 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("forename") should be(Ref("forename"))
     parse("before") should be(Ref("before"))
   }
+  
+  it should "parse an escaped name" in {
+
+    parse(" 'a' ") should be(Ref("a"))
+    parse(" 'a b' ") should be(Ref("a b"))
+    parse(" 'a-b' ") should be(Ref("a-b"))
+  }
 
   it should "parse a boolean" in {
 
@@ -272,6 +279,12 @@ class ParseExpressionTest extends FlatSpec with Matchers {
           "a" -> ConstNumber(1),
           "b" -> ConstBool(true)))) )
   }
+  
+  it should "parse a function invocation with escaped name" in {
+
+    parse(" 'a b'(1) ") should be(FunctionInvocation("a b",
+      params = PositionalFunctionParameters( List(ConstNumber(1)))) )
+  }
 
   it should "parse a context" in {
 
@@ -389,6 +402,11 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         PathExpression(
             Ref("a"), "b"
             ), "c"))
+  }
+  
+  it should "parse a path expression with escaped name" in {
+
+    parse(" 'a b'.'c d'") should be(PathExpression(Ref("a b"), "c d"))
   }
 
   private def parse(expression: String): Exp =

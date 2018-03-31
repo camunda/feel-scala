@@ -177,7 +177,16 @@ class ParserUnaryTest extends FlatSpec with Matchers {
 
     parse("qualified.var") should be (InputEqualTo(Ref( List("qualified","var") )))
   }
+  
+  it should "parse escaped indentifier" in {
 
+    parse("'a b'") should be (InputEqualTo(Ref( List("a b") )))
+  
+    parse("'a-b'") should be (InputEqualTo(Ref( List("a-b") )))
+    
+    parse("'a b'.'c d'") should be (InputEqualTo(Ref( List("a b", "c d") )))
+  }
+  
   it should "parse '< var'" in {
 
     parse("< var") should be (InputLessThan(Ref("var")))

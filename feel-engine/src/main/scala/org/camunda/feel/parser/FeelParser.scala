@@ -165,7 +165,9 @@ object FeelParser extends JavaTokenParsers {
   private lazy val qualifiedName: Parser[List[String]] = rep1sep(name, ".")
 
   // 27 - simplified name definition
-  private lazy val name: Parser[String] = identifier
+  private lazy val name: Parser[String] = escapedIdentifier | identifier
+  
+  private lazy val escapedIdentifier: Parser[String] = ("'" ~> """([^'"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "'") 
 
   // FEEL name definition
   private lazy val feelName: Parser[String] = nameStart ~! rep( namePart | additionalNameSymbols ) ^^ { case s ~ ps => s + ps.mkString }
