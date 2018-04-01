@@ -45,7 +45,7 @@ lazy val factory = (project in file("feel-engine-factory")).
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided",
       "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",
 
-      "org.camunda.spin" % "camunda-spin-dataformat-json-jackson" % "1.5.0" % "test"
+      "org.camunda.spin" % "camunda-spin-dataformat-all" % "1.5.0" % "test"
     )
   ).
   dependsOn(engine % "test->test;compile->compile")
