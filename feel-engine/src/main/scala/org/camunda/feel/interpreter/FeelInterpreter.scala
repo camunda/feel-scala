@@ -383,6 +383,7 @@ class FeelInterpreter {
       case ValYearMonthDuration(y) => ValYearMonthDuration( x.plus(y).normalized )
       case ValLocalDateTime(y) => ValLocalDateTime( y.plus(x) )
       case ValDateTime(y) => ValDateTime( y.plus(x) )
+      case ValDate(y) => ValDate( y.plus(x) )
       case _ => error(y, s"expect Date-Time, or Year-Month-Duration but found '$x'")
     }
     case ValDayTimeDuration(x) => y match {
@@ -391,7 +392,12 @@ class FeelInterpreter {
       case ValDateTime(y) => ValDateTime( y.plus(x) )
       case ValLocalTime(y) => ValLocalTime( y.plus(x) )
       case ValTime(y) => ValTime( y.plus(x) )
+      case ValDate(y) => ValDate( y.atStartOfDay().plus(x).toLocalDate() )
       case _ => error(y, s"expect Date-Time, Time, or Day-Time-Duration but found '$x'")
+    }
+    case ValDate(x) => y match {
+      case ValDayTimeDuration(y) => ValDate( x.atStartOfDay().plus(y).toLocalDate() )
+      case ValYearMonthDuration(y) => ValDate( x.plus(y) )
     }
     case _ => error(x, s"expected Number, String, Date, Time or Duration but found '$x'")
   }
@@ -421,8 +427,9 @@ class FeelInterpreter {
       case _ => error(y, s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
     }
     case ValDate(x) => y match {
-      case ValDate(y) => ValYearMonthDuration( Period.between(x, y) )
+      case ValDate(y) => ValDayTimeDuration( Duration.between(y.atStartOfDay, x.atStartOfDay) )
       case ValYearMonthDuration(y) => ValDate( x.minus(y) )
+      case ValDayTimeDuration(y) => ValDate( x.atStartOfDay.minus(y).toLocalDate() )
       case _ => error(y, s"expect Date, or Year-Month-Duration but found '$x'")
     }
     case ValYearMonthDuration(x) => withYearMonthDuration(y, y => ValYearMonthDuration( x.minus(y).normalized ))

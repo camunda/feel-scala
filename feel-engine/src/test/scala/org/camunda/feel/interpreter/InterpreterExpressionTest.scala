@@ -449,11 +449,11 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
   
   "A date" should "subtract from another date" in {
 
-    eval(""" date("2012-12-25") - date("2012-12-24") """) should be(ValYearMonthDuration("P-1D"))
+    eval(""" date("2012-12-25") - date("2012-12-24") """) should be(ValDayTimeDuration("P1D"))
 
-    eval(""" date("2012-12-24") - date("2012-12-25") """) should be(ValYearMonthDuration("P1D"))
+    eval(""" date("2012-12-24") - date("2012-12-25") """) should be(ValDayTimeDuration("P-1D"))
 
-    eval(""" date("2013-02-25") - date("2012-12-24") """) should be(ValYearMonthDuration("P-2M-1D"))
+    eval(""" date("2013-02-25") - date("2012-12-24") """) should be(ValDayTimeDuration("P63D"))
   }
 
 
@@ -585,6 +585,12 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" duration("P1M") + date and time("2017-01-10T10:30:00+01:00") """) should be(ValDateTime("2017-02-10T10:30:00+01:00"))
     eval(""" date and time("2017-01-10T10:30:00+01:00") + duration("P1Y") """) should be(ValDateTime("2018-01-10T10:30:00+01:00"))
   }
+  
+  it should "add to date" in {
+
+    eval(""" duration("P1M") + date("2017-01-10") """) should be(ValDate("2017-02-10"))
+    eval(""" date("2017-01-10") + duration("P1Y") """) should be(ValDate("2018-01-10"))
+  }
 
   it should "subtract from year-month-duration" in {
 
@@ -675,6 +681,14 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" duration("PT1H") + date and time("2017-01-10T10:30:00+01:00") """) should be(ValDateTime("2017-01-10T11:30:00+01:00"))
     eval(""" date and time("2017-01-10T10:30:00+01:00") + duration("P1D") """) should be(ValDateTime("2017-01-11T10:30:00+01:00"))
   }
+  
+   it should "add to date" in {
+
+    eval(""" duration("PT1H") + date("2017-01-10") """) should be(ValDate("2017-01-10"))
+    eval(""" duration("P1D") + date("2017-01-10") """) should be(ValDate("2017-01-11"))
+    eval(""" date("2017-01-10") + duration("PT1M") """) should be(ValDate("2017-01-10"))
+    eval(""" date("2017-01-10") + duration("P1D") """) should be(ValDate("2017-01-11"))
+  }
 
   it should "add to time" in {
 
@@ -698,6 +712,13 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval(""" date and time("2017-01-10T10:30:00+01:00") - duration("PT1H") """) should be(ValDateTime("2017-01-10T09:30:00+01:00"))
   }
 
+  it should "subtract from date" in {
+
+    eval(""" date("2017-01-10") - duration("PT1H") """) should be(ValDate("2017-01-09"))
+
+    eval(""" date("2017-01-10") - duration("P1DT1H") """) should be(ValDate("2017-01-08"))
+  }
+  
   it should "subtract from time" in {
 
     eval(""" time("10:30:00") - duration("PT1H") """) should be(ValLocalTime("09:30:00"))
