@@ -137,6 +137,7 @@ object BuiltinFunctions extends FunctionProvider {
 		case List(ValString(from)) => parseDate(from)
 		case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
     case List(ValDateTime(from)) => ValDate(from.toLocalDate())
+    case List(ValDate(from)) => ValDate(from)
 		case e => error(e)
 	})
 
@@ -167,6 +168,7 @@ object BuiltinFunctions extends FunctionProvider {
 		case List(ValString(from)) => parseTime(from)
 		case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
     case List(ValDateTime(from)) => ValTime(ZonedTime.of(from))
+    case List(ValDate(from)) =>  ValTime(ZonedTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC))
 		case e => error(e)
 	})
 
@@ -250,7 +252,11 @@ object BuiltinFunctions extends FunctionProvider {
     case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
     case List(ValDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
     case List(ValLocalDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
-		case e => error(e)
+    case List(ValDate(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from, to.toLocalDate()).withDays(0).normalized )
+    case List(ValDate(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from, to.toLocalDate()).withDays(0).normalized )
+    case List(ValDateTime(from), ValDate(to)) => ValYearMonthDuration( Period.between(from.toLocalDate(), to).withDays(0).normalized )
+    case List(ValLocalDateTime(from), ValDate(to)) => ValYearMonthDuration( Period.between(from.toLocalDate(), to).withDays(0).normalized )
+    case e => error(e)
 	})
 
 	def notFunction = ValFunction(List("negand"), _ match {
