@@ -74,7 +74,13 @@ object FeelParser extends JavaTokenParsers {
   // 2 h)
   private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
   // 2 i)
-  private lazy val expression9 = literal | name ^^ ( n => Ref(List(n)) ) | simplePositiveUnaryTest | "(" ~> textualExpression <~ ")" | expression10
+  private lazy val expression9 = 
+    literal | 
+    name ^^ ( n => Ref(List(n)) ) | 
+    "?" ^^^ ConstInputValue | 
+    simplePositiveUnaryTest | 
+    "(" ~> textualExpression <~ ")" | 
+    expression10
 
   // 6
   private lazy val simpleExpressions: Parser[ConstList] = rep1sep(simpleExpression, ",") ^^ ConstList
@@ -89,7 +95,7 @@ object FeelParser extends JavaTokenParsers {
   // 4 c) -> 25
   private lazy val arithmeticExpression3 = chainl1(arithmeticExpression4, "**" ^^^ Exponentiation )
   // 4 d) -> 26
-  private lazy val arithmeticExpression4 = opt("-") ~! expression6 ^^ {  case Some(_) ~ e => ArithmeticNegation(e)
+  private lazy val arithmeticExpression4 = opt("-") ~ expression6 ^^ {  case Some(_) ~ e => ArithmeticNegation(e)
                                                                         case None ~ e => e }
 
   // 17
@@ -102,8 +108,9 @@ object FeelParser extends JavaTokenParsers {
   private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest, ",") ^^ {  case test :: Nil => test
                                                                                            case tests => AtLeastOne(tests) }
 
-  // 15
-  private lazy val positiveUnaryTest: Parser[Exp] = "null" ^^^ InputEqualTo(ConstNull) | simplePositiveUnaryTest
+  // 15 - in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
+  //    - however, parse simple positive unary test first since this is most usual
+  private lazy val positiveUnaryTest: Parser[Exp] = "null" ^^^ InputEqualTo(ConstNull) | simplePositiveUnaryTest | expression
 
   // 14
   private lazy val simpleUnaryTests: Parser[Exp] =
@@ -115,22 +122,23 @@ object FeelParser extends JavaTokenParsers {
   private lazy val simplePositiveUnaryTests: Parser[Exp] = rep1sep(simplePositiveUnaryTest, ",") ^^ {  case test :: Nil => test
                                                                                                        case tests => AtLeastOne(tests) }
 
-  // 7 - note that method invocation is not part of the spec
+  // 7
   private lazy val simplePositiveUnaryTest: Parser[Exp] =
     "<" ~> endpoint ^^ InputLessThan|
     "<=" ~> endpoint ^^ InputLessOrEqual |
     ">" ~> endpoint ^^ InputGreaterThan |
     ">=" ~> endpoint ^^ InputGreaterOrEqual |
     interval |
-    functionInvocation |
-    builtinFunctionInvocation |
     simpleValue ^^ InputEqualTo
 
-  // 18
-  private lazy val endpoint: Parser[Exp] = functionInvocation | simpleValue
+  // 18 - allow any expression as endpoint
+  private lazy val endpoint: Parser[Exp] = simpleValue | expression
 
-  // 19
-  private lazy val simpleValue = simpleLiteral | qualifiedName ^^ ( Ref(_) )
+  // 19 - need to exclude function invocation from qualified name
+  private lazy val simpleValue = 
+    simpleLiteral | 
+    not(""".+\(.*\)""".r) ~> qualifiedName ^^ ( Ref(_) ) |
+    "?" ^^^ ConstInputValue
 
   // 33
   private lazy val literal: Parser[Exp] = "null" ^^^ ConstNull | simpleLiteral

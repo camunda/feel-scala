@@ -7,6 +7,10 @@ import org.camunda.feel._
  */
 sealed trait Exp
 
+case object ConstNull extends Exp
+
+case object ConstInputValue extends Exp
+
 case class ConstNumber(value: Number) extends Exp
 
 case class ConstBool(value: Boolean) extends Exp
@@ -30,8 +34,6 @@ case class ConstDayTimeDuration(value: DayTimeDuration) extends Exp
 case class ConstList(items: List[Exp]) extends Exp
 
 case class ConstContext(entries: List[(String, Exp)]) extends Exp
-
-case object ConstNull extends Exp
 
 case class InputLessThan(x: Exp) extends Exp
 

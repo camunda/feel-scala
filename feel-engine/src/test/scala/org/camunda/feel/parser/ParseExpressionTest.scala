@@ -93,6 +93,11 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("null") should be(ConstNull)
   }
 
+  it should "parse ?" in {
+
+    parse("?") should be(ConstInputValue)
+  }
+  
   it should "parse an expression inside brackets" in {
 
     parse("(42)") should be(ConstNumber(42))
@@ -284,6 +289,15 @@ class ParseExpressionTest extends FlatSpec with Matchers {
 
     parse(" 'a b'(1) ") should be(FunctionInvocation("a b",
       params = PositionalFunctionParameters( List(ConstNumber(1)))) )
+  }
+  
+  it should "parse a function invocation with ? argument" in {
+
+    parse("f(?, 21)") should be(FunctionInvocation("f",
+      params = PositionalFunctionParameters( List(
+        ConstInputValue,
+        ConstNumber(21)
+      ))) )
   }
 
   it should "parse a context" in {

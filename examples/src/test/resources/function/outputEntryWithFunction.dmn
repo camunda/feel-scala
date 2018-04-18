@@ -26,7 +26,7 @@
 </outputEntry>
       </rule>
       <rule id="row-159369097-1">
-        <inputEntry id="UnaryTests_11y0oj9">        <text>isBlack()</text>
+        <inputEntry id="UnaryTests_11y0oj9">        <text>isBlack(?)</text>
 </inputEntry>
         <outputEntry id="LiteralExpression_0t89co6">        <text>14</text>
 </outputEntry>

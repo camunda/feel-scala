@@ -16,6 +16,8 @@ class FeelInterpreter {
   def eval(expression: Exp)(implicit context: Context): Val = expression match {
 
     // literals
+    case ConstNull => ValNull
+    case ConstInputValue => input
     case ConstNumber(x) => ValNumber(x)
     case ConstBool(b) => ValBoolean(b)
     case ConstString(s) => ValString(s)
@@ -26,7 +28,6 @@ class FeelInterpreter {
     case ConstDateTime(dt) => ValDateTime(dt)
     case ConstYearMonthDuration(d) => ValYearMonthDuration(d.normalized)
     case ConstDayTimeDuration(d) => ValDayTimeDuration(d)
-    case ConstNull => ValNull
     case ConstList(items) => ValList(items.map( item => withVal(eval(item), x => x)) )
     case ConstContext(entries) => {
       val dc: DefaultContext = entries.foldLeft( DefaultContext() ){ (ctx, entry) => evalContextEntry(entry._1, entry._2)(context + ctx) match {
@@ -496,11 +497,7 @@ class FeelInterpreter {
       }
     }
 
-    if (function.requireInputVariable) {
-      function.invoke(input :: paramList)
-    } else {
-      function.invoke(paramList)
-    }
+    function.invoke(paramList)    
   }
 
   private def findFunction(ctx: Context, name: String, params: FunctionParameters): Val = params match {
@@ -527,7 +524,7 @@ class FeelInterpreter {
     case ValNull => f("null")
     case ValList(_) => f("list")
     case ValContext(_) => f("context")
-    case ValFunction(_, _, _, _) => f("function")
+    case ValFunction(_, _, _) => f("function")
     case _ => error(x, s"unexpected type '${x.getClass.getName}'")
   }
 

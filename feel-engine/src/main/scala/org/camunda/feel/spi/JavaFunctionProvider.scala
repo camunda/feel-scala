@@ -23,7 +23,7 @@ abstract class JavaFunctionProvider extends CustomFunctionProvider {
         function.getFunction().apply(argList)
       }
 
-      ValFunction(paramList, f, function.hasVarArgs, function.isInputVariableRequired)
+      ValFunction(paramList, f, function.hasVarArgs)
   }
 
 }

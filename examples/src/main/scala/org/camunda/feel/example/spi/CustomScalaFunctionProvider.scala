@@ -17,9 +17,8 @@ class CustomScalaFunctionProvider extends CustomFunctionProvider {
         ),
         "isBlack" -> List(
           ValFunction(
-            params = List(),
+            params = List("s"),
             invoke = { case List(ValString(s)) => if(s == "black") ValBoolean(true) else ValBoolean(false) },
-            requireInputVariable = true
           )
         )
       )

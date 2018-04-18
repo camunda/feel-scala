@@ -191,6 +191,34 @@ class ParserUnaryTest extends FlatSpec with Matchers {
 
     parse("< var") should be (InputLessThan(Ref("var")))
   }
+  
+  it should "parse a function invocation without parameters" in {
+
+    parse("f()") should be(FunctionInvocation("f",
+      params = PositionalFunctionParameters( List())) )
+  }
+
+  it should "parse a function invocation with positional parameters" in {
+
+    parse("fib(1)") should be(FunctionInvocation("fib",
+      params = PositionalFunctionParameters( List(ConstNumber(1)))) )
+
+    parse("""concat("in", x)""") should be(FunctionInvocation("concat",
+      params = PositionalFunctionParameters( List(
+        ConstString("in"),
+        Ref("x")))) )
+  }
+
+  it should "parse a function invocation with named parameters" in {
+
+    parse("f(a:1)") should be(FunctionInvocation("f",
+      params = NamedFunctionParameters( Map("a" -> ConstNumber(1)))) )
+
+    parse("f(a:1, b:true)") should be(FunctionInvocation("f",
+      params = NamedFunctionParameters( Map(
+          "a" -> ConstNumber(1),
+          "b" -> ConstBool(true)))) )
+  }
 
    private def parse(expression: String): Exp =
     FeelParser.parseUnaryTests(expression) match {

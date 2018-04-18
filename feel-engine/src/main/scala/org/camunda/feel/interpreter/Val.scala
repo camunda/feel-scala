@@ -46,9 +46,7 @@ case object ValNull extends Val
 case class ValFunction(
     params: List[String],
     invoke: List[Val] => Val,
-    hasVarArgs: Boolean = false,
-    requireInputVariable: Boolean = false) extends Val {
-
+    hasVarArgs: Boolean = false) extends Val {
 
     val paramSet: Set[String] = params.toSet
 }

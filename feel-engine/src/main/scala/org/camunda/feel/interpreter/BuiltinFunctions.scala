@@ -552,7 +552,7 @@ object BuiltinFunctions extends FunctionProvider {
   }
 
   def sortFunction = ValFunction(List("list", "precedes"), _ match {
-	  case List(ValList(list), ValFunction(params, f, _, _)) if (params.size == 2) => 
+	  case List(ValList(list), ValFunction(params, f, _)) if (params.size == 2) => 
 	  {
   	  try {
   	    ValList( list.sortWith{ case (x,y) => 
@@ -565,7 +565,7 @@ object BuiltinFunctions extends FunctionProvider {
   	    case e: Throwable => ValError(s"fail to sort list by given precedes function: ${e.getMessage}")
   	  }  
 	  }
-	  case List(ValList(list), ValFunction(params, _, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
+	  case List(ValList(list), ValFunction(params, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
 	  case e => error(e)
 	})
 

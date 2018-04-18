@@ -305,12 +305,11 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
   "A function" should "be invoked as test" in {
 
     val startsWithFunction  = ValFunction(
-        params = List("y"),
-        invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) },
-        requireInputVariable = true)
+        params = List("x", "y"),
+        invoke = { case List(ValString(x), ValString(y)) => ValBoolean( x.startsWith(y) ) })
 
-    eval("foo", """ startsWith("f") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
-    eval("foo", """ startsWith("b") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
+    eval("foo", """ startsWith(?, "f") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(true))
+    eval("foo", """ startsWith(?, "b") """, functions = Map("startsWith" -> startsWithFunction)) should be(ValBoolean(false))
   }
 
   it should "be invoked as end point" in {
@@ -325,6 +324,12 @@ class InterpreterUnaryTest extends FlatSpec with Matchers {
 
     eval(3, "[f(1)..f(2)]", functions = Map("f" -> function)) should be(ValBoolean(true))
     eval(4, "[f(1)..f(2)]", functions = Map("f" -> function)) should be(ValBoolean(false))
+  }
+  
+  "A built-in function" should "be invoked with input value" in {
+
+    eval("foo", """ starts with(?, "f") """) should be(ValBoolean(true))
+    eval("foo", """ starts with(?, "b") """) should be(ValBoolean(false))
   }
 
   private def eval(input: Any, expression: String, variables: Map[String, Any] = Map(), functions: Map[String, ValFunction] = Map()): Val = {
