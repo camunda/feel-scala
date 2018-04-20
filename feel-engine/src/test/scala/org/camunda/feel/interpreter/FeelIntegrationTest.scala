@@ -31,12 +31,31 @@ trait FeelIntegrationTest {
     }
   }
 
+  def evalUnaryTests(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
+    val ctx = RootContext(variables + (RootContext.defaultInputVariable -> input))
+    
+    FeelParser.parseUnaryTests(expression) match {
+      case Success(exp, _) => {
+        interpreter.eval(exp)(ctx)
+      }
+      case e: NoSuccess => {
+        ValError(s"failed to parse expression '$expression':\n$e")
+      }
+    }
+  }
+  
   def date(date: String): Date = date
 
   def time(time: String): Time = time
+  
+  def dateTime(dt: String): DateTime = dt
 
   def yearMonthDuration(duration: String): YearMonthDuration = duration
 
   def dayTimeDuration(duration: String): DayTimeDuration = duration
+  
+  def localTime(time: String): LocalTime = time
+  
+  def localDateTime(dateTime: String): LocalDateTime = dateTime
 
 }

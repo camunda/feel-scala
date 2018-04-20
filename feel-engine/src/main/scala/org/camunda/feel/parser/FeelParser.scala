@@ -7,8 +7,6 @@ import scala.util.Try
 
 object FeelParser extends JavaTokenParsers {
 
-  def parseSimpleExpression(exp: String): ParseResult[Exp] = parseExp(simpleExpression, exp)
-
   def parseExpression(exp: String): ParseResult[Exp] = parseExp(expression, exp)
 
   def parseUnaryTests(expression: String): ParseResult[Exp] = parseExp(unaryTests, expression)

@@ -11,19 +11,7 @@ import org.scalatest.Matchers
  */
 class ParseExpressionTest extends FlatSpec with Matchers {
 
-  "A parser for expression" should "parse number" in {
-
-    parse("3") should be(ConstNumber(3))
-    parse("3.2") should be(ConstNumber(3.2))
-    parse(".2") should be(ConstNumber(.2))
-  }
-
-  it should "parse a string" in {
-
-    parse(""" "a" """) should be(ConstString("a"))
-  }
-
-  it should "parse a name" in {
+  "An expression" should "be a name" in {
 
     parse("b") should be(Ref("b"))
 
@@ -32,62 +20,20 @@ class ParseExpressionTest extends FlatSpec with Matchers {
     parse("before") should be(Ref("before"))
   }
   
-  it should "parse an escaped name" in {
+  it should "be a quoted name 'a'" in {
 
     parse(" 'a' ") should be(Ref("a"))
-    parse(" 'a b' ") should be(Ref("a b"))
-    parse(" 'a-b' ") should be(Ref("a-b"))
-  }
-
-  it should "parse a boolean" in {
-
-    parse("true") should be(ConstBool(true))
-    parse("false") should be(ConstBool(false))
-  }
-
-  it should "parse a date" in {
-
-    parse("""date("2015-09-18")""") should be(ConstDate("2015-09-18"))
-  }
-
-  it should "parse a time" in {
-
-    parse("""time("10:31:10")""") should be(ConstLocalTime("10:31:10"))
-  }
-
-  it should "parse a time with offset" in {
-
-    parse("""time("10:31:10+01:00")""") should be(ConstTime("10:31:10+01:00"))
-    parse("""time("10:31:10-02:00")""") should be(ConstTime("10:31:10-02:00"))
   }
   
-  it should "parse a time with zone" in {
+  it should "be a quoted name 'a b'" in {
 
-    parse("""time("10:31:10@Europe/Paris")""") should be(ConstTime("10:31:10@Europe/Paris"))
-    parse("""time("10:31:10@Etc/UTC")""") should be(ConstTime("10:31:10@Etc/UTC"))
+    parse(" 'a b' ") should be(Ref("a b"))
   }
+  
+  it should "be a quoted name 'a-b'" in {
 
-  it should "parse a date-time" in {
-
-    parse("""date and time("2015-09-18T10:31:10")""") should be(ConstLocalDateTime("2015-09-18T10:31:10"))
+    parse(" 'a-b' ") should be(Ref("a-b"))
   }
-
-  it should "parse a date-time with offset" in {
-
-    parse("""date and time("2015-09-18T10:31:10+01:00")""") should be(ConstDateTime("2015-09-18T10:31:10+01:00"))
-    parse("""date and time("2015-09-18T10:31:10-02:00")""") should be(ConstDateTime("2015-09-18T10:31:10-02:00"))
-  }
-
-  it should "parse a year-month-duration" in {
-
-    parse("""duration("P1Y2M")""") should be(ConstYearMonthDuration("P1Y2M"))
-  }
-
-  it should "parse a day-time-duration" in {
-
-    parse("""duration("P1DT2H3M4S")""") should be(ConstDayTimeDuration("P1DT2H3M4S"))
-  }
-
   it should "parse null" in {
 
     parse("null") should be(ConstNull)
@@ -96,7 +42,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
   it should "parse ?" in {
 
     parse("?") should be(ConstInputValue)
-  }
+  }   
   
   it should "parse an expression inside brackets" in {
 
@@ -148,104 +94,7 @@ class ParseExpressionTest extends FlatSpec with Matchers {
 
     parse("-4") should be(ArithmeticNegation(ConstNumber(4)))
   }
-
-  it should "parse a '=' comparison" in {
-
-    // string
-    parse("""a="b" """) should be(Equal(Ref("a"), ConstString("b")))
-    // boolean
-    parse("a=true") should be(Equal(Ref("a"), ConstBool(true)))
-    // numeric
-    parse("a=1") should be(Equal(Ref("a"), ConstNumber(1)))
-    parse("(a * 2) = 4") should be(Equal( Multiplication(Ref("a"), ConstNumber(2)), ConstNumber(4) ))
-    // date
-    parse("""a=date("2015-09-18")""") should be(Equal(Ref("a"), ConstDate("2015-09-18")))
-    // time
-    parse("""a=time("10:00:00")""") should be(Equal(Ref("a"), ConstLocalTime("10:00:00")))
-  }
-
-  it should "parse a '!=' comparison" in {
-
-    // string
-    parse("""a!="b" """) should be(Not(Equal(Ref("a"), ConstString("b"))))
-    // boolean
-    parse("a!=true") should be(Not(Equal(Ref("a"), ConstBool(true))))
-    // numeric
-    parse("a!=1") should be(Not(Equal(Ref("a"), ConstNumber(1))))
-    // date
-    parse("""a!=date("2015-09-18")""") should be(Not(Equal(Ref("a"), ConstDate("2015-09-18"))))
-    // time
-    parse("""a!=time("10:00:00")""") should be(Not(Equal(Ref("a"), ConstLocalTime("10:00:00"))))
-  }
-
-  it should "parse a '<' comparison" in {
-
-    // numeric
-    parse("a<2") should be(LessThan(Ref("a"), ConstNumber(2)))
-    // date
-    parse("""a<date("2015-09-18")""") should be(LessThan(Ref("a"), ConstDate("2015-09-18")))
-    // time
-    parse("""a<time("10:00:00")""") should be(LessThan(Ref("a"), ConstLocalTime("10:00:00")))
-  }
-
-  it should "parse a '<=' comparison" in {
-
-    // numeric
-    parse("a<=2") should be(LessOrEqual(Ref("a"), ConstNumber(2)))
-    // date
-    parse("""a<=date("2015-09-18")""") should be(LessOrEqual(Ref("a"), ConstDate("2015-09-18")))
-    // time
-    parse("""a<=time("10:00:00")""") should be(LessOrEqual(Ref("a"), ConstLocalTime("10:00:00")))
-  }
-
-  it should "parse a '>' comparison" in {
-
-    // numeric
-    parse("a>2") should be(GreaterThan(Ref("a"), ConstNumber(2)))
-    // date
-    parse("""a>date("2015-09-18")""") should be(GreaterThan(Ref("a"), ConstDate("2015-09-18")))
-    // time
-    parse("""a>time("10:00:00")""") should be(GreaterThan(Ref("a"), ConstLocalTime("10:00:00")))
-  }
-
-  it should "parse a '>=' comparison" in {
-
-    // numeric
-    parse("a>=2") should be(GreaterOrEqual(Ref("a"), ConstNumber(2)))
-    // date
-    parse("""a>=date("2015-09-18")""") should be(GreaterOrEqual(Ref("a"), ConstDate("2015-09-18")))
-    // time
-    parse("""a>=time("10:00:00")""") should be(GreaterOrEqual(Ref("a"), ConstLocalTime("10:00:00")))
-  }
-
-  it should "parse a 'between _ and _' comparison " in {
-
-    // numeric
-    parse("a between 2 and 4") should be(
-        Conjunction(GreaterOrEqual(Ref("a"), ConstNumber(2)), LessOrEqual(Ref("a"), ConstNumber(4))))
-
-    // time
-    parse(""" a between time("10:00:00") and time("14:00:00") """) should be(
-        Conjunction(GreaterOrEqual(Ref("a"), ConstLocalTime("10:00:00")), LessOrEqual(Ref("a"), ConstLocalTime("14:00:00"))))
-  }
-
-  it should "parse a 'in' comparision" in {
-
-    // endpoint
-    parse("a in < 2") should be(In(Ref("a"), InputLessThan(ConstNumber(2))))
-    // interval
-    parse("a in (2 .. 4)") should be(In(Ref("a"),
-        Interval(OpenIntervalBoundary(ConstNumber(2)), OpenIntervalBoundary(ConstNumber(4)))))
-    // null value
-    parse("a in null") should be(In(Ref("a"), InputEqualTo(ConstNull)))
-    // multiple tests
-    parse("a in (2,4,6)") should be(In(Ref("a"),
-        AtLeastOne(List(
-            InputEqualTo(ConstNumber(2)),
-            InputEqualTo(ConstNumber(4)),
-            InputEqualTo(ConstNumber(6)) ))) )
-  }
-
+  
   it should "parse a function definition" in {
 
     parse("function() 42") should be(FunctionDefinition(
@@ -298,29 +147,6 @@ class ParseExpressionTest extends FlatSpec with Matchers {
         ConstInputValue,
         ConstNumber(21)
       ))) )
-  }
-
-  it should "parse a context" in {
-
-    parse("{}") should be(ConstContext(List()))
-
-    parse("{ a : 1 }") should be(ConstContext(List(
-        ("a" -> ConstNumber(1)) )))
-
-    parse("{ a:1, b:true }") should be(ConstContext(List(
-        ("a" -> ConstNumber(1)),
-        ("b" -> ConstBool(true)) )))
-  }
-
-  it should "parse a list" in {
-
-    parse("[]") should be(ConstList(List()))
-
-    parse("[1]") should be(ConstList( List(ConstNumber(1)) ))
-
-    parse("[1, 2]") should be(ConstList(List(
-        ConstNumber(1),
-        ConstNumber(2) )))
   }
 
   it should "parse an if-then-else condition" in {
