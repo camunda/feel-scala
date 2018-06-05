@@ -1,7 +1,7 @@
 
 lazy val commonSettings = Seq(
   organization := "org.camunda.bpm.extension.feel.scala",
-  version := "1.5.0-SNAPSHOT",
+  version := "1.6.0-SNAPSHOT",
   scalaVersion := "2.12.4",
 
   resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -20,7 +20,7 @@ val commonDependencies = Seq(
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.9.0" % "test"
 )
 
-val camundaVersion = "7.9.0-alpha2"
+val camundaVersion = "7.9.0"
 
 lazy val root = (project in file(".")).
   settings(commonSettings).
