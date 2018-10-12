@@ -12,7 +12,7 @@ import org.slf4j._
  * @author Philipp Ossler
  */
 class FeelInterpreter {
-  
+
   def eval(expression: Exp)(implicit context: Context): Val = expression match {
 
     // literals
@@ -497,7 +497,7 @@ class FeelInterpreter {
       }
     }
 
-    function.invoke(paramList)    
+    function.invoke(paramList)
   }
 
   private def findFunction(ctx: Context, name: String, params: FunctionParameters): Val = params match {
@@ -559,9 +559,9 @@ class FeelInterpreter {
       case true => withList(filterList(xs, filter), l => ValList(x :: l.items) )
     })
   }
-  
+
   private def filterList(list: List[Val], index: Number): Val = {
-    
+
     val i = {
       if (index > 0) {
         index - 1
@@ -569,7 +569,7 @@ class FeelInterpreter {
         list.size + index
       }
     }
-    
+
     if (i < 0 || i >= list.size) {
       ValNull
     } else {
@@ -616,15 +616,15 @@ class FeelInterpreter {
       case "hour"          => ValNumber(time.getHour)
       case "minute"        => ValNumber(time.getMinute)
       case "second"        => ValNumber(time.getSecond)
-      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
+      case "time offset"   => ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
       case "timezone"      => time.getZoneId.map(ValString(_)).getOrElse(ValNull)
-      case e               => error(v, s"expected one of the time properies {hour, minute, second, time_offset, timezone} but fount '$e'")
+      case e               => error(v, s"expected one of the time properies {hour, minute, second, time offset, timezone} but fount '$e'")
     }
     case ValLocalTime(time) => key match {
       case "hour"          => ValNumber(time.getHour)
       case "minute"        => ValNumber(time.getMinute)
       case "second"        => ValNumber(time.getSecond)
-      case "time_offset"   => ValNull
+      case "time offset"   => ValNull
       case "timezone"      => ValNull
       case e               => error(v, s"expected one of the (local) time properies {hour, minute, second} but fount '$e'")
     }
@@ -635,9 +635,9 @@ class FeelInterpreter {
       case "hour"          => ValNumber(dateTime.getHour)
       case "minute"        => ValNumber(dateTime.getMinute)
       case "second"        => ValNumber(dateTime.getSecond)
-      case "time_offset"   => ValDayTimeDuration(Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
+      case "time offset"   => ValDayTimeDuration(Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
       case "timezone"      => if (hasTimeZone(dateTime)) ValString(dateTime.getZone.getId) else ValNull
-      case e               => error(v, s"expected one of the date-time properies {year, month, day, hour, minute, second, time_offset, timezone} but fount '$e'")
+      case e               => error(v, s"expected one of the date-time properies {year, month, day, hour, minute, second, time offset, timezone} but fount '$e'")
     }
     case ValLocalDateTime(dateTime) => key match {
       case "year"          => ValNumber(dateTime.getYear)
@@ -646,7 +646,7 @@ class FeelInterpreter {
       case "hour"          => ValNumber(dateTime.getHour)
       case "minute"        => ValNumber(dateTime.getMinute)
       case "second"        => ValNumber(dateTime.getSecond)
-      case "time_offset"   => ValNull
+      case "time offset"   => ValNull
       case "timezone"      => ValNull
       case e               => error(v, s"expected one of the (local) date-time properies {year, month, day, hour, minute, second} but fount '$e'")
     }
@@ -664,7 +664,7 @@ class FeelInterpreter {
     }
     case e => error(e, s"expected Context or List of Contextes but found '$e'")
   }
-  
+
   private def hasTimeZone(dateTime: DateTime) = !dateTime.getOffset.equals(dateTime.getZone)
 
   private def evalContextEntry(key: String, exp: Exp)(implicit context: Context): Val =

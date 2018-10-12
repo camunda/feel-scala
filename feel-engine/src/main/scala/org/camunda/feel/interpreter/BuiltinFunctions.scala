@@ -27,227 +27,227 @@ object BuiltinFunctions extends FunctionProvider {
     listFunctions ++
     numericFunctions
 
-	private def conversionFunctions = Map(
-	  "date" -> List(dateFunction, dateFunction3),
-		"date and time" -> List(dateTime, dateTime2),
-		"time" -> List(timeFunction, timeFunction3, timeFunction4),
-		"number" -> List(numberFunction, numberFunction2, numberFunction3),
-		"string" -> List(stringFunction),
-		"duration" -> List(durationFunction),
-		"years and months duration" -> List(durationFunction2)
-	)
+  private def conversionFunctions = Map(
+    "date" -> List(dateFunction, dateFunction3),
+    "date and time" -> List(dateTime, dateTime2),
+    "time" -> List(timeFunction, timeFunction3, timeFunction4),
+    "number" -> List(numberFunction, numberFunction2, numberFunction3),
+    "string" -> List(stringFunction),
+    "duration" -> List(durationFunction),
+    "years and months duration" -> List(durationFunction2)
+  )
 
-	private def booleanFunctions = Map(
-	  "not" -> List(notFunction)
-	)
+  private def booleanFunctions = Map(
+    "not" -> List(notFunction)
+  )
 
-	private def stringFunctions = Map(
-	  "substring" -> List(substringFunction, substringFunction3),
-	  "string length" -> List(stringLengthFunction),
-	  "upper case" -> List(upperCaseFunction),
-	  "lower case" -> List(lowerCaseFunction),
-	  "substring before" -> List(substringBeforeFunction),
-	  "substring after" -> List(substringAfterFunction),
-	  "replace" -> List(replaceFunction, replaceFunction4),
-	  "contains" -> List(containsFunction),
-	  "starts with" -> List(startsWithFunction),
-	  "ends with" -> List(endsWithFunction),
-	  "matches" -> List(matchesFunction, matchesFunction3)
-	)
+  private def stringFunctions = Map(
+    "substring" -> List(substringFunction, substringFunction3),
+    "string length" -> List(stringLengthFunction),
+    "upper case" -> List(upperCaseFunction),
+    "lower case" -> List(lowerCaseFunction),
+    "substring before" -> List(substringBeforeFunction),
+    "substring after" -> List(substringAfterFunction),
+    "replace" -> List(replaceFunction, replaceFunction4),
+    "contains" -> List(containsFunction),
+    "starts with" -> List(startsWithFunction),
+    "ends with" -> List(endsWithFunction),
+    "matches" -> List(matchesFunction, matchesFunction3)
+  )
 
-	private def listFunctions = Map(
-	  "list contains" -> List(listContainsFunction),
-	  "count" -> List(countFunction),
-	  "min" -> List(minFunction),
-	  "max" -> List(maxFunction),
-	  "sum" -> List(sumFunction),
-	  "mean" -> List(meanFunction),
-	  "and" -> List(andFunction),
-	  "or" -> List(orFunction),
-	  "sublist" -> List(sublistFunction, sublistFunction3),
-	  "append" -> List(appendFunction),
-	  "concatenate" -> List(concatenateFunction),
-	  "insert before" -> List(insertBeforeFunction),
-	  "remove" -> List(removeFunction),
-	  "reverse" -> List(reverseFunction),
-	  "index of" -> List(indexOfFunction),
-	  "union" -> List(unionFunction),
-	  "distinct values" -> List(distinctValuesFunction),
-	  "flatten" -> List(flattenFunction),
-	  "sort" -> List(sortFunction)
-	)
+  private def listFunctions = Map(
+    "list contains" -> List(listContainsFunction),
+    "count" -> List(countFunction),
+    "min" -> List(minFunction),
+    "max" -> List(maxFunction),
+    "sum" -> List(sumFunction),
+    "mean" -> List(meanFunction),
+    "and" -> List(andFunction),
+    "or" -> List(orFunction),
+    "sublist" -> List(sublistFunction, sublistFunction3),
+    "append" -> List(appendFunction),
+    "concatenate" -> List(concatenateFunction),
+    "insert before" -> List(insertBeforeFunction),
+    "remove" -> List(removeFunction),
+    "reverse" -> List(reverseFunction),
+    "index of" -> List(indexOfFunction),
+    "union" -> List(unionFunction),
+    "distinct values" -> List(distinctValuesFunction),
+    "flatten" -> List(flattenFunction),
+    "sort" -> List(sortFunction)
+  )
 
-	private def numericFunctions = Map(
-	  "decimal" -> List(decimalFunction),
-	  "floor" -> List(floorFunction),
-	  "ceiling" -> List(ceilingFunction)
-	)
+  private def numericFunctions = Map(
+    "decimal" -> List(decimalFunction),
+    "floor" -> List(floorFunction),
+    "ceiling" -> List(ceilingFunction)
+  )
 
-	private def error(e: List[Val]): Val = e match {
-	    case vars if (vars.exists(_.isInstanceOf[ValError])) => vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
-	    case e => {
+  private def error(e: List[Val]): Val = e match {
+      case vars if (vars.exists(_.isInstanceOf[ValError])) => vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
+      case e => {
         logger.warn(s"Suppressed failure: illegal arguments: $e")
         ValNull
       }
   }
 
-  private def parseDate(d: String): Val = 
+  private def parseDate(d: String): Val =
   {
     if (isValidDate(d)) {
-      Try(ValDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull } 
+      Try(ValDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ValNull }
     } else {
        logger.warn(s"Failed to parse date from '$d'"); ValNull
-    } 
+    }
   }
-    
-  private def parseTime(t: String): Val = 
+
+  private def parseTime(t: String): Val =
   {
-    if(isOffsetTime(t)) { 
+    if(isOffsetTime(t)) {
       Try(ValTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ValNull }
-    } else { 
+    } else {
       Try(ValLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ValNull }
     }
   }
-  
-  private def parseDateTime(dt: String): Val = 
+
+  private def parseDateTime(dt: String): Val =
   {
     if (isValidDate(dt)) {
       Try(ValLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ValNull }
-    } else if (isOffsetDateTime(dt)) { 
+    } else if (isOffsetDateTime(dt)) {
       Try(ValDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ValNull }
-    } else if (isLocalDateTime(dt)) { 
+    } else if (isLocalDateTime(dt)) {
       Try(ValLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ValNull }
     } else {
       logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
     }
   }
-  
-  private def parseDuration(d: String): Val = 
+
+  private def parseDuration(d: String): Val =
   {
-    if(isYearMonthDuration(d)) { 
+    if(isYearMonthDuration(d)) {
       Try(ValYearMonthDuration((d : YearMonthDuration).normalized)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ValNull }
-    } else if (isDayTimeDuration(d)) { 
+    } else if (isDayTimeDuration(d)) {
       Try(ValDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ValNull }
     } else {
       logger.warn(s"Failed to parse duration from '$d'"); ValNull
     }
   }
-  
-	def dateFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => parseDate(from)
-		case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
+
+  def dateFunction = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => parseDate(from)
+    case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
     case List(ValDateTime(from)) => ValDate(from.toLocalDate())
     case List(ValDate(from)) => ValDate(from)
-		case e => error(e)
-	})
+    case e => error(e)
+  })
 
-	def dateFunction3 = ValFunction(List("year", "month", "day"), _ match {
-		case List(ValNumber(year), ValNumber(month), ValNumber(day)) => Try 
-		{  
-		  ValDate(LocalDate.of(year.intValue(), month.intValue(), day.intValue())) 
-	  }.getOrElse { logger.warn(s"Failed to parse date from: year=$year, month=$month, day=$day"); ValNull } 
-		case e => error(e)
-	})
+  def dateFunction3 = ValFunction(List("year", "month", "day"), _ match {
+    case List(ValNumber(year), ValNumber(month), ValNumber(day)) => Try
+    {
+      ValDate(LocalDate.of(year.intValue(), month.intValue(), day.intValue()))
+    }.getOrElse { logger.warn(s"Failed to parse date from: year=$year, month=$month, day=$day"); ValNull }
+    case e => error(e)
+  })
 
-	def dateTime = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => parseDateTime(from)
-		case e => error(e)
-	})
+  def dateTime = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => parseDateTime(from)
+    case e => error(e)
+  })
 
-	def dateTime2 = ValFunction(List("date", "time"), _ match {
-		case List(ValDate(date), ValLocalTime(time)) => ValLocalDateTime(date.atTime(time))
+  def dateTime2 = ValFunction(List("date", "time"), _ match {
+    case List(ValDate(date), ValLocalTime(time)) => ValLocalDateTime(date.atTime(time))
     case List(ValDate(date), ValTime(time)) => ValDateTime(time.withDate(date))
-		case List(ValLocalDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
+    case List(ValLocalDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
     case List(ValLocalDateTime(dateTime), ValTime(time)) => ValDateTime(time.withDate(dateTime.toLocalDate()))
     case List(ValDateTime(dateTime), ValLocalTime(time)) => ValLocalDateTime(dateTime.toLocalDate().atTime(time))
     case List(ValDateTime(dateTime), ValTime(time)) => ValDateTime(time.withDate(dateTime.toLocalDate()))
-		case e => error(e)
-	})
+    case e => error(e)
+  })
 
-	def timeFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => parseTime(from)
-		case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
+  def timeFunction = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => parseTime(from)
+    case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
     case List(ValDateTime(from)) => ValTime(ZonedTime.of(from))
     case List(ValDate(from)) =>  ValTime(ZonedTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC))
-		case e => error(e)
-	})
+    case e => error(e)
+  })
 
-	def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
-		case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => Try
-		{ 
-		  val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
-		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos))
-	  }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull } 
-		case e => error(e)
-	})
+  def timeFunction3 = ValFunction(List("hour", "minute", "second"), _ match {
+    case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) => Try
+    {
+      val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
+      ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos))
+    }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull }
+    case e => error(e)
+  })
 
-	def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
-	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => Try
-		{  
-		  val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
-		  val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos)
+  def timeFunction4 = ValFunction(List("hour", "minute", "second", "offset"), _ match {
+    case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValDayTimeDuration(offset)) => Try
+    {
+      val nanos = second.bigDecimal.remainder(BigDecimal.ONE).movePointRight(9).intValue
+      val localTime = LocalTime.of(hour.intValue(), minute.intValue(), second.intValue(), nanos)
       val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
       ValTime(ZonedTime.of(localTime, zonedOffset))
-	  }.getOrElse { logger.warn(s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset"); ValNull } 
-	  case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValNull) => Try
-		{  
-		  ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
-	  }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull } 
-		case e => error(e)
-	})
+    }.getOrElse { logger.warn(s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset"); ValNull }
+    case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValNull) => Try
+    {
+      ValLocalTime(LocalTime.of(hour.intValue(), minute.intValue(), second.intValue()))
+    }.getOrElse { logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"); ValNull }
+    case e => error(e)
+  })
 
-	def numberFunction = ValFunction(List("from"), _ match {
-	  case List(ValString(from)) => ValNumber(from)
-	  case e => error(e)
-	})
+  def numberFunction = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => ValNumber(from)
+    case e => error(e)
+  })
 
-	def numberFunction2 = ValFunction(List("from", "grouping"), _ match {
-	  case List(ValString(from), ValString(grouping)) if(isValidGroupingSeparator(grouping)) => ValNumber(from.replace(grouping, ""))
-	  case List(ValString(from), ValString(grouping)) => ValError(s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
-	  case e => error(e)
-	})
+  def numberFunction2 = ValFunction(List("from", "grouping separator"), _ match {
+    case List(ValString(from), ValString(grouping)) if(isValidGroupingSeparator(grouping)) => ValNumber(from.replace(grouping, ""))
+    case List(ValString(from), ValString(grouping)) => ValError(s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
+    case e => error(e)
+  })
 
-	def numberFunction3 = ValFunction(List("from", "grouping", "decimal"), _ match {
-	  case List(ValString(from), ValString(grouping), ValString(decimal)) if(isValidGroupingSeparator(grouping) && isValidDecimalSeparator(decimal) && grouping != decimal)
-	    => ValNumber(from.replace(grouping, "").replace(decimal, "."))
-	  case List(ValString(from), ValString(grouping), ValString(decimal)) => ValError(s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'")
-	  case e => error(e)
-	})
+  def numberFunction3 = ValFunction(List("from", "grouping separator", "decimal separator"), _ match {
+    case List(ValString(from), ValString(grouping), ValString(decimal)) if(isValidGroupingSeparator(grouping) && isValidDecimalSeparator(decimal) && grouping != decimal)
+      => ValNumber(from.replace(grouping, "").replace(decimal, "."))
+    case List(ValString(from), ValString(grouping), ValString(decimal)) => ValError(s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'")
+    case e => error(e)
+  })
 
-	private def isValidGroupingSeparator(separator: String) = separator == " " || separator == "," || separator == "."
+  private def isValidGroupingSeparator(separator: String) = separator == " " || separator == "," || separator == "."
 
-	private def isValidDecimalSeparator(separator: String) = separator == "," || separator == "."
+  private def isValidDecimalSeparator(separator: String) = separator == "," || separator == "."
 
-	lazy val dateTimeOffsetZoneIdPattern = Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
-	
-	def stringFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => ValString(from)
-		case List(ValBoolean(from)) => ValString(from.toString)
-		case List(ValNumber(from)) => ValString(from.toString)
-		case List(ValDate(from)) => ValString(from.format(dateFormatter))
-		case List(ValLocalTime(from)) => ValString(from.format(localTimeFormatter))
+  lazy val dateTimeOffsetZoneIdPattern = Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
+
+  def stringFunction = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => ValString(from)
+    case List(ValBoolean(from)) => ValString(from.toString)
+    case List(ValNumber(from)) => ValString(from.toString)
+    case List(ValDate(from)) => ValString(from.format(dateFormatter))
+    case List(ValLocalTime(from)) => ValString(from.format(localTimeFormatter))
     case List(ValTime(from)) => ValString(from.format)
-		case List(ValLocalDateTime(from)) => ValString(from.format(localDateTimeFormatter))
-    case List(ValDateTime(from)) => 
+    case List(ValLocalDateTime(from)) => ValString(from.format(localDateTimeFormatter))
+    case List(ValDateTime(from)) =>
     {
       val formattedDateTime = from.format(dateTimeFormatter)
       // remove offset-id if zone-id is present
-      val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern.matcher(formattedDateTime).replaceAll("$1$3")   
+      val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern.matcher(formattedDateTime).replaceAll("$1$3")
       ValString(dateTimeWithOffsetOrZoneId)
-    } 
-		case List(ValYearMonthDuration(from)) => ValString(from.toString)
-		case List(ValDayTimeDuration(from)) => ValString(from.toString)
-		case e => error(e)
-	})
+    }
+    case List(ValYearMonthDuration(from)) => ValString(from.toString)
+    case List(ValDayTimeDuration(from)) => ValString(from.toString)
+    case e => error(e)
+  })
 
-	def durationFunction = ValFunction(List("from"), _ match {
-		case List(ValString(from)) => parseDuration(from)
-		case e => error(e)
-	})
+  def durationFunction = ValFunction(List("from"), _ match {
+    case List(ValString(from)) => parseDuration(from)
+    case e => error(e)
+  })
 
-	def durationFunction2 = ValFunction(List("from", "to"), _ match {
-	  case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0).normalized )
+  def durationFunction2 = ValFunction(List("from", "to"), _ match {
+    case List(ValDate(from), ValDate(to)) => ValYearMonthDuration( Period.between(from, to).withDays(0).normalized )
     case List(ValLocalDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
     case List(ValDateTime(from), ValDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
     case List(ValDateTime(from), ValLocalDateTime(to)) => ValYearMonthDuration( Period.between(from.toLocalDate, to.toLocalDate).withDays(0).normalized )
@@ -257,82 +257,82 @@ object BuiltinFunctions extends FunctionProvider {
     case List(ValDateTime(from), ValDate(to)) => ValYearMonthDuration( Period.between(from.toLocalDate(), to).withDays(0).normalized )
     case List(ValLocalDateTime(from), ValDate(to)) => ValYearMonthDuration( Period.between(from.toLocalDate(), to).withDays(0).normalized )
     case e => error(e)
-	})
+  })
 
-	def notFunction = ValFunction(List("negand"), _ match {
-	  case List(ValBoolean(negand)) => ValBoolean(!negand)
+  def notFunction = ValFunction(List("negand"), _ match {
+    case List(ValBoolean(negand)) => ValBoolean(!negand)
     case List(other: Val) => ValNull
-	  case other => ValNull
-	})
+    case other => ValNull
+  })
 
-	def substringFunction = ValFunction(List("string", "start"), _ match {
-	  case List(ValString(string), ValNumber(start)) => ValString(string.substring(stringIndex(string, start.intValue())))
-	  case e => error(e)
-	})
+  def substringFunction = ValFunction(List("string", "start position"), _ match {
+    case List(ValString(string), ValNumber(start)) => ValString(string.substring(stringIndex(string, start.intValue())))
+    case e => error(e)
+  })
 
-	def substringFunction3 = ValFunction(List("string", "start", "length"), _ match {
-	  case List(ValString(string), ValNumber(start), ValNumber(length)) => ValString(string.substring(stringIndex(string, start.intValue()), stringIndex(string, start.intValue()) + length.intValue))
-	  case e => error(e)
-	})
+  def substringFunction3 = ValFunction(List("string", "start position", "length"), _ match {
+    case List(ValString(string), ValNumber(start), ValNumber(length)) => ValString(string.substring(stringIndex(string, start.intValue()), stringIndex(string, start.intValue()) + length.intValue))
+    case e => error(e)
+  })
 
-	private def stringIndex(string: String, index: Int) = if (index > 0) {
-	  index - 1
-	} else {
-	  string.length + index
-	}
+  private def stringIndex(string: String, index: Int) = if (index > 0) {
+    index - 1
+  } else {
+    string.length + index
+  }
 
   def stringLengthFunction = ValFunction(List("string"), _ match {
-	  case List(ValString(string)) => ValNumber(string.length)
-	  case e => error(e)
-	})
+    case List(ValString(string)) => ValNumber(string.length)
+    case e => error(e)
+  })
 
-	def upperCaseFunction = ValFunction(List("string"), _ match {
-	  case List(ValString(string)) => ValString(string.toUpperCase)
-	  case e => error(e)
-	})
+  def upperCaseFunction = ValFunction(List("string"), _ match {
+    case List(ValString(string)) => ValString(string.toUpperCase)
+    case e => error(e)
+  })
 
-	def lowerCaseFunction = ValFunction(List("string"), _ match {
-	  case List(ValString(string)) => ValString(string.toLowerCase)
-	  case e => error(e)
-	})
+  def lowerCaseFunction = ValFunction(List("string"), _ match {
+    case List(ValString(string)) => ValString(string.toLowerCase)
+    case e => error(e)
+  })
 
-	def substringBeforeFunction = ValFunction(List("string", "match"), _ match {
-	  case List(ValString(string), ValString(m)) => {
-	    val index = string.indexOf(m)
-	    if (index > 0) {
-	      ValString(string.substring(0, index))
-	    } else {
-	      ValString("")
-	    }
-	  }
-	  case e => error(e)
-	})
+  def substringBeforeFunction = ValFunction(List("string", "match"), _ match {
+    case List(ValString(string), ValString(m)) => {
+      val index = string.indexOf(m)
+      if (index > 0) {
+        ValString(string.substring(0, index))
+      } else {
+        ValString("")
+      }
+    }
+    case e => error(e)
+  })
 
-	def substringAfterFunction = ValFunction(List("string", "match"), _ match {
-	  case List(ValString(string), ValString(m)) => {
-	    val index = string.indexOf(m)
-	    if (index >= 0) {
-	      ValString(string.substring(index + m.length))
-	    } else {
-	      ValString("")
-	    }
-	  }
-	  case e => error(e)
-	})
+  def substringAfterFunction = ValFunction(List("string", "match"), _ match {
+    case List(ValString(string), ValString(m)) => {
+      val index = string.indexOf(m)
+      if (index >= 0) {
+        ValString(string.substring(index + m.length))
+      } else {
+        ValString("")
+      }
+    }
+    case e => error(e)
+  })
 
-	def replaceFunction = ValFunction(List("input", "pattern", "replacement"), _ match {
-	  case List(ValString(input), ValString(pattern), ValString(replacement)) => ValString(input.replaceAll(pattern, replacement))
-	  case e => error(e)
-	})
+  def replaceFunction = ValFunction(List("input", "pattern", "replacement"), _ match {
+    case List(ValString(input), ValString(pattern), ValString(replacement)) => ValString(input.replaceAll(pattern, replacement))
+    case e => error(e)
+  })
 
   def replaceFunction4 = ValFunction(List("input", "pattern", "replacement", "flags"), _ match {
-	  case List(ValString(input), ValString(pattern), ValString(replacement), ValString(flags)) => {
+    case List(ValString(input), ValString(pattern), ValString(replacement), ValString(flags)) => {
       val p = Pattern.compile(pattern, patternFlags(flags))
       val m = p.matcher(input)
       ValString(m.replaceAll(replacement))
     }
-	  case e => error(e)
-	})
+    case e => error(e)
+  })
 
   private def patternFlags(flags: String): Int = {
     var f = 0
@@ -353,88 +353,88 @@ object BuiltinFunctions extends FunctionProvider {
     f
   }
 
-	def containsFunction = ValFunction(List("string", "match"), _ match {
-	  case List(ValString(string), ValString(m)) => ValBoolean(string.contains(m))
-	  case e => error(e)
-	})
+  def containsFunction = ValFunction(List("string", "match"), _ match {
+    case List(ValString(string), ValString(m)) => ValBoolean(string.contains(m))
+    case e => error(e)
+  })
 
-	def startsWithFunction = ValFunction(List("string", "match"), _ match {
-	  case List(ValString(string), ValString(m)) => ValBoolean(string.startsWith(m))
-	  case e => error(e)
-	})
+  def startsWithFunction = ValFunction(List("string", "match"), _ match {
+    case List(ValString(string), ValString(m)) => ValBoolean(string.startsWith(m))
+    case e => error(e)
+  })
 
-	def endsWithFunction = ValFunction(List("string", "match"), _ match {
-	  case List(ValString(string), ValString(m)) => ValBoolean(string.endsWith(m))
-	  case e => error(e)
-	})
+  def endsWithFunction = ValFunction(List("string", "match"), _ match {
+    case List(ValString(string), ValString(m)) => ValBoolean(string.endsWith(m))
+    case e => error(e)
+  })
 
-	def matchesFunction = ValFunction(List("input", "pattern"), _ match {
-	  case List(ValString(input), ValString(pattern)) => {
+  def matchesFunction = ValFunction(List("input", "pattern"), _ match {
+    case List(ValString(input), ValString(pattern)) => {
       val p = Pattern.compile(pattern)
       val m = p.matcher(input)
       ValBoolean(m.find)
     }
-	  case e => error(e)
-	})
+    case e => error(e)
+  })
 
   def matchesFunction3 = ValFunction(List("input", "pattern", "flags"), _ match {
-	  case List(ValString(input), ValString(pattern), ValString(flags)) => {
+    case List(ValString(input), ValString(pattern), ValString(flags)) => {
       val p = Pattern.compile(pattern, patternFlags(flags))
       val m = p.matcher(input)
       ValBoolean(m.find)
     }
-	  case e => error(e)
-	})
+    case e => error(e)
+  })
 
-	def listContainsFunction = ValFunction(List("list", "element"), _ match {
-	  case List(ValList(list), element) => ValBoolean(list.contains(element))
-	  case e => error(e)
-	})
+  def listContainsFunction = ValFunction(List("list", "element"), _ match {
+    case List(ValList(list), element) => ValBoolean(list.contains(element))
+    case e => error(e)
+  })
 
-	def countFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => ValNumber(list.size)
-	  case e => error(e)
-	})
+  def countFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => ValNumber(list.size)
+    case e => error(e)
+  })
 
-	def minFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => list match {
-	    case Nil => ValNull
-	    case x :: xs => x match {
-	      case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.min ))
-	      case e => ValError(s"expected number but found '$e")
-	    }
-	  }
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def minFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => list match {
+      case Nil => ValNull
+      case x :: xs => x match {
+        case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.min ))
+        case e => ValError(s"expected number but found '$e")
+      }
+    }
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def maxFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => list match {
-	    case Nil => ValNull
-	    case x :: xs => x match {
-	      case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.max ))
-	      case e => ValError(s"expected number but found '$e")
-	    }
-	  }
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def maxFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => list match {
+      case Nil => ValNull
+      case x :: xs => x match {
+        case ValNumber(n) => withListOfNumbers(list, numbers => ValNumber( numbers.max ))
+        case e => ValError(s"expected number but found '$e")
+      }
+    }
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def sumFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber( numbers.sum ))
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def sumFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber( numbers.sum ))
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def meanFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => list match {
-	    case Nil => ValNull
-	    case l => withListOfNumbers(list, numbers => ValNumber( numbers.sum / numbers.size ))
-	  }
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def meanFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => list match {
+      case Nil => ValNull
+      case l => withListOfNumbers(list, numbers => ValNumber( numbers.sum / numbers.size ))
+    }
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def andFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => all(list)
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def andFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => all(list)
+    case e => error(e)
+  }, hasVarArgs = true)
 
   private def all(xs: List[Val]): Val = xs match {
     case Nil => ValBoolean(true)
@@ -448,10 +448,10 @@ object BuiltinFunctions extends FunctionProvider {
     }
   }
 
-	def orFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => atLeastOne(list)
-	  case e => error(e)
-	}, hasVarArgs = true)
+  def orFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => atLeastOne(list)
+    case e => error(e)
+  }, hasVarArgs = true)
 
   private def atLeastOne(xs: List[Val]): Val = xs match {
     case Nil => ValBoolean(false)
@@ -465,65 +465,65 @@ object BuiltinFunctions extends FunctionProvider {
     }
   }
 
-	def sublistFunction = ValFunction(List("list", "start"), _ match {
-	  case List(ValList(list), ValNumber(start)) => ValList(list.slice(listIndex(list, start.intValue), list.length))
-	  case e => error(e)
-	})
+  def sublistFunction = ValFunction(List("list", "start"), _ match {
+    case List(ValList(list), ValNumber(start)) => ValList(list.slice(listIndex(list, start.intValue), list.length))
+    case e => error(e)
+  })
 
-	def sublistFunction3 = ValFunction(List("list", "start", "length"), _ match {
-	  case List(ValList(list), ValNumber(start), ValNumber(length)) => ValList(list.slice(listIndex(list, start.intValue), listIndex(list, start.intValue) + length.intValue))
-	  case e => error(e)
-	})
+  def sublistFunction3 = ValFunction(List("list", "start", "length"), _ match {
+    case List(ValList(list), ValNumber(start), ValNumber(length)) => ValList(list.slice(listIndex(list, start.intValue), listIndex(list, start.intValue) + length.intValue))
+    case e => error(e)
+  })
 
-	private def listIndex(list: List[_], index: Int) = if (index > 0) {
-	  index - 1
-	} else {
-	  list.size + index
-	}
+  private def listIndex(list: List[_], index: Int) = if (index > 0) {
+    index - 1
+  } else {
+    list.size + index
+  }
 
   def appendFunction = ValFunction(List("list", "items"), _ match {
-	  case List(ValList(list), ValList(items)) => ValList(list ++ items)
-	  case e => error(e)
-	}, hasVarArgs = true)
+    case List(ValList(list), ValList(items)) => ValList(list ++ items)
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def concatenateFunction = ValFunction(List("lists"), _ match {
-	  case List(ValList(lists)) => ValList( lists.flatMap(_ match {
+  def concatenateFunction = ValFunction(List("lists"), _ match {
+    case List(ValList(lists)) => ValList( lists.flatMap(_ match {
           case ValList(list) => list
           case v => List(v)
       }).toList
     )
-	  case e => error(e)
-	}, hasVarArgs = true)
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def insertBeforeFunction = ValFunction(List("list", "position", "newItem"), _ match {
-	  case List(ValList(list), ValNumber(position), newItem: Val) => ValList(list.take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list.drop(listIndex(list, position.intValue)))
-	  case e => error(e)
-	})
+  def insertBeforeFunction = ValFunction(List("list", "position", "newItem"), _ match {
+    case List(ValList(list), ValNumber(position), newItem: Val) => ValList(list.take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list.drop(listIndex(list, position.intValue)))
+    case e => error(e)
+  })
 
-	def removeFunction = ValFunction(List("list", "position"), _ match {
-	  case List(ValList(list), ValNumber(position)) => ValList(list.take(listIndex(list, position.intValue)) ++ list.drop(listIndex(list, position.intValue + 1)))
-	  case e => error(e)
-	})
+  def removeFunction = ValFunction(List("list", "position"), _ match {
+    case List(ValList(list), ValNumber(position)) => ValList(list.take(listIndex(list, position.intValue)) ++ list.drop(listIndex(list, position.intValue + 1)))
+    case e => error(e)
+  })
 
-	def reverseFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => ValList(list.reverse)
-	  case e => error(e)
-	})
+  def reverseFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => ValList(list.reverse)
+    case e => error(e)
+  })
 
-	def indexOfFunction = ValFunction(List("list", "match"), _ match {
-	  case List(ValList(list), m: Val) => ValList(indexOfList(list, m) map(ValNumber(_)))
-	  case e => error(e)
-	})
+  def indexOfFunction = ValFunction(List("list", "match"), _ match {
+    case List(ValList(list), m: Val) => ValList(indexOfList(list, m) map(ValNumber(_)))
+    case e => error(e)
+  })
 
-	@tailrec
-	private def indexOfList(list: List[Val], item: Val, from: Int = 0, indexList: List[Int] = List()): List[Int] = {
-	  val index = list.indexOf(item, from)
+  @tailrec
+  private def indexOfList(list: List[Val], item: Val, from: Int = 0, indexList: List[Int] = List()): List[Int] = {
+    val index = list.indexOf(item, from)
 
-	  if (index > 0) {
-	    indexOfList(list, item, index + 1, indexList ++ List(index + 1))
-	  } else {
-	    indexList
-	  }
+    if (index > 0) {
+      indexOfList(list, item, index + 1, indexList ++ List(index + 1))
+    } else {
+      indexList
+    }
   }
 
   def unionFunction = ValFunction(List("lists"), _ match {
@@ -532,59 +532,59 @@ object BuiltinFunctions extends FunctionProvider {
           case v => List(v)
       }).toList.distinct
     )
-	  case e => error(e)
-	}, hasVarArgs = true)
+    case e => error(e)
+  }, hasVarArgs = true)
 
-	def distinctValuesFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => ValList(list.distinct)
-	  case e => error(e)
-	})
+  def distinctValuesFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => ValList(list.distinct)
+    case e => error(e)
+  })
 
-	def flattenFunction = ValFunction(List("list"), _ match {
-	  case List(ValList(list)) => ValList(flatten(list))
-	  case e => error(e)
-	})
+  def flattenFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) => ValList(flatten(list))
+    case e => error(e)
+  })
 
-	private def flatten(list: List[Val]): List[Val] = list match {
+  private def flatten(list: List[Val]): List[Val] = list match {
     case Nil => Nil
     case ValList(l) :: xs => flatten(l) ++ flatten(xs)
     case x :: xs => x :: flatten(xs)
   }
 
   def sortFunction = ValFunction(List("list", "precedes"), _ match {
-	  case List(ValList(list), ValFunction(params, f, _)) if (params.size == 2) => 
-	  {
-  	  try {
-  	    ValList( list.sortWith{ case (x,y) => 
-  	      f(List(x,y)) match {
-  	        case ValBoolean(isMet) => isMet
-  	        case e                 => throw new RuntimeException(s"expected boolean but found '$e'")
-  	      }
-	      })
-  	  } catch {
-  	    case e: Throwable => ValError(s"fail to sort list by given precedes function: ${e.getMessage}")
-  	  }  
-	  }
-	  case List(ValList(list), ValFunction(params, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
-	  case e => error(e)
-	})
+    case List(ValList(list), ValFunction(params, f, _)) if (params.size == 2) =>
+    {
+      try {
+        ValList( list.sortWith{ case (x,y) =>
+          f(List(x,y)) match {
+            case ValBoolean(isMet) => isMet
+            case e                 => throw new RuntimeException(s"expected boolean but found '$e'")
+          }
+        })
+      } catch {
+        case e: Throwable => ValError(s"fail to sort list by given precedes function: ${e.getMessage}")
+      }
+    }
+    case List(ValList(list), ValFunction(params, _, _)) => ValError(s"expect boolean function with 2 arguments, but found '${params.size}'")
+    case e => error(e)
+  })
 
   def decimalFunction = ValFunction(List("n", "scale"), _ match {
-	  case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
-	  case e => error(e)
-	})
+    case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
+    case e => error(e)
+  })
 
-	def floorFunction = ValFunction(List("n"), _ match {
-	  case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.FLOOR))
-	  case e => error(e)
-	})
+  def floorFunction = ValFunction(List("n"), _ match {
+    case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.FLOOR))
+    case e => error(e)
+  })
 
-	def ceilingFunction = ValFunction(List("n"), _ match {
-	  case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
-	  case e => error(e)
-	})
+  def ceilingFunction = ValFunction(List("n"), _ match {
+    case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
+    case e => error(e)
+  })
 
-	private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
+  private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
     list
       .map( _ match {
         case n: ValNumber => n

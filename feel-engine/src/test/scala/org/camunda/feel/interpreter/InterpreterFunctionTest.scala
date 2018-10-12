@@ -8,12 +8,12 @@ import org.camunda.feel._
  * @author Philipp Ossler
  */
 class InterpreterFunctionTest extends FlatSpec with Matchers with FeelIntegrationTest {
-  
+
   "A function definition" should "be interpeted" in {
 
     val function = eval("function(x) x + 1")
 
-    function shouldBe a [ValFunction]
+    function shouldBe a[ValFunction]
     function.asInstanceOf[ValFunction].params should be(List("x"))
   }
 
@@ -67,8 +67,7 @@ class InterpreterFunctionTest extends FlatSpec with Matchers with FeelIntegratio
 
     val functions = Map(
       "a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
-      "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction]
-    )
+      "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction])
 
     eval("a(b(1))", functions = functions) should be(ValNumber(4))
   }
@@ -102,29 +101,29 @@ class InterpreterFunctionTest extends FlatSpec with Matchers with FeelIntegratio
 
   "An external java function definition" should "be invoked with one double parameter" in {
 
-    val functions = Map("cos" -> eval(""" function(angle) external { java: { class: "java.lang.Math", method_signature: "cos(double)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("cos" -> eval(""" function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """).asInstanceOf[ValFunction])
 
     eval("cos(0)", functions = functions) should be(ValNumber(1))
-    eval("cos(1)", functions = functions) should be(ValNumber( Math.cos(1) ))
+    eval("cos(1)", functions = functions) should be(ValNumber(Math.cos(1)))
   }
 
   it should "be invoked with two int parameters" in {
 
-    val functions = Map("max" -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method_signature: "max(int, int)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("max" -> eval(""" function(x,y) external { java: { class: "java.lang.Math", method signature: "max(int, int)" } } """).asInstanceOf[ValFunction])
 
     eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
 
   it should "be invoked with one long parameters" in {
 
-    val functions = Map("abs" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "abs(long)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("abs" -> eval(""" function(a) external { java: { class: "java.lang.Math", method signature: "abs(long)" } } """).asInstanceOf[ValFunction])
 
     eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
 
   it should "be invoked with one float parameters" in {
 
-    val functions = Map("round" -> eval(""" function(a) external { java: { class: "java.lang.Math", method_signature: "round(float)" } } """).asInstanceOf[ValFunction])
+    val functions = Map("round" -> eval(""" function(a) external { java: { class: "java.lang.Math", method signature: "round(float)" } } """).asInstanceOf[ValFunction])
 
     eval("round(3.2)", functions = functions) should be(ValNumber(3))
   }

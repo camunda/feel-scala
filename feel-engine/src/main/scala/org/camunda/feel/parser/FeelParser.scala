@@ -16,13 +16,13 @@ object FeelParser extends JavaTokenParsers {
   // override to ignore comment '// ...' and '/* ... */'
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  private lazy val reservedWord: Parser[String] = ( "null\\b".r
+  private lazy val reservedWord: Parser[String] = ("null\\b".r
     | "true\\b".r | "false\\b".r
     | "function\\b".r
     | "if\\b".r | "then\\b".r | "else\\b".r
     | "for\\b".r
     | "between\\b".r
-    | "instance\\b".r | "of\\b".r )
+    | "instance\\b".r | "of\\b".r)
 
   // list of built-in function names with whitespaces
   // -- other names match the 'function name' pattern
@@ -40,12 +40,18 @@ object FeelParser extends JavaTokenParsers {
     | "index of"
     | "distinct values")
 
+  // list of built-in function parameter names with whitespaces
+  // -- other names match the 'parameter name' pattern
+  private lazy val builtinFunctionParameterNames: Parser[String] = ("start position"
+    | "grouping separator"
+    | "decimal separator")
+
   private lazy val identifier = not(reservedWord) ~> ident
 
   // Java-like string literal: ("\""+"""([^"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*"""+"\"")
   // modification: allow '\'
-  private lazy val stringLiteralWithQuotes: Parser[String] = 
-    ("\""+"""([^"\x00-\x1F\x7F]|\\u[a-fA-F0-9]{4})*"""+"\"").r ^^ ( _.replaceAll("\"", "") )
+  private lazy val stringLiteralWithQuotes: Parser[String] =
+    ("\"" + """([^"\x00-\x1F\x7F]|\\u[a-fA-F0-9]{4})*""" + "\"").r ^^ (_.replaceAll("\"", ""))
 
   // 1 a)
   private lazy val expression: Parser[Exp] = textualExpression
@@ -66,19 +72,19 @@ object FeelParser extends JavaTokenParsers {
   // 2 e)
   private lazy val expression5 = arithmeticExpression
   // 2 f)
-  private lazy val expression6 = expression7 >> ( x => instanceOf.? ^^ (_.fold(x)(InstanceOf(x, _))))
+  private lazy val expression6 = expression7 >> (x => instanceOf.? ^^ (_.fold(x)(InstanceOf(x, _))))
   // 2 g)
   private lazy val expression7 = pathExpression
   // 2 h)
   private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
   // 2 i)
-  private lazy val expression9 = 
-    literal | 
-    name ^^ ( n => Ref(List(n)) ) | 
-    "?" ^^^ ConstInputValue | 
-    simplePositiveUnaryTest | 
-    "(" ~> textualExpression <~ ")" | 
-    expression10
+  private lazy val expression9 =
+    literal |
+      name ^^ (n => Ref(List(n))) |
+      "?" ^^^ ConstInputValue |
+      simplePositiveUnaryTest |
+      "(" ~> textualExpression <~ ")" |
+      expression10
 
   // 6
   private lazy val simpleExpressions: Parser[ConstList] = rep1sep(simpleExpression, ",") ^^ ConstList
@@ -87,24 +93,28 @@ object FeelParser extends JavaTokenParsers {
   private lazy val simpleExpression: Parser[Exp] = arithmeticExpression | simpleValue
 
   // 4 a) -> 21+22
-  private lazy val arithmeticExpression = chainl1(arithmeticExpression2, "+" ^^^ Addition | "-" ^^^ Subtraction )
+  private lazy val arithmeticExpression = chainl1(arithmeticExpression2, "+" ^^^ Addition | "-" ^^^ Subtraction)
   // 4 b) -> 23+24
-  private lazy val arithmeticExpression2 = chainl1(arithmeticExpression3, "*" ^^^ Multiplication | "/" ^^^ Division )
+  private lazy val arithmeticExpression2 = chainl1(arithmeticExpression3, "*" ^^^ Multiplication | "/" ^^^ Division)
   // 4 c) -> 25
-  private lazy val arithmeticExpression3 = chainl1(arithmeticExpression4, "**" ^^^ Exponentiation )
+  private lazy val arithmeticExpression3 = chainl1(arithmeticExpression4, "**" ^^^ Exponentiation)
   // 4 d) -> 26
-  private lazy val arithmeticExpression4 = opt("-") ~ expression6 ^^ {  case Some(_) ~ e => ArithmeticNegation(e)
-                                                                        case None ~ e => e }
+  private lazy val arithmeticExpression4 = opt("-") ~ expression6 ^^ {
+    case Some(_) ~ e => ArithmeticNegation(e)
+    case None ~ e    => e
+  }
 
   // 17
   private lazy val unaryTests: Parser[Exp] =
     "-" ^^^ ConstBool(true) |
-    "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
-    positiveUnaryTests
+      "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
+      positiveUnaryTests
 
   // 16
-  private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest, ",") ^^ {  case test :: Nil => test
-                                                                                           case tests => AtLeastOne(tests) }
+  private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest, ",") ^^ {
+    case test :: Nil => test
+    case tests       => AtLeastOne(tests)
+  }
 
   // 15 - in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
   //    - however, parse simple positive unary test first since this is most usual
@@ -113,30 +123,32 @@ object FeelParser extends JavaTokenParsers {
   // 14
   private lazy val simpleUnaryTests: Parser[Exp] =
     "-" ^^^ ConstBool(true) |
-    "not" ~! "(" ~> simplePositiveUnaryTests <~ ")" ^^ Not |
-    simplePositiveUnaryTests
+      "not" ~! "(" ~> simplePositiveUnaryTests <~ ")" ^^ Not |
+      simplePositiveUnaryTests
 
   // 13
-  private lazy val simplePositiveUnaryTests: Parser[Exp] = rep1sep(simplePositiveUnaryTest, ",") ^^ {  case test :: Nil => test
-                                                                                                       case tests => AtLeastOne(tests) }
+  private lazy val simplePositiveUnaryTests: Parser[Exp] = rep1sep(simplePositiveUnaryTest, ",") ^^ {
+    case test :: Nil => test
+    case tests       => AtLeastOne(tests)
+  }
 
   // 7
   private lazy val simplePositiveUnaryTest: Parser[Exp] =
-    "<" ~> endpoint ^^ InputLessThan|
-    "<=" ~> endpoint ^^ InputLessOrEqual |
-    ">" ~> endpoint ^^ InputGreaterThan |
-    ">=" ~> endpoint ^^ InputGreaterOrEqual |
-    interval |
-    simpleValue ^^ InputEqualTo
+    "<" ~> endpoint ^^ InputLessThan |
+      "<=" ~> endpoint ^^ InputLessOrEqual |
+      ">" ~> endpoint ^^ InputGreaterThan |
+      ">=" ~> endpoint ^^ InputGreaterOrEqual |
+      interval |
+      simpleValue ^^ InputEqualTo
 
   // 18 - allow any expression as endpoint
   private lazy val endpoint: Parser[Exp] = simpleValue | expression
 
   // 19 - need to exclude function invocation from qualified name
-  private lazy val simpleValue = 
-    simpleLiteral | 
-    not(""".+\(.*\)""".r) ~> qualifiedName ^^ ( Ref(_) ) |
-    "?" ^^^ ConstInputValue
+  private lazy val simpleValue =
+    simpleLiteral |
+      not(""".+\(.*\)""".r) ~> qualifiedName ^^ (Ref(_)) |
+      "?" ^^^ ConstInputValue
 
   // 33
   private lazy val literal: Parser[Exp] = "null" ^^^ ConstNull | simpleLiteral
@@ -150,19 +162,19 @@ object FeelParser extends JavaTokenParsers {
   // 62
   private lazy val dateTimeLiteral: Parser[Exp] =
     "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDate |
-    "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseTime |
-    "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDateTime |
-    "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDuration |
-    failure("expected date time literal")
-    
+      "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseTime |
+      "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDateTime |
+      "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDuration |
+      failure("expected date time literal")
+
   // 35 -
   private lazy val stringLiteraL: Parser[ConstString] = stringLiteralWithQuotes ^^ ConstString
 
   // 37 - use combined regex instead of multiple parsers
-  private lazy val numericLiteral: Parser[ConstNumber] = """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ ( ConstNumber(_) )
+  private lazy val numericLiteral: Parser[ConstNumber] = """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ (ConstNumber(_))
 
   // 39
-  private lazy val digits: Parser[String] = rep1(digit) ^^ ( _.mkString )
+  private lazy val digits: Parser[String] = rep1(digit) ^^ (_.mkString)
 
   // 38
   private lazy val digit: Parser[String] = "[0-9]".r
@@ -171,21 +183,21 @@ object FeelParser extends JavaTokenParsers {
   private lazy val qualifiedName: Parser[List[String]] = rep1sep(name, ".")
 
   // 27 - simplified name definition
-  private lazy val name: Parser[String] = escapedIdentifier | identifier
-  
-  private lazy val escapedIdentifier: Parser[String] = ("'" ~> """([^'"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "'") 
+  private lazy val name: Parser[String] = escapedIdentifier | "time offset" | identifier
+
+  private lazy val escapedIdentifier: Parser[String] = ("'" ~> """([^'"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "'")
 
   // FEEL name definition
-  private lazy val feelName: Parser[String] = nameStart ~! rep( namePart | additionalNameSymbols ) ^^ { case s ~ ps => s + ps.mkString }
+  private lazy val feelName: Parser[String] = nameStart ~! rep(namePart | additionalNameSymbols) ^^ { case s ~ ps => s + ps.mkString }
 
   // 28
   private lazy val nameStart = nameStartChar ~! rep(namePartChar) ^^ { case s ~ ps => s + ps.mkString }
 
   // 29
-  private lazy val namePart = rep1(namePartChar) ^^ ( _.mkString )
+  private lazy val namePart = rep1(namePartChar) ^^ (_.mkString)
 
   // 30- unknown unicode chars "[\\uC0-\\uD6]".r | "[\\uD8-\\uF6]".r | "[\\uF8-\\u2FF]".r | "[\\u370-\\u37D]".r | "[\\u37F-\u1FFF]".r
-  private lazy val nameStartChar = "?" | "[A-Z]".r | "_" |"[a-z]".r |
+  private lazy val nameStartChar = "?" | "[A-Z]".r | "_" | "[a-z]".r |
     "[\u200C-\u200D]".r | "[\u2070-\u218F]".r | "[\u2C00-\u2FEF]".r | "[\u3001-\uD7FF]".r | "[\uF900-\uFDCF]".r | "[\uFDF0-\uFFFD]".r | "[\u10000-\uEFFFF]".r
 
   // 31 - unknown unicode char "[\\uB7]".r
@@ -196,10 +208,10 @@ object FeelParser extends JavaTokenParsers {
 
   // 8
   private lazy val interval: Parser[Interval] = (openIntervalStart | closedIntervalStart) ~ endpoint ~ ".." ~! endpoint ~! (openIntervalEnd | closedIntervalEnd) ^^ {
-    case ( "(" | "]" ) ~ start ~ _ ~ end ~ ( ")" | "[" ) => Interval(OpenIntervalBoundary(start), OpenIntervalBoundary(end))
-    case ( "(" | "]" ) ~ start ~ _ ~ end ~ "]" => Interval(OpenIntervalBoundary(start), ClosedIntervalBoundary(end))
-    case "[" ~ start ~ _ ~ end ~ ( ")" | "[" ) => Interval(ClosedIntervalBoundary(start), OpenIntervalBoundary(end))
-    case "[" ~ start ~ _ ~ end ~ "]" => Interval(ClosedIntervalBoundary(start), ClosedIntervalBoundary(end))
+    case ("(" | "]") ~ start ~ _ ~ end ~ (")" | "[") => Interval(OpenIntervalBoundary(start), OpenIntervalBoundary(end))
+    case ("(" | "]") ~ start ~ _ ~ end ~ "]"         => Interval(OpenIntervalBoundary(start), ClosedIntervalBoundary(end))
+    case "[" ~ start ~ _ ~ end ~ (")" | "[")         => Interval(ClosedIntervalBoundary(start), OpenIntervalBoundary(end))
+    case "[" ~ start ~ _ ~ end ~ "]"                 => Interval(ClosedIntervalBoundary(start), ClosedIntervalBoundary(end))
   }
 
   // 9
@@ -228,7 +240,7 @@ object FeelParser extends JavaTokenParsers {
 
   // 48 - no separator in spec grammar but in examples
   private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~! rep1sep(listIterator, ",") ~! "satisfies" ~! expression ^^ {
-    case "some" ~ iterators ~ _ ~ condition => SomeItem(iterators, condition)
+    case "some" ~ iterators ~ _ ~ condition  => SomeItem(iterators, condition)
     case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
   }
 
@@ -241,19 +253,18 @@ object FeelParser extends JavaTokenParsers {
   // 51
   private lazy val optionalComparison: Exp => Parser[Exp] = (x: Exp) => {
     simpleComparison(x) |
-    "between" ~! expression5 ~! "and" ~! expression5 ^^ { case _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) } |
-    "in" ~ "(" ~! positiveUnaryTests <~ ")" ^^ { case _ ~ _ ~ tests => In(x, tests) } |
-    "in" ~! positiveUnaryTest ^^ { case _ ~ test => In(x, test) } |
-    success(x) // no comparison
+      "between" ~! expression5 ~! "and" ~! expression5 ^^ { case _ ~ a ~ _ ~ b => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b)) } |
+      "in" ~ "(" ~! positiveUnaryTests <~ ")" ^^ { case _ ~ _ ~ tests => In(x, tests) } |
+      "in" ~! positiveUnaryTest ^^ { case _ ~ test => In(x, test) } |
+      success(x) // no comparison
   }
 
-
   private lazy val simpleComparison = (x: Exp) => ("<=" | ">=" | "<" | ">" | "!=" | "=") ~! expression5 ^^ {
-    case "=" ~ y => Equal(x, y)
+    case "=" ~ y  => Equal(x, y)
     case "!=" ~ y => Not(Equal(x, y))
-    case "<" ~ y => LessThan(x, y)
+    case "<" ~ y  => LessThan(x, y)
     case "<=" ~ y => LessOrEqual(x, y)
-    case ">" ~ y => GreaterThan(x, y)
+    case ">" ~ y  => GreaterThan(x, y)
     case ">=" ~ y => GreaterOrEqual(x, y)
   }
 
@@ -261,26 +272,27 @@ object FeelParser extends JavaTokenParsers {
   private lazy val instanceOf: Parser[String] = "instance" ~! "of" ~! typeName ^^ { case _ ~ _ ~ typeName => typeName }
 
   // 54
-  private lazy val typeName: Parser[String] = qualifiedName ^^ ( _.mkString(".") )
+  private lazy val typeName: Parser[String] = qualifiedName ^^ (_.mkString("."))
 
   // 45 - allow nested path expressions
-  private lazy val pathExpression: Parser[Exp] = chainl1(expression8, name, "." ^^^ PathExpression ) ~ opt("[" ~> expression <~ "]") ^^ { 
-    case path ~ None => path
+  private lazy val pathExpression: Parser[Exp] = chainl1(expression8, name, "." ^^^ PathExpression) ~ opt("[" ~> expression <~ "]") ^^ {
+    case path ~ None         => path
     case path ~ Some(filter) => Filter(path, filter)
   }
-  
+
   // 52
   private lazy val filteredExpression9: Parser[Exp] = expression9 ~ ("[" ~! expression <~ "]").? ^^ {
     case list ~ Some(_ ~ filter) => Filter(list, filter)
-    case list ~ None => list
+    case list ~ None             => list
   }
 
   // 40
   private lazy val functionInvocation: Parser[Exp] = not(dateTimeLiteral) ~> qualifiedName ~ parameters ^^ {
     case names ~ params => names match {
       case name :: Nil => FunctionInvocation(name, params)
-      case _ => QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, params)
-    }}
+      case _           => QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, params)
+    }
+  }
 
   private lazy val builtinFunctionInvocation: Parser[Exp] = not(dateTimeLiteral) ~> builtinFunctionName ~ parameters ^^ {
     case name ~ params => FunctionInvocation(name, params)
@@ -288,25 +300,25 @@ object FeelParser extends JavaTokenParsers {
 
   // 41
   private lazy val parameters: Parser[FunctionParameters] = "(" ~> ")" ^^^ PositionalFunctionParameters(List()) |
-    "(" ~> ( namedParameters | positionalParameters ) <~ ")"
+    "(" ~> (namedParameters | positionalParameters) <~ ")"
 
   // 42
-  private lazy val namedParameters = rep1sep(namedParameter , ",") ^^ ( p => NamedFunctionParameters(p.toMap) )
+  private lazy val namedParameters = rep1sep(namedParameter, ",") ^^ (p => NamedFunctionParameters(p.toMap))
 
   private lazy val namedParameter = parameterName ~ ":" ~! expression ^^ { case name ~ _ ~ value => (name, value) }
 
   // 43 - should be FEEL name
-  private lazy val parameterName = name
+  private lazy val parameterName = builtinFunctionParameterNames | name
 
   // 44
-  private lazy val positionalParameters = rep1sep(expression, ",") ^^ ( PositionalFunctionParameters )
+  private lazy val positionalParameters = rep1sep(expression, ",") ^^ (PositionalFunctionParameters)
 
   // 55
   private lazy val boxedExpression: Parser[Exp] = list | functionDefinition | context
 
   // 56
   private lazy val list: Parser[ConstList] = "[" ~> "]" ^^^ ConstList(List()) |
-    "[" ~> rep1sep(expression7, ",") <~ "]" ^^ ( ConstList )
+    "[" ~> rep1sep(expression7, ",") <~ "]" ^^ (ConstList)
 
   // 57
   private lazy val functionDefinition: Parser[FunctionDefinition] = "function" ~! "(" ~> repsep(formalParameter, ",") ~! ")" ~! (externalJavaFunction | expression) ^^ {
@@ -319,17 +331,17 @@ object FeelParser extends JavaTokenParsers {
 
   private lazy val functionClassName = "class" ~! ":" ~> stringLiteralWithQuotes
 
-  private lazy val functionMethodSignature = "method_signature" ~! ":" ~! "\"" ~> name ~! "(" ~! repsep(functionMethodArgument, ",") <~ ")" ~! "\"" ^^ {
+  private lazy val functionMethodSignature = "method signature" ~! ":" ~! "\"" ~> name ~! "(" ~! repsep(functionMethodArgument, ",") <~ ")" ~! "\"" ^^ {
     case methodName ~ _ ~ arguments => (methodName, arguments)
   }
 
-  private lazy val functionMethodArgument = qualifiedName ^^ ( _.mkString(".") )
+  private lazy val functionMethodArgument = qualifiedName ^^ (_.mkString("."))
 
   // 58
   private lazy val formalParameter = parameterName
 
   // 59
-  private lazy val context: Parser[ConstContext] = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ ( ConstContext )
+  private lazy val context: Parser[ConstContext] = "{" ~> repsep(contextEntry, ",") <~ "}" ^^ (ConstContext)
 
   // 60
   private lazy val contextEntry = key ~ ":" ~! expression ^^ { case key ~ _ ~ value => (key -> value) }
@@ -337,46 +349,46 @@ object FeelParser extends JavaTokenParsers {
   // 61
   private lazy val key = name | stringLiteralWithQuotes
 
-  private def parseDate(d: String): Exp = 
-  {
-    if (isValidDate(d)) {
-      Try(ConstDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
-    } else {
-      logger.warn(s"Failed to parse date from '$d'"); ConstNull  
+  private def parseDate(d: String): Exp =
+    {
+      if (isValidDate(d)) {
+        Try(ConstDate(d)).getOrElse { logger.warn(s"Failed to parse date from '$d'"); ConstNull }
+      } else {
+        logger.warn(s"Failed to parse date from '$d'"); ConstNull
+      }
     }
-  }
-    
-  private def parseTime(t: String): Exp = 
-  {
-    if(isOffsetTime(t)) { 
-      Try(ConstTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ConstNull }
-    } else { 
-      Try(ConstLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ConstNull }
+
+  private def parseTime(t: String): Exp =
+    {
+      if (isOffsetTime(t)) {
+        Try(ConstTime(t)).getOrElse { logger.warn(s"Failed to parse time from '$t'"); ConstNull }
+      } else {
+        Try(ConstLocalTime(t)).getOrElse { logger.warn(s"Failed to parse local-time from '$t'"); ConstNull }
+      }
     }
-  }
-  
-  private def parseDateTime(dt: String): Exp = 
-  {
-    if (isValidDate(dt)) {
-      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
-    } else if (isOffsetDateTime(dt)) { 
-      Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
-    } else if (isLocalDateTime(dt)) { 
-      Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
-    } else {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+
+  private def parseDateTime(dt: String): Exp =
+    {
+      if (isValidDate(dt)) {
+        Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse { logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull }
+      } else if (isOffsetDateTime(dt)) {
+        Try(ConstDateTime(dt)).getOrElse { logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull }
+      } else if (isLocalDateTime(dt)) {
+        Try(ConstLocalDateTime(dt)).getOrElse { logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull }
+      } else {
+        logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+      }
     }
-  }
-  
-  private def parseDuration(d: String): Exp = 
-  {
-    if(isYearMonthDuration(d)) { 
-      Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
-    } else if(isDayTimeDuration(d)) { 
-      Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
-    } else {
-      logger.warn(s"Failed to parse duration from '$d'"); ConstNull
+
+  private def parseDuration(d: String): Exp =
+    {
+      if (isYearMonthDuration(d)) {
+        Try(ConstYearMonthDuration(d)).getOrElse { logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull }
+      } else if (isDayTimeDuration(d)) {
+        Try(ConstDayTimeDuration(d)).getOrElse { logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull }
+      } else {
+        logger.warn(s"Failed to parse duration from '$d'"); ConstNull
+      }
     }
-  }
-  
+
 }
