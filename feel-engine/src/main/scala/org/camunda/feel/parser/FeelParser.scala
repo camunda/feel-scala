@@ -38,7 +38,9 @@ object FeelParser extends JavaTokenParsers {
     | "list contains"
     | "insert before"
     | "index of"
-    | "distinct values")
+    | "distinct values"
+    | "get entries"
+    | "get value")
 
   // list of built-in function parameter names with whitespaces
   // -- other names match the 'parameter name' pattern
