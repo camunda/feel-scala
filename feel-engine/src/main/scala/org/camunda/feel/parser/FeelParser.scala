@@ -233,7 +233,9 @@ object FeelParser extends JavaTokenParsers {
     case iterators ~ _ ~ exp => For(iterators, exp)
   }
 
-  private lazy val listIterator = name ~ "in" ~! expression ^^ { case name ~ _ ~ list => (name, list) }
+  private lazy val listIterator = name ~ "in" ~! (range | expression) ^^ { case name ~ _ ~ list => (name, list) }
+
+  private lazy val range: Parser[Range] = expression ~ ".." ~ expression ^^ { case start ~ _ ~ end => Range(start, end) }
 
   // 47
   private lazy val ifExpression: Parser[If] = "if" ~> expression ~! "then" ~! expression ~ "else" ~! expression ^^ {
