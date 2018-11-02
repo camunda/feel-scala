@@ -51,7 +51,8 @@ object BuiltinFunctions extends FunctionProvider {
     "contains" -> List(containsFunction),
     "starts with" -> List(startsWithFunction),
     "ends with" -> List(endsWithFunction),
-    "matches" -> List(matchesFunction, matchesFunction3))
+    "matches" -> List(matchesFunction, matchesFunction3),
+    "split" -> List(splitFunction))
 
   private def listFunctions = Map(
     "list contains" -> List(listContainsFunction),
@@ -59,9 +60,15 @@ object BuiltinFunctions extends FunctionProvider {
     "min" -> List(minFunction),
     "max" -> List(maxFunction),
     "sum" -> List(sumFunction),
+    "product" -> List(productFunction),
     "mean" -> List(meanFunction),
+    "median" -> List(medianFunction),
+    "stddev" -> List(stddevFunction),
+    "mode" -> List(modeFunction),
     "and" -> List(andFunction),
+    "all" -> List(andFunction),
     "or" -> List(orFunction),
+    "any" -> List(orFunction),
     "sublist" -> List(sublistFunction, sublistFunction3),
     "append" -> List(appendFunction),
     "concatenate" -> List(concatenateFunction),
@@ -77,7 +84,14 @@ object BuiltinFunctions extends FunctionProvider {
   private def numericFunctions = Map(
     "decimal" -> List(decimalFunction),
     "floor" -> List(floorFunction),
-    "ceiling" -> List(ceilingFunction))
+    "ceiling" -> List(ceilingFunction),
+    "abs" -> List(absFunction),
+    "modulo" -> List(moduloFunction),
+    "sqrt" -> List(sqrtFunction),
+    "log" -> List(logFunction),
+    "exp" -> List(expFunction),
+    "odd" -> List(oddFunction),
+    "even" -> List(evenFunction))
 
   private def contextFunctions = Map(
     "get entries" -> List(getEntriesFunction),
@@ -132,6 +146,8 @@ object BuiltinFunctions extends FunctionProvider {
         logger.warn(s"Failed to parse duration from '$d'"); ValNull
       }
     }
+
+  // conversion functions
 
   def dateFunction = ValFunction(List("from"), _ match {
     case List(ValString(from))        => parseDate(from)
@@ -254,11 +270,15 @@ object BuiltinFunctions extends FunctionProvider {
     case e => error(e)
   })
 
+  // boolean functions
+
   def notFunction = ValFunction(List("negand"), _ match {
     case List(ValBoolean(negand)) => ValBoolean(!negand)
     case List(other: Val)         => ValNull
     case other                    => ValNull
   })
+
+  // string functions
 
   def substringFunction = ValFunction(List("string", "start position"), _ match {
     case List(ValString(string), ValNumber(start)) => ValString(string.substring(stringIndex(string, start.intValue())))
@@ -381,6 +401,17 @@ object BuiltinFunctions extends FunctionProvider {
     case e => error(e)
   })
 
+  def splitFunction = ValFunction(List("string", "delimiter"), _ match {
+    case List(ValString(string), ValString(delimiter)) => {
+      val p = Pattern.compile(delimiter)
+      val r = p.split(string, -1)
+      ValList(r.map(ValString).toList)
+    }
+    case e => error(e)
+  })
+
+  // list functions
+
   def listContainsFunction = ValFunction(List("list", "element"), _ match {
     case List(ValList(list), element) => ValBoolean(list.contains(element))
     case e                            => error(e)
@@ -414,8 +445,15 @@ object BuiltinFunctions extends FunctionProvider {
   }, hasVarArgs = true)
 
   def sumFunction = ValFunction(List("list"), _ match {
-    case List(ValList(list)) => withListOfNumbers(list, numbers => ValNumber(numbers.sum))
-    case e                   => error(e)
+    case List(ValList(list)) if list.isEmpty => ValNull
+    case List(ValList(list))                 => withListOfNumbers(list, numbers => ValNumber(numbers.sum))
+    case e                                   => error(e)
+  }, hasVarArgs = true)
+
+  def productFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) if list.isEmpty => ValNull
+    case List(ValList(list))                 => withListOfNumbers(list, numbers => ValNumber(numbers.product))
+    case e                                   => error(e)
   }, hasVarArgs = true)
 
   def meanFunction = ValFunction(List("list"), _ match {
@@ -423,6 +461,62 @@ object BuiltinFunctions extends FunctionProvider {
       case Nil => ValNull
       case l   => withListOfNumbers(list, numbers => ValNumber(numbers.sum / numbers.size))
     }
+    case e => error(e)
+  }, hasVarArgs = true)
+
+  def medianFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) if list.isEmpty => ValNull
+    case List(ValList(list)) => withListOfNumbers(list, numbers => {
+      val sortedList = numbers.sorted
+
+      if (list.size % 2 == 1) {
+        ValNumber(sortedList(list.size / 2))
+      } else {
+        val i = list.size / 2
+        val x = sortedList(i - 1)
+        val y = sortedList(i)
+        ValNumber((x + y) / 2)
+      }
+    })
+    case e => error(e)
+  }, hasVarArgs = true)
+
+  def stddevFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) if list.isEmpty => ValNull
+    case List(ValList(list)) => withListOfNumbers(list, numbers => {
+
+      val sum = numbers.sum
+      val mean = sum / numbers.size
+
+      val d = ((0: Number) /: numbers) { case (dev, n) => dev + (n - mean).pow(2) }
+
+      val stddev = Math.sqrt((d / (numbers.size - 1)).toDouble)
+
+      ValNumber(stddev)
+    })
+    case e => error(e)
+  }, hasVarArgs = true)
+
+  def modeFunction = ValFunction(List("list"), _ match {
+    case List(ValList(list)) if list.isEmpty => ValList(List.empty)
+    case List(ValList(list)) => withListOfNumbers(list, numbers => {
+
+      val sortedList = numbers
+        .groupBy(n => n)
+        .map { case (n, ns) => n -> ns.size }
+        .toList
+        .sortBy { case (n, count) => count }
+        .reverse
+
+      val maxCount = sortedList.head._2
+
+      val modeElements = sortedList
+        .takeWhile { case (n, count) => count == maxCount }
+        .map(_._1)
+        .sorted
+
+      ValList(modeElements.map(ValNumber))
+    })
     case e => error(e)
   }, hasVarArgs = true)
 
@@ -563,6 +657,8 @@ object BuiltinFunctions extends FunctionProvider {
     case e => error(e)
   })
 
+  // number functions
+
   def decimalFunction = ValFunction(List("n", "scale"), _ match {
     case List(ValNumber(n), ValNumber(scale)) => ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
     case e                                    => error(e)
@@ -577,6 +673,44 @@ object BuiltinFunctions extends FunctionProvider {
     case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
     case e                  => error(e)
   })
+
+  def absFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) => ValNumber(n.abs)
+    case e                  => error(e)
+  })
+
+  def moduloFunction = ValFunction(List("dividend", "divisor"), _ match {
+    case List(ValNumber(dividend), ValNumber(divisor)) => ValNumber(dividend % divisor)
+    case e => error(e)
+  })
+
+  def sqrtFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) if n < 0 => ValNull
+    case List(ValNumber(n))          => ValNumber(Math.sqrt(n.toDouble))
+    case e                           => error(e)
+  })
+
+  def logFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) => ValNumber(Math.log(n.toDouble))
+    case e                  => error(e)
+  })
+
+  def expFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) => ValNumber(Math.exp(n.toDouble))
+    case e                  => error(e)
+  })
+
+  def oddFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) => ValBoolean(n % 2 == 1)
+    case e                  => error(e)
+  })
+
+  def evenFunction = ValFunction(List("number"), _ match {
+    case List(ValNumber(n)) => ValBoolean(n % 2 == 0)
+    case e                  => error(e)
+  })
+
+  // context functions
 
   def getEntriesFunction = ValFunction(List("context"), _ match {
     case List(ValContext(c: DefaultContext)) => ValList(c.variables.map {
