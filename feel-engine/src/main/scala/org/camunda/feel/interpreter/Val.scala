@@ -4,19 +4,19 @@ import org.camunda.feel._
 import org.camunda.feel.spi._
 
 /**
- * FEEL supports the following datatypes:
-* number
-* string
-* boolean
-* days and time duration
-* years and months duration
-* time
-* date and time
+  * FEEL supports the following datatypes:
+  * number
+  * string
+  * boolean
+  * days and time duration
+  * years and months duration
+  * time
+  * date and time
 Duration and date/time datatypes have no literal syntax. They must be constructed from a string representation using a
 built-in function (10.3.4.1).
- *
- * @author Philipp Ossler
- */
+  *
+  * @author Philipp Ossler
+  */
 sealed trait Val
 
 case class ValNumber(value: Number) extends Val
@@ -43,12 +43,12 @@ case class ValError(error: String) extends Val
 
 case object ValNull extends Val
 
-case class ValFunction(
-    params: List[String],
-    invoke: List[Val] => Val,
-    hasVarArgs: Boolean = false) extends Val {
+case class ValFunction(params: List[String],
+                       invoke: List[Val] => Val,
+                       hasVarArgs: Boolean = false)
+    extends Val {
 
-    val paramSet: Set[String] = params.toSet
+  val paramSet: Set[String] = params.toSet
 }
 
 case class ValContext(context: Context) extends Val

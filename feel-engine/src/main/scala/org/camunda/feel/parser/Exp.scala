@@ -3,8 +3,8 @@ package org.camunda.feel.parser
 import org.camunda.feel._
 
 /**
- * @author Philipp Ossler
- */
+  * @author Philipp Ossler
+  */
 sealed trait Exp
 
 case object ConstNull extends Exp
@@ -81,11 +81,18 @@ case class GreaterThan(x: Exp, y: Exp) extends Exp
 
 case class GreaterOrEqual(x: Exp, y: Exp) extends Exp
 
-case class FunctionInvocation(function: String, params: FunctionParameters) extends Exp
+case class FunctionInvocation(function: String, params: FunctionParameters)
+    extends Exp
 
-case class JavaFunctionInvocation(className: String, methodName: String, arguments: List[String]) extends Exp
+case class JavaFunctionInvocation(className: String,
+                                  methodName: String,
+                                  arguments: List[String])
+    extends Exp
 
-case class QualifiedFunctionInvocation(path: Exp, function: String, params: FunctionParameters) extends Exp
+case class QualifiedFunctionInvocation(path: Exp,
+                                       function: String,
+                                       params: FunctionParameters)
+    extends Exp
 
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp
 

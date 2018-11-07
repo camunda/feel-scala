@@ -11,29 +11,41 @@ import scala.beans.BeanProperty
 import org.camunda.feel.integration.transformer.FeelDataTypeTransformerRegistry
 
 class CamundaFeelEnginePlugin extends AbstractProcessEnginePlugin {
-  
-  @BeanProperty var defaultInputEntryExpressionLanguage = FeelUnaryTestsScriptEngineFactory.ENGINE_NAME
-  @BeanProperty var defaultOutputEntryExpressionLanguage = FeelScriptEngineFactory.ENGINE_NAME
-  @BeanProperty var defaultLiteralExpressionLanguage = FeelScriptEngineFactory.ENGINE_NAME
-  @BeanProperty var defaultInputExpressionExpressionLanguage = FeelScriptEngineFactory.ENGINE_NAME
-  
+
+  @BeanProperty var defaultInputEntryExpressionLanguage =
+    FeelUnaryTestsScriptEngineFactory.ENGINE_NAME
+  @BeanProperty var defaultOutputEntryExpressionLanguage =
+    FeelScriptEngineFactory.ENGINE_NAME
+  @BeanProperty var defaultLiteralExpressionLanguage =
+    FeelScriptEngineFactory.ENGINE_NAME
+  @BeanProperty var defaultInputExpressionExpressionLanguage =
+    FeelScriptEngineFactory.ENGINE_NAME
+
   override def preInit(config: ProcessEngineConfigurationImpl) {
-    
-    val dmnEngineConfig = Option(config.getDmnEngineConfiguration) getOrElse defaultDmnEngineConfig 
-    
-    dmnEngineConfig.setDefaultInputEntryExpressionLanguage(defaultInputEntryExpressionLanguage)
-    dmnEngineConfig.setDefaultOutputEntryExpressionLanguage(defaultOutputEntryExpressionLanguage)
-    dmnEngineConfig.setDefaultLiteralExpressionLanguage(defaultLiteralExpressionLanguage)
-    dmnEngineConfig.setDefaultInputExpressionExpressionLanguage(defaultInputExpressionExpressionLanguage)
-    
+
+    val dmnEngineConfig = Option(config.getDmnEngineConfiguration) getOrElse defaultDmnEngineConfig
+
+    dmnEngineConfig.setDefaultInputEntryExpressionLanguage(
+      defaultInputEntryExpressionLanguage)
+    dmnEngineConfig.setDefaultOutputEntryExpressionLanguage(
+      defaultOutputEntryExpressionLanguage)
+    dmnEngineConfig.setDefaultLiteralExpressionLanguage(
+      defaultLiteralExpressionLanguage)
+    dmnEngineConfig.setDefaultInputExpressionExpressionLanguage(
+      defaultInputExpressionExpressionLanguage)
+
     dmnEngineConfig.feelEngineFactory(new CamundaFeelEngineFactory)
-    
-    val dataTypeRegistry =  dmnEngineConfig.getTransformer.getDataTypeTransformerRegistry
+
+    val dataTypeRegistry =
+      dmnEngineConfig.getTransformer.getDataTypeTransformerRegistry
     FeelDataTypeTransformerRegistry.registerBy(dataTypeRegistry)
-    
-    config.setDmnEngineConfiguration(dmnEngineConfig)    
+
+    config.setDmnEngineConfiguration(dmnEngineConfig)
   }
-  
-  private def defaultDmnEngineConfig = DmnEngineConfiguration.createDefaultDmnEngineConfiguration().asInstanceOf[DefaultDmnEngineConfiguration]  
-  
+
+  private def defaultDmnEngineConfig =
+    DmnEngineConfiguration
+      .createDefaultDmnEngineConfiguration()
+      .asInstanceOf[DefaultDmnEngineConfiguration]
+
 }

@@ -11,10 +11,12 @@ import scala.annotation.tailrec
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.FeelParser
 
-class FeelExpressionScriptEngine(val factory: ScriptEngineFactory) extends FeelScriptEngine {
+class FeelExpressionScriptEngine(val factory: ScriptEngineFactory)
+    extends FeelScriptEngine {
 
-  val eval = (expression: String, context: Map[String, Any]) => engine.evalExpression(expression, context)
-  
+  val eval = (expression: String, context: Map[String, Any]) =>
+    engine.evalExpression(expression, context)
+
   val parse = (expression: String) => FeelParser.parseExpression(expression)
-  
+
 }

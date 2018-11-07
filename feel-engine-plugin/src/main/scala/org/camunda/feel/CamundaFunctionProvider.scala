@@ -9,17 +9,18 @@ import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 
 /**
- * @author Philipp
- */
+  * @author Philipp
+  */
 class CamundaFunctionProvider extends CustomFunctionProvider {
 
-  def getFunction(name: String): List[ValFunction] = functions.getOrElse(name, List.empty)
+  def getFunction(name: String): List[ValFunction] =
+    functions.getOrElse(name, List.empty)
 
   val functions: Map[String, List[ValFunction]] = Map(
-     "now" -> List(nowFunction),
-     "currentUser" -> List(currentUserFunction),
-     "currentUserGroups" -> List(currentUserGroupsFunction)
-   )
+    "now" -> List(nowFunction),
+    "currentUser" -> List(currentUserFunction),
+    "currentUserGroups" -> List(currentUserGroupsFunction)
+  )
 
   private def nowFunction = ValFunction(
     params = List(),

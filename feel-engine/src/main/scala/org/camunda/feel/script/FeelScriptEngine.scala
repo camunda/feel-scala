@@ -16,7 +16,10 @@ import java.io.Closeable
 import javax.script._
 import java.util.ServiceLoader
 
-trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
+trait FeelScriptEngine
+    extends AbstractScriptEngine
+    with ScriptEngine
+    with Compilable {
 
   val eval: (String, Map[String, Any]) => EvalResult
 
@@ -24,18 +27,21 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
 
   val factory: ScriptEngineFactory
 
-  lazy val engine: org.camunda.feel.FeelEngine = new FeelEngine(functionProvider, valueMapper)
+  lazy val engine: org.camunda.feel.FeelEngine =
+    new FeelEngine(functionProvider, valueMapper)
 
-  private def valueMapper: ValueMapper = loadServiceProvider[CustomValueMapper]() match {
-    case Nil => DefaultValueMapper.instance
-    case l: List[_] => l.head
-  }
+  private def valueMapper: ValueMapper =
+    loadServiceProvider[CustomValueMapper]() match {
+      case Nil        => DefaultValueMapper.instance
+      case l: List[_] => l.head
+    }
 
-  private def functionProvider: FunctionProvider = loadServiceProvider[CustomFunctionProvider]() match {
-    case Nil => FunctionProvider.EmptyFunctionProvider
-    case p :: Nil => p
-    case ps => new FunctionProvider.CompositeFunctionProvider(ps)
-  }
+  private def functionProvider: FunctionProvider =
+    loadServiceProvider[CustomFunctionProvider]() match {
+      case Nil      => FunctionProvider.EmptyFunctionProvider
+      case p :: Nil => p
+      case ps       => new FunctionProvider.CompositeFunctionProvider(ps)
+    }
 
   def getFactory(): ScriptEngineFactory = factory
 
@@ -68,15 +74,18 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   }
 
   def compile(script: String): CompiledScript = parse(script) match {
-          case Success(exp, _) => CompiledFeelScript(this, ParsedExpression(exp, script))
-          case e: NoSuccess => throw new ScriptException(s"failed to parse expression '$script':\n$e")
+    case Success(exp, _) =>
+      CompiledFeelScript(this, ParsedExpression(exp, script))
+    case e: NoSuccess =>
+      throw new ScriptException(s"failed to parse expression '$script':\n$e")
   }
 
-  private def handleEvaluationResult(result: EvalResult): Object = result match {
-    case EvalValue(value) => value.asInstanceOf[AnyRef]
-    case EvalFailure(cause) => throw new ScriptException(cause)
-    case ParseFailure(cause) => throw new ScriptException(cause)
-  }
+  private def handleEvaluationResult(result: EvalResult): Object =
+    result match {
+      case EvalValue(value)    => value.asInstanceOf[AnyRef]
+      case EvalFailure(cause)  => throw new ScriptException(cause)
+      case ParseFailure(cause) => throw new ScriptException(cause)
+    }
 
   private def getEngineContext(context: ScriptContext): Map[String, Any] = {
     List(ScriptContext.GLOBAL_SCOPE, ScriptContext.ENGINE_SCOPE)
@@ -96,7 +105,8 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
   }
 
   @tailrec
-  private def read(reader: Reader, buffer: StringBuffer = new StringBuffer): String = {
+  private def read(reader: Reader,
+                   buffer: StringBuffer = new StringBuffer): String = {
     val chars = new Array[Char](16 * 1024)
 
     reader.read(chars, 0, chars.length) match {
@@ -118,13 +128,15 @@ trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compi
 
   private def loadServiceProvider[T: ClassTag](): List[T] =
     try {
-      val loader = ServiceLoader.load(classTag[T].runtimeClass.asInstanceOf[Class[T]])
+      val loader =
+        ServiceLoader.load(classTag[T].runtimeClass.asInstanceOf[Class[T]])
       loader.iterator.asScala.toList
     } catch {
       case t: Throwable => {
-        System.err.println(s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")
+        System.err.println(
+          s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")
         t.printStackTrace()
-        throw(t)
+        throw (t)
       }
     }
 

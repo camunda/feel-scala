@@ -10,13 +10,16 @@ import org.camunda.feel.parser.Exp
 import org.camunda.feel.spi._
 
 /**
- * @author Philipp Ossler
- */
-class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider, val valueMapper: ValueMapper = DefaultValueMapper.instance) {
+  * @author Philipp Ossler
+  */
+class FeelEngine(val functionProvider: FunctionProvider =
+                   FunctionProvider.EmptyFunctionProvider,
+                 val valueMapper: ValueMapper = DefaultValueMapper.instance) {
 
   val interpreter = new FeelInterpreter
-  
-  def evalExpression(expression: String, context: Map[String, Any] = Map()): EvalResult = {
+
+  def evalExpression(expression: String,
+                     context: Map[String, Any] = Map()): EvalResult = {
     eval(FeelParser.parseExpression, expression, rootContext(context))
   }
 
@@ -24,7 +27,8 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
     eval(FeelParser.parseExpression, expression, context)
   }
 
-  def evalUnaryTests(expression: String, context: Map[String, Any] = Map()): EvalResult = {
+  def evalUnaryTests(expression: String,
+                     context: Map[String, Any] = Map()): EvalResult = {
     eval(FeelParser.parseUnaryTests, expression, rootContext(context))
   }
 
@@ -32,51 +36,57 @@ class FeelEngine(val functionProvider: FunctionProvider = FunctionProvider.Empty
     eval(FeelParser.parseUnaryTests, expression, context)
   }
 
-  def eval(exp: ParsedExpression, context: Map[String, Any] = Map()): EvalResult = {
+  def eval(exp: ParsedExpression,
+           context: Map[String, Any] = Map()): EvalResult = {
     eval(exp, rootContext(context))
   }
 
-  private def eval(parser: String => ParseResult[Exp], expression: String, context: Context): EvalResult = parser(expression) match {
+  private def eval(parser: String => ParseResult[Exp],
+                   expression: String,
+                   context: Context): EvalResult = parser(expression) match {
     case Success(exp, _) => eval(ParsedExpression(exp, expression), context)
-    case e: NoSuccess => ParseFailure(s"failed to parse expression '$expression':\n$e")
+    case e: NoSuccess =>
+      ParseFailure(s"failed to parse expression '$expression':\n$e")
   }
 
-  def eval(exp: ParsedExpression, context: Context): EvalResult = 
-  {
+  def eval(exp: ParsedExpression, context: Context): EvalResult = {
     interpreter.eval(exp.expression)(rootContext(context)) match {
-      case ValError(cause) => EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
-      case value => EvalValue( valueMapper.unpackVal(value) )
+      case ValError(cause) =>
+        EvalFailure(s"failed to evaluate expression '${exp.text}':\n$cause")
+      case value => EvalValue(valueMapper.unpackVal(value))
     }
   }
-  
-  private def rootContext(variables: Map[String, Any]) = RootContext(
-    variables = variables,
-    functionProvider = functionProvider,
-    valueMapper = valueMapper)
-    
-  private def rootContext(context: Context): Context = 
-  {
+
+  private def rootContext(variables: Map[String, Any]) =
+    RootContext(variables = variables,
+                functionProvider = functionProvider,
+                valueMapper = valueMapper)
+
+  private def rootContext(context: Context): Context = {
     context match {
       case c: RootContext => c
-      case c: DefaultContext => 
-      {
-        val fp = if (c.functionProvider == FunctionProvider.EmptyFunctionProvider) {
-          functionProvider
-        } else if (functionProvider == FunctionProvider.EmptyFunctionProvider) {
-          c.functionProvider
-        } else {
-          new FunctionProvider.CompositeFunctionProvider(List(functionProvider, c.functionProvider))
-        }       
-        
+      case c: DefaultContext => {
+        val fp =
+          if (c.functionProvider == FunctionProvider.EmptyFunctionProvider) {
+            functionProvider
+          } else if (functionProvider == FunctionProvider.EmptyFunctionProvider) {
+            c.functionProvider
+          } else {
+            new FunctionProvider.CompositeFunctionProvider(
+              List(functionProvider, c.functionProvider))
+          }
+
         RootContext(
           variables = c.variables,
           additionalFunctions = c.functions,
           variableProvider = c.variableProvider,
           functionProvider = fp,
-          valueMapper = valueMapper        
+          valueMapper = valueMapper
         )
       }
-      case c => RootContext(functionProvider = functionProvider, valueMapper = valueMapper) + c
+      case c =>
+        RootContext(functionProvider = functionProvider,
+                    valueMapper = valueMapper) + c
     }
   }
 

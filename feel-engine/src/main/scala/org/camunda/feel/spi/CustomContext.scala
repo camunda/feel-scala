@@ -9,8 +9,10 @@ import org.camunda.feel.interpreter._
   */
 abstract class CustomContext extends ContextBase {
 
-  override def variableProvider: VariableProvider = VariableProvider.EmptyVariableProvider
+  override def variableProvider: VariableProvider =
+    VariableProvider.EmptyVariableProvider
 
-  override def functionProvider: FunctionProvider = FunctionProvider.EmptyFunctionProvider
+  override def functionProvider: FunctionProvider =
+    FunctionProvider.EmptyFunctionProvider
 
 }

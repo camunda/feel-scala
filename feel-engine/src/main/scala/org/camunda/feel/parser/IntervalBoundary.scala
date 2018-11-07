@@ -1,9 +1,8 @@
 package org.camunda.feel.parser
 
 /**
- * @author Philipp Ossler
- */
-
+  * @author Philipp Ossler
+  */
 sealed trait IntervalBoundary {
   def value: Exp
 }

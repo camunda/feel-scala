@@ -1,8 +1,8 @@
 package org.camunda.feel.interpreter
 
 /**
- * A Context provides access to the variables/fields and functions/methods in the scope represented by this Context.
- */
+  * A Context provides access to the variables/fields and functions/methods in the scope represented by this Context.
+  */
 trait Context {
 
   def valueMapper: ValueMapper

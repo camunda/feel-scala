@@ -12,7 +12,8 @@ object VariableProvider {
     override def getVariable(name: String): Option[Val] = None
   }
 
-  class CompositeVariableProvider(providers: List[VariableProvider]) extends VariableProvider {
+  class CompositeVariableProvider(providers: List[VariableProvider])
+      extends VariableProvider {
     override def getVariable(name: String): Option[Val] = {
       for (provider <- providers) {
         provider.getVariable(name) match {
