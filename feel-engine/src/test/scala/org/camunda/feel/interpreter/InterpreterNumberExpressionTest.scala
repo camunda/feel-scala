@@ -152,17 +152,17 @@ class InterpreterNumberExpressionTest extends FlatSpec with Matchers with FeelIn
     eval("null = 2") should be(ValBoolean(false))
     eval("null != 2") should be(ValBoolean(true))
 
-    eval("2 > null") shouldBe a [ValError]
-    eval("null < 2") shouldBe a [ValError]
+    eval("2 > null") should be(ValBoolean(false))
+    eval("null < 2") should be(ValBoolean(false))
   }
 
   it should "compare with 'between _ and _'" in {
 
-    eval("x between 2 and 4", Map("x" -> 1)) should be (ValBoolean(false))
-    eval("x between 2 and 4", Map("x" -> 2)) should be (ValBoolean(true))
-    eval("x between 2 and 4", Map("x" -> 3)) should be (ValBoolean(true))
-    eval("x between 2 and 4", Map("x" -> 4)) should be (ValBoolean(true))
-    eval("x between 2 and 4", Map("x" -> 5)) should be (ValBoolean(false))
+    eval("x between 2 and 4", Map("x" -> 1)) should be(ValBoolean(false))
+    eval("x between 2 and 4", Map("x" -> 2)) should be(ValBoolean(true))
+    eval("x between 2 and 4", Map("x" -> 3)) should be(ValBoolean(true))
+    eval("x between 2 and 4", Map("x" -> 4)) should be(ValBoolean(true))
+    eval("x between 2 and 4", Map("x" -> 5)) should be(ValBoolean(false))
   }
 
   it should "compare with 'in'" in {
@@ -170,8 +170,8 @@ class InterpreterNumberExpressionTest extends FlatSpec with Matchers with FeelIn
     eval("x in < 2", Map("x" -> 1)) should be(ValBoolean(true))
     eval("x in < 2", Map("x" -> 2)) should be(ValBoolean(false))
 
-    eval("x in (2 .. 4)", Map("x" -> 3)) should be (ValBoolean(true))
-    eval("x in (2 .. 4)", Map("x" -> 4)) should be (ValBoolean(false))
+    eval("x in (2 .. 4)", Map("x" -> 3)) should be(ValBoolean(true))
+    eval("x in (2 .. 4)", Map("x" -> 4)) should be(ValBoolean(false))
 
     eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
     eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))

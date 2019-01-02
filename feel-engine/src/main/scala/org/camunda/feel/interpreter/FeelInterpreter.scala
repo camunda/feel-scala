@@ -213,6 +213,8 @@ class FeelInterpreter {
     withVal(
       input,
       _ match {
+        case ValNull             => withVal(x, x => ValBoolean(false))
+        case i if (x == ValNull) => withVal(x, x => ValBoolean(false))
         case ValNumber(i)        => withNumber(x, x => f(c(i, x)))
         case ValDate(i)          => withDate(x, x => f(c(i, x)))
         case ValLocalTime(i)     => withLocalTime(x, x => f(c(i, x)))
@@ -489,6 +491,8 @@ class FeelInterpreter {
                      c: (Compareable[_], Compareable[_]) => Boolean,
                      f: Boolean => Val)(implicit context: Context): Val =
     x match {
+      case ValNull                 => withVal(y, y => ValBoolean(false))
+      case x if (y == ValNull)     => withVal(x, x => ValBoolean(false))
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
       case ValDate(x)              => withDate(y, y => f(c(x, y)))
       case ValLocalTime(x)         => withLocalTime(y, y => f(c(x, y)))
