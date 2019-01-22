@@ -17,9 +17,9 @@ import javax.script._
 import java.util.ServiceLoader
 
 trait FeelScriptEngine
-    extends AbstractScriptEngine
-    with ScriptEngine
-    with Compilable {
+  extends AbstractScriptEngine
+  with ScriptEngine
+  with Compilable {
 
   val eval: (String, Map[String, Any]) => EvalResult
 
@@ -32,8 +32,12 @@ trait FeelScriptEngine
 
   private def valueMapper: ValueMapper =
     loadServiceProvider[CustomValueMapper]() match {
-      case Nil        => DefaultValueMapper.instance
-      case l: List[_] => l.head
+      case Nil      => DefaultValueMapper.instance
+      case l :: Nil => l
+      case ls => {
+        logger.warn("Found more than one custom value mapper: {}. Use the first one.", ls)
+        ls.head
+      }
     }
 
   private def functionProvider: FunctionProvider =
@@ -105,8 +109,9 @@ trait FeelScriptEngine
   }
 
   @tailrec
-  private def read(reader: Reader,
-                   buffer: StringBuffer = new StringBuffer): String = {
+  private def read(
+    reader: Reader,
+    buffer: StringBuffer = new StringBuffer): String = {
     val chars = new Array[Char](16 * 1024)
 
     reader.read(chars, 0, chars.length) match {

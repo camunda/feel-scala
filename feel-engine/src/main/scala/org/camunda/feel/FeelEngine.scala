@@ -16,6 +16,8 @@ class FeelEngine(val functionProvider: FunctionProvider =
                    FunctionProvider.EmptyFunctionProvider,
                  val valueMapper: ValueMapper = DefaultValueMapper.instance) {
 
+  logger.info(s"Engine created. [value-mapper: $valueMapper, function-provider: $functionProvider]")
+
   val interpreter = new FeelInterpreter
 
   def evalExpression(expression: String,

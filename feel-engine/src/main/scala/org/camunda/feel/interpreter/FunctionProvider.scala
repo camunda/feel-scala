@@ -12,8 +12,8 @@ object FunctionProvider {
     override def getFunction(name: String): List[ValFunction] = List.empty
   }
 
-  class CompositeFunctionProvider(providers: List[FunctionProvider])
-      extends FunctionProvider {
+  case class CompositeFunctionProvider(providers: List[FunctionProvider])
+    extends FunctionProvider {
     override def getFunction(name: String): List[ValFunction] =
       (List[ValFunction]() /: providers)((functions, provider) =>
         functions ++ provider.getFunction(name))
