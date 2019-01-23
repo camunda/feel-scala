@@ -41,13 +41,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
 
   it should "be equal to another number" in {
 
-    evalUnaryTests(2, "3") should be (ValBoolean(false))
-    evalUnaryTests(3, "3") should be (ValBoolean(true))
-  }
-
-  it should "compare to null" in {
-
-    evalUnaryTests(null, "3") should be (ValBoolean(false))
+    evalUnaryTests(2, "3") should be(ValBoolean(false))
+    evalUnaryTests(3, "3") should be(ValBoolean(true))
   }
 
   it should "be in interval '(2..4)'" in {
@@ -66,32 +61,32 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
 
   it should "be in '2,3'" in {
 
-    evalUnaryTests(2, "2,3") should be (ValBoolean(true))
-    evalUnaryTests(3, "2,3") should be (ValBoolean(true))
-    evalUnaryTests(4, "2,3") should be (ValBoolean(false))
+    evalUnaryTests(2, "2,3") should be(ValBoolean(true))
+    evalUnaryTests(3, "2,3") should be(ValBoolean(true))
+    evalUnaryTests(4, "2,3") should be(ValBoolean(false))
   }
 
   it should "be not equal 'not(3)'" in {
 
-    evalUnaryTests(2, "not(3)") should be (ValBoolean(true))
-    evalUnaryTests(3, "not(3)") should be (ValBoolean(false))
-    evalUnaryTests(4, "not(3)") should be (ValBoolean(true))
+    evalUnaryTests(2, "not(3)") should be(ValBoolean(true))
+    evalUnaryTests(3, "not(3)") should be(ValBoolean(false))
+    evalUnaryTests(4, "not(3)") should be(ValBoolean(true))
   }
 
   it should "be not in 'not(2,3)'" in {
 
-    evalUnaryTests(2, "not(2,3)") should be (ValBoolean(false))
-    evalUnaryTests(3, "not(2,3)") should be (ValBoolean(false))
-    evalUnaryTests(4, "not(2,3)") should be (ValBoolean(true))
+    evalUnaryTests(2, "not(2,3)") should be(ValBoolean(false))
+    evalUnaryTests(3, "not(2,3)") should be(ValBoolean(false))
+    evalUnaryTests(4, "not(2,3)") should be(ValBoolean(true))
   }
 
   it should "compare to a variable (qualified name)" in {
 
-    evalUnaryTests(2,"var", Map("var" -> 3)) should be (ValBoolean(false))
-    evalUnaryTests(3,"var", Map("var" -> 3)) should be (ValBoolean(true))
+    evalUnaryTests(2, "var", Map("var" -> 3)) should be(ValBoolean(false))
+    evalUnaryTests(3, "var", Map("var" -> 3)) should be(ValBoolean(true))
 
-    evalUnaryTests(2,"< var", Map("var" -> 3)) should be (ValBoolean(true))
-    evalUnaryTests(3,"< var", Map("var" -> 3)) should be (ValBoolean(false))
+    evalUnaryTests(2, "< var", Map("var" -> 3)) should be(ValBoolean(true))
+    evalUnaryTests(3, "< var", Map("var" -> 3)) should be(ValBoolean(false))
   }
 
   it should "compare to a field of a bean" in {
@@ -105,37 +100,45 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
     evalUnaryTests(3, "< a.b", Map("a" -> new A(2))) should be(ValBoolean(false))
   }
 
+  it should "compare to null" in {
+
+    evalUnaryTests(null, "3") should be(ValBoolean(false))
+    evalUnaryTests(null, "< 3") should be(ValBoolean(false))
+    evalUnaryTests(null, "> 3") should be(ValBoolean(false))
+    evalUnaryTests(null, "(0..10)") should be(ValBoolean(false))
+  }
+
   "A string" should "be equal to another string" in {
 
-    evalUnaryTests("a", """ "b" """) should be (ValBoolean(false))
-    evalUnaryTests("b", """ "b" """) should be (ValBoolean(true))
+    evalUnaryTests("a", """ "b" """) should be(ValBoolean(false))
+    evalUnaryTests("b", """ "b" """) should be(ValBoolean(true))
   }
 
   it should "compare to null" in {
 
-    evalUnaryTests(null, """ "a" """) should be (ValBoolean(false))
+    evalUnaryTests(null, """ "a" """) should be(ValBoolean(false))
   }
 
   it should """be in '"a","b"' """ in {
 
-    evalUnaryTests("a", """ "a","b" """) should be (ValBoolean(true))
-    evalUnaryTests("b", """ "a","b" """) should be (ValBoolean(true))
-    evalUnaryTests("c", """ "a","b" """) should be (ValBoolean(false))
+    evalUnaryTests("a", """ "a","b" """) should be(ValBoolean(true))
+    evalUnaryTests("b", """ "a","b" """) should be(ValBoolean(true))
+    evalUnaryTests("c", """ "a","b" """) should be(ValBoolean(false))
   }
 
   "A boolean" should "be equal to another boolean" in {
 
-    evalUnaryTests(false, "true") should be (ValBoolean(false))
-    evalUnaryTests(true, "false") should be (ValBoolean(false))
+    evalUnaryTests(false, "true") should be(ValBoolean(false))
+    evalUnaryTests(true, "false") should be(ValBoolean(false))
 
-    evalUnaryTests(false, "false") should be (ValBoolean(true))
-    evalUnaryTests(true, "true") should be (ValBoolean(true))
+    evalUnaryTests(false, "false") should be(ValBoolean(true))
+    evalUnaryTests(true, "true") should be(ValBoolean(true))
   }
 
   it should "compare to null" in {
 
-    evalUnaryTests(null, "true") should be (ValBoolean(false))
-    evalUnaryTests(null, "false") should be (ValBoolean(false))
+    evalUnaryTests(null, "true") should be(ValBoolean(false))
+    evalUnaryTests(null, "false") should be(ValBoolean(false))
   }
 
   "A date" should "compare with '<'" in {
@@ -168,8 +171,8 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
 
   it should "be equal to another date" in {
 
-    evalUnaryTests(date("2015-09-17"), """date("2015-09-18")""") should be (ValBoolean(false))
-    evalUnaryTests(date("2015-09-18"), """date("2015-09-18")""") should be (ValBoolean(true))
+    evalUnaryTests(date("2015-09-17"), """date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-18"), """date("2015-09-18")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '(date("2015-09-17")..date("2015-09-19")]'""" in {
@@ -288,7 +291,7 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
 
   "An empty expression ('-')" should "be always true" in {
 
-    evalUnaryTests(None, "-") should be (ValBoolean(true))
+    evalUnaryTests(None, "-") should be(ValBoolean(true))
   }
 
   "A null expression" should "compare to null" in {
@@ -305,9 +308,9 @@ class InterpreterUnaryTest extends FlatSpec with Matchers with FeelIntegrationTe
     evalUnaryTests("foo", """ starts with(?, "f") """) should be(ValBoolean(true))
     evalUnaryTests("foo", """ starts with(?, "b") """) should be(ValBoolean(false))
   }
-  
+
   it should "be invoked as endpoint" in {
-    
+
     evalUnaryTests(2, "< max(1,2,3)") should be(ValBoolean(true))
     evalUnaryTests(2, "< min(1,2,3)") should be(ValBoolean(false))
   }

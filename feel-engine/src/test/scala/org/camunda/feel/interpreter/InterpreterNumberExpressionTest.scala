@@ -154,6 +154,9 @@ class InterpreterNumberExpressionTest extends FlatSpec with Matchers with FeelIn
 
     eval("2 > null") should be(ValBoolean(false))
     eval("null < 2") should be(ValBoolean(false))
+
+    eval("null in < 2") should be(ValBoolean(false))
+    eval("null in (2..4)") should be(ValBoolean(false))
   }
 
   it should "compare with 'between _ and _'" in {

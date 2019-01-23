@@ -213,8 +213,8 @@ class FeelInterpreter {
     withVal(
       input,
       _ match {
-        case ValNull             => withVal(x, x => ValBoolean(false))
-        case i if (x == ValNull) => withVal(x, x => ValBoolean(false))
+        case ValNull             => withVal(x, x => f(false))
+        case i if (x == ValNull) => withVal(x, x => f(false))
         case ValNumber(i)        => withNumber(x, x => f(c(i, x)))
         case ValDate(i)          => withDate(x, x => f(c(i, x)))
         case ValLocalTime(i)     => withLocalTime(x, x => f(c(i, x)))
@@ -238,6 +238,8 @@ class FeelInterpreter {
     withVal(
       input,
       _ match {
+        case ValNull             => f(false)
+        case i if (x == ValNull || y == ValNull) => f(false)
         case ValNumber(i)    => withNumbers(x, y, (x, y) => f(c(i, x, y)))
         case ValDate(i)      => withDates(x, y, (x, y) => f(c(i, x, y)))
         case ValLocalTime(i) => withLocalTimes(x, y, (x, y) => f(c(i, x, y)))
