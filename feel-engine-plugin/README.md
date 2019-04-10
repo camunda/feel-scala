@@ -75,6 +75,14 @@ public class BpmPlatformConfiguration {
 }
 ```
 
+If you don't have the dependency to the SPIN process engine plugin already in your dependencies, add this depenedency as well:
+```xml
+<dependency>
+  <groupId>org.camunda.bpm</groupId>
+  <artifactId>camunda-engine-plugin-spin</artifactId>
+</dependency>
+```
+
 **Using Camunda JBoss AS / Wildfly Distribution**
 
 Download the [module archive](https://github.com/camunda/feel-scala/releases) _(feel-engine-plugin-${VERSION}-jboss_wildfly_module.zip)_ and follow the instructions in the _README_ file.
