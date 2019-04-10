@@ -1,7 +1,5 @@
 theme: jekyll-theme-cayman
 
-show_downloads: true
-
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
