@@ -2,3 +2,4 @@ theme: jekyll-theme-cayman
 
 plugins:
   - jekyll-sitemap
+  - jekyll-github-metadata
