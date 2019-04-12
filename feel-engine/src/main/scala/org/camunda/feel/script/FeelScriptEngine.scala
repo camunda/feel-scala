@@ -2,24 +2,21 @@ package org.camunda.feel.script
 
 import org.camunda.feel._
 import org.camunda.feel.spi._
-import org.camunda.feel.interpreter._
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.Exp
 
 import scala.annotation.tailrec
-import scala.reflect._
 import scala.collection.JavaConverters._
 
 import java.io.Reader
 import java.io.IOException
 import java.io.Closeable
 import javax.script._
-import java.util.ServiceLoader
 
 trait FeelScriptEngine
-  extends AbstractScriptEngine
-  with ScriptEngine
-  with Compilable {
+    extends AbstractScriptEngine
+    with ScriptEngine
+    with Compilable {
 
   val eval: (String, Map[String, Any]) => EvalResult
 
@@ -28,26 +25,10 @@ trait FeelScriptEngine
   val factory: ScriptEngineFactory
 
   lazy val engine: org.camunda.feel.FeelEngine =
-    new FeelEngine(functionProvider, valueMapper)
+    new FeelEngine(functionProvider = SpiServiceLoader.loadFunctionProvider,
+                   valueMapper = SpiServiceLoader.loadValueMapper)
 
-  private def valueMapper: ValueMapper =
-    loadServiceProvider[CustomValueMapper]() match {
-      case Nil      => DefaultValueMapper.instance
-      case l :: Nil => l
-      case ls => {
-        logger.warn("Found more than one custom value mapper: {}. Use the first one.", ls)
-        ls.head
-      }
-    }
-
-  private def functionProvider: FunctionProvider =
-    loadServiceProvider[CustomFunctionProvider]() match {
-      case Nil      => FunctionProvider.EmptyFunctionProvider
-      case p :: Nil => p
-      case ps       => new FunctionProvider.CompositeFunctionProvider(ps)
-    }
-
-  def getFactory(): ScriptEngineFactory = factory
+  def getFactory: ScriptEngineFactory = factory
 
   def createBindings(): Bindings = new SimpleBindings
 
@@ -109,17 +90,15 @@ trait FeelScriptEngine
   }
 
   @tailrec
-  private def read(
-    reader: Reader,
-    buffer: StringBuffer = new StringBuffer): String = {
+  private def read(reader: Reader,
+                   buffer: StringBuffer = new StringBuffer): String = {
     val chars = new Array[Char](16 * 1024)
 
     reader.read(chars, 0, chars.length) match {
       case -1 => buffer.toString
-      case i => {
+      case i =>
         buffer.append(chars, 0, i)
         read(reader, buffer)
-      }
     }
   }
 
@@ -130,19 +109,5 @@ trait FeelScriptEngine
       case _: IOException => // ignore
     }
   }
-
-  private def loadServiceProvider[T: ClassTag](): List[T] =
-    try {
-      val loader =
-        ServiceLoader.load(classTag[T].runtimeClass.asInstanceOf[Class[T]])
-      loader.iterator.asScala.toList
-    } catch {
-      case t: Throwable => {
-        System.err.println(
-          s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")
-        t.printStackTrace()
-        throw (t)
-      }
-    }
 
 }
