@@ -18,7 +18,7 @@ import java.math.BigDecimal
   */
 object BuiltinFunctions extends FunctionProvider {
 
-  def getFunction(name: String): List[ValFunction] =
+  def getFunctions(name: String): List[ValFunction] =
     functions.getOrElse(name, List.empty)
 
   val functions: Map[String, List[ValFunction]] =

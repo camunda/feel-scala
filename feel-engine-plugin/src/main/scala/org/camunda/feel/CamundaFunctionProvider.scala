@@ -13,13 +13,12 @@ import java.time.ZonedDateTime
   */
 class CamundaFunctionProvider extends CustomFunctionProvider {
 
-  def getFunction(name: String): List[ValFunction] =
-    functions.getOrElse(name, List.empty)
+  def getFunction(name: String): Option[ValFunction] = functions.get(name)
 
-  val functions: Map[String, List[ValFunction]] = Map(
-    "now" -> List(nowFunction),
-    "currentUser" -> List(currentUserFunction),
-    "currentUserGroups" -> List(currentUserGroupsFunction)
+  val functions: Map[String, ValFunction] = Map(
+    "now" -> nowFunction,
+    "currentUser" -> currentUserFunction,
+    "currentUserGroups" -> currentUserGroupsFunction
   )
 
   private def nowFunction = ValFunction(

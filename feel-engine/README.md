@@ -27,13 +27,14 @@ object MyProgram {
   
   def feel(expression: String, context: Map[String, Any]) {
     
-    val result: EvalResult = engine.evalSimpleUnaryTests(expression, context)
-    
-    result match {
-      case EvalValue(value)   =>  // ...
-      case EvalFailure(error) =>  // ...
-      case ParseFailure(error) => // ...
-    }
+    val result: Either[Failure, Boolean] = engine.evalSimpleUnaryTests(expression, context)
+    // or    
+    val result: Either[Failure, Any] = engine.evalExpression(expression, context)
+  
+    // handle result
+    result
+        .right.map(value => println(s"result is: $value"))
+        .left.map(failure => println(s"failure: $failure"))
   }  
 }
 ```

@@ -19,6 +19,10 @@ project/plugins/project/
 .classpath
 .project
 
+# IDEA
+.idea/
+
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
+

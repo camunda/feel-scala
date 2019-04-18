@@ -30,7 +30,7 @@ case class ObjectContext(obj: Any,
   }
 
   override val functionProvider = new FunctionProvider {
-    override def getFunction(name: String): List[ValFunction] = {
+    override def getFunctions(name: String): List[ValFunction] = {
       obj.getClass.getMethods
         .find(method => { method.getName == name })
         .map(method => {

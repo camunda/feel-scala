@@ -94,10 +94,10 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 
     val context = Map("p" -> person, "Language" -> Language)
 
-    engine.evalExpression("p.name", context) should be (EvalValue("Tom"))
-    engine.evalExpression("p.language", context) should be (EvalValue("EN"))
-    engine.evalExpression("p.language = Language.EN", context) should be (EvalValue(true))
-    engine.evalExpression("p.language = Language.DE", context) should be (EvalValue(false))
+    engine.evalExpression("p.name", context) should be (Right("Tom"))
+    engine.evalExpression("p.language", context) should be (Right("EN"))
+    engine.evalExpression("p.language = Language.EN", context) should be (Right(true))
+    engine.evalExpression("p.language = Language.DE", context) should be (Right(false))
   }
 
 }

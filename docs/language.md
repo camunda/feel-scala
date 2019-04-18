@@ -1,6 +1,6 @@
 ---
 title: FEEL language
-layout: default
+layout: page
 ---
 
 

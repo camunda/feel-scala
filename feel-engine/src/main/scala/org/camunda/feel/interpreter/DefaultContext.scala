@@ -39,7 +39,7 @@ abstract class ContextBase extends Context {
       paramCount) match {
       case Some(f: ValFunction) => f
       case _ => {
-        val providerFunctions = functionProvider.getFunction(name)
+        val providerFunctions = functionProvider.getFunctions(name)
 
         val functionsByName = cachedFunctions getOrElse (name, List.empty)
         cachedFunctions.put(name, functionsByName ++ providerFunctions)
@@ -57,7 +57,7 @@ abstract class ContextBase extends Context {
       params) match {
       case Some(f: ValFunction) => f
       case _ => {
-        val providerFunctions = functionProvider.getFunction(name)
+        val providerFunctions = functionProvider.getFunctions(name)
 
         val functionsByName = cachedFunctions getOrElse (name, List.empty)
         cachedFunctions.put(name, functionsByName ++ providerFunctions)

@@ -2,21 +2,21 @@ package org.camunda.feel.interpreter
 
 trait FunctionProvider {
 
-  def getFunction(name: String): List[ValFunction]
+  def getFunctions(name: String): List[ValFunction]
 
 }
 
 object FunctionProvider {
 
   object EmptyFunctionProvider extends FunctionProvider {
-    override def getFunction(name: String): List[ValFunction] = List.empty
+    override def getFunctions(name: String): List[ValFunction] = List.empty
   }
 
   case class CompositeFunctionProvider(providers: List[FunctionProvider])
     extends FunctionProvider {
-    override def getFunction(name: String): List[ValFunction] =
+    override def getFunctions(name: String): List[ValFunction] =
       (List[ValFunction]() /: providers)((functions, provider) =>
-        functions ++ provider.getFunction(name))
+        functions ++ provider.getFunctions(name))
   }
 
 }

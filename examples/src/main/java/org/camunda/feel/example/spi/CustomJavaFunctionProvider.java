@@ -27,7 +27,7 @@ import scala.math.BigDecimal;
 
 public class CustomJavaFunctionProvider extends JavaFunctionProvider
 {
-    private static final Map<String, List<JavaFunction>> functions = new HashMap<>();
+    private static final Map<String, JavaFunction> functions = new HashMap<>();
 
     static {
 
@@ -39,20 +39,13 @@ public class CustomJavaFunctionProvider extends JavaFunctionProvider
             return new ValNumber(BigDecimal.valueOf(x - 1));
         });
 
-        functions.put("bar", Collections.singletonList(function));
+        functions.put("bar", function);
     }
 
     @Override
-    public List<JavaFunction> resolveFunctions(String functionName)
+    public Optional<JavaFunction> resolveFunction(String functionName)
     {
-      if (functions.containsKey(functionName))
-      {
-        return functions.get(functionName);
-      }
-      else
-      {
-          return Collections.emptyList();
-      }
+      return Optional.ofNullable(functions.get(functionName));
     }
 
 }

@@ -4,13 +4,14 @@ import org.camunda.feel._
 import org.camunda.feel.spi._
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.Exp
+import org.camunda.feel.FeelEngine.EvalExpressionResult
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-
 import java.io.Reader
 import java.io.IOException
 import java.io.Closeable
+
 import javax.script._
 
 trait FeelScriptEngine
@@ -18,7 +19,7 @@ trait FeelScriptEngine
     with ScriptEngine
     with Compilable {
 
-  val eval: (String, Map[String, Any]) => EvalResult
+  val eval: (String, Map[String, Any]) => EvalExpressionResult
 
   val parse: String => ParseResult[Exp]
 
@@ -65,11 +66,10 @@ trait FeelScriptEngine
       throw new ScriptException(s"failed to parse expression '$script':\n$e")
   }
 
-  private def handleEvaluationResult(result: EvalResult): Object =
+  private def handleEvaluationResult(result: EvalExpressionResult): Object =
     result match {
-      case EvalValue(value)    => value.asInstanceOf[AnyRef]
-      case EvalFailure(cause)  => throw new ScriptException(cause)
-      case ParseFailure(cause) => throw new ScriptException(cause)
+      case Right(value) => value.asInstanceOf[AnyRef]
+      case Left(failure) => throw new ScriptException(failure.message)
     }
 
   private def getEngineContext(context: ScriptContext): Map[String, Any] = {
