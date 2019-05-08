@@ -5,9 +5,12 @@ import org.scalatest.Matchers
 import org.camunda.feel._
 
 /**
- * @author Philipp Ossler
- */
-class InterpreterNumberExpressionTest extends FlatSpec with Matchers with FeelIntegrationTest {
+  * @author Philipp Ossler
+  */
+class InterpreterNumberExpressionTest
+    extends FlatSpec
+    with Matchers
+    with FeelIntegrationTest {
 
   "A number" should "add to '4'" in {
 
@@ -81,6 +84,11 @@ class InterpreterNumberExpressionTest extends FlatSpec with Matchers with FeelIn
   it should "exponentiate twice" in {
     // all operators are left associative
     eval("2**2**3") should be(ValNumber(64))
+  }
+
+  it should "exponentiate by '3.1'" in {
+
+    eval("2**3.1") should be(ValNumber(8.574187700290345))
   }
 
   it should "negate" in {

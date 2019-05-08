@@ -12,17 +12,14 @@ public class FeelEngineJavaTest {
 
     public static void main(String[] args) {
 
-        // default
-        final FeelEngine engine = new FeelEngine();
-        // with function provider and value mapper
-        final FeelEngine engine2 =
+        final FeelEngine engine =
                 new FeelEngine.Builder()
                         .valueMapper(new JavaValueMapper())
                         .functionProvider(SpiServiceLoader.loadFunctionProvider())
                         .build();
 
         final Map<String, Object> variables = Collections.singletonMap("x", 2);
-        final Either<FeelEngine.Failure, Object> result = engine2.evalExpression("x + 1", variables);
+        final Either<FeelEngine.Failure, Object> result = engine.evalExpression("x + 1", variables);
 
         if (result.isRight()) {
             final Object value = result.right().get();

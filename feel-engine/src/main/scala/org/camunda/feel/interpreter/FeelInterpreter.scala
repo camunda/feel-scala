@@ -1,12 +1,11 @@
 package org.camunda.feel.interpreter
 
+import java.time.{Duration, Period}
+
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
 import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.parser._
-import java.time.{Duration, Period}
-
-import org.slf4j._
 
 /**
   * @author Philipp Ossler
@@ -62,7 +61,16 @@ class FeelInterpreter {
     case Multiplication(x, y) => withValOrNull(mulOp(eval(x), eval(y)))
     case Division(x, y)       => withValOrNull(divOp(eval(x), eval(y)))
     case Exponentiation(x, y) =>
-      withValOrNull(dualNumericOp(eval(x), eval(y), _ pow _.toInt, ValNumber))
+      withValOrNull(
+        dualNumericOp(eval(x),
+                      eval(y),
+                      (x, y) =>
+                        if (y.isWhole) {
+                          x.pow(y.toInt)
+                        } else {
+                          math.pow(x.toDouble, y.toDouble)
+                      },
+                      ValNumber))
     case ArithmeticNegation(x) =>
       withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
 
@@ -81,9 +89,13 @@ class FeelInterpreter {
 
     // control structures
     case If(condition, statement, elseStatement) =>
-      withBooleanOrFalse(
-        eval(condition),
-        isMet => if (isMet) { eval(statement) } else { eval(elseStatement) })
+      withBooleanOrFalse(eval(condition),
+                         isMet =>
+                           if (isMet) {
+                             eval(statement)
+                           } else {
+                             eval(elseStatement)
+                         })
     case In(x, test) =>
       withVal(eval(x), x => eval(test)(context + (inputKey -> x)))
     case InstanceOf(x, typeName) =>
@@ -238,12 +250,12 @@ class FeelInterpreter {
     withVal(
       input,
       _ match {
-        case ValNull             => f(false)
+        case ValNull                             => f(false)
         case i if (x == ValNull || y == ValNull) => f(false)
-        case ValNumber(i)    => withNumbers(x, y, (x, y) => f(c(i, x, y)))
-        case ValDate(i)      => withDates(x, y, (x, y) => f(c(i, x, y)))
-        case ValLocalTime(i) => withLocalTimes(x, y, (x, y) => f(c(i, x, y)))
-        case ValTime(i)      => withTimes(x, y, (x, y) => f(c(i, x, y)))
+        case ValNumber(i)                        => withNumbers(x, y, (x, y) => f(c(i, x, y)))
+        case ValDate(i)                          => withDates(x, y, (x, y) => f(c(i, x, y)))
+        case ValLocalTime(i)                     => withLocalTimes(x, y, (x, y) => f(c(i, x, y)))
+        case ValTime(i)                          => withTimes(x, y, (x, y) => f(c(i, x, y)))
         case ValLocalDateTime(i) =>
           withLocalDateTimes(x, y, (x, y) => f(c(i, x, y)))
         case ValDateTime(i) => withDateTimes(x, y, (x, y) => f(c(i, x, y)))
