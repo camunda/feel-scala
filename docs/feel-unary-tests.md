@@ -32,7 +32,7 @@ Compare the input value to `x`.
 
 Test if the input value is within the interval `x` and `y`.
 
-An interval can be open `(x..y)` / `]x..y[)` or close `[x..y]`. If the interval is open when the value is not included.
+An interval can be open `(x..y)` / `]x..y[` or close `[x..y]`. If the interval is open when the value is not included.
 
 ```js
 (2..5)
