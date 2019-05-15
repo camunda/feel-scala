@@ -8,7 +8,7 @@ An expression can contain literals, operators and function calls.
 
 ### Literal
 
-A single value of one of the [types](../feel-data-types).
+A single value of one of the [types](feel-data-types).
 
 ```js
 null
@@ -270,7 +270,7 @@ The nested values of a specific key can be extracted by `.key`.
 
 ### Evaluate a Unary Tests
 
-Evaluates a [unary-tests expression](../feel-unary-tests) with the given value. 
+Evaluates a [unary-tests expression](feel-unary-tests) with the given value. 
 
 ```js
 x in (2..4)
