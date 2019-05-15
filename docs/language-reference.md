@@ -1,6 +1,5 @@
 ---
-title: FEEL language
-layout: page
+title: FEEL language reference
 ---
 
 
