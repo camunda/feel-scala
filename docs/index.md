@@ -7,4 +7,5 @@ permalink: /
 ## Table of Content
 
 * [What is FEEL?](what-is-feel)
-* [Language Reference](language-reference)
+* Language Reference
+  * [Data Types](feel-data-types)
