@@ -4,6 +4,7 @@ title: FEEL Language Reference: Data Types
 
 ## FEEL Data Types
 
+A value can have one of the following types.
 
 ### Null
 
