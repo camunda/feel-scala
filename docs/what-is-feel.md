@@ -6,7 +6,7 @@ title: What is FEEL?
 
 FEEL (Friendly Enough Expression Language) is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
 
-## Unary Tests vs. Expressions
+## Unary Tests vs. Expression
 
 FEEL has two entry points: unary-tests and expressions. 
 
@@ -16,7 +16,7 @@ Unary-Tests can be used only for input entries of a decision table. They are a s
 
 Examples:
 
-```
+```js
 < 7                                                 
 // input less than 7
 
@@ -36,7 +36,7 @@ Expressions can be used everywhere, e.g. in a decision table as input expression
 
 Examples:
 
-```
+```js
 applicant.monthly.income * 12                                           
 
 if applicant.maritalStatus in ("M","S") then "valid" else "not valid"    
@@ -50,5 +50,5 @@ some ch in credit_history satisfies ch.event = "bankruptcy"
 
 ## Next
 
-* More examples: https://github.com/camunda/feel-scala/tree/master/examples
-* Language reference: https://camunda.github.io/feel-scala/language
+* [language reference](https://camunda.github.io/feel-scala/language-reference)
+* [more examples](https://github.com/camunda/feel-scala/tree/master/examples)
