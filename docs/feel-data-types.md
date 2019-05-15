@@ -22,6 +22,7 @@ null
 
 A whole or floating point number.
 
+* not-a-number (NaN), positive/negative infinity are represented as `null`
 * Java Type: `java.math.BigDecimal`
 
 ```js
