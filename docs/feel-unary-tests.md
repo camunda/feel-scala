@@ -69,9 +69,11 @@ not(2, 3)
 // input != 2 and input != 3 
 ```
 
-### Input Value
+### Expression
 
-The input value can be accessed by the special variable `?`. For example, when invoking a built-in function.
+It is also possible to use a boolean [expression](feel-expression) instead of an operator. For example, invoking a built-in function.
+
+The input value can be accessed by the special variable `?`.
 
 ```js
 ends with(?, "@camunda.com")
