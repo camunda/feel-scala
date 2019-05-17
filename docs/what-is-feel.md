@@ -47,8 +47,3 @@ sum( credit_history[record_date > date("2011-01-01")].weight )
 
 some ch in credit_history satisfies ch.event = "bankruptcy"      
 ```
-
-## Next
-
-* [language reference](https://camunda.github.io/feel-scala/language-reference)
-* [more examples](https://github.com/camunda/feel-scala/tree/master/examples)
