@@ -4,7 +4,7 @@ overview: true
 permalink: /
 ---
 
-# FEEL-Scala Documentation
+# Documentation
 
 The following pages should give an overview how to use the FEEL engine and what FEEL expressions are supported.
 
@@ -24,6 +24,6 @@ The following pages should give an overview how to use the FEEL engine and what 
 * Integration into Camunda BPM
   * Camunda Value Mapper and Functions
   * Camunda Spin
-  * Set FEEL Data Types in Decision
+  * Setting FEEL Data Types in Decision
 * Examples
 * How-To's
