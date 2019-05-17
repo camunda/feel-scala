@@ -610,18 +610,137 @@ sort(list: [3,1,4,5,2], precedes: function(x,y) x < y)
 
 ## Numeric Functions 
 
-| function | parameter | description | example |
-|----------|-----------|-------------|---------|
-| decimal(n, scale) | number, number | return n with given scale | decimal(1/3, 2) = .33, decimal(1.5, 0) = 2 |
-| floor(n) | number | return greatest integer <= n | floor(1.5) = 1, floor(-1.5) = -2 | 
-| ceiling(n) | number | return smallest integer >= n | ceiling(1.5) = 2, ceiling(-1.5) = -1 |
-| abs(number) | number | return the absolute value | abs(10) = 10 , abs(-10) = 10 |
-| modulo(dividend, divisor) | number, number | return the remainder of the division of dividend by divisor | modulo( 12, 5 ) = 2 |
-| sqrt(number) | number | return the square root | sqrt(16) = 4 |
-| log(number) | number | return the natural logarithm (base e) of the number | log(10) = 2.302585092994046 |
-| exp(number) | number | return the Euler’s number e raised to the power of number | exp( 5 ) = 148.4131591025766 |
-| odd(number) | number | check if the number is odd | odd(5) = true |
-| even(number) | number | check if the number is even | even(5) = false |
+### decimal()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: number
+
+```js
+decimal(1/3, 2)
+// .33
+
+decimal(1.5, 0) 
+// 2
+```
+
+### floor()
+
+* parameters:
+  * `n`: number
+* result: number
+
+```js
+floor(1.5)
+// 1
+
+floor(-1.5)
+// -2
+```
+
+### ceiling()
+
+* parameters:
+  * `n`: number
+* result: number
+
+```js
+ceiling(1.5)
+// 2
+
+floor(-1.5)
+// -1
+```
+
+### abs()
+
+* parameters:
+  * `number`: number
+* result: number
+
+```js
+abs(10)
+// 10
+
+abs(-10)
+// 10
+```
+
+### modulo()
+
+Returns the remainder of the division of dividend by divisor.
+
+* parameters:
+  * `dividend`: number
+  * `divisor`: number
+* result: number
+
+```js
+modulo(12, 5)
+// 2
+```
+
+### sqrt()
+
+Returns the square root.
+
+* parameters:
+  * `number`: number
+* result: number
+
+```js
+sqrt(16)
+// 4
+```
+
+### log()
+
+Returns the natural logarithm (base e) of the number.
+
+* parameters:
+  * `number`: number
+* result: number
+
+```js
+log(10)
+// 2.302585092994046
+```
+
+### exp()
+
+Returns the Euler’s number e raised to the power of number .
+
+* parameters:
+  * `number`: number
+* result: number
+
+```js
+exp(5)
+// 148.4131591025766
+```
+
+### odd()
+
+* parameters:
+  * `number`: number
+* result: boolean
+
+```js
+odd(5)
+// true
+```
+
+### even()
+
+* parameters:
+  * `number`: number
+* result: boolean
+
+```js
+odd(5)
+// false
+```
 
 ## Context Functions 
 
