@@ -6,6 +6,8 @@ title: FEEL Language Reference: Built-in Functions
 
 The following functions are available and can be used in expressions and unary-tests.
 
+Note that some function/parameter names contain whitespaces. However, they can be invoked directly - without escaping the name.  
+
 ## Conversion Functions 
 
 Convert a value into a different type.
@@ -135,21 +137,158 @@ not(true)
 
 ## String Functions 
 
-| function | parameter | description | example |
-|----------|-----------|-------------|---------|
-| substring(string, start position) | string, number | return characters starting at _start position_ | substring("foobar",3) = "obar" |
-| substring(string, start position, length) | string, number, number | return _length_ characters starting at _start position_ | substring("foobar",3,3) = "oba" |
-| string length(string) | string | return length of string | string length("foo") = 3 |
-| upper case(string) | string | return uppercased string | upper case("aBc4") = "ABC4" |
-| lower case(string) | string | return lowercased string | lower case("aBc4") = "abc4" |
-| substring before(string, match) | string, string | return substring before _match_ or empty string | substring before("foobar", "bar") = "foo"
-| substring after(string, match) | string, string | return substring after _match_ | substring after("foobar", "ob") = "ar" |
-| replace(input, pattern, replacement) | string, regular expression, replacement | return string with replacement | replace("abcd", "(ab)\|(a)", "[1=$1][2=$2]") = "[1=ab][2=]cd" |
-| contains(string, match) | string, string | check if the string contain _match_ | contains("foobar", "of") = false |
-| starts with(string, match) | string, string | check if the string start with _match_ | starts with("foobar", "fo") = true |
-| ends with(string, match) | string, string | check if the string end with _match_ | ends with("foobar", "r") = true |
-| matches(input, pattern) | string, regular expression | check if the input match the _pattern_ | matches("foobar", "^fo*bar") = true |
-| split(string, delimiter) | string, regular expression | splits the string into a list of substrings, breaking at each occurrence of the _delimiter_. | split("John Doe", "\s" ) = ["John", "Doe"] |
+### substring()
+
+* parameters:
+  * `string`: string
+  * `start position`: number
+  * (optional) `length`: number  
+* result: string
+
+```js
+substring("foobar",3) 
+// "obar"
+
+substring("foobar",3,3) 
+// "oba"
+```
+
+### string length()
+
+* parameters:
+  * `string`: string
+* result: number
+
+```js
+string length("foo") 
+// 3
+```
+
+### upper case()
+
+* parameters:
+  * `string`: string
+* result: string
+
+```js
+upper case("aBc4") 
+// "ABC4"
+```
+
+### lower case()
+
+* parameters:
+  * `string`: string
+* result: string
+
+```js
+lower case("aBc4") 
+// "abc4"
+```
+
+### substring before()
+
+* parameters:
+  * `string`: string
+  * `match`: string
+* result: string
+
+```js
+substring before("foobar", "bar") 
+// "foo"
+```
+
+### substring after()
+
+* parameters:
+  * `string`: string
+  * `match`: string
+* result: string
+
+```js
+substring after("foobar", "ob") 
+// "ar"
+```
+
+### contains()
+
+* parameters:
+  * `string`: string
+  * `match`: string
+* result: boolean
+
+```js
+contains("foobar", "of") 
+// false
+```
+
+### starts with()
+
+* parameters:
+  * `input`: string
+  * `match`: string
+* result: boolean
+
+```js
+starts with("foobar", "fo") 
+// true
+```
+
+### ends with()
+
+* parameters:
+  * `input`: string
+  * `match`: string
+* result: boolean
+
+```js
+ends with("foobar", "r") 
+// true
+```
+
+### matches()
+
+* parameters:
+  * `input`: string
+  * `pattern`: string (regular expression)
+* result: boolean
+
+```js
+matches("foobar", "^fo*bar") 
+// true
+```
+
+### replace()
+
+* parameters:
+  * `input`: string
+  * `pattern`: string (regular expression)
+  * `replacement`: string (e.g. `$1` returns the first match group) 
+  * (optional) `flags`: string ("s", "m", "i", "x")
+* result: string
+
+```js
+replace("abcd", "(ab)|(a)", "[1=$1][2=$2]")
+// "[1=ab][2=]cd"
+
+replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3")
+// "(012) 345-6789"
+```
+
+### split()
+
+* parameters:
+  * `string`: string
+  * `delimiter`: string (regular expression)
+* result: list of strings
+
+```js
+split("John Doe", "\s" ) 
+// ["John", "Doe"]
+
+split("a;b;c;;", ";")
+// ["a", "b", "c", "", ""]
+```
 
 ## List Functions 
 
