@@ -44,6 +44,22 @@ Also, directly on a context.
 // "valid"
 ```
 
+Inside a context, the previous values can be accessed.
+
+```js
+{
+  a: 1,
+  b: 2,
+  c: a + b
+}
+```
+
+If the name or path contains any special character (e.g. whitespace, dash, etc.) then the name needs to be wrapped into single quotes `'foo bar'`.
+
+```js
+'name with whitespace'.'name+operator'
+```
+
 ### Addition
 
 * supported types: number, string, day-time-duration, year-month-duration
