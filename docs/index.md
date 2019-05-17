@@ -15,7 +15,7 @@ The following pages should give an overview how to use the FEEL engine and what 
   * [Data Types](feel-data-types)
   * [Unary Tests](feel-unary-tests)
   * [Expression](feel-expression)
-  * Built-in Functions
+  * [Built-in Functions](feel-built-in-functions)
 * Engine Reference
   * How it works
   * How to extend/customize
