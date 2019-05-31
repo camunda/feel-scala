@@ -4,9 +4,9 @@ A parser and interpreter for FEEL which is written in Scala (see [What is FEEL?]
 
 It is desined as a community extension for Camunda BPM to replace the built-in FEEL engine of the [Camunda DMN engine](https://github.com/camunda/camunda-engine-dmn). However, it can also be used outside of Camunda BPM as native Scala application or script engine. 
 
-**Features:**
+**Features:** :sparkles:
 
-* full support for unary-tests and expressions
+* full support for unary-tests and expressions (DMN 1.2)
 * including built-in functions
 * extensible by own functions and custom object mappers
 
@@ -20,12 +20,17 @@ The FEEL engine can be used/integrated in different ways
 
 ## Usage
 
-* [New Documentation](https://camunda.github.io/feel-scala/) (in progress)
-* [Current Documentation](https://github.com/camunda/feel-scala/wiki) 
+* [New Documentation](https://camunda.github.io/feel-scala/) :wrench: (in progress)
+* [Old Documentation](https://github.com/camunda/feel-scala/wiki) 
+
+## Status
+
+* feature complete :balloon:
+* [actively maintained](https://github.com/camunda/feel-scala/graphs/contributors): bug fixing, small improvements, support latestest DMN version
 
 ## Contribution
 
-See the [Contribution Guide](./CONTRIBUTING.md).
+See the [Contribution Guide](./CONTRIBUTING.md). :+1:
 
 ## License
 
