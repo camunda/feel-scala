@@ -206,7 +206,9 @@ class BuiltinListFunctionsTest extends FlatSpec with Matchers with FeelIntegrati
 
   it should "return list of positions containing the match" in {
 
+    eval(" index of([1,2,3,2], 1) ") should be(ValList(List(ValNumber(1))))
     eval(" index of([1,2,3,2], 2) ") should be(ValList(List(ValNumber(2), ValNumber(4))))
+    eval(" index of([1,2,3,2], 3) ") should be(ValList(List(ValNumber(3))))
   }
 
   "A union() function" should "concatenate with duplicate removal" in {

@@ -934,7 +934,7 @@ object BuiltinFunctions extends FunctionProvider {
                           indexList: List[Int] = List()): List[Int] = {
     val index = list.indexOf(item, from)
 
-    if (index > 0) {
+    if (index >= 0) {
       indexOfList(list, item, index + 1, indexList ++ List(index + 1))
     } else {
       indexList
