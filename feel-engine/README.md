@@ -20,6 +20,8 @@ It is recommended to choose the complete jar file which includes all dependencie
 
 Create a new instance of the class 'FeelEngine'. Use this instance to parse and evaluate a given expression or unary tests. 
 
+Using Scala:
+
 ```scala
 object MyProgram {
   
@@ -36,6 +38,32 @@ object MyProgram {
         .right.map(value => println(s"result is: $value"))
         .left.map(failure => println(s"failure: $failure"))
   }  
+}
+```
+
+Or using Java:
+
+```java
+ public class MyProgram {
+
+    public static void main(String[] args) {
+
+        final FeelEngine engine = new FeelEngine.Builder()
+            .valueMapper(new JavaValueMapper())
+            .functionProvider(SpiServiceLoader.loadFunctionProvider())
+            .build();
+
+        final Map<String, Object> variables = Collections.singletonMap("x", 21);
+        final Either<FeelEngine.Failure, Object> result = engine.evalExpression(expression, variables);
+
+        if (result.isRight()) {
+            final Object value = result.right().get();
+            System.out.println("result is " + value);
+        } else {
+            final FeelEngine.Failure failure = result.left().get();
+            throw new RuntimeException(failure.message());
+        }
+    }
 }
 ```
 
