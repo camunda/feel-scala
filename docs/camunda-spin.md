@@ -56,7 +56,7 @@ Spin XML:
 
 FEEL context:
 
-```
+```js
 { 
   customer : 
   {
