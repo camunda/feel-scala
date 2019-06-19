@@ -20,7 +20,7 @@ The following pages should give an overview how to use the FEEL engine and what 
   * How it works
   * How to extend/customize
     * [Function Provider SPI](function-provider-spi)
-    * Value Mapper SPI
+    * [Value Mapper SPI](value-mapper-spi)
 * Integration into Camunda BPM
   * Camunda Value Mapper and Functions
   * Camunda Spin
