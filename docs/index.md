@@ -24,7 +24,7 @@ The following pages should give an overview how to use the FEEL engine and what 
 * Integration into Camunda BPM
   * [Camunda Value Mapper](camunda-value-mapper)
   * [Camunda Functions](camunda-functions)
-  * Camunda Spin
+  * [Camunda Spin](camunda-spin)
   * Setting FEEL Data Types in Decision
 * Examples
 * How-To's
