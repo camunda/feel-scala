@@ -14,7 +14,7 @@ Returns the current date-time.
 
 ```js
 now()
-// date and time("2018-04-29T009:30:00")
+// date and time("2018-04-29T09:30:00")
 ```
 
 ### currentUser()
