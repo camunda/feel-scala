@@ -22,7 +22,8 @@ The following pages should give an overview how to use the FEEL engine and what 
     * [Function Provider SPI](function-provider-spi)
     * [Value Mapper SPI](value-mapper-spi)
 * Integration into Camunda BPM
-  * Camunda Value Mapper and Functions
+  * [Camunda Value Mapper](camunda-value-mapper)
+  * [Camunda Functions](camunda-functions)
   * Camunda Spin
   * Setting FEEL Data Types in Decision
 * Examples
