@@ -35,7 +35,7 @@ class MyValueMapper extends CustomValueMapper {
 Using Java, create a sub-class of `org.camunda.feel.interpreter.DefaultValueMapper` which implements `org.camunda.feel.spi.CustomValueMapper`. It is equal to the Scala one but need to extend the default implementation explicitly.
 
 ```java
-public class CustomJavaValueMapper extends DefaultValueMapper implements CustomValueMapper  {
+public class MyValueMapper extends DefaultValueMapper implements CustomValueMapper  {
 
     @Override
     public Val toVal(Object x) {
