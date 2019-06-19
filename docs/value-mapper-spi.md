@@ -10,11 +10,9 @@ The value mapper is used while evaluating expressions and unary tests to
 
 Using the SPI, the transformation can be customized to support more/custom data types, or changing the data type of the result.
 
-### Implement a Value Mapper
+### Implement a Value Mapper using Scala
 
 Create a sub-class of `org.camunda.feel.spi.CustomValueMapper`. Override the method `toVal()` and/or `unpackVal()` to customize the default behavior.
-
-Using Scala:
 
 ```scala
 class MyValueMapper extends CustomValueMapper {
@@ -32,10 +30,37 @@ class MyValueMapper extends CustomValueMapper {
 }
 ```
 
-Using Java:
+### Implement a Value Mapper using Java
+
+Using Java, create a sub-class of `org.camunda.feel.interpreter.DefaultValueMapper` which implements `org.camunda.feel.spi.CustomValueMapper`. It is equal to the Scala one but need to extend the default implementation explicitly.
 
 ```java
-// TODO
+public class CustomJavaValueMapper extends DefaultValueMapper implements CustomValueMapper  {
+
+    @Override
+    public Val toVal(Object x) {
+
+        if (x instanceof Custom) {
+            final Custom c = (Custom) x;
+            return new ValString(c.getName());
+
+        } else {
+            return super.toVal(x);
+        }
+    }
+
+    @Override
+    public Object unpackVal(Val value) {
+
+        if (value instanceof ValNumber) {
+            final ValNumber number = (ValNumber) value;
+            return number.value().doubleValue(); // map BigDecimal to Double
+
+        } else {
+            return super.unpackVal(value);
+        }
+    }
+}
 ```
 
 ### Register the Value Mapper
