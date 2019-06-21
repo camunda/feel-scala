@@ -20,8 +20,7 @@ The FEEL engine can be used/integrated in different ways
 
 ## Usage
 
-* [New Documentation](https://camunda.github.io/feel-scala/) :wrench: (in progress)
-* [Old Documentation](https://github.com/camunda/feel-scala/wiki) 
+ See the [documentation](https://camunda.github.io/feel-scala/).
 
 ## Status
 
