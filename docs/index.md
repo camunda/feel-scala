@@ -25,6 +25,5 @@ The following pages should give an overview how to use the FEEL engine and what 
   * [Camunda Value Mapper](camunda-value-mapper)
   * [Camunda Functions](camunda-functions)
   * [Camunda Spin](camunda-spin)
-  * Setting FEEL Data Types in Decision
+  * [Setting FEEL Data Types in Decision](camunda-setting-data-types-in-decision)
 * Examples
-* How-To's
