@@ -29,7 +29,7 @@ The FEEL engine can be used/integrated in different ways
 
 ## Contribution
 
-See the [Contribution Guide](./CONTRIBUTING.md). :+1:
+See the [Contribution Guide](./CONTRIBUTING.md).
 
 ## License
 
