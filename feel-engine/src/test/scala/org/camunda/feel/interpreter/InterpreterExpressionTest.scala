@@ -5,9 +5,12 @@ import org.scalatest.Matchers
 import org.camunda.feel._
 
 /**
- * @author Philipp Ossler
- */
-class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrationTest {
+  * @author Philipp Ossler
+  */
+class InterpreterExpressionTest
+    extends FlatSpec
+    with Matchers
+    with FeelIntegrationTest {
 
   "An expression" should "be an if-then-else" in {
 
@@ -15,15 +18,17 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
 
     eval(exp, Map("x" -> 2)) should be(ValString("low"))
     eval(exp, Map("x" -> 7)) should be(ValString("high"))
-    
+
     eval(exp, Map("x" -> "foo")) should be(ValString("high"))
   }
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(RootContext.defaultInputVariable -> 2)) should be(ValBoolean(true))
+    eval("< 3", Map(RootContext.defaultInputVariable -> 2)) should be(
+      ValBoolean(true))
 
-    eval("(2 .. 4)", Map(RootContext.defaultInputVariable -> 5)) should be(ValBoolean(false))
+    eval("(2 .. 4)", Map(RootContext.defaultInputVariable -> 5)) should be(
+      ValBoolean(false))
   }
 
   it should "be an instance of" in {
@@ -37,14 +42,14 @@ class InterpreterExpressionTest extends FlatSpec with Matchers with FeelIntegrat
     eval("x instance of string", Map("x" -> "yes")) should be(ValBoolean(true))
     eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
   }
-  
+
   it should "be an escaped identifier" in {
     // regular identifier
-    eval(" 'x' ", Map("x" -> "foo")) should be(ValString("foo"))
+    eval(" `x` ", Map("x" -> "foo")) should be(ValString("foo"))
     // with whitespace
-    eval(" 'a b' ", Map("a b" -> "foo")) should be(ValString("foo"))
+    eval(" `a b` ", Map("a b" -> "foo")) should be(ValString("foo"))
     // with operator
-    eval(" 'a-b' ", Map("a-b" -> 3)) should be(ValNumber(3))
+    eval(" `a-b` ", Map("a-b" -> 3)) should be(ValNumber(3))
   }
 
   "Null" should "compare to null" in {

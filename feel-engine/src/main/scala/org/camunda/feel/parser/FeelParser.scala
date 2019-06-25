@@ -213,7 +213,7 @@ object FeelParser extends JavaTokenParsers {
     : Parser[String] = escapedIdentifier | "time offset" | identifier
 
   private lazy val escapedIdentifier
-    : Parser[String] = ("'" ~> """([^'"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "'")
+    : Parser[String] = ("`" ~> """([^`"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "`")
 
   // FEEL name definition
   private lazy val feelName: Parser[String] = nameStart ~! rep(
