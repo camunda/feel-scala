@@ -1,10 +1,10 @@
 # FEEL Engine
 
-A parser and interpreter for FEEL (Friendly Enough Expression Language) written in Scala. 
+The core FEEL engine (parser and interpreter). Usually, it is integrated in a project as library. In the project, the engine is either called directly (i.e. `engine.evalExpression(..)`) or using the script engine API. 
 
-## How to use it?
+## Usage
 
-Add the FEEL engine to your project by copying the [jar file](https://github.com/camunda/feel-scala/releases) _(feel-engine-${VERSION}-complete.jar)_ or adding the project as dependency.
+Add the engine as dependency to your project:
 
 ```xml
 <dependency>
@@ -14,9 +14,9 @@ Add the FEEL engine to your project by copying the [jar file](https://github.com
 </dependency>
 ```
 
-It is recommended to choose the complete jar file which includes all dependencies (e.g. Scala libraries).
+Or copy the [jar file](https://github.com/camunda/feel-scala/releases) _(feel-engine-${VERSION}-complete.jar)_ directly.
 
-### Native Way
+### Standalone
 
 Create a new instance of the class 'FeelEngine'. Use this instance to parse and evaluate a given expression or unary tests. 
 
@@ -67,9 +67,9 @@ Or using Java:
 }
 ```
 
-### As Script Engine
+### Script Engine
 
-The FEEL engine implements the Java script engine spi - [JSR 223](https://www.jcp.org/en/jsr/detail?id=223). 
+Call the engine via Java script engine API [JSR 223](https://www.jcp.org/en/jsr/detail?id=223). 
 
 ```scala
 object MyProgram {
@@ -87,7 +87,7 @@ object MyProgram {
 }
 ```
 
-It is registered by the names:
+The engine is registered under the names:
 
 * `feel`
 * `http://www.omg.org/spec/FEEL/20140401` (qualified name)
@@ -97,38 +97,3 @@ You can also evaluate unary tests instead of an expression by using one of the n
 
 * `feel-unary-tests`
 * `feel-scala-unary-tests`
-
-## How to build it?
-
-You can build the project with [SBT](http://www.scala-sbt.org) or [Maven](http://maven.apache.org).
-
-### Using SBT
-
-In the root directory:
-
-Run the tests with
-```
-sbt engine/test
-```
-
-Build the single jar with
-```
-sbt engine/package
-```
-
-Build the complete jar including all dependencies with
-```
-sbt engine/assembly
-```
-
-### Using Maven
-
-Run the tests with
-```
-mvn test
-```
-
-Build the jar including all dependencies with
-```
-mvn install
-```
