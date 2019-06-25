@@ -12,6 +12,10 @@ If you found a bug or an unexpected behevior then please create a [new issue](ht
 
 If you have an idea how to improve the project then please create a [new issue](https://github.com/camunda/feel-scala/issues). Describe your idea and the motivation behind it. In order to speed up the process, think about providing a pull request.
 
+### Improving Documentation
+
+If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. The documentation is located in the repository at `/docs/*.md`. 
+
 ### Providing Pull Requests
 
 You want to provide a bug fix or an inprovement? Great! :tada:
