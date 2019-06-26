@@ -112,6 +112,9 @@ time("10:30:00") - duration("PT1H")
 
 duration("P1Y") / 2 
 // duration("P6M")
+
+duration("P1Y") / duration("P1M")
+// 12
 ```
 
 ### Exponentiation 
