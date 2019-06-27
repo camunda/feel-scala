@@ -54,10 +54,10 @@ Inside a context, the previous values can be accessed.
 }
 ```
 
-If the name or path contains any special character (e.g. whitespace, dash, etc.) then the name needs to be wrapped into single quotes `'foo bar'`.
+If the name or path contains any special character (e.g. whitespace, dash, etc.) then the name needs to be wrapped into single backquotes/backtick `` `foo bar` ``.
 
 ```js
-'name with whitespace'.'name+operator'
+`name with whitespace`.`name+operator`
 ```
 
 ### Addition
