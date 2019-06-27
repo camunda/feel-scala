@@ -1,7 +1,6 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import org.camunda.feel.spi._
 
 /**
   * FEEL supports the following datatypes:
@@ -50,6 +49,16 @@ sealed trait Val extends Ordered[Val] {
           head.isComparable && list.forall(_.getClass == head.getClass))
         .getOrElse(false)
     case _ => false
+  }
+
+  def toEither: Either[ValError, Val] = this match {
+    case e: ValError => Left(e)
+    case v           => Right(v)
+  }
+
+  def toOption: Option[Val] = this match {
+    case e: ValError => None
+    case v           => Some(v)
   }
 
 }

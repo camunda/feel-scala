@@ -27,21 +27,25 @@ class FeelInterpreter {
     case ConstDateTime(dt)         => ValDateTime(dt)
     case ConstYearMonthDuration(d) => ValYearMonthDuration(d.normalized)
     case ConstDayTimeDuration(d)   => ValDayTimeDuration(d)
+
     case ConstList(items) =>
-      ValList(items.map(item => withVal(eval(item), x => x)))
-    case ConstContext(entries) => {
-      val dc: DefaultContext = entries.foldLeft(DefaultContext()) {
-        (ctx, entry) =>
-          evalContextEntry(entry._1, entry._2)(context + ctx) match {
-            case f: ValFunction =>
-              DefaultContext(ctx.variables,
-                             addFunction(ctx.functions, entry._1, f))
-            case v: Val =>
-              DefaultContext(ctx.variables + (entry._1 -> v), ctx.functions)
-          }
-      }
-      ValContext(dc)
-    }
+      mapEither[Exp, Val](items, item => eval(item).toEither, ValList)
+
+    case ConstContext(entries) =>
+      foldEither[(String, Exp), DefaultContext](
+        DefaultContext(),
+        entries, {
+          case (ctx, (key, value)) =>
+            eval(value)(context + ctx).toEither.right.map(_ match {
+              case f: ValFunction =>
+                DefaultContext(ctx.variables,
+                               addFunction(ctx.functions, key, f))
+              case v =>
+                DefaultContext(ctx.variables + (key -> v), ctx.functions)
+            })
+        },
+        ValContext
+      )
 
     // simple unary tests
     case InputEqualTo(x)        => unaryOpAny(eval(x), _ == _, ValBoolean)
@@ -179,6 +183,30 @@ class FeelInterpreter {
     // unsupported expression
     case exp => ValError(s"unsupported expression '$exp'")
 
+  }
+
+  private def mapEither[T, R](it: Iterable[T],
+                              f: T => Either[ValError, R],
+                              resultMapping: List[R] => Val): Val = {
+
+    foldEither[T, List[R]](List(), it, {
+      case (xs, x) => f(x).right.map(xs :+ _)
+    }, resultMapping)
+  }
+
+  private def foldEither[T, R](start: R,
+                               it: Iterable[T],
+                               op: (R, T) => Either[ValError, R],
+                               resultMapping: R => Val): Val = {
+
+    val result = it.foldLeft[Either[ValError, R]](Right(start)) { (result, x) =>
+      result.right.flatMap(xs => op(xs, x))
+    }
+
+    result match {
+      case Right(v) => resultMapping(v)
+      case Left(e)  => e
+    }
   }
 
   private def error(x: Val, message: String) = x match {
@@ -628,24 +656,26 @@ class FeelInterpreter {
     case _ => error(x, s"expected Number, or Duration but found '$x'")
   }
 
-  private def divOp(x: Val, y: Val): Val =
-    withNumber(
-      y,
-      y =>
-        if (y == 0) {
-          ValError("division by zero")
-        } else {
-          x match {
-            case ValNumber(x) => ValNumber(x / y)
-            case ValYearMonthDuration(x) =>
-              ValYearMonthDuration(
-                Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
-            case ValDayTimeDuration(x) =>
-              ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
-            case _ => error(x, s"expected Number, or Duration but found '$x'")
-          }
+  private def divOp(x: Val, y: Val): Val = y match {
+    case ValNumber(y) if (y != 0) =>
+      x match {
+        case ValNumber(x) => ValNumber(x / y)
+        case ValYearMonthDuration(x) =>
+          ValYearMonthDuration(
+            Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
+        case ValDayTimeDuration(x) =>
+          ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
+        case _ => error(x, s"expected Number, or Duration but found '$x'")
       }
-    )
+
+    case ValYearMonthDuration(y) if (!y.isZero) =>
+      withYearMonthDuration(x,
+                            x => ValNumber(x.toTotalMonths / y.toTotalMonths))
+    case ValDayTimeDuration(y) if (!y.isZero) =>
+      withDayTimeDuration(x, x => ValNumber(x.toMillis / y.toMillis))
+
+    case _ => ValError(s"'$x / $y' is not allowed")
+  }
 
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)
