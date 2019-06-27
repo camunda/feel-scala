@@ -15,8 +15,14 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   "A FeelEngine" should "evaluate a unaryTests '< 3'" in {
 
-    engine.evalUnaryTests("< 3", variables = Map(RootContext.defaultInputVariable -> 2)) should be(Right(true))
-    engine.evalUnaryTests("< 3", variables = Map(RootContext.defaultInputVariable -> 3)) should be(Right(false))
+    engine.evalUnaryTests(
+      "< 3",
+      variables = Map(RootContext.defaultInputVariable -> 2)) should be(
+      Right(true))
+    engine.evalUnaryTests(
+      "< 3",
+      variables = Map(RootContext.defaultInputVariable -> 3)) should be(
+      Right(false))
   }
 
   it should "evaluate a expression '2+4'" in {
@@ -26,26 +32,39 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   it should "evaluate an unaryTest with custom input variable name" in {
 
-    engine.evalUnaryTests("< 3", variables = Map("myInput" -> 2, RootContext.inputVariableKey -> "myInput")) should be(Right(true))
-    engine.evalUnaryTests("< 3", variables = Map("myInput" -> 3, RootContext.inputVariableKey -> "myInput")) should be(Right(false))
+    engine.evalUnaryTests("< 3",
+                          variables = Map(
+                            "myInput" -> 2,
+                            RootContext.inputVariableKey -> "myInput")) should be(
+      Right(true))
+    engine.evalUnaryTests("< 3",
+                          variables = Map(
+                            "myInput" -> 3,
+                            RootContext.inputVariableKey -> "myInput")) should be(
+      Right(false))
   }
 
   it should "fail evaluation because of wrong type" in {
 
-    engine.evalUnaryTests("< 3", variables = Map(RootContext.defaultInputVariable -> "2")) should be(
-      Left(Failure("failed to evaluate expression '< 3': expected Number, Date, Time or Duration but found 'ValString(2)'")))
+    engine.evalUnaryTests(
+      "< 3",
+      variables = Map(RootContext.defaultInputVariable -> "2")) should be(
+      Left(Failure(
+        "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)")))
   }
 
   it should "fail evaluation because of missing input" in {
 
     engine.evalUnaryTests("< 3", variables = Map[String, Any]()) should be(
-      Left(Failure("failed to evaluate expression '< 3': no variable found for name 'cellInput'")))
+      Left(Failure(
+        "failed to evaluate expression '< 3': no variable found for name 'cellInput'")))
   }
 
   it should "fail while parsing '<'" in {
 
     engine.evalUnaryTests("<", variables = Map[String, Any]()) should be(
-      Left(Failure("failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
+      Left(Failure(
+        "failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
   }
 
   it should "parse an expression 'x'" in {
@@ -57,21 +76,22 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   it should "fail to parse an expression 'x+'" in {
 
-    engine.parseExpression("x+") should be(
-      Left(Failure("failed to parse expression 'x+': [1.3] failure: `{' expected but end of source found\n\nx+\n  ^")))
+    engine.parseExpression("x+") should be(Left(Failure(
+      "failed to parse expression 'x+': [1.3] failure: `{' expected but end of source found\n\nx+\n  ^")))
   }
 
   it should "parse an unaryTests '< 3'" in {
     val expr = engine.parseUnaryTests("< 3")
 
     expr shouldBe a[Right[Failure, ParsedExpression]]
-    engine.eval(expr.right.get, Map(RootContext.defaultInputVariable -> 2)) should be(Right(true))
+    engine.eval(expr.right.get, Map(RootContext.defaultInputVariable -> 2)) should be(
+      Right(true))
   }
 
   it should "fail to parse an unaryTests '<'" in {
 
-    engine.parseUnaryTests("<") should be(
-      Left(Failure("failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
+    engine.parseUnaryTests("<") should be(Left(Failure(
+      "failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
   }
 
   it should "be extendable by a custom function provider" in {
@@ -83,9 +103,10 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
   it should "be extendable by multiple custom function providers" in {
 
-    val engine = new FeelEngine(new FunctionProvider.CompositeFunctionProvider(
-      List(new TestFunctionProvider, new AnotherFunctionProvider)
-    ))
+    val engine = new FeelEngine(
+      new FunctionProvider.CompositeFunctionProvider(
+        List(new TestFunctionProvider, new AnotherFunctionProvider)
+      ))
 
     engine.evalExpression("foo(2)") should be(Right(3))
     engine.evalExpression("bar(2)") should be(Right(4))

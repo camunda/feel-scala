@@ -32,6 +32,8 @@ case class ZonedTime(time: LocalTime,
     ZonedTime(newTime, offset, zone)
   }
 
+  def compareTo(other: ZonedTime): Int = nanos compare other.nanos
+
   def isBefore(other: ZonedTime): Boolean = nanos < other.nanos
 
   def isAfter(other: ZonedTime): Boolean = nanos > other.nanos

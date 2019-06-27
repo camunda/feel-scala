@@ -219,53 +219,38 @@ class FeelInterpreter {
       }
     )
 
-  private def unaryOp(x: Val,
-                      c: (Compareable[_], Compareable[_]) => Boolean,
-                      f: Boolean => Val)(implicit context: Context): Val =
+  private def unaryOp(x: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(
+      implicit context: Context): Val =
     withVal(
       input,
       _ match {
-        case ValNull             => withVal(x, x => f(false))
-        case i if (x == ValNull) => withVal(x, x => f(false))
-        case ValNumber(i)        => withNumber(x, x => f(c(i, x)))
-        case ValDate(i)          => withDate(x, x => f(c(i, x)))
-        case ValLocalTime(i)     => withLocalTime(x, x => f(c(i, x)))
-        case ValTime(i)          => withTime(x, x => f(c(i, x)))
-        case ValLocalDateTime(i) => withLocalDateTime(x, x => f(c(i, x)))
-        case ValDateTime(i)      => withDateTime(x, x => f(c(i, x)))
-        case ValYearMonthDuration(i) =>
-          withYearMonthDuration(x, x => f(c(i, x)))
-        case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i, x)))
-        case e =>
-          error(e,
-                s"expected Number, Date, Time or Duration but found '$input'")
+        case ValNull                => withVal(x, x => f(false))
+        case _ if (x == ValNull)    => withVal(x, x => f(false))
+        case i if (!i.isComparable) => ValError(s"$i is not comparable")
+        case _ if (!x.isComparable) => ValError(s"$x is not comparable")
+        case i if (i.getClass != x.getClass) =>
+          ValError(s"$i can not be compared to $x")
+        case i => f(c(i, x))
       }
     )
 
-  private def unaryOpDual(
-      x: Val,
-      y: Val,
-      c: (Compareable[_], Compareable[_], Compareable[_]) => Boolean,
-      f: Boolean => Val)(implicit context: Context): Val =
+  private def unaryOpDual(x: Val,
+                          y: Val,
+                          c: (Val, Val, Val) => Boolean,
+                          f: Boolean => Val)(implicit context: Context): Val =
     withVal(
       input,
       _ match {
         case ValNull                             => f(false)
-        case i if (x == ValNull || y == ValNull) => f(false)
-        case ValNumber(i)                        => withNumbers(x, y, (x, y) => f(c(i, x, y)))
-        case ValDate(i)                          => withDates(x, y, (x, y) => f(c(i, x, y)))
-        case ValLocalTime(i)                     => withLocalTimes(x, y, (x, y) => f(c(i, x, y)))
-        case ValTime(i)                          => withTimes(x, y, (x, y) => f(c(i, x, y)))
-        case ValLocalDateTime(i) =>
-          withLocalDateTimes(x, y, (x, y) => f(c(i, x, y)))
-        case ValDateTime(i) => withDateTimes(x, y, (x, y) => f(c(i, x, y)))
-        case ValYearMonthDuration(i) =>
-          withYearMonthDurations(x, y, (x, y) => f(c(i, x, y)))
-        case ValDayTimeDuration(i) =>
-          withDayTimeDurations(x, y, (x, y) => f(c(i, x, y)))
-        case e =>
-          error(e,
-                s"expected Number, Date, Time or Duration but found '$input'")
+        case _ if (x == ValNull || y == ValNull) => f(false)
+        case i if (!i.isComparable)              => ValError(s"$i is not comparable")
+        case _ if (!x.isComparable)              => ValError(s"$x is not comparable")
+        case _ if (!y.isComparable)              => ValError(s"$y is not comparable")
+        case i if (i.getClass != x.getClass) =>
+          ValError(s"$i can not be compared to $x")
+        case i if (i.getClass != y.getClass) =>
+          ValError(s"$i can not be compared to $y")
+        case i => f(c(i, x, y))
       }
     )
 
@@ -409,8 +394,7 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
-  private def isInInterval(interval: Interval)
-    : (Compareable[_], Compareable[_], Compareable[_]) => Boolean =
+  private def isInInterval(interval: Interval): (Val, Val, Val) => Boolean =
     (i, x, y) => {
       val inStart: Boolean = interval.start match {
         case OpenIntervalBoundary(_)   => i > x
@@ -502,23 +486,16 @@ class FeelInterpreter {
 
   private def dualOp(x: Val,
                      y: Val,
-                     c: (Compareable[_], Compareable[_]) => Boolean,
+                     c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: Context): Val =
     x match {
-      case ValNull                 => withVal(y, y => ValBoolean(false))
-      case x if (y == ValNull)     => withVal(x, x => ValBoolean(false))
-      case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
-      case ValDate(x)              => withDate(y, y => f(c(x, y)))
-      case ValLocalTime(x)         => withLocalTime(y, y => f(c(x, y)))
-      case ValTime(x)              => withTime(y, y => f(c(x, y)))
-      case ValLocalDateTime(x)     => withLocalDateTime(y, y => f(c(x, y)))
-      case ValDateTime(x)          => withDateTime(y, y => f(c(x, y)))
-      case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x, y)))
-      case ValDayTimeDuration(x)   => withDayTimeDuration(y, y => f(c(x, y)))
-      case ValString(x)            => withString(y, y => f(c(x, y)))
-      case _ =>
-        error(x,
-              s"expected Number, String, Date, Time or Duration but found '$x'")
+      case ValNull                => withVal(y, y => ValBoolean(false))
+      case _ if (y == ValNull)    => withVal(x, x => ValBoolean(false))
+      case _ if (!x.isComparable) => ValError(s"$x is not comparable")
+      case _ if (!y.isComparable) => ValError(s"$y is not comparable")
+      case _ if (x.getClass != y.getClass) =>
+        ValError(s"$x can not be compared to $y")
+      case _ => f(c(x, y))
     }
 
   private def addOp(x: Val, y: Val): Val = x match {
