@@ -1,7 +1,6 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import org.camunda.feel.spi._
 
 /**
   * FEEL supports the following datatypes:
@@ -17,7 +16,19 @@ built-in function (10.3.4.1).
   *
   * @author Philipp Ossler
   */
-sealed trait Val
+sealed trait Val {
+
+  def toEither: Either[ValError, Val] = this match {
+    case e: ValError => Left(e)
+    case v           => Right(v)
+  }
+
+  def toOption: Option[Val] = this match {
+    case e: ValError => None
+    case v           => Some(v)
+  }
+
+}
 
 case class ValNumber(value: Number) extends Val
 
