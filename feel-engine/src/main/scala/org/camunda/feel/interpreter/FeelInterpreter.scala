@@ -651,24 +651,26 @@ class FeelInterpreter {
     case _ => error(x, s"expected Number, or Duration but found '$x'")
   }
 
-  private def divOp(x: Val, y: Val): Val =
-    withNumber(
-      y,
-      y =>
-        if (y == 0) {
-          ValError("division by zero")
-        } else {
-          x match {
-            case ValNumber(x) => ValNumber(x / y)
-            case ValYearMonthDuration(x) =>
-              ValYearMonthDuration(
-                Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
-            case ValDayTimeDuration(x) =>
-              ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
-            case _ => error(x, s"expected Number, or Duration but found '$x'")
-          }
+  private def divOp(x: Val, y: Val): Val = y match {
+    case ValNumber(y) if (y != 0) =>
+      x match {
+        case ValNumber(x) => ValNumber(x / y)
+        case ValYearMonthDuration(x) =>
+          ValYearMonthDuration(
+            Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
+        case ValDayTimeDuration(x) =>
+          ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
+        case _ => error(x, s"expected Number, or Duration but found '$x'")
       }
-    )
+
+    case ValYearMonthDuration(y) if (!y.isZero) =>
+      withYearMonthDuration(x,
+                            x => ValNumber(x.toTotalMonths / y.toTotalMonths))
+    case ValDayTimeDuration(y) if (!y.isZero) =>
+      withDayTimeDuration(x, x => ValNumber(x.toMillis / y.toMillis))
+
+    case _ => ValError(s"'$x / $y' is not allowed")
+  }
 
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)
