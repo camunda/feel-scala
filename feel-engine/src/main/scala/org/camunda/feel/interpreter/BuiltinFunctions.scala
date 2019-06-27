@@ -641,15 +641,11 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("list"),
       _ match {
-        case List(ValList(list)) =>
+        case List(l @ ValList(list)) =>
           list match {
-            case Nil => ValNull
-            case x :: xs =>
-              x match {
-                case ValNumber(n) =>
-                  withListOfNumbers(list, numbers => ValNumber(numbers.min))
-                case e => ValError(s"expected number but found '$e")
-              }
+            case Nil                   => ValNull
+            case _ if (l.isComparable) => list.min
+            case _                     => logger.warn(s"$l is not comparable"); ValNull
           }
         case e => error(e)
       },
@@ -660,15 +656,11 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("list"),
       _ match {
-        case List(ValList(list)) =>
+        case List(l @ ValList(list)) =>
           list match {
-            case Nil => ValNull
-            case x :: xs =>
-              x match {
-                case ValNumber(n) =>
-                  withListOfNumbers(list, numbers => ValNumber(numbers.max))
-                case e => ValError(s"expected number but found '$e")
-              }
+            case Nil                   => ValNull
+            case _ if (l.isComparable) => list.max
+            case _                     => logger.warn(s"$l is not comparable"); ValNull
           }
         case e => error(e)
       },

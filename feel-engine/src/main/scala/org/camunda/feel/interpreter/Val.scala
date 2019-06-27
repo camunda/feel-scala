@@ -16,7 +16,40 @@ built-in function (10.3.4.1).
   *
   * @author Philipp Ossler
   */
-sealed trait Val {
+sealed trait Val extends Ordered[Val] {
+
+  override def compare(that: Val): Int = (this, that) match {
+    case (ValNumber(x), ValNumber(y))               => x compare y
+    case (ValString(x), ValString(y))               => x compare y
+    case (ValDate(x), ValDate(y))                   => x.compareTo(y)
+    case (ValLocalTime(x), ValLocalTime(y))         => x.compareTo(y)
+    case (ValTime(x), ValTime(y))                   => x.compareTo(y)
+    case (ValLocalDateTime(x), ValLocalDateTime(y)) => x.compareTo(y)
+    case (ValDateTime(x), ValDateTime(y))           => x.compareTo(y)
+    case (ValYearMonthDuration(x), ValYearMonthDuration(y)) =>
+      x.toTotalMonths compare y.toTotalMonths
+    case (ValDayTimeDuration(x), ValDayTimeDuration(y)) => x.compareTo(y)
+    case _ =>
+      throw new IllegalArgumentException(s"$this can not be compared to $that")
+  }
+
+  def isComparable: Boolean = this match {
+    case _: ValNumber            => true
+    case _: ValString            => true
+    case _: ValDate              => true
+    case _: ValLocalTime         => true
+    case _: ValTime              => true
+    case _: ValLocalDateTime     => true
+    case _: ValDateTime          => true
+    case _: ValYearMonthDuration => true
+    case _: ValDayTimeDuration   => true
+    case ValList(list) =>
+      list.headOption
+        .map(head =>
+          head.isComparable && list.forall(_.getClass == head.getClass))
+        .getOrElse(false)
+    case _ => false
+  }
 
   def toEither: Either[ValError, Val] = this match {
     case e: ValError => Left(e)
