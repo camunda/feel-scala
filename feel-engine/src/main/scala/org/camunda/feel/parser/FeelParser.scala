@@ -124,9 +124,9 @@ object FeelParser extends JavaTokenParsers {
 
   // 17
   private lazy val unaryTests: Parser[Exp] =
-    "-" ^^^ ConstBool(true) |
-      "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
-      positiveUnaryTests
+    "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
+      positiveUnaryTests |
+      "-" ^^^ ConstBool(true)
 
   // 16
   private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest,

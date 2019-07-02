@@ -122,6 +122,9 @@ class InterpreterNumberExpressionTest
 
     eval("(x * 2) = 4", Map("x" -> 2)) should be(ValBoolean(true))
     eval("(x * 2) = 4", Map("x" -> 3)) should be(ValBoolean(false))
+
+    eval("x = -1", Map("x" -> -1)) should be(ValBoolean(true))
+    eval("x = -1", Map("x" -> 1)) should be(ValBoolean(false))
   }
 
   it should "compare with '!='" in {

@@ -16,6 +16,7 @@ class ParserUnaryTest extends FlatSpec with Matchers {
     parse("3") should be(InputEqualTo(ConstNumber(3)))
     parse("3.2") should be(InputEqualTo(ConstNumber(3.2)))
     parse(".2") should be(InputEqualTo(ConstNumber(.2)))
+    parse("-1") should be(InputEqualTo(ConstNumber(-1)))
   }
 
   it should "be equal to a boolean" in {
