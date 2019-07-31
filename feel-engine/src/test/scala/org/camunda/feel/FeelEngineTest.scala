@@ -64,7 +64,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
     engine.evalUnaryTests("<", variables = Map[String, Any]()) should be(
       Left(Failure(
-        "failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
+        "failed to parse expression '<': [1.2] failure: '{' expected but end of source found\n\n<\n ^")))
   }
 
   it should "parse an expression 'x'" in {
@@ -77,7 +77,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   it should "fail to parse an expression 'x+'" in {
 
     engine.parseExpression("x+") should be(Left(Failure(
-      "failed to parse expression 'x+': [1.3] failure: `{' expected but end of source found\n\nx+\n  ^")))
+      "failed to parse expression 'x+': [1.2] failure: end of input expected\n\nx+\n ^")))
   }
 
   it should "parse an unaryTests '< 3'" in {
@@ -91,7 +91,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   it should "fail to parse an unaryTests '<'" in {
 
     engine.parseUnaryTests("<") should be(Left(Failure(
-      "failed to parse expression '<': [1.2] failure: `{' expected but end of source found\n\n<\n ^")))
+      "failed to parse expression '<': [1.2] failure: '{' expected but end of source found\n\n<\n ^")))
   }
 
   it should "be extendable by a custom function provider" in {

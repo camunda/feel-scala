@@ -25,7 +25,7 @@
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.12</artifactId>
+      <artifactId>scalatest_2.13</artifactId>
       <scope>test</scope>
     </dependency>
 

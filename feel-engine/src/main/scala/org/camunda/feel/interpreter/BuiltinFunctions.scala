@@ -1,15 +1,12 @@
 package org.camunda.feel.interpreter
 
 import org.camunda.feel._
-import org.camunda.feel.spi._
 import org.camunda.feel.datatype.ZonedTime
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 import java.time._
-import java.time.temporal.ChronoUnit
 import java.util.regex._
-import org.slf4j._
 import scala.util.Try
 import java.math.BigDecimal
 
@@ -188,8 +185,7 @@ object BuiltinFunctions extends FunctionProvider {
       _ match {
         case List(ValNumber(year), ValNumber(month), ValNumber(day)) =>
           Try {
-            ValDate(
-              LocalDate.of(year.intValue(), month.intValue(), day.intValue()))
+            ValDate(LocalDate.of(year.intValue, month.intValue, day.intValue))
           }.getOrElse {
             logger.warn(
               s"Failed to parse date from: year=$year, month=$month, day=$day");
@@ -248,8 +244,9 @@ object BuiltinFunctions extends FunctionProvider {
               .remainder(BigDecimal.ONE)
               .movePointRight(9)
               .intValue
-            ValLocalTime(LocalTime
-              .of(hour.intValue(), minute.intValue(), second.intValue(), nanos))
+            ValLocalTime(
+              LocalTime
+                .of(hour.intValue, minute.intValue, second.intValue, nanos))
           }.getOrElse {
             logger.warn(
               s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
@@ -272,9 +269,9 @@ object BuiltinFunctions extends FunctionProvider {
               .remainder(BigDecimal.ONE)
               .movePointRight(9)
               .intValue
-            val localTime = LocalTime.of(hour.intValue(),
-                                         minute.intValue(),
-                                         second.intValue(),
+            val localTime = LocalTime.of(hour.intValue,
+                                         minute.intValue,
+                                         second.intValue,
                                          nanos)
             val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
@@ -290,9 +287,7 @@ object BuiltinFunctions extends FunctionProvider {
                   ValNull) =>
           Try {
             ValLocalTime(
-              LocalTime.of(hour.intValue(),
-                           minute.intValue(),
-                           second.intValue()))
+              LocalTime.of(hour.intValue, minute.intValue, second.intValue))
           }.getOrElse {
             logger.warn(
               s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
@@ -441,7 +436,7 @@ object BuiltinFunctions extends FunctionProvider {
       List("string", "start position"),
       _ match {
         case List(ValString(string), ValNumber(start)) =>
-          ValString(string.substring(stringIndex(string, start.intValue())))
+          ValString(string.substring(stringIndex(string, start.intValue)))
         case e => error(e)
       }
     )
@@ -453,8 +448,8 @@ object BuiltinFunctions extends FunctionProvider {
         case List(ValString(string), ValNumber(start), ValNumber(length)) =>
           ValString(
             string.substring(
-              stringIndex(string, start.intValue()),
-              stringIndex(string, start.intValue()) + length.intValue))
+              stringIndex(string, start.intValue),
+              stringIndex(string, start.intValue) + length.intValue))
         case e => error(e)
       }
     )

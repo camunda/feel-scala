@@ -45,9 +45,10 @@ class DefaultValueMapper extends ValueMapper {
           }
         ))
     }
-    case Some(x)            => toVal(x)
-    case None               => ValNull
-    case x: Enumeration$Val => ValString(x.toString)
+    case Some(x) => toVal(x)
+    case None    => ValNull
+    case x if (x.getClass.getName == "scala.Enumeration$Val") =>
+      ValString(x.toString)
 
     // extended java types
     case x: java.math.BigDecimal => ValNumber(x)
