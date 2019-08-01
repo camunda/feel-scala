@@ -1,7 +1,6 @@
 package org.camunda.feel.example
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.{FlatSpec, Matchers}
 
 class BasicFeelEngineFactoryTest
     extends FlatSpec

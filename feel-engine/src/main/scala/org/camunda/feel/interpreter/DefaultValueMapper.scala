@@ -47,7 +47,7 @@ class DefaultValueMapper extends ValueMapper {
     }
     case Some(x) => toVal(x)
     case None    => ValNull
-    case x if (x.getClass.getName == "scala.Enumeration$Val") =>
+    case x if (isEnumeration(x)) =>
       ValString(x.toString)
 
     // extended java types
@@ -75,6 +75,10 @@ class DefaultValueMapper extends ValueMapper {
       }
 
   }
+
+  // enumerations can't be used for pattern matching
+  private def isEnumeration(x: Any) =
+    "scala.Enumeration$Val" == x.getClass.getName
 
   def unpackVal(value: Val): Any = value match {
     case ValNull                        => null

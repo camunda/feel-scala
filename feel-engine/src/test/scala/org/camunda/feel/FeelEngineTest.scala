@@ -70,7 +70,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   it should "parse an expression 'x'" in {
     val expr = engine.parseExpression("x + 1")
 
-    expr shouldBe a[Right[Failure, ParsedExpression]]
+    expr shouldBe a[Right[_, ParsedExpression]]
     engine.eval(expr.right.get, Map("x" -> 3)) should be(Right(4))
   }
 
@@ -83,7 +83,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
   it should "parse an unaryTests '< 3'" in {
     val expr = engine.parseUnaryTests("< 3")
 
-    expr shouldBe a[Right[Failure, ParsedExpression]]
+    expr shouldBe a[Right[_, ParsedExpression]]
     engine.eval(expr.right.get, Map(RootContext.defaultInputVariable -> 2)) should be(
       Right(true))
   }

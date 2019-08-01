@@ -3,7 +3,11 @@ package org.camunda.feel.example.spec
 import java.time.LocalDate
 
 import org.camunda.feel.example.DmnEvaluationTest
-import org.camunda.feel.example.spec.Context.{Applicant, BalanceSummery, CreditHistoryRecord}
+import org.camunda.feel.example.spec.Context.{
+  Applicant,
+  BalanceSummery,
+  CreditHistoryRecord
+}
 import org.scalatest.{FlatSpec, Matchers}
 
 class SpecExampleTest extends FlatSpec with Matchers with DmnEvaluationTest {
