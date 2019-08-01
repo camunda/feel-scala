@@ -11,7 +11,7 @@ class JavaValueMapper extends CustomValueMapper {
   override def unpackVal(value: Val): Any = value match {
 
     case ValNumber(number) => {
-      if (number.isWhole()) {
+      if (number.isWhole) {
         number.longValue: java.lang.Long
       } else {
         number.doubleValue: java.lang.Double
