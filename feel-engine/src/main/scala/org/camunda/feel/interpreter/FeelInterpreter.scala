@@ -59,6 +59,8 @@ class FeelInterpreter {
                   isInInterval(interval),
                   ValBoolean)
 
+    case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+
     // arithmetic operations
     case Addition(x, y)       => withValOrNull(addOp(eval(x), eval(y)))
     case Subtraction(x, y)    => withValOrNull(subOp(eval(x), eval(y)))
@@ -676,6 +678,15 @@ class FeelInterpreter {
 
     case _ => ValError(s"'$x / $y' is not allowed")
   }
+
+  private def unaryTestExpression(x: Val)(implicit ctx: Context): Val =
+    withVal(input,
+            i =>
+              x match {
+                case ValBoolean(true) => ValBoolean(true)
+                case ValList(ys)      => ValBoolean(ys.exists(_ == i))
+                case y                => ValBoolean(i == y)
+            })
 
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)

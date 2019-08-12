@@ -1,7 +1,7 @@
 val shared = Seq(
   organization := "org.camunda.bpm.extension.feel.scala",
   version := "1.9.0-SNAPSHOT",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.13.0",
   resolvers += Resolver.mavenLocal,
   resolvers += Classpaths.typesafeReleases,
   resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public",
@@ -11,7 +11,7 @@ val shared = Seq(
 val commonDependencies = Seq(
   "org.slf4j" % "slf4j-api" % "1.7.25",
   "junit" % "junit" % "4.11" % "test",
-  "org.scalatest" % "scalatest_2.12" % "3.0.4" % "test",
+  "org.scalatest" % "scalatest_2.13" % "3.0.8" % "test",
   "org.apache.logging.log4j" % "log4j-api" % "2.9.0" % "test",
   "org.apache.logging.log4j" % "log4j-core" % "2.9.0" % "test",
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.9.0" % "test"
@@ -31,7 +31,7 @@ lazy val engine = (project in file("feel-engine"))
     description := "FEEL engine",
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.6"
+      "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.2"
     ),
     assemblyJarName in assembly := s"${name.value}-${version.value}-complete.jar"
   )
@@ -44,7 +44,7 @@ lazy val factory = (project in file("feel-engine-factory"))
     description := "FEEL engine factory",
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "com.github.nscala-time" % "nscala-time_2.12" % "2.16.0",
+      "com.github.nscala-time" % "nscala-time_2.13" % "2.22.0",
       "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided",
       "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",

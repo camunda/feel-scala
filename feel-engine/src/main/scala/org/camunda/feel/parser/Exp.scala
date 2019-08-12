@@ -115,3 +115,5 @@ case class For(iterators: List[(String, Exp)], exp: Exp) extends Exp
 case class Filter(list: Exp, filter: Exp) extends Exp
 
 case class Range(start: Exp, end: Exp) extends Exp
+
+case class UnaryTestExpression(exp: Exp) extends Exp
