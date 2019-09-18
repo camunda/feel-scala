@@ -431,4 +431,32 @@ class InterpreterUnaryTest
     evalUnaryTests(2, "< min(1,2,3)") should be(ValBoolean(false))
   }
 
+  "An expression" should "be compared with equals" in {
+
+    evalUnaryTests(2, """number("2")""") should be(ValBoolean(true))
+  }
+
+  it should "be compared with a boolean" in {
+
+    evalUnaryTests(false, """(5 < 4)""") should be(ValBoolean(true))
+    evalUnaryTests(true, """(5 < 4)""") should be(ValBoolean(false))
+  }
+
+  it should "be compared to literal" in {
+
+    evalUnaryTests(date("2019-08-12"),
+                   """ date(now) """,
+                   Map("now" -> "2019-08-12")) should be(ValBoolean(true))
+
+    evalUnaryTests(date("2019-08-12"),
+                   """ date(now) """,
+                   Map("now" -> "2019-08-13")) should be(ValBoolean(false))
+  }
+
+  it should "be compared with a list" in {
+
+    evalUnaryTests(2, """[1,2,3]""") should be(ValBoolean(true))
+    evalUnaryTests(4, """[1,2,3]""") should be(ValBoolean(false))
+  }
+
 }

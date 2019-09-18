@@ -2,8 +2,8 @@ package org.camunda.feel.parser
 
 import org.camunda.feel._
 
-import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.Try
+import scala.util.parsing.combinator.JavaTokenParsers
 
 object FeelParser extends JavaTokenParsers {
 
@@ -137,8 +137,11 @@ object FeelParser extends JavaTokenParsers {
 
   // 15 - in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
   //    - however, parse simple positive unary test first since this is most usual
-  private lazy val positiveUnaryTest: Parser[Exp] = "null" ^^^ InputEqualTo(
-    ConstNull) | simplePositiveUnaryTest | expression
+  private lazy val positiveUnaryTest: Parser[Exp] = (
+    "null" ^^^ InputEqualTo(ConstNull) |
+      simplePositiveUnaryTest |
+      expression ^^ (UnaryTestExpression(_))
+  )
 
   // 14
   private lazy val simpleUnaryTests: Parser[Exp] =
@@ -195,9 +198,8 @@ object FeelParser extends JavaTokenParsers {
     : Parser[ConstString] = stringLiteralWithQuotes ^^ ConstString
 
   // 37 - use combined regex instead of multiple parsers
-  private lazy val numericLiteral
-    : Parser[ConstNumber] = """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ (ConstNumber(
-    _))
+  private lazy val numericLiteral: Parser[ConstNumber] =
+    """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ (ConstNumber(_))
 
   // 39
   private lazy val digits: Parser[String] = rep1(digit) ^^ (_.mkString)
@@ -438,21 +440,25 @@ object FeelParser extends JavaTokenParsers {
   private def parseDate(d: String): Exp = {
     if (isValidDate(d)) {
       Try(ConstDate(d)).getOrElse {
-        logger.warn(s"Failed to parse date from '$d'"); ConstNull
+        logger.warn(s"Failed to parse date from '$d'");
+        ConstNull
       }
     } else {
-      logger.warn(s"Failed to parse date from '$d'"); ConstNull
+      logger.warn(s"Failed to parse date from '$d'");
+      ConstNull
     }
   }
 
   private def parseTime(t: String): Exp = {
     if (isOffsetTime(t)) {
       Try(ConstTime(t)).getOrElse {
-        logger.warn(s"Failed to parse time from '$t'"); ConstNull
+        logger.warn(s"Failed to parse time from '$t'");
+        ConstNull
       }
     } else {
       Try(ConstLocalTime(t)).getOrElse {
-        logger.warn(s"Failed to parse local-time from '$t'"); ConstNull
+        logger.warn(s"Failed to parse local-time from '$t'");
+        ConstNull
       }
     }
   }
@@ -460,32 +466,39 @@ object FeelParser extends JavaTokenParsers {
   private def parseDateTime(dt: String): Exp = {
     if (isValidDate(dt)) {
       Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse {
-        logger.warn(s"Failed to parse date(-time) from '$dt'"); ConstNull
+        logger.warn(s"Failed to parse date(-time) from '$dt'");
+        ConstNull
       }
     } else if (isOffsetDateTime(dt)) {
       Try(ConstDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+        logger.warn(s"Failed to parse date-time from '$dt'");
+        ConstNull
       }
     } else if (isLocalDateTime(dt)) {
       Try(ConstLocalDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse local-date-time from '$dt'"); ConstNull
+        logger.warn(s"Failed to parse local-date-time from '$dt'");
+        ConstNull
       }
     } else {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ConstNull
+      logger.warn(s"Failed to parse date-time from '$dt'");
+      ConstNull
     }
   }
 
   private def parseDuration(d: String): Exp = {
     if (isYearMonthDuration(d)) {
       Try(ConstYearMonthDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse year-month-duration from '$d'"); ConstNull
+        logger.warn(s"Failed to parse year-month-duration from '$d'");
+        ConstNull
       }
     } else if (isDayTimeDuration(d)) {
       Try(ConstDayTimeDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse day-time-duration from '$d'"); ConstNull
+        logger.warn(s"Failed to parse day-time-duration from '$d'");
+        ConstNull
       }
     } else {
-      logger.warn(s"Failed to parse duration from '$d'"); ConstNull
+      logger.warn(s"Failed to parse duration from '$d'");
+      ConstNull
     }
   }
 
