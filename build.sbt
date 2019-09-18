@@ -44,10 +44,10 @@ lazy val factory = (project in file("feel-engine-factory"))
     description := "FEEL engine factory",
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= Seq(
-      "com.github.nscala-time" % "nscala-time_2.13" % "2.22.0",
       "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided",
       "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",
+      "joda-time" % "joda-time" % "2.1",
       "org.camunda.spin" % "camunda-spin-dataformat-all" % "1.5.0" % "test"
     ),
     assemblyJarName in assembly := s"${name.value}-${version.value}-complete.jar"
