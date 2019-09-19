@@ -164,11 +164,10 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
   it should "convert from java.util.Date" in {
 
     val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-    val dateTime =
-      LocalDateTime.parse("2017-04-02T12:04:30").atZone(ZoneId.systemDefault())
+    val dateTime = LocalDateTime.parse("2017-04-02T12:04:30")
 
     valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(
-      ValDateTime(dateTime))
+      ValLocalDateTime(dateTime))
   }
 
   it should "convert from Period" in {

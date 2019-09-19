@@ -1,9 +1,13 @@
 package org.camunda.feel.interpreter
 
+import java.time
+
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
+
 import scala.collection.JavaConverters._
 import java.time._
+
 import scala.math.BigDecimal
 
 class DefaultValueMapper extends ValueMapper {
@@ -54,7 +58,8 @@ class DefaultValueMapper extends ValueMapper {
     case x: java.math.BigDecimal => ValNumber(x)
     case x: java.math.BigInteger => ValNumber(BigDecimal(x))
     case x: java.util.Date =>
-      ValDateTime(x.toInstant().atZone(ZoneId.systemDefault()))
+      ValLocalDateTime(
+        LocalDateTime.ofInstant(x.toInstant, ZoneId.systemDefault()))
     case x: java.time.OffsetDateTime => ValDateTime(x.toZonedDateTime())
     case x: java.time.OffsetTime     => ValTime(ZonedTime.of(x))
     case x: java.util.List[_]        => ValList(x.asScala.toList map toVal)

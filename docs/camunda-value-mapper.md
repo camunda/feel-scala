@@ -24,6 +24,7 @@ Joda-Time types:
 * `org.joda.time.LocalDate` -> date
 * `org.joda.time.LocalTime` -> time
 * `org.joda.time.LocalDateTime` -> date-time
+* `org.joda.time.DateTime` -> date-time
 * `org.joda.time.Duration` -> day-time-duration
 * `org.joda.time.Period` -> year-month-duration
 
