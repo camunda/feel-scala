@@ -1,8 +1,6 @@
 package org.camunda.feel.interpreter
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
-import org.camunda.feel._
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * @author Philipp Ossler
@@ -36,18 +34,32 @@ class InterpreterLiteralExpressionTest
 
   it should "be a context" in {
 
-    eval("{ a : 1 }") should be(
-      ValContext(DefaultContext(Map("a" -> ValNumber(1)))))
+    eval("{ a : 1 }")
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("a" -> ValNumber(1)))
 
-    eval("""{ a:1, b:"foo" }""") should be(
-      ValContext(
-        DefaultContext(Map("a" -> ValNumber(1), "b" -> ValString("foo")))))
+    eval("""{ a:1, b:"foo" }""")
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("a" -> ValNumber(1), "b" -> ValString("foo")))
 
     // nested
-    eval("{ a : { b : 1 } }") should be(
-      ValContext(DefaultContext(
-        Map("a" -> ValContext(DefaultContext(Map("b" -> ValNumber(1))))))))
+    val nestedContext = eval("{ a : { b : 1 } }")
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariable("a")
+      .get
 
+    nestedContext shouldBe a[ValContext]
+    nestedContext
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("b" -> ValNumber(1)))
   }
 
   it should "be a list" in {

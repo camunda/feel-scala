@@ -1,5 +1,6 @@
 package org.camunda.feel.interpreter
 
+import org.camunda.feel.FeelEngine.UnaryTests
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.camunda.feel._
@@ -24,10 +25,10 @@ class InterpreterExpressionTest
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(RootContext.defaultInputVariable -> 2)) should be(
+    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(
       ValBoolean(true))
 
-    eval("(2 .. 4)", Map(RootContext.defaultInputVariable -> 5)) should be(
+    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(
       ValBoolean(false))
   }
 

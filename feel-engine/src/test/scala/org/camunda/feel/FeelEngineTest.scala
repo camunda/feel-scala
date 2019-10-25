@@ -1,10 +1,9 @@
 package org.camunda.feel
 
-import org.camunda.feel.FeelEngine.Failure
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
 import org.camunda.feel.interpreter._
-import org.camunda.feel.spi.{TestFunctionProvider, AnotherFunctionProvider}
+import org.camunda.feel.spi.{AnotherFunctionProvider, TestFunctionProvider}
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * @author Philipp Ossler
@@ -17,11 +16,11 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
     engine.evalUnaryTests(
       "< 3",
-      variables = Map(RootContext.defaultInputVariable -> 2)) should be(
+      variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
       Right(true))
     engine.evalUnaryTests(
       "< 3",
-      variables = Map(RootContext.defaultInputVariable -> 3)) should be(
+      variables = Map(UnaryTests.defaultInputVariable -> 3)) should be(
       Right(false))
   }
 
@@ -35,12 +34,12 @@ class FeelEngineTest extends FlatSpec with Matchers {
     engine.evalUnaryTests("< 3",
                           variables = Map(
                             "myInput" -> 2,
-                            RootContext.inputVariableKey -> "myInput")) should be(
+                            UnaryTests.inputVariable -> "myInput")) should be(
       Right(true))
     engine.evalUnaryTests("< 3",
                           variables = Map(
                             "myInput" -> 3,
-                            RootContext.inputVariableKey -> "myInput")) should be(
+                            UnaryTests.inputVariable -> "myInput")) should be(
       Right(false))
   }
 
@@ -48,7 +47,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
 
     engine.evalUnaryTests(
       "< 3",
-      variables = Map(RootContext.defaultInputVariable -> "2")) should be(
+      variables = Map(UnaryTests.defaultInputVariable -> "2")) should be(
       Left(Failure(
         "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)")))
   }
@@ -84,7 +83,7 @@ class FeelEngineTest extends FlatSpec with Matchers {
     val expr = engine.parseUnaryTests("< 3")
 
     expr shouldBe a[Right[_, ParsedExpression]]
-    engine.eval(expr.right.get, Map(RootContext.defaultInputVariable -> 2)) should be(
+    engine.eval(expr.right.get, Map(UnaryTests.defaultInputVariable -> 2)) should be(
       Right(true))
   }
 

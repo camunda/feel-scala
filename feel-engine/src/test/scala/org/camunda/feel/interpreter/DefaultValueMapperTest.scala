@@ -97,7 +97,7 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
 
   it should "convert from Map" in {
     valueMapper.toVal(Map("a" -> 2)) should be(
-      ValContext(DefaultContext(Map("a" -> ValNumber(2)))))
+      ValContext(Context.StaticContext(Map("a" -> ValNumber(2)))))
   }
 
   it should "convert from java.util.Map" in {
@@ -106,7 +106,7 @@ class DefaultValueMapperTest extends FlatSpec with Matchers {
     map.put("a", new java.lang.Integer(2))
 
     valueMapper.toVal(map) should be(
-      ValContext(DefaultContext(Map("a" -> ValNumber(2)))))
+      ValContext(Context.StaticContext(Map("a" -> ValNumber(2)))))
   }
 
   it should "convert from LocalDate" in {

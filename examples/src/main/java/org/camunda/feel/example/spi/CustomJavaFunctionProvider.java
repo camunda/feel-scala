@@ -13,39 +13,39 @@
 package org.camunda.feel.example.spi;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
-import java.util.Collections;
 import java.util.Optional;
-
 import org.camunda.feel.interpreter.ValNumber;
 import org.camunda.feel.spi.JavaFunction;
 import org.camunda.feel.spi.JavaFunctionProvider;
-
 import scala.math.BigDecimal;
 
-public class CustomJavaFunctionProvider extends JavaFunctionProvider
-{
-    private static final Map<String, JavaFunction> functions = new HashMap<>();
+public class CustomJavaFunctionProvider extends JavaFunctionProvider {
 
-    static {
+  private static final Map<String, JavaFunction> functions = new HashMap<>();
 
-        final JavaFunction function = new JavaFunction(Arrays.asList("x"), args -> {
-            final ValNumber arg = (ValNumber) args.get(0);
+  static {
 
-            int x = arg.value().intValue();
+    final JavaFunction function = new JavaFunction(Arrays.asList("x"), args -> {
+      final ValNumber arg = (ValNumber) args.get(0);
 
-            return new ValNumber(BigDecimal.valueOf(x - 1));
-        });
+      int x = arg.value().intValue();
 
-        functions.put("bar", function);
-    }
+      return new ValNumber(BigDecimal.valueOf(x - 1));
+    });
 
-    @Override
-    public Optional<JavaFunction> resolveFunction(String functionName)
-    {
-      return Optional.ofNullable(functions.get(functionName));
-    }
+    functions.put("bar", function);
+  }
 
+  @Override
+  public Optional<JavaFunction> resolveFunction(String functionName) {
+    return Optional.ofNullable(functions.get(functionName));
+  }
+
+  @Override
+  public Collection<String> getFunctionNames() {
+    return functions.keySet();
+  }
 }

@@ -3,9 +3,9 @@ package org.camunda.feel
 import org.camunda.feel.FeelEngine.{
   EvalExpressionResult,
   EvalUnaryTestsResult,
-  Failure
+  Failure,
+  UnaryTests
 }
-import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.interpreter.{DefaultValueMapper, FeelInterpreter, _}
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.{Exp, FeelParser}
@@ -45,6 +45,11 @@ object FeelEngine {
 
   }
 
+  object UnaryTests {
+    val inputVariable: String = "inputVariableName"
+    val defaultInputVariable: String = "cellInput"
+  }
+
 }
 
 /**
@@ -59,6 +64,13 @@ class FeelEngine(val functionProvider: FunctionProvider =
   logger.info(
     s"Engine created. [value-mapper: $valueMapper, function-provider: $functionProvider]")
 
+  private val rootContext: EvalContext = new EvalContext(
+    valueMapper = valueMapper,
+    variableProvider = VariableProvider.EmptyVariableProvider,
+    functionProvider = FunctionProvider.CompositeFunctionProvider(
+      List(new BuiltinFunctions(valueMapper), functionProvider))
+  )
+
   def evalExpression(
       expression: String,
       variables: java.util.Map[String, Object]): EvalExpressionResult =
@@ -67,7 +79,9 @@ class FeelEngine(val functionProvider: FunctionProvider =
   def evalExpression(
       expression: String,
       variables: Map[String, Any] = Map()): EvalExpressionResult = {
-    eval(FeelParser.parseExpression, expression, rootContext(variables))
+    eval(FeelParser.parseExpression,
+         expression,
+         Context.StaticContext(variables))
   }
 
   def evalExpression(expression: String,
@@ -83,25 +97,22 @@ class FeelEngine(val functionProvider: FunctionProvider =
   def evalUnaryTests(
       expression: String,
       variables: Map[String, Any] = Map()): EvalUnaryTestsResult = {
-    eval(FeelParser.parseUnaryTests, expression, rootContext(variables)).right
+    eval(FeelParser.parseUnaryTests,
+         expression,
+         Context.StaticContext(variables))
       .map(value => value.asInstanceOf[Boolean])
   }
 
-  private def rootContext(variables: Map[String, Any]) =
-    RootContext(variables = variables,
-                functionProvider = functionProvider,
-                valueMapper = valueMapper)
-
   def evalUnaryTests(expression: String,
                      context: Context): EvalUnaryTestsResult = {
-    eval(FeelParser.parseUnaryTests, expression, context).right
+    eval(FeelParser.parseUnaryTests, expression, context)
       .map(value => value.asInstanceOf[Boolean])
   }
 
   private def eval(parser: String => ParseResult[Exp],
                    expression: String,
                    context: Context): EvalExpressionResult =
-    parse(parser, expression).right
+    parse(parser, expression)
       .flatMap(expr => eval(expr, context))
 
   private def parse(parser: String => ParseResult[Exp],
@@ -112,38 +123,15 @@ class FeelEngine(val functionProvider: FunctionProvider =
         Left(Failure(s"failed to parse expression '$expression': $e"))
     }
 
-  def eval(exp: ParsedExpression, context: Context): EvalExpressionResult = {
-    interpreter.eval(exp.expression)(rootContext(context)) match {
+  def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
+    eval(exp, rootContext + context)
+
+  private def eval(exp: ParsedExpression,
+                   context: EvalContext): EvalExpressionResult = {
+    interpreter.eval(exp.expression)(context) match {
       case ValError(cause) =>
         Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
       case value => Right(valueMapper.unpackVal(value))
-    }
-  }
-
-  private def rootContext(context: Context): Context = {
-    context match {
-      case c: RootContext => c
-      case c: DefaultContext =>
-        val fp =
-          if (c.functionProvider == FunctionProvider.EmptyFunctionProvider) {
-            functionProvider
-          } else if (functionProvider == FunctionProvider.EmptyFunctionProvider) {
-            c.functionProvider
-          } else {
-            new FunctionProvider.CompositeFunctionProvider(
-              List(functionProvider, c.functionProvider))
-          }
-
-        RootContext(
-          variables = c.variables,
-          additionalFunctions = c.functions,
-          variableProvider = c.variableProvider,
-          functionProvider = fp,
-          valueMapper = valueMapper
-        )
-      case c =>
-        RootContext(functionProvider = functionProvider,
-                    valueMapper = valueMapper) + c
     }
   }
 
@@ -153,7 +141,7 @@ class FeelEngine(val functionProvider: FunctionProvider =
 
   def eval(exp: ParsedExpression,
            variables: Map[String, Any] = Map()): EvalExpressionResult = {
-    eval(exp, rootContext(variables))
+    eval(exp, Context.StaticContext(variables))
   }
 
   def parseExpression(expression: String): Either[Failure, ParsedExpression] =

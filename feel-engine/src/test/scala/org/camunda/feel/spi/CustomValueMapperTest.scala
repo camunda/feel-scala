@@ -35,12 +35,12 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
     val properties = Map((name.name -> name), (language.name -> language))
   }
 
-  class MyCustomContext(val d: DomainObject, override val valueMapper: ValueMapper) extends CustomContext {
+  class MyCustomContext(val d: DomainObject) extends CustomContext {
     override val variableProvider = new VariableProvider {
-      override def getVariable(name: String): Option[Val] = d.properties.get(name) match {
-        case Some(x: Property[_]) => Some(valueMapper.toVal(x.value))
-        case _ => None
-      }
+      override def getVariable(name: String): Option[Any] =
+        d.properties.get(name).map(_.value)
+
+      override def keys: Iterable[String] = d.properties.keys
     }
   }
 
@@ -49,9 +49,11 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
     override def toVal(x: Any): Val = {
       x match {
         case e: Enumerated => ValString(e.id)
-        case e: Enum => ValContext(DefaultContext(e.items.map((e) => (e.id -> toVal(e))).toMap))
-        case d: DomainObject => ValContext(new MyCustomContext(d, this))
-        case _ => super.toVal(x)
+        case e: Enum =>
+          ValContext(
+            Context.StaticContext(e.items.map((e) => (e.id -> toVal(e))).toMap))
+        case d: DomainObject => ValContext(new MyCustomContext(d))
+        case _               => super.toVal(x)
       }
     }
   }
@@ -73,7 +75,12 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 
   it should "convert custom context (enumeration)" in {
     valueMapper.toVal(Language).getClass should be(classOf[ValContext])
-    valueMapper.toVal(Language).asInstanceOf[ValContext].context.variable("DE") should be(ValString("DE"))
+    valueMapper
+      .toVal(Language)
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables("DE") should be(ValString("DE"))
   }
 
   it should "convert custom context (domain object)" in {
@@ -81,9 +88,20 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
     val person = new Person
     person.language.value = Some(Language.EN)
 
-    valueMapper.toVal(person) shouldBe a [ValContext]
-    valueMapper.toVal(person).asInstanceOf[ValContext].context.variable("language") should be(ValString("EN"))
-    valueMapper.toVal(person).asInstanceOf[ValContext].context.variable("not-here") shouldBe a [ValError]
+    valueMapper.toVal(person) shouldBe a[ValContext]
+    valueMapper
+      .toVal(person)
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables("language") should be(Some(Language.EN))
+
+    valueMapper
+      .toVal(person)
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariable("not-here") should be(None)
   }
 
   it should "allow domain expressions" in {
@@ -94,10 +112,12 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 
     val context = Map("p" -> person, "Language" -> Language)
 
-    engine.evalExpression("p.name", context) should be (Right("Tom"))
-    engine.evalExpression("p.language", context) should be (Right("EN"))
-    engine.evalExpression("p.language = Language.EN", context) should be (Right(true))
-    engine.evalExpression("p.language = Language.DE", context) should be (Right(false))
+    engine.evalExpression("p.name", context) should be(Right("Tom"))
+    engine.evalExpression("p.language", context) should be(Right("EN"))
+    engine.evalExpression("p.language = Language.EN", context) should be(
+      Right(true))
+    engine.evalExpression("p.language = Language.DE", context) should be(
+      Right(false))
   }
 
 }

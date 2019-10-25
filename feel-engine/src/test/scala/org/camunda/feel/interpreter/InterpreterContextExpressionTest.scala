@@ -21,8 +21,13 @@ class InterpreterContextExpressionTest
 
   it should "be accessed in a nested context" in {
 
-    eval("{ a: { b:1 } }.a") should be(
-      ValContext(DefaultContext(Map("b" -> ValNumber(1)))))
+    val context = eval("{ a: { b:1 } }.a")
+    context shouldBe a[ValContext]
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("b" -> ValNumber(1)))
 
     eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))
   }
@@ -42,9 +47,18 @@ class InterpreterContextExpressionTest
 
   it should "be filtered in a list" in {
 
-    eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]") should be(
-      ValList(List(ValContext(
-        DefaultContext(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))))))
+    val list = eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]")
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items(0)
+
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))
   }
 
   it should "be accessed and filtered in a list" in {
