@@ -2,9 +2,9 @@ package org.camunda.feel.interpreter
 
 import java.time.{Duration, Period}
 
+import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
-import org.camunda.feel.interpreter.CompositeContext._
 import org.camunda.feel.parser._
 
 /**
@@ -12,180 +12,179 @@ import org.camunda.feel.parser._
   */
 class FeelInterpreter {
 
-  def eval(expression: Exp)(implicit context: Context): Val = expression match {
+  def eval(expression: Exp)(implicit context: EvalContext): Val =
+    expression match {
 
-    // literals
-    case ConstNull                 => ValNull
-    case ConstInputValue           => input
-    case ConstNumber(x)            => ValNumber(x)
-    case ConstBool(b)              => ValBoolean(b)
-    case ConstString(s)            => ValString(s)
-    case ConstDate(d)              => ValDate(d)
-    case ConstLocalTime(t)         => ValLocalTime(t)
-    case ConstTime(t)              => ValTime(t)
-    case ConstLocalDateTime(dt)    => ValLocalDateTime(dt)
-    case ConstDateTime(dt)         => ValDateTime(dt)
-    case ConstYearMonthDuration(d) => ValYearMonthDuration(d.normalized)
-    case ConstDayTimeDuration(d)   => ValDayTimeDuration(d)
+      // literals
+      case ConstNull                 => ValNull
+      case ConstInputValue           => input
+      case ConstNumber(x)            => ValNumber(x)
+      case ConstBool(b)              => ValBoolean(b)
+      case ConstString(s)            => ValString(s)
+      case ConstDate(d)              => ValDate(d)
+      case ConstLocalTime(t)         => ValLocalTime(t)
+      case ConstTime(t)              => ValTime(t)
+      case ConstLocalDateTime(dt)    => ValLocalDateTime(dt)
+      case ConstDateTime(dt)         => ValDateTime(dt)
+      case ConstYearMonthDuration(d) => ValYearMonthDuration(d.normalized)
+      case ConstDayTimeDuration(d)   => ValDayTimeDuration(d)
 
-    case ConstList(items) =>
-      mapEither[Exp, Val](items, item => eval(item).toEither, ValList)
+      case ConstList(items) =>
+        mapEither[Exp, Val](items, item => eval(item).toEither, ValList)
 
-    case ConstContext(entries) =>
-      foldEither[(String, Exp), DefaultContext](
-        DefaultContext(),
-        entries, {
-          case (ctx, (key, value)) =>
-            eval(value)(context + ctx).toEither.right.map(_ match {
-              case f: ValFunction =>
-                DefaultContext(ctx.variables,
-                               addFunction(ctx.functions, key, f))
-              case v =>
-                DefaultContext(ctx.variables + (key -> v), ctx.functions)
+      case ConstContext(entries) =>
+        foldEither[(String, Exp), EvalContext](
+          EvalContext.wrap(Context.EmptyContext)(context.valueMapper),
+          entries, {
+            case (ctx, (key, value)) =>
+              eval(value)(context + ctx).toEither.map(v => ctx + (key -> v))
+          },
+          ValContext
+        )
+
+      // simple unary tests
+      case InputEqualTo(x)        => unaryOpAny(eval(x), _ == _, ValBoolean)
+      case InputLessThan(x)       => unaryOp(eval(x), _ < _, ValBoolean)
+      case InputLessOrEqual(x)    => unaryOp(eval(x), _ <= _, ValBoolean)
+      case InputGreaterThan(x)    => unaryOp(eval(x), _ > _, ValBoolean)
+      case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
+      case interval @ Interval(start, end) =>
+        unaryOpDual(eval(start.value),
+                    eval(end.value),
+                    isInInterval(interval),
+                    ValBoolean)
+
+      case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+
+      // arithmetic operations
+      case Addition(x, y)       => withValOrNull(addOp(eval(x), eval(y)))
+      case Subtraction(x, y)    => withValOrNull(subOp(eval(x), eval(y)))
+      case Multiplication(x, y) => withValOrNull(mulOp(eval(x), eval(y)))
+      case Division(x, y)       => withValOrNull(divOp(eval(x), eval(y)))
+      case Exponentiation(x, y) =>
+        withValOrNull(
+          dualNumericOp(eval(x),
+                        eval(y),
+                        (x, y) =>
+                          if (y.isWhole) {
+                            x.pow(y.toInt)
+                          } else {
+                            math.pow(x.toDouble, y.toDouble)
+                        },
+                        ValNumber))
+      case ArithmeticNegation(x) =>
+        withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
+
+      // dual comparators
+      case Equal(x, y)          => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
+      case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
+      case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
+      case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
+      case GreaterOrEqual(x, y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
+
+      // combinators
+      case AtLeastOne(xs)    => atLeastOne(xs, ValBoolean)
+      case Not(x)            => withBooleanOrNull(eval(x), x => ValBoolean(!x))
+      case Disjunction(x, y) => atLeastOne(x :: y :: Nil, ValBoolean)
+      case Conjunction(x, y) => all(x :: y :: Nil, ValBoolean)
+
+      // control structures
+      case If(condition, statement, elseStatement) =>
+        withBooleanOrFalse(eval(condition),
+                           isMet =>
+                             if (isMet) {
+                               eval(statement)
+                             } else {
+                               eval(elseStatement)
+                           })
+      case In(x, test) =>
+        withVal(eval(x), x => eval(test)(context + (inputKey -> x)))
+      case InstanceOf(x, typeName) =>
+        withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
+
+      // context
+      case Ref(names)               => ref(context.variable(names.head), names.tail)
+      case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
+
+      // list
+      case SomeItem(iterators, condition) =>
+        withCartesianProduct(
+          iterators,
+          p =>
+            atLeastOne(p.map(vars => () => eval(condition)(context ++ vars)),
+                       ValBoolean))
+      case EveryItem(iterators, condition) =>
+        withCartesianProduct(
+          iterators,
+          p =>
+            all(p.map(vars => () => eval(condition)(context ++ vars)),
+                ValBoolean))
+      case For(iterators, exp) =>
+        withCartesianProduct(
+          iterators,
+          p =>
+            ValList((List[Val]() /: p) {
+              case (partial, vars) => {
+                val iterationContext = context ++ vars + ("partial" -> partial)
+                val value = eval(exp)(iterationContext)
+                partial ++ (value :: Nil)
+              }
             })
-        },
-        ValContext
-      )
+        )
+      case Filter(list, filter) =>
+        withList(
+          eval(list),
+          l =>
+            filter match {
+              case ConstNumber(index) => filterList(l.items, index)
+              case ArithmeticNegation(ConstNumber(index)) =>
+                filterList(l.items, -index)
+              case _ =>
+                filterList(l.items, item => eval(filter)(filterContext(item)))
+          }
+        )
+      case Range(start, end) =>
+        withNumbers(eval(start), eval(end), (x, y) => {
+          val range = if (x < y) {
+            (x to y).by(1)
+          } else {
+            (x to y).by(-1)
+          }
+          ValList(range.map(ValNumber).toList)
+        })
 
-    // simple unary tests
-    case InputEqualTo(x)        => unaryOpAny(eval(x), _ == _, ValBoolean)
-    case InputLessThan(x)       => unaryOp(eval(x), _ < _, ValBoolean)
-    case InputLessOrEqual(x)    => unaryOp(eval(x), _ <= _, ValBoolean)
-    case InputGreaterThan(x)    => unaryOp(eval(x), _ > _, ValBoolean)
-    case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
-    case interval @ Interval(start, end) =>
-      unaryOpDual(eval(start.value),
-                  eval(end.value),
-                  isInInterval(interval),
-                  ValBoolean)
+      // functions
+      case FunctionInvocation(name, params) =>
+        withFunction(findFunction(context, name, params),
+                     f => invokeFunction(f, params))
+      case QualifiedFunctionInvocation(path, name, params) =>
+        withContext(
+          eval(path),
+          c =>
+            withFunction(
+              findFunction(EvalContext.wrap(c.context)(context.valueMapper),
+                           name,
+                           params),
+              f => invokeFunction(f, params)))
+      case FunctionDefinition(params, body) =>
+        ValFunction(
+          params,
+          paramValues =>
+            body match {
+              case JavaFunctionInvocation(className, methodName, arguments) =>
+                invokeJavaFunction(className,
+                                   methodName,
+                                   arguments,
+                                   paramValues,
+                                   context.valueMapper)
+              case _ => eval(body)(context ++ (params zip paramValues).toMap)
+          }
+        )
 
-    case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+      // unsupported expression
+      case exp => ValError(s"unsupported expression '$exp'")
 
-    // arithmetic operations
-    case Addition(x, y)       => withValOrNull(addOp(eval(x), eval(y)))
-    case Subtraction(x, y)    => withValOrNull(subOp(eval(x), eval(y)))
-    case Multiplication(x, y) => withValOrNull(mulOp(eval(x), eval(y)))
-    case Division(x, y)       => withValOrNull(divOp(eval(x), eval(y)))
-    case Exponentiation(x, y) =>
-      withValOrNull(
-        dualNumericOp(eval(x),
-                      eval(y),
-                      (x, y) =>
-                        if (y.isWhole) {
-                          x.pow(y.toInt)
-                        } else {
-                          math.pow(x.toDouble, y.toDouble)
-                      },
-                      ValNumber))
-    case ArithmeticNegation(x) =>
-      withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
-
-    // dual comparators
-    case Equal(x, y)          => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
-    case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
-    case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
-    case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
-    case GreaterOrEqual(x, y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
-
-    // combinators
-    case AtLeastOne(xs)    => atLeastOne(xs, ValBoolean)
-    case Not(x)            => withBooleanOrNull(eval(x), x => ValBoolean(!x))
-    case Disjunction(x, y) => atLeastOne(x :: y :: Nil, ValBoolean)
-    case Conjunction(x, y) => all(x :: y :: Nil, ValBoolean)
-
-    // control structures
-    case If(condition, statement, elseStatement) =>
-      withBooleanOrFalse(eval(condition),
-                         isMet =>
-                           if (isMet) {
-                             eval(statement)
-                           } else {
-                             eval(elseStatement)
-                         })
-    case In(x, test) =>
-      withVal(eval(x), x => eval(test)(context + (inputKey -> x)))
-    case InstanceOf(x, typeName) =>
-      withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
-
-    // context
-    case Ref(names)               => ref(context.variable(names.head), names.tail)
-    case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
-
-    // list
-    case SomeItem(iterators, condition) =>
-      withCartesianProduct(
-        iterators,
-        p =>
-          atLeastOne(p.map(vars => () => eval(condition)(context ++ vars)),
-                     ValBoolean))
-    case EveryItem(iterators, condition) =>
-      withCartesianProduct(
-        iterators,
-        p =>
-          all(p.map(vars => () => eval(condition)(context ++ vars)),
-              ValBoolean))
-    case For(iterators, exp) =>
-      withCartesianProduct(
-        iterators,
-        p =>
-          ValList((List[Val]() /: p) {
-            case (partial, vars) => {
-              val iterationContext = context ++ vars + ("partial" -> partial)
-              val value = eval(exp)(iterationContext)
-              partial ++ (value :: Nil)
-            }
-          })
-      )
-    case Filter(list, filter) =>
-      withList(
-        eval(list),
-        l =>
-          filter match {
-            case ConstNumber(index) => filterList(l.items, index)
-            case ArithmeticNegation(ConstNumber(index)) =>
-              filterList(l.items, -index)
-            case _ =>
-              filterList(l.items, item => eval(filter)(filterContext(item)))
-        }
-      )
-    case Range(start, end) =>
-      withNumbers(eval(start), eval(end), (x, y) => {
-        val range = if (x < y) {
-          (x to y).by(1)
-        } else {
-          (x to y).by(-1)
-        }
-        ValList(range.map(ValNumber).toList)
-      })
-
-    // functions
-    case FunctionInvocation(name, params) =>
-      withFunction(findFunction(context, name, params),
-                   f => invokeFunction(f, params))
-    case QualifiedFunctionInvocation(path, name, params) =>
-      withContext(eval(path),
-                  c =>
-                    withFunction(findFunction(c.context, name, params),
-                                 f => invokeFunction(f, params)))
-    case FunctionDefinition(params, body) =>
-      ValFunction(
-        params,
-        paramValues =>
-          body match {
-            case JavaFunctionInvocation(className, methodName, arguments) =>
-              invokeJavaFunction(className,
-                                 methodName,
-                                 arguments,
-                                 paramValues,
-                                 context.valueMapper)
-            case _ => eval(body)(context ++ (params zip paramValues).toMap)
-        }
-      )
-
-    // unsupported expression
-    case exp => ValError(s"unsupported expression '$exp'")
-
-  }
+    }
 
   private def mapEither[T, R](it: Iterable[T],
                               f: T => Either[ValError, R],
@@ -225,7 +224,7 @@ class FeelInterpreter {
   }
 
   private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(
-      implicit context: Context): Val =
+      implicit context: EvalContext): Val =
     withVal(
       input,
       _ match {
@@ -250,7 +249,7 @@ class FeelInterpreter {
     )
 
   private def unaryOp(x: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(
-      implicit context: Context): Val =
+      implicit context: EvalContext): Val =
     withVal(
       input,
       _ match {
@@ -264,10 +263,11 @@ class FeelInterpreter {
       }
     )
 
-  private def unaryOpDual(x: Val,
-                          y: Val,
-                          c: (Val, Val, Val) => Boolean,
-                          f: Boolean => Val)(implicit context: Context): Val =
+  private def unaryOpDual(
+      x: Val,
+      y: Val,
+      c: (Val, Val, Val) => Boolean,
+      f: Boolean => Val)(implicit context: EvalContext): Val =
     withVal(
       input,
       _ match {
@@ -438,7 +438,7 @@ class FeelInterpreter {
     }
 
   private def atLeastOne(xs: List[Exp], f: Boolean => Val)(
-      implicit context: Context): Val =
+      implicit context: EvalContext): Val =
     atLeastOne(xs map (x => () => eval(x)), f)
 
   private def atLeastOne(xs: List[() => Val], f: Boolean => Val): Val =
@@ -457,7 +457,7 @@ class FeelInterpreter {
     }
 
   private def all(xs: List[Exp], f: Boolean => Val)(
-      implicit context: Context): Val =
+      implicit context: EvalContext): Val =
     all(xs map (x => () => eval(x)), f)
 
   private def all(xs: List[() => Val], f: Boolean => Val): Val = xs match {
@@ -474,18 +474,20 @@ class FeelInterpreter {
       }
   }
 
-  private def inputKey(implicit context: Context): String =
-    context.variable(RootContext.inputVariableKey) match {
+  private def inputKey(implicit context: EvalContext): String =
+    context.variable(UnaryTests.inputVariable) match {
       case ValString(inputVariableName) => inputVariableName
-      case _                            => RootContext.defaultInputVariable
+      case _                            => UnaryTests.defaultInputVariable
     }
 
-  private def input(implicit context: Context): Val = context.variable(inputKey)
+  private def input(implicit context: EvalContext): Val =
+    context.variable(inputKey)
 
-  private def dualNumericOp(x: Val,
-                            y: Val,
-                            op: (Number, Number) => Number,
-                            f: Number => Val)(implicit context: Context): Val =
+  private def dualNumericOp(
+      x: Val,
+      y: Val,
+      op: (Number, Number) => Number,
+      f: Number => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNumber(x) => withNumber(y, y => f(op(x, y)))
       case _            => error(x, s"expected Number but found '$x'")
@@ -494,7 +496,7 @@ class FeelInterpreter {
   private def dualOpAny(x: Val,
                         y: Val,
                         c: (Any, Any) => Boolean,
-                        f: Boolean => Val)(implicit context: Context): Val =
+                        f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNull                 => withVal(y, y => f(c(ValNull, y)))
       case x if (y == ValNull)     => f(c(x, ValNull))
@@ -517,7 +519,7 @@ class FeelInterpreter {
   private def dualOp(x: Val,
                      y: Val,
                      c: (Val, Val) => Boolean,
-                     f: Boolean => Val)(implicit context: Context): Val =
+                     f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNull                => withVal(y, y => ValBoolean(false))
       case _ if (y == ValNull)    => withVal(x, x => ValBoolean(false))
@@ -679,7 +681,7 @@ class FeelInterpreter {
     case _ => ValError(s"'$x / $y' is not allowed")
   }
 
-  private def unaryTestExpression(x: Val)(implicit ctx: Context): Val =
+  private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
     withVal(input,
             i =>
               x match {
@@ -694,7 +696,7 @@ class FeelInterpreter {
   }
 
   private def invokeFunction(function: ValFunction, params: FunctionParameters)(
-      implicit context: Context): Val = {
+      implicit context: EvalContext): Val = {
     val paramList: List[Val] = params match {
       case PositionalFunctionParameters(params) => {
 
@@ -725,18 +727,11 @@ class FeelInterpreter {
     function.invoke(paramList)
   }
 
-  private def findFunction(ctx: Context,
+  private def findFunction(ctx: EvalContext,
                            name: String,
                            params: FunctionParameters): Val = params match {
     case PositionalFunctionParameters(params) => ctx.function(name, params.size)
     case NamedFunctionParameters(params)      => ctx.function(name, params.keySet)
-  }
-
-  private def addFunction(functions: Map[String, List[ValFunction]],
-                          name: String,
-                          f: ValFunction): Map[String, List[ValFunction]] = {
-    val functionsByName = functions getOrElse (name, List.empty)
-    functions + (name -> (f :: functionsByName))
   }
 
   private def withType(x: Val, f: String => ValBoolean): Val = x match {
@@ -764,7 +759,7 @@ class FeelInterpreter {
 
   private def withLists(
       lists: List[(String, Val)],
-      f: List[(String, ValList)] => Val)(implicit context: Context): Val = {
+      f: List[(String, ValList)] => Val)(implicit context: EvalContext): Val = {
     lists
       .map { case (name, it) => name -> withList(it, list => list) }
       .find(_._2.isInstanceOf[ValError]) match {
@@ -775,7 +770,7 @@ class FeelInterpreter {
 
   private def withCartesianProduct(
       iterators: List[(String, Exp)],
-      f: List[Map[String, Val]] => Val)(implicit context: Context): Val =
+      f: List[Map[String, Val]] => Val)(implicit context: EvalContext): Val =
     withLists(iterators.map { case (name, it) => name -> eval(it) },
               lists => f(flattenAndZipLists(lists)))
 
@@ -821,136 +816,140 @@ class FeelInterpreter {
     case _             => error(x, s"expect Context but found '$x'")
   }
 
-  private def filterContext(x: Val)(implicit context: Context): Context =
+  private def filterContext(x: Val)(
+      implicit context: EvalContext): EvalContext =
     x match {
       case ValContext(ctx: Context) => context + ctx + ("item" -> x)
       case v                        => context + ("item" -> v)
     }
 
-  private def ref(x: Val, names: List[String])(implicit context: Context): Val =
+  private def ref(x: Val, names: List[String])(
+      implicit context: EvalContext): Val =
     names match {
       case Nil => x
       case n :: ns =>
         withContext(
           x, {
             case ctx: ValContext =>
-              ctx.context.variable(n) match {
-                case _: ValError =>
-                  ValError(s"context contains no entry with key '$n'")
-                case x: Val => ref(x, ns)
-                case _      => ValError(s"context contains no entry with key '$n'")
+              EvalContext
+                .wrap(ctx.context)(context.valueMapper)
+                .variable(n) match {
+                case e: ValError => e
+                case x: Val      => ref(x, ns)
               }
-            case _ => ValError(s"context contains no entry with key '$n'")
+            case e => error(e, s"context contains no entry with key '$n'")
           }
         )
     }
 
-  private def path(v: Val, key: String): Val = v match {
-    case ctx: ValContext =>
-      ctx.context.variable(key) match {
-        case _: ValError =>
-          ValError(s"context contains no entry with key '$key'")
-        case x: Val => x
-        case _      => ValError(s"context contains no entry with key '$key'")
-      }
-    case ValList(list) => ValList(list map (item => path(item, key)))
-    case ValDate(date) =>
-      key match {
-        case "year"  => ValNumber(date.getYear)
-        case "month" => ValNumber(date.getMonthValue)
-        case "day"   => ValNumber(date.getDayOfMonth)
-        case e =>
-          error(
-            v,
-            s"expected one of the date properies {year, month, day} but fount '$e'")
-      }
-    case ValTime(time) =>
-      key match {
-        case "hour"   => ValNumber(time.getHour)
-        case "minute" => ValNumber(time.getMinute)
-        case "second" => ValNumber(time.getSecond)
-        case "time offset" =>
-          ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
-        case "timezone" => time.getZoneId.map(ValString(_)).getOrElse(ValNull)
-        case e =>
-          error(
-            v,
-            s"expected one of the time properies {hour, minute, second, time offset, timezone} but fount '$e'")
-      }
-    case ValLocalTime(time) =>
-      key match {
-        case "hour"        => ValNumber(time.getHour)
-        case "minute"      => ValNumber(time.getMinute)
-        case "second"      => ValNumber(time.getSecond)
-        case "time offset" => ValNull
-        case "timezone"    => ValNull
-        case e =>
-          error(
-            v,
-            s"expected one of the (local) time properies {hour, minute, second} but fount '$e'")
-      }
-    case ValDateTime(dateTime) =>
-      key match {
-        case "year"   => ValNumber(dateTime.getYear)
-        case "month"  => ValNumber(dateTime.getMonthValue)
-        case "day"    => ValNumber(dateTime.getDayOfMonth)
-        case "hour"   => ValNumber(dateTime.getHour)
-        case "minute" => ValNumber(dateTime.getMinute)
-        case "second" => ValNumber(dateTime.getSecond)
-        case "time offset" =>
-          ValDayTimeDuration(
-            Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
-        case "timezone" =>
-          if (hasTimeZone(dateTime)) ValString(dateTime.getZone.getId)
-          else ValNull
-        case e =>
-          error(
-            v,
-            s"expected one of the date-time properies {year, month, day, hour, minute, second, time offset, timezone} but fount '$e'")
-      }
-    case ValLocalDateTime(dateTime) =>
-      key match {
-        case "year"        => ValNumber(dateTime.getYear)
-        case "month"       => ValNumber(dateTime.getMonthValue)
-        case "day"         => ValNumber(dateTime.getDayOfMonth)
-        case "hour"        => ValNumber(dateTime.getHour)
-        case "minute"      => ValNumber(dateTime.getMinute)
-        case "second"      => ValNumber(dateTime.getSecond)
-        case "time offset" => ValNull
-        case "timezone"    => ValNull
-        case e =>
-          error(
-            v,
-            s"expected one of the (local) date-time properies {year, month, day, hour, minute, second} but fount '$e'")
-      }
-    case ValYearMonthDuration(duration) =>
-      key match {
-        case "years"  => ValNumber(duration.getYears)
-        case "months" => ValNumber(duration.getMonths)
-        case e =>
-          error(
-            v,
-            s"expected one of the duration properies {years, months} but fount '$e'")
-      }
-    case ValDayTimeDuration(duration) =>
-      key match {
-        case "days"    => ValNumber(duration.toDays)
-        case "hours"   => ValNumber(duration.toHours % 24)
-        case "minutes" => ValNumber(duration.toMinutes % 60)
-        case "seconds" => ValNumber(duration.getSeconds % 60)
-        case e =>
-          error(
-            v,
-            s"expected one of the duration properies {days, hours, minutes, seconds} but fount '$e'")
-      }
-    case e => error(e, s"expected Context or List of Contextes but found '$e'")
-  }
+  private def path(v: Val, key: String)(implicit context: EvalContext): Val =
+    v match {
+      case ctx: ValContext =>
+        EvalContext.wrap(ctx.context)(context.valueMapper).variable(key) match {
+          case _: ValError =>
+            ValError(s"context contains no entry with key '$key'")
+          case x: Val => x
+          case _      => ValError(s"context contains no entry with key '$key'")
+        }
+      case ValList(list) => ValList(list map (item => path(item, key)))
+      case ValDate(date) =>
+        key match {
+          case "year"  => ValNumber(date.getYear)
+          case "month" => ValNumber(date.getMonthValue)
+          case "day"   => ValNumber(date.getDayOfMonth)
+          case e =>
+            error(
+              v,
+              s"expected one of the date properies {year, month, day} but fount '$e'")
+        }
+      case ValTime(time) =>
+        key match {
+          case "hour"   => ValNumber(time.getHour)
+          case "minute" => ValNumber(time.getMinute)
+          case "second" => ValNumber(time.getSecond)
+          case "time offset" =>
+            ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
+          case "timezone" => time.getZoneId.map(ValString(_)).getOrElse(ValNull)
+          case e =>
+            error(
+              v,
+              s"expected one of the time properies {hour, minute, second, time offset, timezone} but fount '$e'")
+        }
+      case ValLocalTime(time) =>
+        key match {
+          case "hour"        => ValNumber(time.getHour)
+          case "minute"      => ValNumber(time.getMinute)
+          case "second"      => ValNumber(time.getSecond)
+          case "time offset" => ValNull
+          case "timezone"    => ValNull
+          case e =>
+            error(
+              v,
+              s"expected one of the (local) time properies {hour, minute, second} but fount '$e'")
+        }
+      case ValDateTime(dateTime) =>
+        key match {
+          case "year"   => ValNumber(dateTime.getYear)
+          case "month"  => ValNumber(dateTime.getMonthValue)
+          case "day"    => ValNumber(dateTime.getDayOfMonth)
+          case "hour"   => ValNumber(dateTime.getHour)
+          case "minute" => ValNumber(dateTime.getMinute)
+          case "second" => ValNumber(dateTime.getSecond)
+          case "time offset" =>
+            ValDayTimeDuration(
+              Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
+          case "timezone" =>
+            if (hasTimeZone(dateTime)) ValString(dateTime.getZone.getId)
+            else ValNull
+          case e =>
+            error(
+              v,
+              s"expected one of the date-time properies {year, month, day, hour, minute, second, time offset, timezone} but fount '$e'")
+        }
+      case ValLocalDateTime(dateTime) =>
+        key match {
+          case "year"        => ValNumber(dateTime.getYear)
+          case "month"       => ValNumber(dateTime.getMonthValue)
+          case "day"         => ValNumber(dateTime.getDayOfMonth)
+          case "hour"        => ValNumber(dateTime.getHour)
+          case "minute"      => ValNumber(dateTime.getMinute)
+          case "second"      => ValNumber(dateTime.getSecond)
+          case "time offset" => ValNull
+          case "timezone"    => ValNull
+          case e =>
+            error(
+              v,
+              s"expected one of the (local) date-time properies {year, month, day, hour, minute, second} but fount '$e'")
+        }
+      case ValYearMonthDuration(duration) =>
+        key match {
+          case "years"  => ValNumber(duration.getYears)
+          case "months" => ValNumber(duration.getMonths)
+          case e =>
+            error(
+              v,
+              s"expected one of the duration properies {years, months} but fount '$e'")
+        }
+      case ValDayTimeDuration(duration) =>
+        key match {
+          case "days"    => ValNumber(duration.toDays)
+          case "hours"   => ValNumber(duration.toHours % 24)
+          case "minutes" => ValNumber(duration.toMinutes % 60)
+          case "seconds" => ValNumber(duration.getSeconds % 60)
+          case e =>
+            error(
+              v,
+              s"expected one of the duration properies {days, hours, minutes, seconds} but fount '$e'")
+        }
+      case e =>
+        error(e, s"expected Context or List of Contextes but found '$e'")
+    }
 
   private def hasTimeZone(dateTime: DateTime) =
     !dateTime.getOffset.equals(dateTime.getZone)
 
   private def evalContextEntry(key: String, exp: Exp)(
-      implicit context: Context): Val =
+      implicit context: EvalContext): Val =
     withVal(eval(exp), value => value)
 
   private def invokeJavaFunction(className: String,

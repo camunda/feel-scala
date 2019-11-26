@@ -1,13 +1,11 @@
 package org.camunda.feel.interpreter
 
-import java.time
+import java.time._
 
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
 
 import scala.collection.JavaConverters._
-import java.time._
-
 import scala.math.BigDecimal
 
 class DefaultValueMapper extends ValueMapper {
@@ -42,7 +40,7 @@ class DefaultValueMapper extends ValueMapper {
         .partition { case (key, value) => value.isInstanceOf[ValFunction] }
 
       ValContext(
-        DefaultContext(
+        Context.StaticContext(
           variables = variables,
           functions = functions.map {
             case (key, f) => key -> List(f.asInstanceOf[ValFunction])
@@ -64,7 +62,7 @@ class DefaultValueMapper extends ValueMapper {
     case x: java.time.OffsetTime     => ValTime(ZonedTime.of(x))
     case x: java.util.List[_]        => ValList(x.asScala.toList map toVal)
     case x: java.util.Map[_, _] =>
-      ValContext(DefaultContext(x.asScala.map {
+      ValContext(Context.StaticContext(x.asScala.map {
         case (key, value) => key.toString -> toVal(value)
       }.toMap))
     case x: java.lang.Enum[_] => ValString(x.name)
@@ -73,7 +71,7 @@ class DefaultValueMapper extends ValueMapper {
     case x: Throwable => ValError(x.getMessage)
     case x =>
       try {
-        ValContext(ObjectContext(x, this))
+        ValContext(Context.CacheContext(ObjectContext(x, this)))
       } catch {
         case _: Throwable =>
           ValError(s"unsupported object '$x' of class '${x.getClass}'")
@@ -98,8 +96,10 @@ class DefaultValueMapper extends ValueMapper {
     case ValYearMonthDuration(duration) => duration
     case ValDayTimeDuration(duration)   => duration
     case ValList(list)                  => list map unpackVal
-    case ValContext(dc: DefaultContext) =>
-      dc.variables.map { case (key, value) => key -> unpackVal(toVal(value)) }.toMap
+    case ValContext(c: Context) =>
+      c.variableProvider.getVariables.map {
+        case (key, value) => key -> unpackVal(toVal(value))
+      }.toMap
     case ValError(error) => new Exception(error)
     case f: ValFunction  => f
     case _               => throw new IllegalArgumentException(s"unexpected val '$value'")

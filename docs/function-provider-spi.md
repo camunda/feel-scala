@@ -21,6 +21,8 @@ class CustomScalaFunctionProvider extends CustomFunctionProvider {
 
   def getFunction(name: String): Option[ValFunction] = functions.get(name)
 
+  def functionNames: Iterable[String] = functions.keys
+
   val functions: Map[String, ValFunction] = Map(
     "incr" -> ValFunction(
       params = List("x"),
@@ -62,6 +64,11 @@ public class CustomJavaFunctionProvider extends JavaFunctionProvider
     public Optional<JavaFunction> resolveFunction(String functionName)
     {
       return Optional.ofNullable(functions.get(functionName));
+    }
+ 
+    @Override
+    public Collection<String> getFunctionNames() {
+      return functions.keySet();
     }
 
 }

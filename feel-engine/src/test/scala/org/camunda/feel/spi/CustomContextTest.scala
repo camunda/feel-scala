@@ -1,10 +1,9 @@
 package org.camunda.feel.spi
 
-import org.camunda.feel.FeelEngine.Failure
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
 import org.camunda.feel._
 import org.camunda.feel.interpreter._
+import org.scalatest.{FlatSpec, Matchers}
 
 class CustomContextTest extends FlatSpec with Matchers {
 
@@ -12,24 +11,32 @@ class CustomContextTest extends FlatSpec with Matchers {
 
   "A default context" should "provide its members" in {
     engine.evalExpression("a", variables = Map("a" -> 2)) should be(Right(2))
-    engine.evalUnaryTests("2", variables = Map(RootContext.defaultInputVariable -> 2)) should be(Right(true))
+    engine.evalUnaryTests(
+      "2",
+      variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
+      Right(true))
   }
 
   it should "fail on access to missing member" in {
     engine.evalExpression("b", variables = Map("a" -> 2)) should be
-      Left(Failure("failed to evaluate expression 'b': no variable found for name 'b'"))
+    Left(
+      Failure(
+        "failed to evaluate expression 'b': no variable found for name 'b'"))
   }
 
   "A custom context" should "provide its members" in {
     val myCustomContext = new CustomContext {
 
-      override def variable(name: String): Val = name match {
-        case "a" => ValNumber(2)
-        case RootContext.defaultInputVariable => ValNumber(2)
-        case _ => super.variable(name)
-      }
+      override def variableProvider: VariableProvider = new VariableProvider {
+        override def getVariable(name: String): Option[Any] = name match {
+          case "a"                             => Some(2)
+          case UnaryTests.defaultInputVariable => Some(2)
+          case _                               => None
+        }
 
-      override def functions = BuiltinFunctions.functions
+        override def keys: Iterable[String] =
+          List("a", UnaryTests.defaultInputVariable)
+      }
 
     }
     engine.evalExpression("a", myCustomContext) should be(Right(2))
@@ -38,12 +45,15 @@ class CustomContextTest extends FlatSpec with Matchers {
   }
 
   it should "fail on access to missing member" in {
-    val context = new CustomContext{
-      override def variable(name: String): Val = { if (name == "a") ValNumber(2) else super.variable(name) }
+    val context = new CustomContext {
+      override def variableProvider: VariableProvider =
+        VariableProvider.StaticVariableProvider(Map.empty)
     }
 
     engine.evalExpression("b", context) should be
-      Left(Failure("failed to evaluate expression 'b': no variable found for name 'b'"))
+    Left(
+      Failure(
+        "failed to evaluate expression 'b': no variable found for name 'b'"))
   }
 
   it should "provide its functions" in {
@@ -52,12 +62,25 @@ class CustomContextTest extends FlatSpec with Matchers {
     var functionCallCount = 0
 
     val myVariableProvider = new VariableProvider {
-      override def getVariable(name: String): Option[Val] = { variableCallCount += 1; if (name == "a") Some(ValNumber(2)) else None }
+      override def getVariable(name: String): Option[Any] = {
+        variableCallCount += 1;
+        if (name == "a") Some(2) else None
+      }
+
+      override def keys: Iterable[String] = List("a")
     }
 
     val myFunctionProvider = new FunctionProvider {
-      val f = ValFunction(List("x"), { case List(ValNumber(x)) => ValNumber(x + 2) } )
-      override def getFunctions(name: String): List[ValFunction] = { functionCallCount += 1; if (name == "f") List(f) else List.empty }
+      val f = ValFunction(List("x"), {
+        case List(ValNumber(x)) => ValNumber(x + 2)
+      })
+
+      override def getFunctions(name: String): List[ValFunction] = {
+        functionCallCount += 1;
+        if (name == "f") List(f) else List.empty
+      }
+
+      override def functionNames: Iterable[String] = List("f")
     }
 
     val myCustomContext = new CustomContext {
@@ -65,9 +88,10 @@ class CustomContextTest extends FlatSpec with Matchers {
       override val functionProvider = myFunctionProvider
     }
 
-    engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(Right(18))
-    variableCallCount should be(1)
-    functionCallCount should be(1)
+    engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(
+      Right(18))
+    variableCallCount should be(2)
+    functionCallCount should be(2)
 
   }
 

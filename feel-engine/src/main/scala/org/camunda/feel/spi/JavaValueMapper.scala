@@ -1,6 +1,7 @@
 package org.camunda.feel.spi
 
 import org.camunda.feel.interpreter._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -20,8 +21,8 @@ class JavaValueMapper extends CustomValueMapper {
 
     case ValList(list) => (list map unpackVal).asJava: java.util.List[Any]
 
-    case ValContext(dc: DefaultContext) =>
-      dc.variables
+    case ValContext(context: Context) =>
+      context.variableProvider.getVariables
         .map { case (key, value) => key -> unpackVal(toVal(value)) }
         .toMap
         .asJava: java.util.Map[String, Any]

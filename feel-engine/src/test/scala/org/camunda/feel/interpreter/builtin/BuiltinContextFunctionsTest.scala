@@ -8,15 +8,27 @@ import org.camunda.feel.interpreter._
 import scala.math.BigDecimal.int2bigDecimal
 
 /**
- * @author Philipp
- */
-class BuiltinContextFunctionsTest extends FlatSpec with Matchers with FeelIntegrationTest {
+  * @author Philipp
+  */
+class BuiltinContextFunctionsTest
+    extends FlatSpec
+    with Matchers
+    with FeelIntegrationTest {
 
   "A get entries function" should "return all entries" in {
 
-    eval(""" get entries({foo: 123}) """) should be(ValList(List(ValContext(DefaultContext(Map(
-      "key" -> ValString("foo"),
-      "value" -> ValNumber(123)))))))
+    val list = eval(""" get entries({foo: 123}) """)
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items(0)
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(
+      Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
   }
 
   it should "return empty list if emtpy" in {

@@ -8,6 +8,8 @@ class CustomScalaFunctionProvider extends CustomFunctionProvider {
 
   def getFunction(name: String): Option[ValFunction] = functions.get(name)
 
+  override def functionNames: Iterable[String] = functions.keys
+
   val functions: Map[String, ValFunction] = Map(
     "foo" -> ValFunction(
       params = List("x"),

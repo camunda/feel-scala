@@ -6,7 +6,8 @@ import org.camunda.feel._
 
 class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
 
-  val context: org.camunda.feel.interpreter.Val = eval("""
+  val context: org.camunda.feel.interpreter.Val = eval(
+    """
 
       {
         applicant: {
@@ -52,7 +53,9 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
 
   it should "evaluate an if,in" in {
 
-    evalWithContext(""" if applicant.maritalStatus in ("M","S") then "valid" else "not valid" """) should be(ValString("valid"))
+    evalWithContext(
+      """ if applicant.maritalStatus in ("M","S") then "valid" else "not valid" """) should be(
+      ValString("valid"))
 
   }
 
@@ -74,67 +77,51 @@ class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {
                              requested_product . amount
                            )
 
-    """) should be(ValNumber(
-        (amount * rate / 12) / (1 - (1 + rate/12).pow(-36))) ) // ~ 3975.982590125562
+    """) should be(
+      ValNumber((amount * rate / 12) / (1 - (1 + rate / 12)
+        .pow(-36)))) // ~ 3975.982590125562
   }
 
   it should "sum a filtered list of context" in {
 
-    evalWithContext(""" sum( credit_history[record_date > date("2011-01-01")].weight) """) should be(ValNumber(150))
+    evalWithContext(
+      """ sum( credit_history[record_date > date("2011-01-01")].weight) """) should be(
+      ValNumber(150))
 
   }
 
   it should "determine if list satisfies" in {
 
-    evalWithContext(""" some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(ValBoolean(false))
+    evalWithContext(
+      """ some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(
+      ValBoolean(false))
   }
 
   it should "execute nested path and filter expressions" in {
 
     val ctx = Map(
       "EmployeeTable" -> List(
-        Map(
-          "id" -> 7792,
-          "deptNum" -> 10,
-          "name" -> "Clark"),
-        Map(
-          "id" -> 7934,
-          "deptNum" -> 10,
-          "name" -> "Miller"),
-        Map(
-          "id" -> 7976,
-          "deptNum" -> 20,
-          "name" -> "Adams"),
-        Map(
-          "id" -> 7902,
-          "deptNum" -> 20,
-          "name" -> "Ford"),
-        Map(
-          "id" -> 7900,
-          "deptNum" -> 30,
-          "name" -> "James")),
+        Map("id" -> 7792, "deptNum" -> 10, "name" -> "Clark"),
+        Map("id" -> 7934, "deptNum" -> 10, "name" -> "Miller"),
+        Map("id" -> 7976, "deptNum" -> 20, "name" -> "Adams"),
+        Map("id" -> 7902, "deptNum" -> 20, "name" -> "Ford"),
+        Map("id" -> 7900, "deptNum" -> 30, "name" -> "James")
+      ),
       "DeptTable" -> List(
-        Map(
-          "number" -> 10,
-          "name" -> "Sales",
-          "manager" -> "Smith"),
-        Map(
-          "number" -> 20,
-          "name" -> "Finance",
-          "manager" -> "Jones"),
-        Map(
-          "number" -> 30,
-          "name" -> "Engineering",
-          "manager" -> "King")
+        Map("number" -> 10, "name" -> "Sales", "manager" -> "Smith"),
+        Map("number" -> 20, "name" -> "Finance", "manager" -> "Jones"),
+        Map("number" -> 30, "name" -> "Engineering", "manager" -> "King")
       ),
       "LastName" -> "Clark"
     )
-        
-    eval("DeptTable[number = EmployeeTable[name=LastName].deptNum[1]].manager[1]", ctx) should be(ValString("Smith"))
+
+    eval(
+      "DeptTable[number = EmployeeTable[name=LastName].deptNum[1]].manager[1]",
+      ctx) should be(ValString("Smith"))
   }
-  
+
   private def evalWithContext(exp: String) = {
-    val ctx = context.asInstanceOf[ValContext].context.asInstanceOf[DefaultContext]
+    val ctx = context.asInstanceOf[ValContext].context
     eval(exp, ctx)
   }
 

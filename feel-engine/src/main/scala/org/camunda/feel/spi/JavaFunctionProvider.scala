@@ -1,7 +1,9 @@
 package org.camunda.feel.spi
 
 import java.util.{Collections, Optional}
+
 import org.camunda.feel.interpreter._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -16,6 +18,13 @@ abstract class JavaFunctionProvider extends CustomFunctionProvider {
     * @return the function or [[Optional.empty()]], if no function is provided for this name
     */
   def resolveFunction(functionName: String): Optional[JavaFunction]
+
+  /**
+    * Returns the names of all functions.
+    *
+    * @return the names of all functions
+    */
+  def getFunctionNames(): java.util.Collection[String]
 
   /**
     * Returns a list of functions for the given name. There can be multiple functions with different parameters.
@@ -55,4 +64,5 @@ abstract class JavaFunctionProvider extends CustomFunctionProvider {
     ValFunction(paramList, f, function.hasVarArgs)
   }
 
+  override def functionNames: Iterable[String] = getFunctionNames().asScala
 }

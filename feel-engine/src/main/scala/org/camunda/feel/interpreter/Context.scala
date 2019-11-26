@@ -5,12 +5,42 @@ package org.camunda.feel.interpreter
   */
 trait Context {
 
-  def valueMapper: ValueMapper
+  def variableProvider: VariableProvider
 
-  def variable(name: String): Val
+  def functionProvider: FunctionProvider
 
-  def function(name: String, paramCount: Int): Val
+}
 
-  def function(name: String, parameters: Set[String]): Val
+object Context {
+
+  object EmptyContext extends Context {
+
+    override def variableProvider: VariableProvider =
+      VariableProvider.EmptyVariableProvider
+
+    override def functionProvider: FunctionProvider =
+      FunctionProvider.EmptyFunctionProvider
+  }
+
+  case class StaticContext(
+      variables: Map[String, Any],
+      functions: Map[String, List[ValFunction]] = Map.empty
+  ) extends Context {
+
+    override def variableProvider: VariableProvider =
+      VariableProvider.StaticVariableProvider(variables)
+
+    override def functionProvider: FunctionProvider =
+      FunctionProvider.StaticFunctionProvider(functions)
+  }
+
+  case class CacheContext(context: Context) extends Context {
+
+    override def variableProvider: VariableProvider =
+      VariableProvider.CacheVariableProvider(context.variableProvider)
+
+    override def functionProvider: FunctionProvider =
+      FunctionProvider.CacheFunctionProvider(context.functionProvider)
+  }
 
 }

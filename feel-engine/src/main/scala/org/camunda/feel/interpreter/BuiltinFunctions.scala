@@ -1,22 +1,25 @@
 package org.camunda.feel.interpreter
 
+import java.math.BigDecimal
+import java.time._
+import java.util.regex._
+
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
-import java.time._
-import java.util.regex._
 import scala.util.Try
-import java.math.BigDecimal
 
 /**
   * @author Philipp
   */
-object BuiltinFunctions extends FunctionProvider {
+class BuiltinFunctions(valueMapper: ValueMapper) extends FunctionProvider {
 
-  def getFunctions(name: String): List[ValFunction] =
+  override def getFunctions(name: String): List[ValFunction] =
     functions.getOrElse(name, List.empty)
+
+  override def functionNames: Iterable[String] = functions.keys
 
   val functions: Map[String, List[ValFunction]] =
     conversionFunctions ++
@@ -114,21 +117,25 @@ object BuiltinFunctions extends FunctionProvider {
   private def parseDate(d: String): Val = {
     if (isValidDate(d)) {
       Try(ValDate(d)).getOrElse {
-        logger.warn(s"Failed to parse date from '$d'"); ValNull
+        logger.warn(s"Failed to parse date from '$d'");
+        ValNull
       }
     } else {
-      logger.warn(s"Failed to parse date from '$d'"); ValNull
+      logger.warn(s"Failed to parse date from '$d'");
+      ValNull
     }
   }
 
   private def parseTime(t: String): Val = {
     if (isOffsetTime(t)) {
       Try(ValTime(t)).getOrElse {
-        logger.warn(s"Failed to parse time from '$t'"); ValNull
+        logger.warn(s"Failed to parse time from '$t'");
+        ValNull
       }
     } else {
       Try(ValLocalTime(t)).getOrElse {
-        logger.warn(s"Failed to parse local-time from '$t'"); ValNull
+        logger.warn(s"Failed to parse local-time from '$t'");
+        ValNull
       }
     }
   }
@@ -136,32 +143,39 @@ object BuiltinFunctions extends FunctionProvider {
   private def parseDateTime(dt: String): Val = {
     if (isValidDate(dt)) {
       Try(ValLocalDateTime((dt: Date).atTime(0, 0))).getOrElse {
-        logger.warn(s"Failed to parse date(-time) from '$dt'"); ValNull
+        logger.warn(s"Failed to parse date(-time) from '$dt'");
+        ValNull
       }
     } else if (isOffsetDateTime(dt)) {
       Try(ValDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
+        logger.warn(s"Failed to parse date-time from '$dt'");
+        ValNull
       }
     } else if (isLocalDateTime(dt)) {
       Try(ValLocalDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse local-date-time from '$dt'"); ValNull
+        logger.warn(s"Failed to parse local-date-time from '$dt'");
+        ValNull
       }
     } else {
-      logger.warn(s"Failed to parse date-time from '$dt'"); ValNull
+      logger.warn(s"Failed to parse date-time from '$dt'");
+      ValNull
     }
   }
 
   private def parseDuration(d: String): Val = {
     if (isYearMonthDuration(d)) {
       Try(ValYearMonthDuration((d: YearMonthDuration).normalized)).getOrElse {
-        logger.warn(s"Failed to parse year-month-duration from '$d'"); ValNull
+        logger.warn(s"Failed to parse year-month-duration from '$d'");
+        ValNull
       }
     } else if (isDayTimeDuration(d)) {
       Try(ValDayTimeDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse day-time-duration from '$d'"); ValNull
+        logger.warn(s"Failed to parse day-time-duration from '$d'");
+        ValNull
       }
     } else {
-      logger.warn(s"Failed to parse duration from '$d'"); ValNull
+      logger.warn(s"Failed to parse duration from '$d'");
+      ValNull
     }
   }
 
@@ -1064,26 +1078,32 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("context"),
       _ match {
-        case List(ValContext(c: DefaultContext)) =>
-          ValList(c.variables.map {
-            case (key, value) =>
-              ValContext(
-                DefaultContext(variables =
-                  Map("key" -> ValString(key), "value" -> c.variable(key))))
-          }.toList)
+        case List(ValContext(c: Context)) =>
+          ValList(
+            c.variableProvider.getVariables.map {
+              case (key, value) =>
+                ValContext(
+                  Context.StaticContext(
+                    Map("key" -> ValString(key),
+                        "value" -> valueMapper.toVal(value))))
+            }.toList
+          )
         case e => error(e)
       }
     )
 
   def getValueFunction =
-    ValFunction(List("context", "key"), _ match {
-      case List(ValContext(c), ValString(key)) =>
-        c.variable(key) match {
-          case ValError(_) => ValNull
-          case v           => v
-        }
-      case e => error(e)
-    })
+    ValFunction(
+      List("context", "key"),
+      _ match {
+        case List(ValContext(c), ValString(key)) =>
+          c.variableProvider
+            .getVariable(key)
+            .flatMap(valueMapper.toVal(_).toOption)
+            .getOrElse(ValNull)
+        case e => error(e)
+      }
+    )
 
   private def withListOfNumbers(list: List[Val],
                                 f: List[Number] => Val): Val = {
