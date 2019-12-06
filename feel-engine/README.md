@@ -49,7 +49,7 @@ Or using Java:
     public static void main(String[] args) {
 
         final FeelEngine engine = new FeelEngine.Builder()
-            .valueMapper(new JavaValueMapper())
+            .valueMapper(SpiServiceLoader.loadValueMapper())
             .functionProvider(SpiServiceLoader.loadFunctionProvider())
             .build();
 

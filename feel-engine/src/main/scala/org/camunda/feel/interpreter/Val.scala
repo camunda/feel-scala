@@ -88,7 +88,7 @@ case class ValError(error: String) extends Val
 case object ValNull extends Val
 
 case class ValFunction(params: List[String],
-                       invoke: List[Val] => Val,
+                       invoke: List[Val] => Any,
                        hasVarArgs: Boolean = false)
     extends Val {
 

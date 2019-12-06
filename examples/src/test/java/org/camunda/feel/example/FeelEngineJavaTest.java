@@ -14,7 +14,7 @@ public class FeelEngineJavaTest {
 
         final FeelEngine engine =
                 new FeelEngine.Builder()
-                        .valueMapper(new JavaValueMapper())
+                        .valueMapper(SpiServiceLoader.loadValueMapper())
                         .functionProvider(SpiServiceLoader.loadFunctionProvider())
                         .build();
 

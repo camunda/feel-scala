@@ -14,18 +14,17 @@ It is desined as a community extension for Camunda BPM to replace the built-in F
 
 The FEEL engine can be used/integrated in different ways 
 
-* [standalone or as script engine](https://github.com/camunda/feel-scala/tree/master/feel-engine#how-to-use-it)
-* [integrated into the Camunda DMN engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-factory#how-to-use-it) via feel engine factory SPI
-* [integrated into the Camunda BPM engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-plugin#how-to-use-it) as process engine plugin 
+* [standalone or as script engine](https://github.com/camunda/feel-scala/tree/master/feel-engine#usage)
+* [integrated into the Camunda DMN engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-factory#usage) via feel engine factory SPI
+* [integrated into the Camunda BPM engine](https://github.com/camunda/feel-scala/tree/master/feel-engine-plugin#usage) as process engine plugin 
+
+Available integrations:
+
+* [Camunda Spin JSON/XML](https://github.com/camunda/feel-scala/tree/master/feel-camunda-spin#usage) 
 
 ## Usage
 
  See the [documentation](https://camunda.github.io/feel-scala/).
-
-## Status
-
-* feature complete :balloon:
-* [actively maintained](https://github.com/camunda/feel-scala/graphs/contributors): bug fixing, small improvements, support latestest DMN version
 
 ## Contribution
 

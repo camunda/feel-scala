@@ -30,6 +30,7 @@
     <modules>
       <module>feel-engine</module>
       <module>feel-engine-factory</module>
+      <module>feel-camunda-spin</module>
       <module>feel-engine-plugin</module>
       <module>examples</module>
     </modules>

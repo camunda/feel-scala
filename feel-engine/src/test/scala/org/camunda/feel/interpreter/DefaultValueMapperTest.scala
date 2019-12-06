@@ -11,7 +11,8 @@ import java.time._
   */
 class DefaultValueMapperTest extends FlatSpec with Matchers {
 
-  implicit val valueMapper: ValueMapper = DefaultValueMapper.instance
+  implicit val valueMapper: ValueMapper =
+    ValueMapper.CompositeValueMapper(List(DefaultValueMapper.instance))
 
   "The DefaultValueMapper" should "convert from String" in {
 

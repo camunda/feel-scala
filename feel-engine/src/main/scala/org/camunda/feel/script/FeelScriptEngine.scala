@@ -68,7 +68,7 @@ trait FeelScriptEngine
 
   private def handleEvaluationResult(result: EvalExpressionResult): Object =
     result match {
-      case Right(value) => value.asInstanceOf[AnyRef]
+      case Right(value)  => value.asInstanceOf[AnyRef]
       case Left(failure) => throw new ScriptException(failure.message)
     }
 

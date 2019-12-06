@@ -1,9 +1,8 @@
 package org.camunda.feel.spi
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import org.camunda.feel._
 import org.camunda.feel.interpreter._
+import org.scalatest.{FlatSpec, Matchers}
 
 class CustomValueMapperTest extends FlatSpec with Matchers {
 
@@ -18,8 +17,11 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
   case class Language(val id: String) extends Enumerated
 
   object Language extends Enum {
+
     object DE extends Language("DE")
+
     object EN extends Language("EN")
+
     def items = Seq(DE, EN)
   }
 
@@ -46,19 +48,36 @@ class CustomValueMapperTest extends FlatSpec with Matchers {
 
   class MyCustomValueMapper extends CustomValueMapper {
 
-    override def toVal(x: Any): Val = {
+    override def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = {
       x match {
-        case e: Enumerated => ValString(e.id)
+        case e: Enumerated => Some(ValString(e.id))
+
         case e: Enum =>
-          ValContext(
-            Context.StaticContext(e.items.map((e) => (e.id -> toVal(e))).toMap))
-        case d: DomainObject => ValContext(new MyCustomContext(d))
-        case _               => super.toVal(x)
+          Some(
+            ValContext(
+              Context.StaticContext(
+                e.items.map(e => e.id -> innerValueMapper(e)).toMap)
+            )
+          )
+
+        case d: DomainObject =>
+          Some(
+            ValContext(new MyCustomContext(d))
+          )
+
+        case _ => None
       }
     }
+
+    override def unpackVal(value: Val,
+                           innerValueMapper: Val => Any): Option[Any] =
+      None
   }
 
-  val valueMapper: ValueMapper = new MyCustomValueMapper
+  val valueMapper: ValueMapper =
+    ValueMapper.CompositeValueMapper(
+      List(DefaultValueMapper.instance, new MyCustomValueMapper))
+
   val engine = new FeelEngine(valueMapper = valueMapper)
 
   "A CustomValueMapper" should "convert from String" in {

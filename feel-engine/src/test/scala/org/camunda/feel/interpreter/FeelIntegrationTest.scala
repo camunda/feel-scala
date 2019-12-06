@@ -48,10 +48,9 @@ trait FeelIntegrationTest {
   }
 
   val rootContext: EvalContext = EvalContext.wrap(
-    Context.StaticContext(
-      variables = Map.empty,
-      functions = new BuiltinFunctions(DefaultValueMapper.instance).functions))(
-    DefaultValueMapper.instance)
+    Context.StaticContext(variables = Map.empty,
+                          functions = BuiltinFunctions.functions))(
+    ValueMapper.defaultValueMapper)
 
   def date(date: String): Date = date
 
