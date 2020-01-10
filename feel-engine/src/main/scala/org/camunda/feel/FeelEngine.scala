@@ -3,12 +3,13 @@ package org.camunda.feel
 import org.camunda.feel.FeelEngine.{
   EvalExpressionResult,
   EvalUnaryTestsResult,
-  Failure,
-  UnaryTests
+  Failure
 }
+import org.camunda.feel.interpreter.ValueMapper.CompositeValueMapper
 import org.camunda.feel.interpreter.{DefaultValueMapper, FeelInterpreter, _}
 import org.camunda.feel.parser.FeelParser._
 import org.camunda.feel.parser.{Exp, FeelParser}
+import org.camunda.feel.spi.CustomValueMapper
 
 import scala.collection.JavaConverters._
 
@@ -20,17 +21,25 @@ object FeelEngine {
   def defaultFunctionProvider: FunctionProvider =
     FunctionProvider.EmptyFunctionProvider
 
-  def defaultValueMapper: ValueMapper = DefaultValueMapper.instance
+  def defaultValueMapper: ValueMapper = ValueMapper.defaultValueMapper
 
   case class Failure(message: String)
 
   class Builder {
 
     private var functionProvider_ : FunctionProvider = defaultFunctionProvider
+
     private var valueMapper_ : ValueMapper = defaultValueMapper
+    private var customValueMappers_ : List[CustomValueMapper] = List.empty
 
     def functionProvider(functionProvider: FunctionProvider): Builder = {
       functionProvider_ = functionProvider
+      this
+    }
+
+    def customValueMapper(customValueMapper: CustomValueMapper): Builder = {
+      customValueMappers_ = customValueMapper :: customValueMappers_
+      valueMapper_ = CompositeValueMapper(customValueMappers_)
       this
     }
 
@@ -39,9 +48,10 @@ object FeelEngine {
       this
     }
 
-    def build: FeelEngine =
-      new FeelEngine(functionProvider = functionProvider_,
-                     valueMapper = valueMapper_)
+    def build: FeelEngine = new FeelEngine(
+      functionProvider = functionProvider_,
+      valueMapper = valueMapper_
+    )
 
   }
 
@@ -52,9 +62,6 @@ object FeelEngine {
 
 }
 
-/**
-  * @author Philipp Ossler
-  */
 class FeelEngine(val functionProvider: FunctionProvider =
                    FeelEngine.defaultFunctionProvider,
                  val valueMapper: ValueMapper = FeelEngine.defaultValueMapper) {
@@ -68,7 +75,7 @@ class FeelEngine(val functionProvider: FunctionProvider =
     valueMapper = valueMapper,
     variableProvider = VariableProvider.EmptyVariableProvider,
     functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(new BuiltinFunctions(valueMapper), functionProvider))
+      List(BuiltinFunctions, functionProvider))
   )
 
   def evalExpression(

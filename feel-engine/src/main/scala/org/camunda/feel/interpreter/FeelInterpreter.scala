@@ -724,7 +724,8 @@ class FeelInterpreter {
       }
     }
 
-    function.invoke(paramList)
+    val result = function.invoke(paramList)
+    context.valueMapper.toVal(result)
   }
 
   private def findFunction(ctx: EvalContext,
@@ -965,8 +966,7 @@ class FeelInterpreter {
 
       val method = clazz.getDeclaredMethod(methodName, argTypes: _*)
 
-      val argValues = paramValues map valueMapper.unpackVal
-      val argJavaObjects = argValues zip argTypes map {
+      val argJavaObjects = paramValues zip argTypes map {
         case (obj, clazz) => JavaClassMapper.asJavaObject(obj, clazz)
       }
 

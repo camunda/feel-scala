@@ -41,7 +41,7 @@ class SpecExampleTest extends FlatSpec with Matchers with DmnEvaluationTest {
 
     val result = evaluateDecision(DMN_FILE, "yearly_income", context)
 
-    result.getSingleEntry.asInstanceOf[BigDecimal] should be(120000)
+    result.getSingleEntry.asInstanceOf[Long] should be(120000)
   }
 
   it should "have a valid marital status" in {
@@ -55,14 +55,14 @@ class SpecExampleTest extends FlatSpec with Matchers with DmnEvaluationTest {
 
     val result = evaluateDecision(DMN_FILE, "total_expenses", context)
 
-    result.getSingleEntry.asInstanceOf[BigDecimal] should be(5500)
+    result.getSingleEntry.asInstanceOf[Long] should be(5500)
   }
 
   "The credit history" should "have a total weight of 150" in {
 
     val result = evaluateDecision(DMN_FILE, "sum_credit", context)
 
-    result.getSingleEntry.asInstanceOf[BigDecimal] should be(150)
+    result.getSingleEntry.asInstanceOf[Long] should be(150)
   }
 
   it should "contains no bankruptcy" in {

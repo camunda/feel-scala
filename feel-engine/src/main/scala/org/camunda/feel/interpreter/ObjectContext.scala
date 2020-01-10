@@ -5,7 +5,7 @@ package org.camunda.feel.interpreter
   *
   * @param obj the JVM object to be wrapped
   */
-case class ObjectContext(obj: Any, valueMapper: ValueMapper) extends Context {
+case class ObjectContext(obj: Any) extends Context {
 
   override val variableProvider = new VariableProvider {
     override def getVariable(name: String): Option[Any] = {
@@ -37,12 +37,11 @@ case class ObjectContext(obj: Any, valueMapper: ValueMapper) extends Context {
             params,
             params => {
 
-              val paramValues = params map valueMapper.unpackVal
-              val paramJavaObjects = paramValues zip method.getParameterTypes map {
+              val paramJavaObjects = params zip method.getParameterTypes map {
                 case (obj, clazz) => JavaClassMapper.asJavaObject(obj, clazz)
               }
               val result = method.invoke(obj, paramJavaObjects: _*)
-              valueMapper.toVal(result)
+              result
             }
           )
         })

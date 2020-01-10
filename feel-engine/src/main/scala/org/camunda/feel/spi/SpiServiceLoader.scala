@@ -2,28 +2,18 @@ package org.camunda.feel.spi
 
 import java.util.ServiceLoader
 
-import org.camunda.feel.interpreter.{
-  DefaultValueMapper,
-  FunctionProvider,
-  ValueMapper
-}
-import org.camunda.feel.logger
+import org.camunda.feel.FeelEngine
+import org.camunda.feel.interpreter.{FunctionProvider, ValueMapper}
 
-import scala.reflect.{ClassTag, classTag}
 import scala.collection.JavaConverters._
+import scala.reflect.{ClassTag, classTag}
 
 object SpiServiceLoader {
 
-  def loadValueMapper: ValueMapper =
-    loadServiceProvider[CustomValueMapper]() match {
-      case Nil      => DefaultValueMapper.instance
-      case l :: Nil => l
-      case ls =>
-        logger.warn(
-          "Found more than one custom value mapper: {}. Use the first one.",
-          ls)
-        ls.head
-    }
+  def loadValueMapper: ValueMapper = {
+    val customValueMappers = loadServiceProvider[CustomValueMapper]()
+    ValueMapper.CompositeValueMapper(customValueMappers)
+  }
 
   def loadFunctionProvider: FunctionProvider =
     loadServiceProvider[CustomFunctionProvider]() match {

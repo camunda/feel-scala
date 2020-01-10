@@ -4,77 +4,95 @@ import java.time._
 
 import org.camunda.feel._
 import org.camunda.feel.datatype.ZonedTime
+import org.camunda.feel.spi.CustomValueMapper
 
 import scala.collection.JavaConverters._
 import scala.math.BigDecimal
 
-class DefaultValueMapper extends ValueMapper {
+class DefaultValueMapper extends CustomValueMapper {
 
-  def toVal(x: Any): Val = x match {
+  def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
 
-    case x: Val => x
-    case null   => ValNull
+    case x: Val => Some(x)
+    case null   => Some(ValNull)
 
     // scala types
-    case x: Int                                 => ValNumber(x)
-    case x: Long                                => ValNumber(x)
-    case x: Float if (x.isNaN || x.isInfinity)  => ValNull
-    case x: Float                               => ValNumber(x)
-    case x: Double if (x.isNaN || x.isInfinity) => ValNull
-    case x: Double                              => ValNumber(x)
-    case x: BigDecimal                          => ValNumber(x)
-    case x: BigInt                              => ValNumber(BigDecimal(x))
-    case x: Boolean                             => ValBoolean(x)
-    case x: String                              => ValString(x)
-    case x: Date                                => ValDate(x)
-    case x: LocalTime                           => ValLocalTime(x)
-    case x: Time                                => ValTime(x)
-    case x: LocalDateTime                       => ValLocalDateTime(x)
-    case x: DateTime                            => ValDateTime(x)
-    case x: YearMonthDuration                   => ValYearMonthDuration(x)
-    case x: DayTimeDuration                     => ValDayTimeDuration(x)
-    case x: List[_]                             => ValList(x map toVal)
-    case x: Map[_, _] => {
-      val (functions, variables) = x
-        .map { case (key, value) => key.toString -> toVal(value) }
-        .partition { case (key, value) => value.isInstanceOf[ValFunction] }
-
-      ValContext(
-        Context.StaticContext(
-          variables = variables,
-          functions = functions.map {
-            case (key, f) => key -> List(f.asInstanceOf[ValFunction])
+    case x: Int                                 => Some(ValNumber(x))
+    case x: Long                                => Some(ValNumber(x))
+    case x: Float if (x.isNaN || x.isInfinity)  => Some(ValNull)
+    case x: Float                               => Some(ValNumber(x))
+    case x: Double if (x.isNaN || x.isInfinity) => Some(ValNull)
+    case x: Double                              => Some(ValNumber(x))
+    case x: BigDecimal                          => Some(ValNumber(x))
+    case x: BigInt                              => Some(ValNumber(BigDecimal(x)))
+    case x: Boolean                             => Some(ValBoolean(x))
+    case x: String                              => Some(ValString(x))
+    case x: Date                                => Some(ValDate(x))
+    case x: LocalTime                           => Some(ValLocalTime(x))
+    case x: Time                                => Some(ValTime(x))
+    case x: LocalDateTime                       => Some(ValLocalDateTime(x))
+    case x: DateTime                            => Some(ValDateTime(x))
+    case x: YearMonthDuration                   => Some(ValYearMonthDuration(x))
+    case x: DayTimeDuration                     => Some(ValDayTimeDuration(x))
+    case x: List[_]                             => Some(ValList(x map innerValueMapper))
+    case x: Map[_, _] =>
+      Some {
+        val (functions, variables) = x
+          .map {
+            case (key, value) => key.toString -> innerValueMapper(value)
           }
-        ))
-    }
-    case Some(x) => toVal(x)
-    case None    => ValNull
-    case x if (isEnumeration(x)) =>
-      ValString(x.toString)
+          .partition { case (key, value) => value.isInstanceOf[ValFunction] }
+
+        ValContext(
+          Context.StaticContext(
+            variables = variables,
+            functions = functions.map {
+              case (key, f) => key -> List(f.asInstanceOf[ValFunction])
+            }
+          ))
+      }
+    case Some(x)                 => Some(innerValueMapper(x))
+    case None                    => Some(ValNull)
+    case x if (isEnumeration(x)) => Some(ValString(x.toString))
 
     // extended java types
-    case x: java.math.BigDecimal => ValNumber(x)
-    case x: java.math.BigInteger => ValNumber(BigDecimal(x))
+    case x: java.math.BigDecimal => Some(ValNumber(x))
+    case x: java.math.BigInteger => Some(ValNumber(BigDecimal(x)))
     case x: java.util.Date =>
-      ValLocalDateTime(
-        LocalDateTime.ofInstant(x.toInstant, ZoneId.systemDefault()))
-    case x: java.time.OffsetDateTime => ValDateTime(x.toZonedDateTime())
-    case x: java.time.OffsetTime     => ValTime(ZonedTime.of(x))
-    case x: java.util.List[_]        => ValList(x.asScala.toList map toVal)
+      Some(
+        ValLocalDateTime(
+          LocalDateTime.ofInstant(x.toInstant, ZoneId.systemDefault())
+        )
+      )
+    case x: java.time.OffsetDateTime =>
+      Some(
+        ValDateTime(x.toZonedDateTime())
+      )
+    case x: java.time.OffsetTime =>
+      Some(
+        ValTime(ZonedTime.of(x))
+      )
+    case x: java.util.List[_] =>
+      Some(
+        ValList(x.asScala.toList map innerValueMapper)
+      )
     case x: java.util.Map[_, _] =>
-      ValContext(Context.StaticContext(x.asScala.map {
-        case (key, value) => key.toString -> toVal(value)
-      }.toMap))
-    case x: java.lang.Enum[_] => ValString(x.name)
+      Some(
+        ValContext(Context.StaticContext(x.asScala.map {
+          case (key, value) => key.toString -> innerValueMapper(value)
+        }.toMap))
+      )
+    case x: java.lang.Enum[_] => Some(ValString(x.name))
 
     // other objects
-    case x: Throwable => ValError(x.getMessage)
+    case x: Throwable => Some(ValError(x.getMessage))
     case x =>
       try {
-        ValContext(Context.CacheContext(ObjectContext(x, this)))
+        Some(
+          ValContext(Context.CacheContext(ObjectContext(x)))
+        )
       } catch {
-        case _: Throwable =>
-          ValError(s"unsupported object '$x' of class '${x.getClass}'")
+        case _: Throwable => None
       }
 
   }
@@ -83,28 +101,39 @@ class DefaultValueMapper extends ValueMapper {
   private def isEnumeration(x: Any) =
     "scala.Enumeration$Val" == x.getClass.getName
 
-  def unpackVal(value: Val): Any = value match {
-    case ValNull                        => null
-    case ValBoolean(boolean)            => boolean
-    case ValNumber(number)              => number
-    case ValString(string)              => string
-    case ValDate(date)                  => date
-    case ValLocalTime(time)             => time
-    case ValTime(time)                  => time
-    case ValLocalDateTime(dateTime)     => dateTime
-    case ValDateTime(dateTime)          => dateTime
-    case ValYearMonthDuration(duration) => duration
-    case ValDayTimeDuration(duration)   => duration
-    case ValList(list)                  => list map unpackVal
-    case ValContext(c: Context) =>
-      c.variableProvider.getVariables.map {
-        case (key, value) => key -> unpackVal(toVal(value))
-      }.toMap
-    case ValError(error) => new Exception(error)
-    case f: ValFunction  => f
-    case _               => throw new IllegalArgumentException(s"unexpected val '$value'")
-  }
+  def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] =
+    value match {
+      case ValNull                        => Some(null)
+      case ValBoolean(boolean)            => Some(boolean)
+      case ValNumber(number)              => Some(number)
+      case ValString(string)              => Some(string)
+      case ValDate(date)                  => Some(date)
+      case ValLocalTime(time)             => Some(time)
+      case ValTime(time)                  => Some(time)
+      case ValLocalDateTime(dateTime)     => Some(dateTime)
+      case ValDateTime(dateTime)          => Some(dateTime)
+      case ValYearMonthDuration(duration) => Some(duration)
+      case ValDayTimeDuration(duration)   => Some(duration)
+      case ValList(list)                  => Some(list map innerValueMapper)
+      case ValContext(c: Context) =>
+        Some(
+          c.variableProvider.getVariables.map {
+            case (key, value) =>
+              value match {
+                case packed: Val => key -> innerValueMapper(packed)
+                case unpacked    => key -> unpacked
+              }
+          }.toMap
+        )
 
+      case f: ValFunction => Some(f)
+      case e: ValError    => Some(e)
+
+      case _ => None
+    }
+
+  // default value mapper should have the lowest priority
+  override val priority: Int = 0
 }
 
 object DefaultValueMapper {

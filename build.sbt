@@ -21,7 +21,7 @@ val camundaVersion = "7.11.0"
 
 lazy val root = (project in file("."))
   .settings(shared)
-  .aggregate(engine, factory, plugin, examples)
+  .aggregate(engine, factory, plugin, camundaSpin, examples)
 
 lazy val engine = (project in file("feel-engine"))
   .enablePlugins(AssemblyPlugin)
@@ -46,9 +46,7 @@ lazy val factory = (project in file("feel-engine-factory"))
     libraryDependencies ++= Seq(
       "org.camunda.bpm.dmn" % "camunda-engine-feel-api" % camundaVersion % "provided",
       "org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % "provided",
-      "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",
-      "joda-time" % "joda-time" % "2.1",
-      "org.camunda.spin" % "camunda-spin-dataformat-all" % "1.5.0" % "test"
+      "joda-time" % "joda-time" % "2.1"
     ),
     assemblyJarName in assembly := s"${name.value}-${version.value}-complete.jar"
   )
@@ -71,6 +69,19 @@ lazy val plugin = (project in file("feel-engine-plugin"))
     factory % "test->test;compile->compile",
     engine % "test->test;compile->compile"
   )
+
+lazy val camundaSpin = (project in file("feel-camunda-spin"))  .enablePlugins(AssemblyPlugin)
+  .settings(
+    shared,
+    name := "feel-camunda-spin",
+    description := "FEEL engine - Camunda Spin Integration",
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies ++= Seq(
+      "org.camunda.spin" % "camunda-spin-core" % "1.5.0" % "provided",
+      "org.camunda.spin" % "camunda-spin-dataformat-all" % "1.5.0" % "test"
+    )
+  )
+  .dependsOn(engine % "test->test;compile->compile")
 
 lazy val examples = (project in file("examples"))
   .settings(

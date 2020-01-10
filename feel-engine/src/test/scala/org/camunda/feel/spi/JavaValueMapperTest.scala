@@ -5,7 +5,9 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class JavaValueMapperTest extends FlatSpec with Matchers {
 
-  val valueMapper = new JavaValueMapper()
+  val valueMapper =
+    ValueMapper.CompositeValueMapper(
+      List(DefaultValueMapper.instance, new JavaValueMapper()))
 
   "The JavaValueMapper" should "return number as Java Double" in {
 

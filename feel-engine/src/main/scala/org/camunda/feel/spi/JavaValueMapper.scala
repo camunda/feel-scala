@@ -9,26 +9,42 @@ import scala.collection.JavaConverters._
   */
 class JavaValueMapper extends CustomValueMapper {
 
-  override def unpackVal(value: Val): Any = value match {
+  override def unpackVal(value: Val,
+                         innerValueMapper: Val => Any): Option[Any] =
+    value match {
 
-    case ValNumber(number) => {
-      if (number.isWhole) {
-        number.longValue: java.lang.Long
-      } else {
-        number.doubleValue: java.lang.Double
-      }
+      case ValNumber(number) =>
+        Some(
+          if (number.isWhole) {
+            number.longValue: java.lang.Long
+          } else {
+            number.doubleValue: java.lang.Double
+          }
+        )
+
+      case ValList(list) =>
+        Some(
+          (list map innerValueMapper).asJava: java.util.List[Any]
+        )
+
+      case ValContext(context: Context) =>
+        Some(
+          context.variableProvider.getVariables
+            .map {
+              case (key, value) =>
+                value match {
+                  case packed: Val => key -> innerValueMapper(packed)
+                  case unpacked    => key -> unpacked
+                }
+            }
+            .toMap
+            .asJava: java.util.Map[String, Any]
+        )
+
+      case _ => None
     }
 
-    case ValList(list) => (list map unpackVal).asJava: java.util.List[Any]
+  override def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = None
 
-    case ValContext(context: Context) =>
-      context.variableProvider.getVariables
-        .map { case (key, value) => key -> unpackVal(toVal(value)) }
-        .toMap
-        .asJava: java.util.Map[String, Any]
-
-    // else
-    case _ => super.unpackVal(value)
-  }
-
+  override val priority: Int = 10
 }

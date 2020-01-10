@@ -12,54 +12,59 @@ Using the SPI, the transformation can be customized to support more/custom data 
 
 ### Implement a Value Mapper using Scala
 
-Create a sub-class of `org.camunda.feel.spi.CustomValueMapper`. Override the method `toVal()` and/or `unpackVal()` to customize the default behavior.
+Create a sub-class of `org.camunda.feel.spi.CustomValueMapper`. Implement the method `toVal()` and `unpackVal()` to transform the object. Set the `priority` of the value mapper to define the precedence compared to the other mappers. 
 
 ```scala
 class MyValueMapper extends CustomValueMapper {
 
-  override def toVal(x: Any): Val = x match {
-    case c: Custom => ValString(c.getName)
-    case _ => super.toVal(x)
+  override def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
+    case c: Custom => Some(ValString(c.getName))
+    case _ => None
   }
 
-  override def unpackVal(value: Val): Any = value match {
-    case ValNumber(number) => number.doubleValue // map BigDecimal to Double
-    case _ => super.unpackVal(value)
+  override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] = value match {
+    case ValNumber(number) => Some(number.doubleValue) // map BigDecimal to Double
+    case _ => None
   }
 	
+  override val priority: Int = 1
+
 }
 ```
 
 ### Implement a Value Mapper using Java
 
-Using Java, create a sub-class of `org.camunda.feel.interpreter.DefaultValueMapper` which implements `org.camunda.feel.spi.CustomValueMapper`. It is equal to the Scala one but need to extend the default implementation explicitly.
+Using Java, create a sub-class of `org.camunda.feel.spi.JavaCustomValueMapper`. It is basically equal to the Scala one but with Java instead of Scala types.
 
 ```java
-public class MyValueMapper extends DefaultValueMapper implements CustomValueMapper  {
+public class CustomJavaValueMapper extends JavaCustomValueMapper {
 
-    @Override
-    public Val toVal(Object x) {
+  @Override
+  public Optional<Val> toValue(Object x, Function<Object, Val> innerValueMapper) {
+    if (x instanceof Custom) {
+      final Custom c = (Custom) x;
+      return Optional.of(new ValString(c.getName()));
 
-        if (x instanceof Custom) {
-            final Custom c = (Custom) x;
-            return new ValString(c.getName());
-
-        } else {
-            return super.toVal(x);
-        }
+    } else {
+      return Optional.empty();
     }
+  }
 
-    @Override
-    public Object unpackVal(Val value) {
+  @Override
+  public Optional<Object> unpackValue(Val value, Function<Val, Object> innerValueMapper) {
+    if (value instanceof ValNumber) {
+      final ValNumber number = (ValNumber) value;
+      return Optional.of(number.value().doubleValue()); // map BigDecimal to Double
 
-        if (value instanceof ValNumber) {
-            final ValNumber number = (ValNumber) value;
-            return number.value().doubleValue(); // map BigDecimal to Double
-
-        } else {
-            return super.unpackVal(value);
-        }
+    } else {
+      return Optional.empty();
     }
+  }
+
+  @Override
+  public int priority() {
+    return 1;
+  }
 }
 ```
 

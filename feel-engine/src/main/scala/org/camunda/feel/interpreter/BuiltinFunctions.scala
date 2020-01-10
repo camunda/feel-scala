@@ -14,7 +14,7 @@ import scala.util.Try
 /**
   * @author Philipp
   */
-class BuiltinFunctions(valueMapper: ValueMapper) extends FunctionProvider {
+object BuiltinFunctions extends FunctionProvider {
 
   override def getFunctions(name: String): List[ValFunction] =
     functions.getOrElse(name, List.empty)
@@ -1079,15 +1079,10 @@ class BuiltinFunctions(valueMapper: ValueMapper) extends FunctionProvider {
       List("context"),
       _ match {
         case List(ValContext(c: Context)) =>
-          ValList(
-            c.variableProvider.getVariables.map {
-              case (key, value) =>
-                ValContext(
-                  Context.StaticContext(
-                    Map("key" -> ValString(key),
-                        "value" -> valueMapper.toVal(value))))
-            }.toList
-          )
+          c.variableProvider.getVariables.map {
+            case (key, value) =>
+              Map("key" -> ValString(key), "value" -> value)
+          }.toList
         case e => error(e)
       }
     )
@@ -1099,7 +1094,6 @@ class BuiltinFunctions(valueMapper: ValueMapper) extends FunctionProvider {
         case List(ValContext(c), ValString(key)) =>
           c.variableProvider
             .getVariable(key)
-            .flatMap(valueMapper.toVal(_).toOption)
             .getOrElse(ValNull)
         case e => error(e)
       }

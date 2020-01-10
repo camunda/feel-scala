@@ -19,18 +19,19 @@ object JavaClassMapper {
     case _         => classLoader.loadClass(className)
   }
 
-  def asJavaObject(value: Any, clazz: Class[_]): java.lang.Object =
+  def asJavaObject(value: Val, clazz: Class[_]): java.lang.Object =
     (value, clazz) match {
-      case (null, _)                            => null
-      case (b: Boolean, java.lang.Boolean.TYPE) => java.lang.Boolean.valueOf(b)
-      case (s: String, stringClass)             => java.lang.String.valueOf(s)
-      case (n: Number, java.lang.Integer.TYPE) =>
+      case (ValNull, _) => null
+      case (ValBoolean(b), java.lang.Boolean.TYPE) =>
+        java.lang.Boolean.valueOf(b)
+      case (ValString(s), stringClass) => java.lang.String.valueOf(s)
+      case (ValNumber(n), java.lang.Integer.TYPE) =>
         java.lang.Integer.valueOf(n.intValue)
-      case (n: Number, java.lang.Long.TYPE) =>
+      case (ValNumber(n), java.lang.Long.TYPE) =>
         java.lang.Long.valueOf(n.longValue)
-      case (n: Number, java.lang.Float.TYPE) =>
+      case (ValNumber(n), java.lang.Float.TYPE) =>
         java.lang.Float.valueOf(n.floatValue)
-      case (n: Number, java.lang.Double.TYPE) =>
+      case (ValNumber(n), java.lang.Double.TYPE) =>
         java.lang.Double.valueOf(n.doubleValue)
       case _ =>
         throw new IllegalArgumentException(
