@@ -17,11 +17,10 @@
     <name>FEEL Scala Root</name>
 
     <properties>
-        <camunda.version>7.11.0</camunda.version>
-        <spin.version>1.5.0</spin.version>
         <version.java>1.8</version.java>
         <scala.version>2.13.0</scala.version>
         <scala.binary.version>2.13.0</scala.binary.version>
+        <version.log4j>2.9.0</version.log4j>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
@@ -29,39 +28,14 @@
 
     <modules>
       <module>feel-engine</module>
-      <module>feel-engine-factory</module>
-      <module>feel-camunda-spin</module>
-      <module>feel-engine-plugin</module>
-      <module>examples</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.camunda.bpm</groupId>
-                <artifactId>camunda-bom</artifactId>
-                <version>${camunda.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-		      <groupId>org.camunda.spin</groupId>
-		      <artifactId>camunda-spin-bom</artifactId>
-		      <scope>import</scope>
-		      <type>pom</type>
-		      <version>${spin.version}</version>
-		    </dependency>
 
             <dependency>
               <groupId>org.camunda.bpm.extension.feel.scala</groupId>
               <artifactId>feel-engine</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-              <groupId>org.camunda.bpm.extension.feel.scala</groupId>
-              <artifactId>feel-engine-factory</artifactId>
               <version>${project.version}</version>
             </dependency>
 
@@ -86,25 +60,25 @@
             <dependency>
               <groupId>org.apache.logging.log4j</groupId>
               <artifactId>log4j-api</artifactId>
-              <version>2.9.0</version>
+              <version>${version.log4j}</version>
             </dependency>
 
             <dependency>
               <groupId>org.apache.logging.log4j</groupId>
               <artifactId>log4j-core</artifactId>
-              <version>2.9.0</version>
+              <version>${version.log4j}</version>
             </dependency>
 
             <dependency>
               <groupId>org.apache.logging.log4j</groupId>
               <artifactId>log4j-slf4j-impl</artifactId>
-              <version>2.9.0</version>
+              <version>${version.log4j}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>1.4.193</version>
+              <groupId>com.h2database</groupId>
+              <artifactId>h2</artifactId>
+              <version>1.4.193</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -123,29 +97,29 @@
               <scalaVersion>${scala.version}</scalaVersion>
             </configuration>
             <executions>
-		          <execution>
-			          <id>scala-compile-first</id>
-			          <phase>process-resources</phase>
-			          <goals>
-			            <goal>add-source</goal>
-			            <goal>compile</goal>
-		            </goals>
-			        </execution>
-			        <execution>
-			          <id>scala-test-compile</id>
-			          <phase>process-test-resources</phase>
-			          <goals>
-				          <goal>testCompile</goal>
-			          </goals>
-			        </execution>
               <execution>
-			          <id>scala-doc</id>
-			          <phase>package</phase>
-			          <goals>
-				          <goal>doc-jar</goal>
-			          </goals>
-			        </execution>
-		        </executions>
+                <id>scala-compile-first</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>add-source</goal>
+                  <goal>compile</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>scala-test-compile</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>testCompile</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>scala-doc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>doc-jar</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
 
           <plugin>
@@ -169,21 +143,21 @@
           </plugin>
 
           <plugin>
-		<groupId>org.antipathy</groupId>
-		<artifactId>mvn-scalafmt_2.12</artifactId>
-		<version>0.7_1.5.1</version>
-		<configuration>
-		    <parameters>--diff</parameters>
-		  </configuration>
-		<executions>
-			<execution>
-				<phase>validate</phase>
-				<goals>
-					<goal>format</goal>
-				</goals>
-			</execution>
-		</executions>
-	</plugin>
+            <groupId>org.antipathy</groupId>
+            <artifactId>mvn-scalafmt_2.12</artifactId>
+            <version>0.7_1.5.1</version>
+            <configuration>
+              <parameters>--diff</parameters>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>validate</phase>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
 
       </plugins>
 
