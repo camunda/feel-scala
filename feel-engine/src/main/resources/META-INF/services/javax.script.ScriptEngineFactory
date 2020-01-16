@@ -1,2 +1,2 @@
-org.camunda.feel.script.FeelScriptEngineFactory
-org.camunda.feel.script.FeelUnaryTestsScriptEngineFactory
+org.camunda.feel.impl.script.FeelScriptEngineFactory
+org.camunda.feel.impl.script.FeelUnaryTestsScriptEngineFactory
