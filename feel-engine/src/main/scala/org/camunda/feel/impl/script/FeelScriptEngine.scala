@@ -4,7 +4,7 @@ import org.camunda.feel.impl._
 import org.camunda.feel.impl.spi._
 import org.camunda.feel.impl.parser.FeelParser._
 import org.camunda.feel.impl.parser.Exp
-import org.camunda.feel.impl.FeelEngine.EvalExpressionResult
+import org.camunda.feel.FeelEngine.EvalExpressionResult
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -13,7 +13,7 @@ import java.io.IOException
 import java.io.Closeable
 
 import javax.script._
-import org.camunda.feel.impl.FeelEngine
+import org.camunda.feel.FeelEngine
 
 trait FeelScriptEngine
     extends AbstractScriptEngine

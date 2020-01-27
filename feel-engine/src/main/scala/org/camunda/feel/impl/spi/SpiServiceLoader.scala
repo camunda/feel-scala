@@ -2,9 +2,10 @@ package org.camunda.feel.impl.spi
 
 import java.util.ServiceLoader
 
-import org.camunda.feel.impl.FeelEngine
-import org.camunda.feel.impl.interpreter.{FunctionProvider, ValueMapper}
-import org.camunda.feel.impl.interpreter.{FunctionProvider, ValueMapper}
+import org.camunda.feel.FeelEngine
+import org.camunda.feel.interpreter.impl.ValueMapper
+import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.interpreter.impl.ValueMapper
 
 import scala.collection.JavaConverters._
 import scala.reflect.{ClassTag, classTag}

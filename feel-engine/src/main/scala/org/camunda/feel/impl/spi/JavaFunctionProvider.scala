@@ -2,7 +2,8 @@ package org.camunda.feel.impl.spi
 
 import java.util.{Collections, Optional}
 
-import org.camunda.feel.impl.interpreter._
+import org.camunda.feel.interpreter.impl._
+import org.camunda.feel.interpreter.impl.{Val, ValFunction}
 
 import scala.collection.JavaConverters._
 

@@ -1,6 +1,7 @@
 package org.camunda.feel.impl.spi
 
-import org.camunda.feel.impl.interpreter._
+import org.camunda.feel.interpreter.impl._
+import org.camunda.feel.interpreter.impl.{ValFunction, ValNumber}
 
 class AnotherFunctionProvider extends CustomFunctionProvider {
 

@@ -1,10 +1,16 @@
 package org.camunda.feel.impl.spi
 
-import org.camunda.feel.impl.FeelEngine.{Failure, UnaryTests}
+import org.camunda.feel.FeelEngine
+import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
 import org.camunda.feel.impl._
-import org.camunda.feel.impl.FeelEngine.UnaryTests
-import org.camunda.feel.impl.interpreter.FunctionProvider
-import org.camunda.feel.impl.interpreter._
+import org.camunda.feel.FeelEngine.UnaryTests
+import org.camunda.feel.interpreter.impl._
+import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.interpreter.impl.{
+  ValFunction,
+  ValNumber,
+  VariableProvider
+}
 import org.scalatest.{FlatSpec, Matchers}
 
 class CustomContextTest extends FlatSpec with Matchers {

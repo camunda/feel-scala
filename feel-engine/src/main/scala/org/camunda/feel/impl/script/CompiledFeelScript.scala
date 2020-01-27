@@ -4,7 +4,7 @@ import javax.script.CompiledScript
 import javax.script.ScriptContext
 import javax.script.Bindings
 import javax.script.ScriptEngine
-import org.camunda.feel.impl.FeelEngine
+import org.camunda.feel.FeelEngine
 import org.camunda.feel.impl.parser.Exp
 import org.camunda.feel.impl.ParsedExpression
 import org.camunda.feel.impl.ParsedExpression

@@ -1,7 +1,8 @@
 package org.camunda.feel.impl.spi
 
-import org.camunda.feel.impl.interpreter.FunctionProvider
-import org.camunda.feel.impl.interpreter._
+import org.camunda.feel.interpreter.impl._
+import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.interpreter.impl.{Context, VariableProvider}
 
 /**
   * Override this class if you want to implement a custom Context.
