@@ -68,16 +68,16 @@ class InterpreterListExpressionTest
   it should "be filtered via index" in {
 
     eval("[1,2,3,4][1]") should be(ValNumber(1))
-
     eval("[1,2,3,4][2]") should be(ValNumber(2))
 
     eval("[1,2,3,4][-1]") should be(ValNumber(4))
-
     eval("[1,2,3,4][-2]") should be(ValNumber(3))
 
     eval("[1,2,3,4][5]") should be(ValNull)
-
     eval("[1,2,3,4][-5]") should be(ValNull)
+
+    eval("[1,2,3,4][i]", Map("i" -> 2)) should be(ValNumber(2))
+    eval("[1,2,3,4][i]", Map("i" -> -2)) should be(ValNumber(3))
   }
 
   it should "fail if one element fails" in {

@@ -139,8 +139,16 @@ class FeelInterpreter {
               case ConstNumber(index) => filterList(l.items, index)
               case ArithmeticNegation(ConstNumber(index)) =>
                 filterList(l.items, -index)
+              case comparison: Comparison =>
+                filterList(l.items,
+                           item => eval(comparison)(filterContext(item)))
               case _ =>
-                filterList(l.items, item => eval(filter)(filterContext(item)))
+                eval(filter) match {
+                  case ValNumber(index) => filterList(l.items, index)
+                  case _ =>
+                    filterList(l.items,
+                               item => eval(filter)(filterContext(item)))
+                }
           }
         )
       case Range(start, end) =>
