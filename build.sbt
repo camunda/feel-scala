@@ -1,7 +1,7 @@
 val shared = Seq(
   organization := "org.camunda.bpm.extension.feel.scala",
   version := "1.9.0-SNAPSHOT",
-  scalaVersion := "2.13.0",
+  scalaVersion := "2.13.1",
   resolvers += Resolver.mavenLocal,
   resolvers += Classpaths.typesafeReleases,
   resolvers += "camunda-bpm-nexus" at "https://app.camunda.com/nexus/content/groups/public",

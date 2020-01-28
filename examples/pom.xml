@@ -13,8 +13,8 @@
     <version.camunda>7.13.0-SNAPSHOT</version.camunda>
     <version.scalatest>3.0.8</version.scalatest>
     <version.log4j>2.9.0</version.log4j>
-    <scala.version>2.13.0</scala.version>
-    <scala.binary.version>2.13.0</scala.binary.version>
+    <scala.version>2.13.1</scala.version>
+    <scala.binary.version>2.13.1</scala.binary.version>
     <plugin.version.compiler>3.1</plugin.version.compiler>
   </properties>
 
