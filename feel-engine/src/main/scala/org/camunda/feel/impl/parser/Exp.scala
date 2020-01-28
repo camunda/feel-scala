@@ -7,6 +7,11 @@ import org.camunda.feel.impl._
   */
 sealed trait Exp
 
+sealed trait Comparison extends Exp {
+  val x: Exp
+  val y: Exp
+}
+
 case object ConstNull extends Exp
 
 case object ConstInputValue extends Exp
@@ -71,15 +76,15 @@ case class Exponentiation(x: Exp, y: Exp) extends Exp
 
 case class ArithmeticNegation(x: Exp) extends Exp
 
-case class Equal(x: Exp, y: Exp) extends Exp
+case class Equal(x: Exp, y: Exp) extends Comparison
 
-case class LessThan(x: Exp, y: Exp) extends Exp
+case class LessThan(x: Exp, y: Exp) extends Comparison
 
-case class LessOrEqual(x: Exp, y: Exp) extends Exp
+case class LessOrEqual(x: Exp, y: Exp) extends Comparison
 
-case class GreaterThan(x: Exp, y: Exp) extends Exp
+case class GreaterThan(x: Exp, y: Exp) extends Comparison
 
-case class GreaterOrEqual(x: Exp, y: Exp) extends Exp
+case class GreaterOrEqual(x: Exp, y: Exp) extends Comparison
 
 case class FunctionInvocation(function: String, params: FunctionParameters)
     extends Exp
