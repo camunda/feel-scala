@@ -1,6 +1,7 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.syntaxtree
 
-import org.camunda.feel.impl._
+import org.camunda.feel._
+import org.camunda.feel.context.Context
 
 /**
   * FEEL supports the following datatypes:

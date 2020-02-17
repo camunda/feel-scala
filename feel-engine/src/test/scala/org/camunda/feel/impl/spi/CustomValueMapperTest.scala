@@ -1,16 +1,10 @@
 package org.camunda.feel.impl.spi
 
 import org.camunda.feel.FeelEngine
+import org.camunda.feel.context.{Context, CustomContext, VariableProvider}
 import org.camunda.feel.impl._
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.impl.{
-  Val,
-  ValContext,
-  ValNumber,
-  ValString,
-  ValueMapper,
-  VariableProvider
-}
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 import org.scalatest.{FlatSpec, Matchers}
 
 class CustomValueMapperTest extends FlatSpec with Matchers {

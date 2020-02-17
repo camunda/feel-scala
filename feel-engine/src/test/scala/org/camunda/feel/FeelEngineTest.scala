@@ -1,9 +1,9 @@
 package org.camunda.feel
 
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
-import org.camunda.feel.impl.ParsedExpression
+import org.camunda.feel.context.FunctionProvider
 import org.camunda.feel.impl.spi.{AnotherFunctionProvider, TestFunctionProvider}
-import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.syntaxtree.ParsedExpression
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

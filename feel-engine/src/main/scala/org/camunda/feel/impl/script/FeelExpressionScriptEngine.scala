@@ -2,7 +2,6 @@ package org.camunda.feel.impl.script
 
 import javax.script._
 import org.camunda.feel.impl.parser.FeelParser
-import org.camunda.feel.impl.parser.FeelParser
 
 class FeelExpressionScriptEngine(val factory: ScriptEngineFactory)
     extends FeelScriptEngine {

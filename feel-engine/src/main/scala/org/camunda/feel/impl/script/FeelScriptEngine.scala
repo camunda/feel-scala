@@ -1,19 +1,17 @@
 package org.camunda.feel.impl.script
 
-import org.camunda.feel.impl._
-import org.camunda.feel.impl.spi._
-import org.camunda.feel.impl.parser.FeelParser._
-import org.camunda.feel.impl.parser.Exp
-import org.camunda.feel.FeelEngine.EvalExpressionResult
-
-import scala.annotation.tailrec
-import scala.collection.JavaConverters._
-import java.io.Reader
-import java.io.IOException
-import java.io.Closeable
+import java.io.{Closeable, IOException, Reader}
 
 import javax.script._
 import org.camunda.feel.FeelEngine
+import org.camunda.feel.FeelEngine.EvalExpressionResult
+import org.camunda.feel.impl.SpiServiceLoader
+import org.camunda.feel.syntaxtree.{Exp, ParsedExpression}
+import org.camunda.feel.impl.parser.FeelParser._
+
+import scala.collection.JavaConverters._
+
+import scala.annotation.tailrec
 
 trait FeelScriptEngine
     extends AbstractScriptEngine

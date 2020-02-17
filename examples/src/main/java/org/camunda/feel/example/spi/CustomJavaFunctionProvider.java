@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.camunda.feel.interpreter.impl.ValNumber;
-import org.camunda.feel.impl.spi.JavaFunction;
-import org.camunda.feel.impl.spi.JavaFunctionProvider;
+import org.camunda.feel.syntaxtree.ValNumber;
+import org.camunda.feel.context.JavaFunction;
+import org.camunda.feel.context.JavaFunctionProvider;
 import scala.math.BigDecimal;
 
 public class CustomJavaFunctionProvider extends JavaFunctionProvider {

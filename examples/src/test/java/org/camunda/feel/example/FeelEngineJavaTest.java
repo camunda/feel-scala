@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.camunda.feel.FeelEngine;
-import org.camunda.feel.impl.spi.SpiServiceLoader;
+import org.camunda.feel.impl.SpiServiceLoader;
 import scala.util.Either;
 
 public class FeelEngineJavaTest {

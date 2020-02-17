@@ -1,6 +1,4 @@
-package org.camunda.feel
-
-import org.camunda.feel.impl.datatype.ZonedTime
+package org.camunda
 
 import scala.math.BigDecimal
 import java.time._
@@ -10,12 +8,12 @@ import java.time.temporal.ChronoField._
 import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
-import org.camunda.feel.impl.datatype.ZonedTime
+import org.camunda.feel.syntaxtree.ZonedTime
 
 /**
   * @author Philipp Ossler
   */
-package object impl {
+package object feel {
 
   //// common
 

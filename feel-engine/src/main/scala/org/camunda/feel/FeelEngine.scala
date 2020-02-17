@@ -5,13 +5,17 @@ import org.camunda.feel.FeelEngine.{
   EvalUnaryTestsResult,
   Failure
 }
+import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
+import org.camunda.feel.impl.interpreter.{
+  BuiltinFunctions,
+  EvalContext,
+  FeelInterpreter
+}
+import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.impl.parser.FeelParser._
-import org.camunda.feel.impl.parser.{Exp, FeelParser}
-import org.camunda.feel.impl.spi.CustomValueMapper
-import org.camunda.feel.impl.{ParsedExpression, logger}
-import org.camunda.feel.interpreter.FunctionProvider
-import org.camunda.feel.interpreter.impl.ValueMapper.CompositeValueMapper
-import org.camunda.feel.interpreter.impl._
+import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
+import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
+import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
 import scala.collection.JavaConverters._
 
@@ -127,7 +131,7 @@ class FeelEngine(val functionProvider: FunctionProvider =
   private def parse(parser: String => ParseResult[Exp],
                     expression: String): Either[Failure, ParsedExpression] =
     parser(expression) match {
-      case Success(exp, _) => Right(impl.ParsedExpression(exp, expression))
+      case Success(exp, _) => Right(ParsedExpression(exp, expression))
       case e: NoSuccess =>
         Left(Failure(s"failed to parse expression '$expression': $e"))
     }

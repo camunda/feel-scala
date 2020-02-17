@@ -1,12 +1,12 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.impl.interpreter
 
 import java.math.BigDecimal
-import java.time._
-import java.util.regex._
+import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
+import java.util.regex.Pattern
 
-import org.camunda.feel.impl._
-import org.camunda.feel.impl.datatype.ZonedTime
-import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.context.{Context, FunctionProvider}
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel._
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode

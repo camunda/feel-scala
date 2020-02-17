@@ -1,5 +1,6 @@
 package org.camunda.feel.interpreter.impl
 
+import org.camunda.feel.syntaxtree._
 import org.scalatest.{FlatSpec, Matchers}
 
 class FeelExamplesTest extends FlatSpec with Matchers with FeelIntegrationTest {

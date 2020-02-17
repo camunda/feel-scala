@@ -1,6 +1,6 @@
-package org.camunda.feel.impl.spi
+package org.camunda.feel.valuemapper
 
-import org.camunda.feel.interpreter.impl.Val
+import org.camunda.feel.syntaxtree.Val
 
 abstract class JavaCustomValueMapper extends CustomValueMapper {
 

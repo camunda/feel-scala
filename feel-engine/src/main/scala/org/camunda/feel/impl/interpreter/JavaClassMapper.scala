@@ -1,4 +1,6 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.impl.interpreter
+
+import org.camunda.feel.syntaxtree._
 
 /**
   * @author Philipp

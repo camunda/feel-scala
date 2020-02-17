@@ -1,7 +1,6 @@
-package org.camunda.feel.impl.spi
+package org.camunda.feel.valuemapper
 
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.impl.{Val, ValNumber}
+import org.camunda.feel.syntaxtree.{Val, ValNumber}
 
 /**
   * Transform objects into FEEL types and the other way around.

@@ -1,10 +1,19 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.impl
 
 import java.time._
 
-import org.camunda.feel.impl._
-import org.camunda.feel.impl.datatype.ZonedTime
-import org.camunda.feel.impl.spi.CustomValueMapper
+import org.camunda.feel.context.Context
+import org.camunda.feel.impl.interpreter.ObjectContext
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.CustomValueMapper
+import org.camunda.feel.{
+  Date,
+  DateTime,
+  DayTimeDuration,
+  Time,
+  YearMonthDuration,
+  syntaxtree
+}
 
 import scala.collection.JavaConverters._
 import scala.math.BigDecimal
@@ -43,7 +52,7 @@ class DefaultValueMapper extends CustomValueMapper {
           }
           .partition { case (key, value) => value.isInstanceOf[ValFunction] }
 
-        ValContext(
+        syntaxtree.ValContext(
           Context.StaticContext(
             variables = variables,
             functions = functions.map {
@@ -89,7 +98,7 @@ class DefaultValueMapper extends CustomValueMapper {
     case x =>
       try {
         Some(
-          ValContext(Context.CacheContext(ObjectContext(x)))
+          syntaxtree.ValContext(Context.CacheContext(ObjectContext(x)))
         )
       } catch {
         case _: Throwable => None

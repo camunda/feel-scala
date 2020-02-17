@@ -1,6 +1,6 @@
-package org.camunda.feel.impl.parser
+package org.camunda.feel.syntaxtree
 
-import org.camunda.feel.impl._
+import org.camunda.feel._
 
 /**
   * @author Philipp Ossler

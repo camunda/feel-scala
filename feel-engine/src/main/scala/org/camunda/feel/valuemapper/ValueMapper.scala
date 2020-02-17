@@ -1,6 +1,7 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.valuemapper
 
-import org.camunda.feel.impl.spi.CustomValueMapper
+import org.camunda.feel.impl.DefaultValueMapper
+import org.camunda.feel.syntaxtree.Val
 
 trait ValueMapper {
 

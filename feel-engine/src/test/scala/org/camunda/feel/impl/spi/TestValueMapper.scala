@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.spi
 
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.impl.{Val, ValNull}
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.CustomValueMapper
 
 // DO NOT DELETE, used in ScriptEngineTest through src/test/resources/META-INF/services
 class TestValueMapper extends CustomValueMapper {

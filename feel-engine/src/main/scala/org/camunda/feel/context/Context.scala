@@ -1,6 +1,6 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.context
 
-import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.syntaxtree.ValFunction
 
 /**
   * A Context provides access to the variables/fields and functions/methods in the scope represented by this Context.

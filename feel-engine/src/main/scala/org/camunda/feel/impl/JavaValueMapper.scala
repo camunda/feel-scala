@@ -1,13 +1,8 @@
-package org.camunda.feel.impl.spi
+package org.camunda.feel.impl
 
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.impl.{
-  Context,
-  Val,
-  ValContext,
-  ValList,
-  ValNumber
-}
+import org.camunda.feel.context.Context
+import org.camunda.feel.syntaxtree.{Val, ValContext, ValList, ValNumber}
+import org.camunda.feel.valuemapper.CustomValueMapper
 
 import scala.collection.JavaConverters._
 
