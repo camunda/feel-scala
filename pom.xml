@@ -28,6 +28,7 @@
 
     <modules>
       <module>feel-engine</module>
+      <module>feel-qa</module>
     </modules>
 
     <dependencyManagement>
