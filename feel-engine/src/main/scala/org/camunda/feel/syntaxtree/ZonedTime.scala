@@ -1,10 +1,15 @@
-package org.camunda.feel.impl.datatype
+package org.camunda.feel.syntaxtree
 
-import org.camunda.feel.impl._
-import scala.util.Try
 import java.time._
-import java.time.temporal.TemporalAmount
 import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.TemporalAmount
+
+import org.camunda.feel.{
+  localTimeFormatter,
+  timeFormatterWithOffsetAndOptionalPrefix
+}
+
+import scala.util.Try
 
 case class ZonedTime(time: LocalTime,
                      offset: ZoneOffset,

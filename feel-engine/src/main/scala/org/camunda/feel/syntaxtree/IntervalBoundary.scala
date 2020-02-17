@@ -1,4 +1,4 @@
-package org.camunda.feel.impl.parser
+package org.camunda.feel.syntaxtree
 
 /**
   * @author Philipp Ossler

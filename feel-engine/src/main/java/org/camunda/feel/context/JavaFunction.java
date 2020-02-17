@@ -10,12 +10,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.feel.impl.spi;
+package org.camunda.feel.context;
 
 import java.util.List;
 import java.util.function.Function;
 
-import org.camunda.feel.interpreter.impl.Val;
+import org.camunda.feel.syntaxtree.Val;
 
 public class JavaFunction
 {

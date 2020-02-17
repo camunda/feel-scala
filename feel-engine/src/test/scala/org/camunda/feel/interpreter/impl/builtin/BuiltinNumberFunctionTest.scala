@@ -2,10 +2,8 @@ package org.camunda.feel.interpreter.impl.builtin
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.camunda.feel.impl._
-import org.camunda.feel.interpreter.impl._
 import org.camunda.feel.interpreter.impl.FeelIntegrationTest
-import org.camunda.feel.interpreter.impl.{ValBoolean, ValNull, ValNumber}
+import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal

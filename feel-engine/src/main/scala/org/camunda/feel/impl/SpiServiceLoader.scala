@@ -1,14 +1,12 @@
-package org.camunda.feel.impl.spi
+package org.camunda.feel.impl
 
 import java.util.ServiceLoader
 
-import org.camunda.feel.FeelEngine
-import org.camunda.feel.interpreter.impl.ValueMapper
-import org.camunda.feel.interpreter.FunctionProvider
-import org.camunda.feel.interpreter.impl.ValueMapper
+import org.camunda.feel.context.{CustomFunctionProvider, FunctionProvider}
+import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
-import scala.collection.JavaConverters._
 import scala.reflect.{ClassTag, classTag}
+import scala.collection.JavaConverters._
 
 object SpiServiceLoader {
 

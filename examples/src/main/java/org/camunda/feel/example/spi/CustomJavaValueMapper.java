@@ -2,10 +2,11 @@ package org.camunda.feel.example.spi;
 
 import java.util.Optional;
 import java.util.function.Function;
-import org.camunda.feel.interpreter.impl.Val;
-import org.camunda.feel.interpreter.impl.ValNumber;
-import org.camunda.feel.interpreter.impl.ValString;
-import org.camunda.feel.impl.spi.JavaCustomValueMapper;
+
+import org.camunda.feel.syntaxtree.Val;
+import org.camunda.feel.syntaxtree.ValNumber;
+import org.camunda.feel.syntaxtree.ValString;
+import org.camunda.feel.valuemapper.JavaCustomValueMapper;
 
 public class CustomJavaValueMapper extends JavaCustomValueMapper {
 

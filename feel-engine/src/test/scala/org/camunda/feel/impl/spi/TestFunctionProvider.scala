@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.spi
 
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.impl.{ValFunction, ValNumber}
+import org.camunda.feel.context.CustomFunctionProvider
+import org.camunda.feel.syntaxtree._
 
 // DO NOT DELETE, used in ScriptEngineTest through src/test/resources/META-INF/services
 class TestFunctionProvider extends CustomFunctionProvider {

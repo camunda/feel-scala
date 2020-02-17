@@ -1,8 +1,6 @@
-package org.camunda.feel.impl.spi
+package org.camunda.feel.context
 
-import org.camunda.feel.interpreter.impl._
-import org.camunda.feel.interpreter.FunctionProvider
-import org.camunda.feel.interpreter.impl.ValFunction
+import org.camunda.feel.syntaxtree.ValFunction
 
 /**
   * Provides one or more functions which can be used in an expression.

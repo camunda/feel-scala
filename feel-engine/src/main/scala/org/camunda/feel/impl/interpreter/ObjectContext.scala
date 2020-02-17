@@ -1,6 +1,7 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.interpreter.FunctionProvider
+import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
+import org.camunda.feel.syntaxtree.ValFunction
 
 /**
   * A context that wraps the fields and methods of a given JVM object

@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.script
 
-import javax.script.ScriptEngineFactory
-import javax.script.ScriptEngine
+import javax.script.{ScriptEngine, ScriptEngineFactory}
+
 import scala.collection.JavaConverters._
 
 /**

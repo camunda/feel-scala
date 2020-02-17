@@ -1,8 +1,10 @@
-package org.camunda.feel.interpreter.impl
+package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.interpreter.FunctionProvider
-import org.camunda.feel.interpreter.FunctionProvider.StaticFunctionProvider
-import org.camunda.feel.interpreter.impl.VariableProvider.StaticVariableProvider
+import org.camunda.feel.context.FunctionProvider.StaticFunctionProvider
+import org.camunda.feel.context.VariableProvider.StaticVariableProvider
+import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
+import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
+import org.camunda.feel.valuemapper.ValueMapper
 
 class EvalContext(val valueMapper: ValueMapper,
                   val variableProvider: VariableProvider,

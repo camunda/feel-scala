@@ -2,8 +2,12 @@ package org.camunda.feel.interpreter.impl
 
 import java.time._
 
+import org.camunda.feel.context.Context
 import org.camunda.feel.impl._
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.{FlatSpec, Matchers}
+import org.camunda.feel._
 
 /**
   * @author Philipp Ossler

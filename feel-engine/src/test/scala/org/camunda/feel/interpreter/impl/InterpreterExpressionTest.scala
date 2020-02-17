@@ -2,6 +2,7 @@ package org.camunda.feel.interpreter.impl
 
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.scalatest.{FlatSpec, Matchers}
+import org.camunda.feel.syntaxtree._
 
 /**
   * @author Philipp Ossler

@@ -1,9 +1,26 @@
 package org.camunda.feel.interpreter.impl
 
+import org.camunda.feel.{
+  Date,
+  DateTime,
+  DayTimeDuration,
+  LocalDateTime,
+  LocalTime,
+  Time,
+  YearMonthDuration
+}
 import org.camunda.feel.FeelEngine.UnaryTests
-import org.camunda.feel.impl._
+import org.camunda.feel.context.Context
+import org.camunda.feel.impl.interpreter.{
+  BuiltinFunctions,
+  EvalContext,
+  FeelInterpreter
+}
 import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.impl.parser.FeelParser._
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.ValueMapper
+import org.camunda.feel._
 
 trait FeelIntegrationTest {
 

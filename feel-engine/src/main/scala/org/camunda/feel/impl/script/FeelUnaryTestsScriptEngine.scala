@@ -1,8 +1,6 @@
 package org.camunda.feel.impl.script
 
 import javax.script._
-import org.camunda.feel.impl._
-import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.impl.parser.FeelParser
 
 class FeelUnaryTestsScriptEngine(val factory: ScriptEngineFactory)

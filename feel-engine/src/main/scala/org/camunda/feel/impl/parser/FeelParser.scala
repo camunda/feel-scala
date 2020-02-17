@@ -1,6 +1,7 @@
 package org.camunda.feel.impl.parser
 
-import org.camunda.feel.impl._
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel._
 
 import scala.util.Try
 import scala.util.parsing.combinator.JavaTokenParsers
@@ -243,13 +244,17 @@ object FeelParser extends JavaTokenParsers {
   private lazy val interval
     : Parser[Interval] = (openIntervalStart | closedIntervalStart) ~ endpoint ~ ".." ~! endpoint ~! (openIntervalEnd | closedIntervalEnd) ^^ {
     case ("(" | "]") ~ start ~ _ ~ end ~ (")" | "[") =>
-      Interval(OpenIntervalBoundary(start), OpenIntervalBoundary(end))
+      syntaxtree.Interval(OpenIntervalBoundary(start),
+                          OpenIntervalBoundary(end))
     case ("(" | "]") ~ start ~ _ ~ end ~ "]" =>
-      Interval(OpenIntervalBoundary(start), ClosedIntervalBoundary(end))
+      syntaxtree.Interval(OpenIntervalBoundary(start),
+                          ClosedIntervalBoundary(end))
     case "[" ~ start ~ _ ~ end ~ (")" | "[") =>
-      Interval(ClosedIntervalBoundary(start), OpenIntervalBoundary(end))
+      syntaxtree.Interval(ClosedIntervalBoundary(start),
+                          OpenIntervalBoundary(end))
     case "[" ~ start ~ _ ~ end ~ "]" =>
-      Interval(ClosedIntervalBoundary(start), ClosedIntervalBoundary(end))
+      syntaxtree.Interval(ClosedIntervalBoundary(start),
+                          ClosedIntervalBoundary(end))
   }
 
   // 9
@@ -268,15 +273,16 @@ object FeelParser extends JavaTokenParsers {
   private lazy val forExpression: Parser[For] = "for" ~> rep1sep(
     listIterator,
     ",") ~! "return" ~! expression ^^ {
-    case iterators ~ _ ~ exp => For(iterators, exp)
+    case iterators ~ _ ~ exp => syntaxtree.For(iterators, exp)
   }
 
   private lazy val listIterator = name ~ "in" ~! (range | expression) ^^ {
     case name ~ _ ~ list => (name, list)
   }
 
-  private lazy val range: Parser[Range] = expression ~ ".." ~ expression ^^ {
-    case start ~ _ ~ end => Range(start, end)
+  private lazy val range
+    : Parser[syntaxtree.Range] = expression ~ ".." ~ expression ^^ {
+    case start ~ _ ~ end => syntaxtree.Range(start, end)
   }
 
   // 47
@@ -366,7 +372,7 @@ object FeelParser extends JavaTokenParsers {
 
   private lazy val builtinFunctionInvocation
     : Parser[Exp] = not(dateTimeLiteral) ~> builtinFunctionName ~ parameters ^^ {
-    case name ~ params => FunctionInvocation(name, params)
+    case name ~ params => syntaxtree.FunctionInvocation(name, params)
   }
 
   // 41

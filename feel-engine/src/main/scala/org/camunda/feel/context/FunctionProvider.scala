@@ -1,6 +1,6 @@
-package org.camunda.feel.interpreter
+package org.camunda.feel.context
 
-import org.camunda.feel.interpreter.impl.ValFunction
+import org.camunda.feel.syntaxtree.ValFunction
 
 import scala.collection.mutable
 
