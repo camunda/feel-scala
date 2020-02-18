@@ -14,7 +14,7 @@ If you have an idea how to improve the project then please create a [new issue](
 
 ### Improving Documentation
 
-If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. The documentation is located in the repository at `/docs/*.md`. 
+If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. The documentation is located in the repository at `/docs/*.md`.
 
 ### Providing Pull Requests
 
@@ -24,7 +24,7 @@ Before opening a pull request, make sure that there is a related issue. The issu
 
 In order to verify that you don't break anything, you should build the whole project and run all tests. This also apply the code formatting.
 
-## Building the Project from Source 
+## Building the Project from Source
 
 You can build the project with [SBT](http://www.scala-sbt.org) or [Maven](http://maven.apache.org). Both build files should be kept in sync.
 
@@ -71,3 +71,21 @@ Scala code is formatted using [Scalafmt](https://scalameta.org/scalafmt/). The f
 
 Commit messages should include a short description of the changes and reference the issue.
 
+## API
+
+Changes to the following code and concepts are considered breaking changes in the sense of semantic versioning. That means, if you want to make such a change, this must result in a new major version of this library. For any such change, both teams maintaining this codebase (Zeebe and Runtime) must be informed and accept the change. This allows us to make sure both teams will be able to work with a new major release and no team gets "locked out".
+
+* The API of the following classes must remain binary backwards compatible
+  * Any class in a package namespace that does not contain `impl`, especially
+    * `FeelEngine`
+    * The custom function mechanism
+    * Value mappers
+* The following behavior must remain as is
+  * Ability to compile expressions independently of evaluation
+  * Ability to compile and evaluate expressions at once
+  * Expression evaluation
+    * Input and return type handling of expressions, e.g. the returned type of an expression should not change
+    * The result of an expression unless it is a clear bug with respect to the FEEL specification
+* Supported environments
+  * Minimal Java version: 8 (Runtime team)
+  * Java 11 (Zeebe team)
