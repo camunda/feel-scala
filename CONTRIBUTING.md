@@ -71,7 +71,7 @@ Scala code is formatted using [Scalafmt](https://scalameta.org/scalafmt/). The f
 
 Commit messages should include a short description of the changes and reference the issue.
 
-## API
+## Public API and Backwards Compatibility
 
 Changes to the following code and concepts are considered breaking changes in the sense of semantic versioning. That means, if you want to make such a change, this must result in a new major version of this library. For any such change, both teams maintaining this codebase (Zeebe and Runtime) must be informed and accept the change. This allows us to make sure both teams will be able to work with a new major release and no team gets "locked out".
 
