@@ -2,6 +2,7 @@ package org.camunda.feel.impl.spi
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
+import org.camunda.feel.context.VariableProvider.StaticVariableProvider
 import org.camunda.feel.context.{
   CustomContext,
   FunctionProvider,
@@ -98,6 +99,57 @@ class CustomContextTest extends FlatSpec with Matchers {
     variableCallCount should be(2)
     functionCallCount should be(2)
 
+  }
+
+  it should "evaluate expression" in {
+    val variables: Map[String, _] = Map("foo" -> 7)
+
+    val context: CustomContext = new CustomContext {
+      override val variableProvider = SimpleTestContext(variables)
+    }
+
+    engine.evalExpression("foo", context) should be(Right(7))
+  }
+
+  it should "fail on expression evaluation" in {
+    val variables: Map[String, _] = Map()
+
+    val context: CustomContext = new CustomContext {
+      override val variableProvider = SimpleTestContext(variables)
+    }
+
+    engine.evalExpression("bar", context) shouldBe Left(Failure(
+      "failed to evaluate expression 'bar': no variable found for name 'bar'"))
+  }
+
+  val inputVariableContext = StaticVariableProvider(
+    Map(
+      UnaryTests.inputVariable -> "myInputVariable"
+    ))
+
+  it should "evaluate unary-test" in {
+    val variables: Map[String, _] = Map("myInputVariable" -> 8, "foo" -> 7)
+
+    val context: CustomContext = new CustomContext {
+      override val variableProvider =
+        VariableProvider.CompositeVariableProvider(
+          List(inputVariableContext, SimpleTestContext(variables)))
+    }
+
+    engine.evalUnaryTests("foo", context) should be(Right(false))
+  }
+
+  it should "fail on unary-test evaluation" in {
+    val variables: Map[String, _] = Map("foo" -> 7)
+
+    val context: CustomContext = new CustomContext {
+      override val variableProvider =
+        VariableProvider.CompositeVariableProvider(
+          List(inputVariableContext, SimpleTestContext(variables)))
+    }
+
+    engine.evalUnaryTests("foo", context) shouldBe Left(Failure(
+      "failed to evaluate expression 'foo': no variable found for name 'myInputVariable'"))
   }
 
 }
