@@ -4,7 +4,7 @@
 
     <groupId>org.camunda.feel</groupId>
     <artifactId>feel-scala-root</artifactId>
-    <version>1.11.0-SNAPSHOT</version>
+    <version>1.11.0-alpha1</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -222,7 +222,7 @@
         <connection>scm:git:git@github.com:camunda/feel-scala.git</connection>
         <url>scm:git:git@github.com:camunda/feel-scala.git</url>
         <developerConnection>scm:git:git@github.com:camunda/feel-scala.git</developerConnection>
-        <tag>1.0.0</tag>
+        <tag>1.11.0-alpha1</tag>
     </scm>
 
     <distributionManagement>
