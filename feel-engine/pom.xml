@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.camunda.feel</groupId>
     <artifactId>feel-scala-root</artifactId>
-    <version>1.11.0-alpha1</version>
+    <version>1.11.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>feel-engine</artifactId>
