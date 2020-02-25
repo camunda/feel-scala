@@ -16,41 +16,37 @@
  */
 package org.camunda.feel.example
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.camunda.feel.FeelEngine
+import org.camunda.feel.context.Context.EmptyContext
+import org.camunda.feel.impl.SpiServiceLoader
+import org.scalatest.{FlatSpec, Matchers}
 
 class FunctionProviderTest
     extends FlatSpec
-    with Matchers
-    with DmnEvaluationTest {
+    with Matchers {
 
-  val DMN_FILE = "/function/outputEntryWithFunction.dmn"
+  val feelEngine = new FeelEngine(SpiServiceLoader.loadFunctionProvider,
+    SpiServiceLoader.loadValueMapper)
 
-  "The decision table" should "invoke a custom scala function" in {
+  "The FEEL Engine" should "invoke a custom scala function with input variable" in {
 
-    val result =
-      evaluateDecision(DMN_FILE, "decision", Map("status" -> "green"))
+    val result = feelEngine.evalExpression("foo(count)", Map("count" -> 2))
 
-    result.size should be(1)
-    result.getSingleEntry.asInstanceOf[Int] should be(3)
+    result should be(Right(3))
   }
 
-  it should "invoke a custom java function" in {
+  it should "invoke a custom java function with input variable" in {
 
-    val result =
-      evaluateDecision(DMN_FILE, "decision", Map("status" -> "yellow"))
+    val result = feelEngine.evalExpression("bar(count)", Map("count" -> 3))
 
-    result.size should be(1)
-    result.getSingleEntry.asInstanceOf[Int] should be(2)
+    result should be(Right(2))
   }
 
-  it should "invoke a custom scala function with input variable" in {
+  it should "invoke a custom scala function" in {
 
-    val result =
-      evaluateDecision(DMN_FILE, "decision", Map("status" -> "black"))
+    val result = feelEngine.evalExpression("pi()", context = EmptyContext)
 
-    result.size should be(1)
-    result.getSingleEntry.asInstanceOf[Int] should be(14)
+    result should be(Right(3.14159))
   }
 
 }

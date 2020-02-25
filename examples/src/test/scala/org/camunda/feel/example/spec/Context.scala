@@ -20,9 +20,9 @@ import java.time.LocalDate
 
 object Context {
 
-  case class Applicant(maritalStatus: String, monthly: BalanceSummery)
+  case class Applicant(maritalStatus: String, monthly: BalanceSummary)
 
-  case class BalanceSummery(income: Int, repayments: Int, expenses: Int)
+  case class BalanceSummary(income: Int, repayments: Int, expenses: Int)
 
   case class CreditHistoryRecord(record_date: LocalDate,
                                  event: String,
