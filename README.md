@@ -4,9 +4,8 @@
 
 A parser and interpreter for FEEL which is written in Scala (see [What is FEEL?](https://camunda.github.io/feel-scala/what-is-feel)).
 
-It was designed as a community extension for Camunda BPM to replace the built-in FEEL engine of
-the [Camunda DMN engine](https://github.com/camunda/camunda-engine-dmn). However, it can also be 
-used outside of Camunda BPM as native Scala application or script engine.
+It is integrated in the DMN Engine of the Camunda BPM Platform. However, it can also be used outside
+of Camunda BPM as a native Scala application or script engine.
 
 **Features:** :sparkles:
 
