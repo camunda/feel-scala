@@ -8,7 +8,7 @@ Add the engine as dependency to your project:
 
 ```xml
 <dependency>
-  <groupId>org.camunda.bpm.extension.feel.scala</groupId>
+  <groupId>org.camunda.feel</groupId>
   <artifactId>feel-engine</artifactId>
   <version>${VERSION}</version>
 </dependency>
