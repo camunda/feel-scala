@@ -8,6 +8,11 @@ Unary-Tests can be used only for input entries of a decision table. They are a s
 
 The result of the expression must be either `true` or `false`.
 
+An unary-tests expression is `true` if one of the following conditions is fulfilled:
+* the expression evaluates to `true` when the input value is applied to it
+* the expression evaluates to a list and the input value is equal to at least one of the values in that list
+* the expression evaluates to a value and the input value is equal to that value 
+
 ### Comparison
 
 Compare the input value to `x`.
@@ -28,11 +33,11 @@ Compare the input value to `x`.
   * year-month-duration
   * day-time-duration 
 
-### Inveral
+### Interval
 
 Test if the input value is within the interval `x` and `y`.
 
-An interval can be open `(x..y)` / `]x..y[` or close `[x..y]`. If the interval is open when the value is not included.
+An interval can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If the interval is open then the value is not included.
 
 ```js
 (2..5)

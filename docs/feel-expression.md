@@ -158,7 +158,7 @@ true and false
 // false
 
 true and null        
-// false
+// null
 
 false and null
 // false
@@ -175,7 +175,7 @@ true or null
 // true
 
 false or null  
-// false
+// null
 ```
 
 ### If Expression
