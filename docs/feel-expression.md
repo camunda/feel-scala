@@ -327,7 +327,7 @@ A function (body) can be defined using `function(arguments) expression`. For exa
 }
 ```
 
-It is also possible to define an external function which calls a Java method. (Usually, it's better to use the Custom Function SPI.)
+It is also possible to define an external function which calls a Java method. 
 
 ```js
 function(x,y) external { 
@@ -337,6 +337,8 @@ function(x,y) external {
     } 
 }
 ```
+
+:warning: External functions are disabled by default (security risk). Use the [FunctionProvider API](function-provider-spi) instead or enable external functions in the configuration (not recommended).
 
 ### Special Properties
 

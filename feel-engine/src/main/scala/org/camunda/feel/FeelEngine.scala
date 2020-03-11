@@ -17,6 +17,7 @@
 package org.camunda.feel
 
 import org.camunda.feel.FeelEngine.{
+  Configuration,
   EvalExpressionResult,
   EvalUnaryTestsResult,
   Failure
@@ -27,8 +28,8 @@ import org.camunda.feel.impl.interpreter.{
   EvalContext,
   FeelInterpreter
 }
-import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.impl.parser.FeelParser._
+import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
@@ -40,19 +41,23 @@ object FeelEngine {
   type EvalExpressionResult = Either[Failure, Any]
   type EvalUnaryTestsResult = Either[Failure, Boolean]
 
+  case class Configuration(externalFunctionsEnabled: Boolean = false)
+
   def defaultFunctionProvider: FunctionProvider =
     FunctionProvider.EmptyFunctionProvider
 
   def defaultValueMapper: ValueMapper = ValueMapper.defaultValueMapper
+
+  def defaultConfiguration: Configuration = Configuration()
 
   case class Failure(message: String)
 
   class Builder {
 
     private var functionProvider_ : FunctionProvider = defaultFunctionProvider
-
     private var valueMapper_ : ValueMapper = defaultValueMapper
     private var customValueMappers_ : List[CustomValueMapper] = List.empty
+    private var configuration_ : Configuration = defaultConfiguration
 
     def functionProvider(functionProvider: FunctionProvider): Builder = {
       functionProvider_ = functionProvider
@@ -70,9 +75,15 @@ object FeelEngine {
       this
     }
 
+    def enableExternalFunctions(enable: Boolean): Builder = {
+      configuration_ = configuration_.copy(externalFunctionsEnabled = enable)
+      this
+    }
+
     def build: FeelEngine = new FeelEngine(
       functionProvider = functionProvider_,
-      valueMapper = valueMapper_
+      valueMapper = valueMapper_,
+      configuration = configuration_
     )
 
   }
@@ -84,14 +95,18 @@ object FeelEngine {
 
 }
 
-class FeelEngine(val functionProvider: FunctionProvider =
-                   FeelEngine.defaultFunctionProvider,
-                 val valueMapper: ValueMapper = FeelEngine.defaultValueMapper) {
+class FeelEngine(
+    val functionProvider: FunctionProvider = FeelEngine.defaultFunctionProvider,
+    val valueMapper: ValueMapper = FeelEngine.defaultValueMapper,
+    val configuration: Configuration = FeelEngine.defaultConfiguration) {
 
-  val interpreter = new FeelInterpreter
+  val interpreter = new FeelInterpreter()
+
+  val validator = new ExpressionValidator(
+    externalFunctionsEnabled = configuration.externalFunctionsEnabled)
 
   logger.info(
-    s"Engine created. [value-mapper: $valueMapper, function-provider: $functionProvider]")
+    s"Engine created. [value-mapper: $valueMapper, function-provider: $functionProvider, configuration: $configuration]")
 
   private val rootContext: EvalContext = new EvalContext(
     valueMapper = valueMapper,
@@ -152,8 +167,19 @@ class FeelEngine(val functionProvider: FunctionProvider =
         Left(Failure(s"failed to parse expression '$expression': $e"))
     }
 
+  private def validate(
+      exp: ParsedExpression): Either[Failure, ParsedExpression] = {
+
+    validator
+      .validateExpression(exp.expression)
+      .map(failure =>
+        Failure(
+          s"""validation of expression '${exp.text}' failed: ${failure.message}"""))
+      .toLeft(exp)
+  }
+
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
-    eval(exp, rootContext + context)
+    validate(exp).flatMap(_ => eval(exp, rootContext + context))
 
   private def eval(exp: ParsedExpression,
                    context: EvalContext): EvalExpressionResult = {
@@ -175,8 +201,10 @@ class FeelEngine(val functionProvider: FunctionProvider =
 
   def parseExpression(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseExpression, expression)
+      .flatMap(validate)
 
   def parseUnaryTests(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseUnaryTests, expression)
+      .flatMap(validate)
 
 }
