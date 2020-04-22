@@ -32,6 +32,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Run Maven
-      run: mvn -B clean install
+      run: mvn -B clean install com.mycila:license-maven-plugin:check
     - name: Publish package
       run: mvn -B deploy

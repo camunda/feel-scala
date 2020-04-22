@@ -33,7 +33,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Run Maven
-      run: mvn -B clean install
+      run: mvn -B clean install com.mycila:license-maven-plugin:check
     - name: Update version in pom.xml
       run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
     - name: Publish package
