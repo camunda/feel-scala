@@ -34,8 +34,8 @@ jobs:
         roleId: ${{ secrets.VAULT_ROLE_ID }}
         secretId: ${{ secrets.VAULT_SECRET_ID }}
         secrets: |
-          common/jenkins/main NEXUS_GITHUB_ACTIONS_PSW | NEXUS_PSW;
-          common/jenkins/main NEXUS_GITHUB_ACTIONS_USR | NEXUS_USR;
+          common/github.com/actions/camunda NEXUS_PSW | NEXUS_PSW;
+          common/github.com/actions/camunda NEXUS_USR | NEXUS_USR;
     - name: Set up Nexus authentication
       uses: actions/setup-java@v1
       with:
