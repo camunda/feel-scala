@@ -1,4 +1,4 @@
-name: Build
+name: Build project with Maven
 on:
   pull_request:
   push:
@@ -24,4 +24,4 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Run Maven
-      run: mvn -B clean install
+      run: mvn -B clean install com.mycila:license-maven-plugin:check
