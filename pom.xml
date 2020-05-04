@@ -139,7 +139,7 @@
           <plugin>
             <groupId>org.antipathy</groupId>
             <artifactId>mvn-scalafmt_2.12</artifactId>
-            <version>0.7_1.5.1</version>
+            <version>1.0.3</version>
             <configuration>
               <parameters>--diff</parameters>
             </configuration>
