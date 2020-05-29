@@ -14,7 +14,7 @@ Using the SPI, the function can be implemented in Scala/Java and is not limited 
 
 ### Implement a Function using Scala
 
-Create a sub-class of `org.camunda.feel.spi.CustomFunctionProvider` and implement the method `getFunction()` which returns the function for the given name. If a function can have different parameters (i.e. different parameter count) then override `getFunctions()` instead.
+Create a sub-class of `org.camunda.feel.context.CustomFunctionProvider` and implement the method `getFunction()` which returns the function for the given name. If a function can have different parameters (i.e. different parameter count) then override `getFunctions()` instead.
 
 ```scala
 class CustomScalaFunctionProvider extends CustomFunctionProvider {
@@ -40,7 +40,7 @@ The function must be of type `ValFunction`. It contains
 
 ### Implement a Function using Java
 
-Using Java, create a sub-class of `org.camunda.feel.spi.JavaFunctionProvider` instead. It is equal to the Scala one but uses more Java-like classes. 
+Using Java, create a sub-class of `org.camunda.feel.context.JavaFunctionProvider` instead. It is equal to the Scala one but uses more Java-like classes. 
 
 ```java
 public class CustomJavaFunctionProvider extends JavaFunctionProvider
@@ -78,9 +78,9 @@ public class CustomJavaFunctionProvider extends JavaFunctionProvider
 
 Depending how the FEEL engine is used, the function provider can be passed directly on creation, or is loaded via Java ServiceLoader mechanism. 
 
-In the second case, create a new file `org.camunda.feel.spi.CustomFunctionProvider` in the folder `META-INF/services/`. It must contain all function providers by their full qualified name.
+In the second case, create a new file `org.camunda.feel.context.CustomFunctionProvider` in the folder `META-INF/services/`. It must contain all function providers by their full qualified name.
 
 ```
-org.camunda.feel.example.spi.CustomScalaFunctionProvider
-org.camunda.feel.example.spi.CustomJavaFunctionProvider
+org.camunda.feel.example.context.CustomScalaFunctionProvider
+org.camunda.feel.example.context.CustomJavaFunctionProvider
 ```
