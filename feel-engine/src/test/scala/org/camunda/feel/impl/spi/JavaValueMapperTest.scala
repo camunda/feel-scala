@@ -28,12 +28,38 @@ class JavaValueMapperTest extends FlatSpec with Matchers {
     ValueMapper.CompositeValueMapper(
       List(DefaultValueMapper.instance, new JavaValueMapper()))
 
-  "The JavaValueMapper" should "return number as Java Double" in {
+  "The JavaValueMapper" should "return whole number as java.lang.Long" in {
+
+    valueMapper.unpackVal(ValNumber(2)) should be(new java.lang.Long(2))
+  }
+
+  it should "return floating point number as java.lang.Double" in {
 
     valueMapper.unpackVal(ValNumber(2.4)) should be(new java.lang.Double(2.4))
   }
 
-  it should "return list as Java List" in {
+  it should "return Long.MAX_VALUE as java.lang.Long" in {
+
+    valueMapper.unpackVal(ValNumber(Long.MaxValue)) should be(
+      java.lang.Long.MAX_VALUE
+    )
+  }
+
+  it should "return Double.MAX_VALUE as java.lang.Double" in {
+
+    valueMapper.unpackVal(ValNumber(Double.MaxValue)) should be(
+      java.lang.Double.MAX_VALUE
+    )
+  }
+
+  it should "return Float.MAX_VALUE as java.lang.Double" in {
+
+    valueMapper.unpackVal(ValNumber(Float.MaxValue)) should be(
+      new java.lang.Double(Float.MaxValue)
+    )
+  }
+
+  it should "return list as java.util.List" in {
 
     val list = new java.util.ArrayList[String]
     list.add("a")
@@ -43,7 +69,7 @@ class JavaValueMapperTest extends FlatSpec with Matchers {
       list)
   }
 
-  it should "return context as Java Map" in {
+  it should "return context as java.util.Map" in {
 
     val map = new java.util.HashMap[String, String]
     map.put("x", "1")

@@ -33,7 +33,7 @@ class JavaValueMapper extends CustomValueMapper {
 
       case ValNumber(number) =>
         Some(
-          if (number.isWhole) {
+          if (number.isWhole && number.isValidLong) {
             number.longValue: java.lang.Long
           } else {
             number.doubleValue: java.lang.Double
