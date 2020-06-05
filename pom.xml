@@ -69,11 +69,6 @@
               <version>${version.log4j}</version>
             </dependency>
 
-            <dependency>
-              <groupId>com.h2database</groupId>
-              <artifactId>h2</artifactId>
-              <version>1.4.193</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
