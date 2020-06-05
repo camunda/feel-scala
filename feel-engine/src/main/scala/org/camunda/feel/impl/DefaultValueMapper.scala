@@ -42,6 +42,7 @@ class DefaultValueMapper extends CustomValueMapper {
     case null   => Some(ValNull)
 
     // scala types
+    case x: Short                               => Some(ValNumber(x))
     case x: Int                                 => Some(ValNumber(x))
     case x: Long                                => Some(ValNumber(x))
     case x: Float if (x.isNaN || x.isInfinity)  => Some(ValNull)

@@ -27,35 +27,35 @@ class BultinValueMapperOutputTest extends FlatSpec with Matchers {
   val engine =
     new FeelEngine(null, CompositeValueMapper(List(new JavaValueMapper())))
 
-  it should " return java.lang.String" in {
+  "The value mapper" should "return java.lang.String" in {
 
     engine
       .evalExpression("\"foo\"", context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.lang.String]
   }
 
-  it should " return java.lang.Double" in {
+  it should "return java.lang.Double" in {
 
     engine
       .evalExpression("10/3", context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.lang.Double]
   }
 
-  it should " return java.lang.Long" in {
+  it should "return java.lang.Long" in {
 
     engine
       .evalExpression("10", context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
-  it should " return java.lang.Boolean" in {
+  it should "return java.lang.Boolean" in {
 
     engine
       .evalExpression("true", context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.lang.Boolean]
   }
 
-  it should " return java.time.LocalDateTime" in {
+  it should "return java.time.LocalDateTime" in {
 
     engine
       .evalExpression("date and time(\"2019-08-12T22:22:22\")",
@@ -63,7 +63,7 @@ class BultinValueMapperOutputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.time.LocalDateTime]
   }
 
-  it should " return java.time.ZonedDateTime" in {
+  it should "return java.time.ZonedDateTime" in {
 
     engine
       .evalExpression("date and time(\"2019-08-12T22:22:22@Europe/Berlin\")",
@@ -71,7 +71,7 @@ class BultinValueMapperOutputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.time.ZonedDateTime]
   }
 
-  it should " return null" in {
+  it should "return null" in {
 
     val nullValue: java.lang.Integer = null;
 
@@ -80,7 +80,7 @@ class BultinValueMapperOutputTest extends FlatSpec with Matchers {
       .getOrElse() == nullValue shouldBe true
   }
 
-  it should " return java.util.Map" in {
+  it should "return java.util.Map" in {
 
     val map = engine
       .evalExpression("{\"foo\": 42, \"bar\": 5.5, \"baz\": [1, 2]}",
@@ -101,7 +101,7 @@ class BultinValueMapperOutputTest extends FlatSpec with Matchers {
     list.get(0) shouldBe a[java.lang.Long]
   }
 
-  it should " return java.util.List" in {
+  it should "return java.util.List" in {
 
     val list = engine
       .evalExpression("[6, 5.5, {\"foo\": \"bar\"}]",

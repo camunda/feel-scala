@@ -30,7 +30,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
   val engine =
     new FeelEngine(null, CompositeValueMapper(List(new JavaValueMapper())))
 
-  it should " read java.lang.String" in {
+  "The value mapper" should "read java.lang.String" in {
     val variables = Map("foo" -> java.lang.String.valueOf("3.4"))
 
     engine
@@ -39,7 +39,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.String]
   }
 
-  it should " read java.lang.Float" in {
+  it should "read java.lang.Float" in {
     val variables = Map("foo" -> java.lang.Float.valueOf("3.4"))
 
     engine
@@ -48,7 +48,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Double]
   }
 
-  it should " read java.lang.Double" in {
+  it should "read java.lang.Double" in {
     val variables = Map("foo" -> java.lang.Double.valueOf("3.4"))
 
     engine
@@ -57,7 +57,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Double]
   }
 
-  it should " read java.lang.Integer" in {
+  it should "read java.lang.Integer" in {
     val variables = Map("foo" -> java.lang.Integer.valueOf("3"))
 
     engine
@@ -66,7 +66,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
-  it should " read java.lang.Long" in {
+  it should "read java.lang.Long" in {
     val variables = Map("foo" -> java.lang.Long.valueOf("3"))
 
     engine
@@ -75,7 +75,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
-  it should " read java.lang.Short" ignore {
+  it should "read java.lang.Short" in {
     val variables = Map("foo" -> java.lang.Short.valueOf("3"))
 
     engine
@@ -84,7 +84,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
-  it should " read java.lang.Boolean" in {
+  it should "read java.lang.Boolean" in {
     val variables = Map("foo" -> java.lang.Boolean.valueOf("true"))
 
     engine
@@ -93,7 +93,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.lang.Boolean]
   }
 
-  it should " read java.util.Date" in {
+  it should "read java.util.Date" in {
     val variables = Map("foo" -> new java.util.Date())
 
     engine
@@ -101,7 +101,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe a[java.time.LocalDateTime]
   }
 
-  it should " read null value" in {
+  it should "read null value" in {
     val nullValue: java.lang.Integer = null
 
     val variables = Map("foo" -> nullValue)
@@ -112,7 +112,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe true
   }
 
-  it should " read value from object getter" in {
+  it should "read value from object getter" in {
 
     val variables = Map("foo" -> new SimpleTestPojo("foo"))
 
@@ -122,7 +122,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe true
   }
 
-  it should " read java.util.Map" in {
+  it should "read java.util.Map" in {
     val map: java.util.Map[java.lang.String, java.lang.Object] =
       new util.HashMap[java.lang.String, java.lang.Object]()
     map.put("foo", "myString")
@@ -138,7 +138,7 @@ class BuiltinValueMapperInputTest extends FlatSpec with Matchers {
       .getOrElse() shouldBe true
   }
 
-  it should " read java.util.List" in {
+  it should "read java.util.List" in {
     val list: java.util.List[java.lang.Object] =
       new util.ArrayList[java.lang.Object]()
     list.add("myString")
