@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.interpreter.impl
 
-import org.scalatest.{FlatSpec, Matchers}
 import org.camunda.feel.syntaxtree._
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * @author Philipp Ossler
@@ -99,6 +99,45 @@ class InterpreterListExpressionTest
 
     eval("[1, {}.x]") should be(
       ValError("context contains no entry with key 'x'"))
+  }
+
+  it should "be compared with '='" in {
+
+    eval("[] = []") should be(ValBoolean(true))
+    eval("[1] = [1]") should be(ValBoolean(true))
+    eval("[[1]] = [[1]]") should be(ValBoolean(true))
+    eval("[{x:1}] = [{x:1}]") should be(ValBoolean(true))
+
+    eval("[] = [1]") should be(ValBoolean(false))
+    eval("[1] = []") should be(ValBoolean(false))
+    eval("[1] = [2]") should be(ValBoolean(false))
+    eval("[[1]] = [[2]]") should be(ValBoolean(false))
+    eval("[{x:1}] = [{x:2}]") should be(ValBoolean(false))
+
+    eval("[1] = [true]") should be(ValBoolean(false))
+  }
+
+  it should "be compared with '!='" in {
+
+    eval("[] != []") should be(ValBoolean(false))
+    eval("[1] != [1]") should be(ValBoolean(false))
+    eval("[[1]] != [[1]]") should be(ValBoolean(false))
+    eval("[{x:1}] != [{x:1}]") should be(ValBoolean(false))
+
+    eval("[] != [1]") should be(ValBoolean(true))
+    eval("[1] != []") should be(ValBoolean(true))
+    eval("[1] != [2]") should be(ValBoolean(true))
+    eval("[[1]] != [[2]]") should be(ValBoolean(true))
+    eval("[{x:1}] != [{x:2}]") should be(ValBoolean(true))
+
+    eval("[1] != [true]") should be(ValBoolean(true))
+  }
+
+  it should "fail to compare if not a list" in {
+
+    eval("[] = 1") should be(
+      ValError("expect List but found 'ValNumber(1)'")
+    )
   }
 
   "A for-expression" should "iterate over a range" in {

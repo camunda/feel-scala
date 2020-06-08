@@ -21,7 +21,6 @@ import java.time.{Duration, Period}
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel._
 import org.camunda.feel.context.Context
-import org.camunda.feel.impl.parser._
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 
@@ -94,7 +93,7 @@ class FeelInterpreter {
         withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
 
       // dual comparators
-      case Equal(x, y)          => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
+      case Equal(x, y)          => checkEquality(eval(x), eval(y), _ == _, ValBoolean)
       case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
       case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
       case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
@@ -519,10 +518,11 @@ class FeelInterpreter {
       case _            => error(x, s"expected Number but found '$x'")
     }
 
-  private def dualOpAny(x: Val,
-                        y: Val,
-                        c: (Any, Any) => Boolean,
-                        f: Boolean => Val)(implicit context: EvalContext): Val =
+  private def checkEquality(
+      x: Val,
+      y: Val,
+      c: (Any, Any) => Boolean,
+      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNull                 => withVal(y, y => f(c(ValNull, y)))
       case x if (y == ValNull)     => f(c(x, ValNull))
@@ -536,10 +536,58 @@ class FeelInterpreter {
       case ValDateTime(x)          => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x, y)))
       case ValDayTimeDuration(x)   => withDayTimeDuration(y, y => f(c(x, y)))
+      case ValList(x) =>
+        withList(
+          y,
+          y => {
+            if (x.size != y.items.size) {
+              f(false)
+
+            } else {
+              val isEqual = x.zip(y.items).foldRight(true) {
+                case ((x, y), listIsEqual) =>
+                  listIsEqual && {
+                    checkEquality(x, y, c, f) match {
+                      case ValBoolean(itemIsEqual) => itemIsEqual
+                      case _                       => false
+                    }
+                  }
+              }
+              f(isEqual)
+            }
+          }
+        )
+      case ValContext(x) =>
+        withContext(
+          y,
+          y => {
+            val xVars = x.variableProvider.getVariables
+            val yVars = y.context.variableProvider.getVariables
+
+            if (xVars.keys != yVars.keys) {
+              f(false)
+
+            } else {
+              val isEqual = xVars.keys.foldRight(true) {
+                case (key, contextIsEqual) =>
+                  contextIsEqual && {
+                    val xVal = context.valueMapper.toVal(xVars(key))
+                    val yVal = context.valueMapper.toVal(yVars(key))
+
+                    checkEquality(xVal, yVal, c, f) match {
+                      case ValBoolean(entryIsEqual) => entryIsEqual
+                      case _                        => false
+                    }
+                  }
+              }
+              f(isEqual)
+            }
+          }
+        )
       case _ =>
         error(
           x,
-          s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
+          s"expected Number, Boolean, String, Date, Time, Duration, List or Context but found '$x'")
     }
 
   private def dualOp(x: Val,
