@@ -26,28 +26,7 @@ In order to verify that you don't break anything, you should build the whole pro
 
 ## Building the Project from Source
 
-You can build the project with [SBT](http://www.scala-sbt.org) or [Maven](http://maven.apache.org). Both build files should be kept in sync.
-
-### Using SBT
-
-In the root directory:
-
-Run all tests with
-```
-sbt test
-```
-
-Or only for one module (e.g. engine) with
-```
-sbt engine/test
-```
-
-Build the JAR files with
-```
-sbt assembly
-```
-
-### Using Maven
+You can build the project with [Maven](http://maven.apache.org). 
 
 In the root directory:
 
