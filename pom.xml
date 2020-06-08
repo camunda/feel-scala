@@ -20,7 +20,7 @@
         <version.java>1.8</version.java>
         <scala.version>2.13.0</scala.version>
         <scala.binary.version>2.13.0</scala.binary.version>
-        <version.log4j>2.9.0</version.log4j>
+        <version.log4j>2.13.3</version.log4j>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
