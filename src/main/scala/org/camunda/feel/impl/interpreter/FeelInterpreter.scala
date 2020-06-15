@@ -21,7 +21,6 @@ import java.time.{Duration, Period}
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel._
 import org.camunda.feel.context.Context
-import org.camunda.feel.impl.parser._
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 
@@ -61,11 +60,16 @@ class FeelInterpreter {
         )
 
       // simple unary tests
-      case InputEqualTo(x)        => unaryOpAny(eval(x), _ == _, ValBoolean)
-      case InputLessThan(x)       => unaryOp(eval(x), _ < _, ValBoolean)
-      case InputLessOrEqual(x)    => unaryOp(eval(x), _ <= _, ValBoolean)
-      case InputGreaterThan(x)    => unaryOp(eval(x), _ > _, ValBoolean)
-      case InputGreaterOrEqual(x) => unaryOp(eval(x), _ >= _, ValBoolean)
+      case InputEqualTo(x) =>
+        withVal(input, i => checkEquality(i, eval(x), _ == _, ValBoolean))
+      case InputLessThan(x) =>
+        withVal(input, i => dualOp(i, eval(x), _ < _, ValBoolean))
+      case InputLessOrEqual(x) =>
+        withVal(input, i => dualOp(i, eval(x), _ <= _, ValBoolean))
+      case InputGreaterThan(x) =>
+        withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
+      case InputGreaterOrEqual(x) =>
+        withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
       case interval @ Interval(start, end) =>
         unaryOpDual(eval(start.value),
                     eval(end.value),
@@ -94,7 +98,7 @@ class FeelInterpreter {
         withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
 
       // dual comparators
-      case Equal(x, y)          => dualOpAny(eval(x), eval(y), _ == _, ValBoolean)
+      case Equal(x, y)          => checkEquality(eval(x), eval(y), _ == _, ValBoolean)
       case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
       case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
       case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
@@ -248,46 +252,6 @@ class FeelInterpreter {
     }
     case _ => x
   }
-
-  private def unaryOpAny(x: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(
-      implicit context: EvalContext): Val =
-    withVal(
-      input,
-      _ match {
-        case ValNull             => withVal(x, x => f(c(ValNull, x)))
-        case i if (x == ValNull) => f(c(i, ValNull))
-        case ValNumber(i)        => withNumber(x, x => f(c(i, x)))
-        case ValBoolean(i)       => withBoolean(x, x => f(c(i, x)))
-        case ValString(i)        => withString(x, x => f(c(i, x)))
-        case ValDate(i)          => withDate(x, x => f(c(i, x)))
-        case ValLocalTime(i)     => withLocalTime(x, x => f(c(i, x)))
-        case ValTime(i)          => withTime(x, x => f(c(i, x)))
-        case ValLocalDateTime(i) => withLocalDateTime(x, x => f(c(i, x)))
-        case ValDateTime(i)      => withDateTime(x, x => f(c(i, x)))
-        case ValYearMonthDuration(i) =>
-          withYearMonthDuration(x, x => f(c(i, x)))
-        case ValDayTimeDuration(i) => withDayTimeDuration(x, x => f(c(i, x)))
-        case e =>
-          error(
-            e,
-            s"expected Number, Boolean, String, Date, Time or Duration but found '$input'")
-      }
-    )
-
-  private def unaryOp(x: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(
-      implicit context: EvalContext): Val =
-    withVal(
-      input,
-      _ match {
-        case ValNull                => withVal(x, x => f(false))
-        case _ if (x == ValNull)    => withVal(x, x => f(false))
-        case i if (!i.isComparable) => ValError(s"$i is not comparable")
-        case _ if (!x.isComparable) => ValError(s"$x is not comparable")
-        case i if (i.getClass != x.getClass) =>
-          ValError(s"$i can not be compared to $x")
-        case i => f(c(i, x))
-      }
-    )
 
   private def unaryOpDual(
       x: Val,
@@ -519,10 +483,11 @@ class FeelInterpreter {
       case _            => error(x, s"expected Number but found '$x'")
     }
 
-  private def dualOpAny(x: Val,
-                        y: Val,
-                        c: (Any, Any) => Boolean,
-                        f: Boolean => Val)(implicit context: EvalContext): Val =
+  private def checkEquality(
+      x: Val,
+      y: Val,
+      c: (Any, Any) => Boolean,
+      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNull                 => withVal(y, y => f(c(ValNull, y)))
       case x if (y == ValNull)     => f(c(x, ValNull))
@@ -536,10 +501,58 @@ class FeelInterpreter {
       case ValDateTime(x)          => withDateTime(y, y => f(c(x, y)))
       case ValYearMonthDuration(x) => withYearMonthDuration(y, y => f(c(x, y)))
       case ValDayTimeDuration(x)   => withDayTimeDuration(y, y => f(c(x, y)))
+      case ValList(x) =>
+        withList(
+          y,
+          y => {
+            if (x.size != y.items.size) {
+              f(false)
+
+            } else {
+              val isEqual = x.zip(y.items).foldRight(true) {
+                case ((x, y), listIsEqual) =>
+                  listIsEqual && {
+                    checkEquality(x, y, c, f) match {
+                      case ValBoolean(itemIsEqual) => itemIsEqual
+                      case _                       => false
+                    }
+                  }
+              }
+              f(isEqual)
+            }
+          }
+        )
+      case ValContext(x) =>
+        withContext(
+          y,
+          y => {
+            val xVars = x.variableProvider.getVariables
+            val yVars = y.context.variableProvider.getVariables
+
+            if (xVars.keys != yVars.keys) {
+              f(false)
+
+            } else {
+              val isEqual = xVars.keys.foldRight(true) {
+                case (key, contextIsEqual) =>
+                  contextIsEqual && {
+                    val xVal = context.valueMapper.toVal(xVars(key))
+                    val yVal = context.valueMapper.toVal(yVars(key))
+
+                    checkEquality(xVal, yVal, c, f) match {
+                      case ValBoolean(entryIsEqual) => entryIsEqual
+                      case _                        => false
+                    }
+                  }
+              }
+              f(isEqual)
+            }
+          }
+        )
       case _ =>
         error(
           x,
-          s"expected Number, Boolean, String, Date, Time or Duration but found '$x'")
+          s"expected Number, Boolean, String, Date, Time, Duration, List or Context but found '$x'")
     }
 
   private def dualOp(x: Val,
@@ -708,13 +721,22 @@ class FeelInterpreter {
   }
 
   private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
-    withVal(input,
-            i =>
-              x match {
-                case ValBoolean(true) => ValBoolean(true)
-                case ValList(ys)      => ValBoolean(ys.exists(_ == i))
-                case y                => ValBoolean(i == y)
-            })
+    withVal(
+      input,
+      i =>
+        if (x == ValBoolean(true)) {
+          ValBoolean(true)
+
+        } else if (checkEquality(i, x, _ == _, ValBoolean) == ValBoolean(true)) {
+          ValBoolean(true)
+
+        } else {
+          x match {
+            case ValList(ys) => ValBoolean(ys.contains(i))
+            case _           => ValBoolean(false)
+          }
+      }
+    )
 
   private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
     case x: ValFunction => f(x)

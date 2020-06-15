@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.interpreter.impl
 
-import org.scalatest.{FlatSpec, Matchers}
 import org.camunda.feel.syntaxtree._
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * @author Philipp Ossler
@@ -95,6 +95,41 @@ class InterpreterContextExpressionTest
 
     eval(" { a:1, b: {}.x } ") should be(
       ValError("context contains no entry with key 'x'"))
+  }
+
+  it should "be compared with '='" in {
+
+    eval("{} = {}") should be(ValBoolean(true))
+    eval("{x:1} = {x:1}") should be(ValBoolean(true))
+    eval("{x:{ y:1 }} = {x:{ y:1 }}") should be(ValBoolean(true))
+
+    eval("{} = {x:1}") should be(ValBoolean(false))
+    eval("{x:1} = {}") should be(ValBoolean(false))
+    eval("{x:1} = {x:2}") should be(ValBoolean(false))
+    eval("{x:1} = {y:1}") should be(ValBoolean(false))
+
+    eval("{x:1} = {x:true}") should be(ValBoolean(false))
+  }
+
+  it should "be compared with '!='" in {
+
+    eval("{} != {}") should be(ValBoolean(false))
+    eval("{x:1} != {x:1}") should be(ValBoolean(false))
+    eval("{x:{ y:1 }} != {x:{ y:1 }}") should be(ValBoolean(false))
+
+    eval("{} != {x:1}") should be(ValBoolean(true))
+    eval("{x:1} != {}") should be(ValBoolean(true))
+    eval("{x:1} != {x:2}") should be(ValBoolean(true))
+    eval("{x:1} != {y:1}") should be(ValBoolean(true))
+
+    eval("{x:1} != {x:true}") should be(ValBoolean(true))
+  }
+
+  it should "fail to compare if not a context" in {
+
+    eval("{} = 1") should be(
+      ValError("expect Context but found 'ValNumber(1)'")
+    )
   }
 
 }

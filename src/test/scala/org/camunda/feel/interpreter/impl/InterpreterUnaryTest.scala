@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.interpreter.impl
 
-import org.scalatest.{FlatSpec, Matchers}
 import org.camunda.feel.syntaxtree._
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * @author Philipp Ossler
@@ -414,6 +414,28 @@ class InterpreterUnaryTest
     evalUnaryTests(dayTimeDuration("P2DT4H"),
                    """[duration("P1D")..duration("P2D")]""") should be(
       ValBoolean(false))
+  }
+
+  "A list" should "be equal to another list" in {
+
+    evalUnaryTests(List.empty, "[]") should be(ValBoolean(true))
+    evalUnaryTests(List(1, 2), "[1,2]") should be(ValBoolean(true))
+
+    evalUnaryTests(List(1, 2), "[]") should be(ValBoolean(false))
+    evalUnaryTests(List(1, 2), "[1]") should be(ValBoolean(false))
+    evalUnaryTests(List(1, 2), "[2,1]") should be(ValBoolean(false))
+    evalUnaryTests(List(1, 2), "[1,2,3]") should be(ValBoolean(false))
+  }
+
+  "A context" should "be equal to another context" in {
+
+    evalUnaryTests(Map.empty, "{}") should be(ValBoolean(true))
+    evalUnaryTests(Map("x" -> 1), "{x:1}") should be(ValBoolean(true))
+
+    evalUnaryTests(Map("x" -> 1), "{}") should be(ValBoolean(false))
+    evalUnaryTests(Map("x" -> 1), "{x:2}") should be(ValBoolean(false))
+    evalUnaryTests(Map("x" -> 1), "{y:1}") should be(ValBoolean(false))
+    evalUnaryTests(Map("x" -> 1), "{x:1,y:2}") should be(ValBoolean(false))
   }
 
   "An empty expression ('-')" should "be always true" in {
