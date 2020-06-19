@@ -1,6 +1,14 @@
-A clear and concise description of what the pull request is. 
+## Description
 
-Which issue do you want to fix? 
-If you have no issue then create one. This helps to track it and get the confirmation that the behavior is not expected. 
+<!-- Please explain the changes you made here. -->
 
-Closes #(feature request)
+* 
+
+## Related issues
+
+<!-- 
+  Which issues are closed by this PR or are related.
+  If you have no issue then create one. This helps to track it and get the confirmation that the behavior is not expected. 
+-->
+
+closes #
