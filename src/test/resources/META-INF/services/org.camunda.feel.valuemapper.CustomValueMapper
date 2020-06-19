@@ -1,1 +1,1 @@
-org.camunda.feel.impl.spi.TestValueMapper
+org.camunda.feel.impl.script.TestValueMapper
