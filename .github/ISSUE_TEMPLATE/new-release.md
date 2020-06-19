@@ -2,7 +2,7 @@
 name: New Release
 about: Building a new release
 title: "[Release] 1.x.y"
-labels: release
+labels: ''
 assignees: koevskinikola, saig0
 
 ---
