@@ -2,8 +2,8 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
-assignees: saig0
+labels: 'type: bug'
+assignees: ''
 
 ---
 
@@ -18,5 +18,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Environment**
-How do you use the FEEL engine?  As Camunda BPM process engine plugin? Together with Spring Boot? Something else?
-Which version do you use?
+* FEEL engine version: [1.x.y]
+* Affects: 
+  * Camunda BPM: [7.x] <!-- link the issue: https://jira.camunda.com/browse/CAM- -->
+  * Zeebe broker: [0.x] <!-- link the issue: https://github.com/zeebe-io/zeebe/issues# -->
