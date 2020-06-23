@@ -2,12 +2,12 @@
 name: New Release
 about: Building a new release
 title: "[Release] 1.x.y"
-labels: ''
+labels: 'type: release'
 assignees: koevskinikola, saig0
 
 ---
 
-## Build a new Release
+**Build a new Release**
 
 Release version: 1.x.y
 Release date: 
