@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: ''
+labels: 'type: enhancement'
 assignees: saig0
 
 ---
@@ -12,3 +12,8 @@ A clear and concise description of what the problem is. Ex. I'm always frustrate
 
 **Describe the solution you'd like**
 A clear and concise description of what you want to happen.
+
+**Related issues**
+
+* Camunda BPM: <!-- link the issue: https://jira.camunda.com/browse/CAM- -->
+* Zeebe broker: <!-- link the issue: https://github.com/zeebe-io/zeebe/issues# -->
