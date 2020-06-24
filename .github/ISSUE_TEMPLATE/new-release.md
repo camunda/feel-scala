@@ -20,7 +20,7 @@ Release date:
 * [ ] build the release using the CI job: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
 * [ ] deploy to Maven Central by releasing the staging repository: https://oss.sonatype.org/#stagingRepositories
 * [ ] if major/minor release, archive the documentation of the previous version
-  * copy `/docs/develop/` to `/docs/develop/<PREVIOUS_VERSION>` 
+  * copy `/docs/develop/` to `/docs/<PREVIOUS_VERSION>` 
   * add entry point for the version to `/docs/index.md`
 * [ ] create a release in GitHub for the tag: https://github.com/camunda/feel-scala/releases
   * attach the artifacts from Nexus: https://app.camunda.com/nexus/#browse/search=keyword%3Dfeel-scala
