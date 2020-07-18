@@ -90,4 +90,13 @@ class BuiltinNumberFunctionsTest
     eval(" even(2) ") should be(ValBoolean(true))
   }
 
+  "A round() function" should "return rounded number with a given scale" in {
+
+    eval(" round(0.4, 0) ") should be(ValNumber(0))
+    eval(" round(0.5, 0) ") should be(ValNumber(1))
+    eval(" round(2.5, 0) ") should be(ValNumber(3))
+    eval(" round(2.54, 1) ") should be(ValNumber(2.5))
+    eval(" round(2.57, 1) ") should be(ValNumber(2.6))
+  }
+
 }
