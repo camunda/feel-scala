@@ -39,6 +39,17 @@ class BuiltinNumberFunctionsTest
     eval(" decimal(2.5, 0) ") should be(ValNumber(2))
   }
 
+  "A decimal() function with rounding mode" should "return number with a given scale" in {
+
+    eval(""" decimal(1.5, 0, "HALF_EVEN") """) should be(ValNumber(2))
+    eval(""" decimal(1.5, 0, "HALF_UP") """) should be(ValNumber(2))
+    eval(""" decimal(1.5, 0, "UP") """) should be(ValNumber(2))
+    eval(""" decimal(1.5, 0, "HALF_DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.5, 0, "DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.5, 0, "FLOOR") """) should be(ValNumber(1))
+    eval(""" decimal(1.5, 0, "CEILING") """) should be(ValNumber(2))
+  }
+
   "A floor() function" should "return greatest integer <= _" in {
 
     eval(" floor(1.5) ") should be(ValNumber(1))

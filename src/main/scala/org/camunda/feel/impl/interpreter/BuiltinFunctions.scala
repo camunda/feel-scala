@@ -106,7 +106,7 @@ object BuiltinFunctions extends FunctionProvider {
 
   private def numericFunctions =
     Map(
-      "decimal" -> List(decimalFunction),
+      "decimal" -> List(decimalFunction, decimalFunction3),
       "floor" -> List(floorFunction),
       "ceiling" -> List(ceilingFunction),
       "abs" -> List(absFunction),
@@ -1030,6 +1030,13 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(List("n", "scale"), _ match {
       case List(ValNumber(n), ValNumber(scale)) =>
         ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
+      case e => error(e)
+    })
+
+  def decimalFunction3 =
+    ValFunction(List("n", "scale", "mode"), _ match {
+      case List(ValNumber(n), ValNumber(scale), ValString(mode)) =>
+        ValNumber(n.setScale(scale.intValue, RoundingMode.withName(mode)))
       case e => error(e)
     })
 
