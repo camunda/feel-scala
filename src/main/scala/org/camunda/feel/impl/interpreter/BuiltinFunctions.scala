@@ -115,8 +115,7 @@ object BuiltinFunctions extends FunctionProvider {
       "log" -> List(logFunction),
       "exp" -> List(expFunction),
       "odd" -> List(oddFunction),
-      "even" -> List(evenFunction),
-      "round" -> List(roundFunction)
+      "even" -> List(evenFunction)
     )
 
   private def contextFunctions =
@@ -1088,13 +1087,6 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValBoolean(n % 2 == 0)
       case e                  => error(e)
-    })
-
-  def roundFunction =
-    ValFunction(List("n", "scale"), _ match {
-      case List(ValNumber(n), ValNumber(scale)) =>
-        ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_UP))
-      case e => error(e)
     })
 
   // context functions
