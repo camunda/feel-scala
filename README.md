@@ -134,6 +134,10 @@ You can also evaluate unary tests instead of an expression by using one of the n
 
 See the [Contribution Guide](./CONTRIBUTING.md).
 
+The following resources can help to understand the general concepts behind the implementation: 
+* [Scala's Combinator Parsing](https://www.artima.com/pins1ed/combinator-parsing.html)
+* [Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
+
 ## License
 
 [Apache License, Version 2.0](./LICENSE)
