@@ -16,12 +16,15 @@
  */
 package org.camunda.feel.impl.script
 
+import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import javax.script.ScriptContext
 import javax.script.SimpleScriptContext
 import javax.script.Bindings
 import javax.script.ScriptException
+import org.camunda.feel.syntaxtree.ValDateTime
 
 /**
   * @author Philipp Ossler
@@ -113,6 +116,17 @@ class ScriptEngineTest extends FlatSpec with Matchers {
     val context = new SimpleScriptContext
 
     eval("null", context) should be("foobar")
+  }
+
+  it should "be configured by a custom clock" in {
+
+    val now = ZonedDateTime.of(LocalDate.parse("2020-07-31"),
+                               LocalTime.parse("14:27:30"),
+                               ZoneId.of("Europe/Berlin"))
+
+    PinnedClock.currentTime = now
+
+    eval("now()", new SimpleScriptContext) should be(now)
   }
 
   private def eval(script: String, context: ScriptContext) =

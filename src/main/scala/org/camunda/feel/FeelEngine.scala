@@ -50,6 +50,8 @@ object FeelEngine {
 
   def defaultConfiguration: Configuration = Configuration()
 
+  def defaultClock: FeelEngineClock = FeelEngineClock.SystemClock
+
   case class Failure(message: String)
 
   class Builder {
@@ -57,6 +59,7 @@ object FeelEngine {
     private var functionProvider_ : FunctionProvider = defaultFunctionProvider
     private var valueMapper_ : ValueMapper = defaultValueMapper
     private var customValueMappers_ : List[CustomValueMapper] = List.empty
+    private var clock_ : FeelEngineClock = defaultClock
     private var configuration_ : Configuration = defaultConfiguration
 
     def functionProvider(functionProvider: FunctionProvider): Builder = {
@@ -72,6 +75,11 @@ object FeelEngine {
 
     def valueMapper(valueMapper: ValueMapper): Builder = {
       valueMapper_ = valueMapper
+      this
+    }
+
+    def clock(clock: FeelEngineClock): Builder = {
+      clock_ = clock
       this
     }
 
@@ -98,7 +106,8 @@ object FeelEngine {
 class FeelEngine(
     val functionProvider: FunctionProvider = FeelEngine.defaultFunctionProvider,
     val valueMapper: ValueMapper = FeelEngine.defaultValueMapper,
-    val configuration: Configuration = FeelEngine.defaultConfiguration) {
+    val configuration: Configuration = FeelEngine.defaultConfiguration,
+    val clock: FeelEngineClock = FeelEngine.defaultClock) {
 
   val interpreter = new FeelInterpreter()
 
@@ -106,13 +115,17 @@ class FeelEngine(
     externalFunctionsEnabled = configuration.externalFunctionsEnabled)
 
   logger.info(
-    s"Engine created. [value-mapper: $valueMapper, function-provider: $functionProvider, configuration: $configuration]")
+    s"Engine created. [" +
+      s"value-mapper: $valueMapper, " +
+      s"function-provider: $functionProvider, " +
+      s"clock: $clock, " +
+      s"configuration: $configuration]")
 
   private val rootContext: EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = VariableProvider.EmptyVariableProvider,
     functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(BuiltinFunctions, functionProvider))
+      List(new BuiltinFunctions(clock), functionProvider))
   )
 
   def evalExpression(

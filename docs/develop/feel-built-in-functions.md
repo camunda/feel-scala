@@ -800,3 +800,29 @@ Returns the entries of the context as list of key-value-pairs.
 get entries({foo: 123})
 // [{key: "foo", value: 123}]
 ```
+
+## Temporal Functions 
+
+### now()
+
+Returns the current date and time including the timezone.
+
+* parameters: no
+* result: date-time with timezone
+
+```js
+now()
+// date and time("2020-07-31T14:27:30@Europe/Berlin")
+```
+
+### today()
+
+Returns the current date.
+
+* parameters: no
+* result: date
+
+```js
+today()
+// date("2020-07-31")
+```

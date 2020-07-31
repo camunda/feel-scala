@@ -31,7 +31,7 @@ import scala.util.Try
 /**
   * @author Philipp
   */
-object BuiltinFunctions extends FunctionProvider {
+class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
 
   override def getFunctions(name: String): List[ValFunction] =
     functions.getOrElse(name, List.empty)
@@ -44,7 +44,8 @@ object BuiltinFunctions extends FunctionProvider {
       stringFunctions ++
       listFunctions ++
       numericFunctions ++
-      contextFunctions
+      contextFunctions ++
+      temporalFunctions
 
   private def conversionFunctions =
     Map(
@@ -124,6 +125,9 @@ object BuiltinFunctions extends FunctionProvider {
   private def contextFunctions =
     Map("get entries" -> List(getEntriesFunction),
         "get value" -> List(getValueFunction))
+
+  private def temporalFunctions =
+    Map("now" -> List(nowFunction), "today" -> List(todayFunction))
 
   private def error(e: List[Val]): Val = e match {
     case vars if (vars.exists(_.isInstanceOf[ValError])) =>
@@ -1159,6 +1163,25 @@ object BuiltinFunctions extends FunctionProvider {
       invoke = _ match {
         case (value: ValError) :: Nil => ValBoolean(false)
         case _                        => ValBoolean(true)
+      }
+    )
+
+  // temporal functions
+  private def nowFunction =
+    ValFunction(
+      List.empty,
+      _ => {
+        val now = clock.getCurrentTime
+        ValDateTime(now)
+      }
+    )
+
+  private def todayFunction =
+    ValFunction(
+      List.empty,
+      _ => {
+        val today = clock.getCurrentTime.toLocalDate
+        ValDate(today)
       }
     )
 
