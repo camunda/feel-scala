@@ -32,22 +32,115 @@ class BuiltinNumberFunctionsTest
     with Matchers
     with FeelIntegrationTest {
 
-  "A decimal() function" should "return number with a given scale" in {
+  "A decimal() function" should "return number with a given scale and optional rounding mode" in {
 
     eval(" decimal((1/3), 2) ") should be(ValNumber(0.33))
     eval(" decimal(1.5, 0) ") should be(ValNumber(2))
     eval(" decimal(2.5, 0) ") should be(ValNumber(2))
-  }
 
-  "A decimal() function with rounding mode" should "return number with a given scale" in {
+    // with optional rounding mode
+    // see https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html
+    eval(""" decimal(5.5, 0, "UP") """) should be(ValNumber(6))
+    eval(""" decimal(5.5, 0, "DOWN") """) should be(ValNumber(5))
+    eval(""" decimal(5.5, 0, "CEILING") """) should be(ValNumber(6))
+    eval(""" decimal(5.5, 0, "FLOOR") """) should be(ValNumber(5))
+    eval(""" decimal(5.5, 0, "HALF_UP") """) should be(ValNumber(6))
+    eval(""" decimal(5.5, 0, "HALF_DOWN") """) should be(ValNumber(5))
+    eval(""" decimal(5.5, 0, "HALF_EVEN") """) should be(ValNumber(6))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(5.5, 0, "UNNECESSARY") """)
 
-    eval(""" decimal(1.5, 0, "HALF_EVEN") """) should be(ValNumber(2))
-    eval(""" decimal(1.5, 0, "HALF_UP") """) should be(ValNumber(2))
-    eval(""" decimal(1.5, 0, "UP") """) should be(ValNumber(2))
-    eval(""" decimal(1.5, 0, "HALF_DOWN") """) should be(ValNumber(1))
-    eval(""" decimal(1.5, 0, "DOWN") """) should be(ValNumber(1))
-    eval(""" decimal(1.5, 0, "FLOOR") """) should be(ValNumber(1))
+    eval(""" decimal(2.5, 0, "UP") """) should be(ValNumber(3))
+    eval(""" decimal(2.5, 0, "DOWN") """) should be(ValNumber(2))
+    eval(""" decimal(2.5, 0, "CEILING") """) should be(ValNumber(3))
+    eval(""" decimal(2.5, 0, "FLOOR") """) should be(ValNumber(2))
+    eval(""" decimal(2.5, 0, "HALF_UP") """) should be(ValNumber(3))
+    eval(""" decimal(2.5, 0, "HALF_DOWN") """) should be(ValNumber(2))
+    eval(""" decimal(2.5, 0, "HALF_EVEN") """) should be(ValNumber(2))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(2.5, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(1.6, 0, "UP") """) should be(ValNumber(2))
+    eval(""" decimal(1.6, 0, "DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.6, 0, "CEILING") """) should be(ValNumber(2))
+    eval(""" decimal(1.6, 0, "FLOOR") """) should be(ValNumber(1))
+    eval(""" decimal(1.6, 0, "HALF_UP") """) should be(ValNumber(2))
+    eval(""" decimal(1.6, 0, "HALF_DOWN") """) should be(ValNumber(2))
+    eval(""" decimal(1.6, 0, "HALF_EVEN") """) should be(ValNumber(2))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(1.6, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(1.1, 0, "UP") """) should be(ValNumber(2))
+    eval(""" decimal(1.1, 0, "DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.1, 0, "CEILING") """) should be(ValNumber(2))
+    eval(""" decimal(1.1, 0, "FLOOR") """) should be(ValNumber(1))
+    eval(""" decimal(1.1, 0, "HALF_UP") """) should be(ValNumber(1))
+    eval(""" decimal(1.1, 0, "HALF_DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.1, 0, "HALF_EVEN") """) should be(ValNumber(1))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(1.1, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(1.0, 0, "UP") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "CEILING") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "FLOOR") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "HALF_UP") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "HALF_DOWN") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "HALF_EVEN") """) should be(ValNumber(1))
+    eval(""" decimal(1.0, 0, "UNNECESSARY") """) should be(ValNumber(1))
+
+    eval(""" decimal(-1.0, 0, "UP") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "DOWN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "CEILING") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "FLOOR") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "HALF_UP") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "HALF_DOWN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "HALF_EVEN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.0, 0, "UNNECESSARY") """) should be(ValNumber(-1))
+
+    eval(""" decimal(-1.1, 0, "UP") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.1, 0, "DOWN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.1, 0, "CEILING") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.1, 0, "FLOOR") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.1, 0, "HALF_UP") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.1, 0, "HALF_DOWN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.1, 0, "HALF_EVEN") """) should be(ValNumber(-1))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(-1.1, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(-1.6, 0, "UP") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.6, 0, "DOWN") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.6, 0, "CEILING") """) should be(ValNumber(-1))
+    eval(""" decimal(-1.6, 0, "FLOOR") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.6, 0, "HALF_UP") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.6, 0, "HALF_DOWN") """) should be(ValNumber(-2))
+    eval(""" decimal(-1.6, 0, "HALF_EVEN") """) should be(ValNumber(-2))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(-1.6, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(-2.5, 0, "UP") """) should be(ValNumber(-3))
+    eval(""" decimal(-2.5, 0, "DOWN") """) should be(ValNumber(-2))
+    eval(""" decimal(-2.5, 0, "CEILING") """) should be(ValNumber(-2))
+    eval(""" decimal(-2.5, 0, "FLOOR") """) should be(ValNumber(-3))
+    eval(""" decimal(-2.5, 0, "HALF_UP") """) should be(ValNumber(-3))
+    eval(""" decimal(-2.5, 0, "HALF_DOWN") """) should be(ValNumber(-2))
+    eval(""" decimal(-2.5, 0, "HALF_EVEN") """) should be(ValNumber(-2))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(-2.5, 0, "UNNECESSARY") """)
+
+    eval(""" decimal(-5.5, 0, "UP") """) should be(ValNumber(-6))
+    eval(""" decimal(-5.5, 0, "DOWN") """) should be(ValNumber(-5))
+    eval(""" decimal(-5.5, 0, "CEILING") """) should be(ValNumber(-5))
+    eval(""" decimal(-5.5, 0, "FLOOR") """) should be(ValNumber(-6))
+    eval(""" decimal(-5.5, 0, "HALF_UP") """) should be(ValNumber(-6))
+    eval(""" decimal(-5.5, 0, "HALF_DOWN") """) should be(ValNumber(-5))
+    eval(""" decimal(-5.5, 0, "HALF_EVEN") """) should be(ValNumber(-6))
+    an [ArithmeticException] should be thrownBy eval(""" decimal(-5.5, 0, "UNNECESSARY") """)
+
+    // case-insensitive rounding mode
     eval(""" decimal(1.5, 0, "CEILING") """) should be(ValNumber(2))
+    eval(""" decimal(1.5, 0, "ceiling") """) should be(ValNumber(2))
+    eval(""" decimal(1.5, 0, "CeiLing") """) should be(ValNumber(2))
+
+    // invalid rounding mode
+    eval(""" decimal(1.5, 0, "UNKNOWN") """) should be(
+      ValError("illegal arguments for rounding mode. " +
+        "Must be one of 'CEILING', 'DOWN', 'FLOOR', 'HALF_DOWN', 'HALF_EVEN', 'HALF_UP', 'UNNECESSARY' or 'UP'.")
+    )
+
   }
 
   "A floor() function" should "return greatest integer <= _" in {
