@@ -20,9 +20,9 @@ import java.math.BigDecimal
 import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
 import java.util.regex.Pattern
 
-import org.camunda.feel._
 import org.camunda.feel.context.{Context, FunctionProvider}
 import org.camunda.feel.syntaxtree._
+import org.camunda.feel._
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
@@ -202,11 +202,11 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("from"),
       _ match {
-        case List(ValString(from)) => parseDate(from)
+        case List(ValString(from))        => parseDate(from)
         case List(ValLocalDateTime(from)) => ValDate(from.toLocalDate())
-        case List(ValDateTime(from)) => ValDate(from.toLocalDate())
-        case List(ValDate(from)) => ValDate(from)
-        case e => error(e)
+        case List(ValDateTime(from))      => ValDate(from.toLocalDate())
+        case List(ValDate(from))          => ValDate(from)
+        case e                            => error(e)
       }
     )
 
@@ -229,7 +229,7 @@ object BuiltinFunctions extends FunctionProvider {
   def dateTime =
     ValFunction(List("from"), _ match {
       case List(ValString(from)) => parseDateTime(from)
-      case e => error(e)
+      case e                     => error(e)
     })
 
   def dateTime2 =
@@ -256,9 +256,9 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("from"),
       _ match {
-        case List(ValString(from)) => parseTime(from)
+        case List(ValString(from))        => parseTime(from)
         case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
-        case List(ValDateTime(from)) => ValTime(ZonedTime.of(from))
+        case List(ValDateTime(from))      => ValTime(ZonedTime.of(from))
         case List(ValDate(from)) =>
           ValTime(ZonedTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC))
         case e => error(e)
@@ -331,7 +331,7 @@ object BuiltinFunctions extends FunctionProvider {
   def numberFunction =
     ValFunction(List("from"), _ match {
       case List(ValString(from)) => ValNumber(from)
-      case e => error(e)
+      case e                     => error(e)
     })
 
   def numberFunction2 =
@@ -376,10 +376,10 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("from"),
       _ match {
-        case List(ValString(from)) => ValString(from)
+        case List(ValString(from))  => ValString(from)
         case List(ValBoolean(from)) => ValString(from.toString)
-        case List(ValNumber(from)) => ValString(from.toString)
-        case List(ValDate(from)) => ValString(from.format(dateFormatter))
+        case List(ValNumber(from))  => ValString(from.toString)
+        case List(ValDate(from))    => ValString(from.format(dateFormatter))
         case List(ValLocalTime(from)) =>
           ValString(from.format(localTimeFormatter))
         case List(ValTime(from)) => ValString(from.format)
@@ -394,15 +394,15 @@ object BuiltinFunctions extends FunctionProvider {
           ValString(dateTimeWithOffsetOrZoneId)
         }
         case List(ValYearMonthDuration(from)) => ValString(from.toString)
-        case List(ValDayTimeDuration(from)) => ValString(from.toString)
-        case e => error(e)
+        case List(ValDayTimeDuration(from))   => ValString(from.toString)
+        case e                                => error(e)
       }
     )
 
   def durationFunction =
     ValFunction(List("from"), _ match {
       case List(ValString(from)) => parseDuration(from)
-      case e => error(e)
+      case e                     => error(e)
     })
 
   def durationFunction2 =
@@ -456,8 +456,8 @@ object BuiltinFunctions extends FunctionProvider {
   def notFunction =
     ValFunction(List("negand"), _ match {
       case List(ValBoolean(negand)) => ValBoolean(!negand)
-      case List(other: Val) => ValNull
-      case other => ValNull
+      case List(other: Val)         => ValNull
+      case other                    => ValNull
     })
 
   // string functions
@@ -495,19 +495,19 @@ object BuiltinFunctions extends FunctionProvider {
   def stringLengthFunction =
     ValFunction(List("string"), _ match {
       case List(ValString(string)) => ValNumber(string.length)
-      case e => error(e)
+      case e                       => error(e)
     })
 
   def upperCaseFunction =
     ValFunction(List("string"), _ match {
       case List(ValString(string)) => ValString(string.toUpperCase)
-      case e => error(e)
+      case e                       => error(e)
     })
 
   def lowerCaseFunction =
     ValFunction(List("string"), _ match {
       case List(ValString(string)) => ValString(string.toLowerCase)
-      case e => error(e)
+      case e                       => error(e)
     })
 
   def substringBeforeFunction =
@@ -654,24 +654,24 @@ object BuiltinFunctions extends FunctionProvider {
   def listContainsFunction =
     ValFunction(List("list", "element"), _ match {
       case List(ValList(list), element) => ValBoolean(list.contains(element))
-      case e => error(e)
+      case e                            => error(e)
     })
 
   def countFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => ValNumber(list.size)
-      case e => error(e)
+      case e                   => error(e)
     })
 
   def minFunction =
     ValFunction(
       List("list"),
       _ match {
-        case List(l@ValList(list)) =>
+        case List(l @ ValList(list)) =>
           list match {
-            case Nil => ValNull
+            case Nil                   => ValNull
             case _ if (l.isComparable) => list.min
-            case _ => logger.warn(s"$l is not comparable"); ValNull
+            case _                     => logger.warn(s"$l is not comparable"); ValNull
           }
         case e => error(e)
       },
@@ -682,11 +682,11 @@ object BuiltinFunctions extends FunctionProvider {
     ValFunction(
       List("list"),
       _ match {
-        case List(l@ValList(list)) =>
+        case List(l @ ValList(list)) =>
           list match {
-            case Nil => ValNull
+            case Nil                   => ValNull
             case _ if (l.isComparable) => list.max
-            case _ => logger.warn(s"$l is not comparable"); ValNull
+            case _                     => logger.warn(s"$l is not comparable"); ValNull
           }
         case e => error(e)
       },
@@ -822,7 +822,7 @@ object BuiltinFunctions extends FunctionProvider {
   def andFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => all(list)
-      case e => error(e)
+      case e                   => error(e)
     }, hasVarArgs = true)
 
   private def all(xs: List[Val]): Val = xs match {
@@ -830,11 +830,11 @@ object BuiltinFunctions extends FunctionProvider {
     case x :: xs =>
       x match {
         case ValBoolean(false) => ValBoolean(false)
-        case ValBoolean(true) => all(xs)
+        case ValBoolean(true)  => all(xs)
         case other =>
           all(xs) match {
             case ValBoolean(false) => ValBoolean(false)
-            case _ => ValNull
+            case _                 => ValNull
           }
       }
   }
@@ -842,19 +842,19 @@ object BuiltinFunctions extends FunctionProvider {
   def orFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => atLeastOne(list)
-      case e => error(e)
+      case e                   => error(e)
     }, hasVarArgs = true)
 
   private def atLeastOne(xs: List[Val]): Val = xs match {
     case Nil => ValBoolean(false)
     case x :: xs =>
       x match {
-        case ValBoolean(true) => ValBoolean(true)
+        case ValBoolean(true)  => ValBoolean(true)
         case ValBoolean(false) => atLeastOne(xs)
         case other =>
           atLeastOne(xs) match {
             case ValBoolean(true) => ValBoolean(true)
-            case _ => ValNull
+            case _                => ValNull
           }
       }
   }
@@ -888,7 +888,7 @@ object BuiltinFunctions extends FunctionProvider {
   def appendFunction =
     ValFunction(List("list", "items"), _ match {
       case List(ValList(list), ValList(items)) => ValList(list ++ items)
-      case e => error(e)
+      case e                                   => error(e)
     }, hasVarArgs = true)
 
   def concatenateFunction =
@@ -900,7 +900,7 @@ object BuiltinFunctions extends FunctionProvider {
             lists
               .flatMap(_ match {
                 case ValList(list) => list
-                case v => List(v)
+                case v             => List(v)
               })
               .toList)
         case e => error(e)
@@ -935,7 +935,7 @@ object BuiltinFunctions extends FunctionProvider {
   def reverseFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => ValList(list.reverse)
-      case e => error(e)
+      case e                   => error(e)
     })
 
   def indexOfFunction =
@@ -968,7 +968,7 @@ object BuiltinFunctions extends FunctionProvider {
             lists
               .flatMap(_ match {
                 case ValList(list) => list
-                case v => List(v)
+                case v             => List(v)
               })
               .toList
               .distinct)
@@ -980,19 +980,19 @@ object BuiltinFunctions extends FunctionProvider {
   def distinctValuesFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => ValList(list.distinct)
-      case e => error(e)
+      case e                   => error(e)
     })
 
   def flattenFunction =
     ValFunction(List("list"), _ match {
       case List(ValList(list)) => ValList(flatten(list))
-      case e => error(e)
+      case e                   => error(e)
     })
 
   private def flatten(list: List[Val]): List[Val] = list match {
-    case Nil => Nil
+    case Nil              => Nil
     case ValList(l) :: xs => flatten(l) ++ flatten(xs)
-    case x :: xs => x :: flatten(xs)
+    case x :: xs          => x :: flatten(xs)
   }
 
   def sortFunction =
@@ -1046,32 +1046,31 @@ object BuiltinFunctions extends FunctionProvider {
     })
 
   private def isValidRoundingMode(mode: String) =
-      mode.equalsIgnoreCase(RoundingMode.CEILING.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.DOWN.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.FLOOR.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.HALF_DOWN.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.HALF_EVEN.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.HALF_UP.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.UNNECESSARY.toString) ||
-        mode.equalsIgnoreCase(RoundingMode.UP.toString)
-
+    mode.equalsIgnoreCase(RoundingMode.CEILING.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.DOWN.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.FLOOR.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.HALF_DOWN.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.HALF_EVEN.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.HALF_UP.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.UNNECESSARY.toString) ||
+      mode.equalsIgnoreCase(RoundingMode.UP.toString)
 
   def floorFunction =
     ValFunction(List("n"), _ match {
       case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.FLOOR))
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def ceilingFunction =
     ValFunction(List("n"), _ match {
       case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def absFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValNumber(n.abs)
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def moduloFunction =
@@ -1084,32 +1083,32 @@ object BuiltinFunctions extends FunctionProvider {
   def sqrtFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) if n < 0 => ValNull
-      case List(ValNumber(n)) => ValNumber(Math.sqrt(n.toDouble))
-      case e => error(e)
+      case List(ValNumber(n))          => ValNumber(Math.sqrt(n.toDouble))
+      case e                           => error(e)
     })
 
   def logFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValNumber(Math.log(n.toDouble))
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def expFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValNumber(Math.exp(n.toDouble))
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def oddFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValBoolean(n % 2 == 1)
-      case e => error(e)
+      case e                  => error(e)
     })
 
   def evenFunction =
     ValFunction(List("number"), _ match {
       case List(ValNumber(n)) => ValBoolean(n % 2 == 0)
-      case e => error(e)
+      case e                  => error(e)
     })
 
   // context functions
@@ -1144,11 +1143,11 @@ object BuiltinFunctions extends FunctionProvider {
     list
       .map(_ match {
         case n: ValNumber => n
-        case x => ValError(s"expected number but found '$x'")
+        case x            => ValError(s"expected number but found '$x'")
       })
       .find(_.isInstanceOf[ValError]) match {
       case Some(e) => e
-      case None => f(list.asInstanceOf[List[ValNumber]].map(_.value))
+      case None    => f(list.asInstanceOf[List[ValNumber]].map(_.value))
     }
   }
 
