@@ -612,9 +612,12 @@ sort(list: [3,1,4,5,2], precedes: function(x,y) x < y)
 
 ### decimal()
 
+Round the given number at the given scale using the given rounding mode. If no rounding mode is passed in then it uses `HALF_EVEN` as default. 
+
 * parameters:
   * `n`: number
   * `scale`: number
+  * (optional) `mode`: string - one of `UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY` (default: `HALF_EVEN`)
 * result: number
 
 ```js
@@ -623,6 +626,9 @@ decimal(1/3, 2)
 
 decimal(1.5, 0) 
 // 2
+
+decimal(2.5, 0, "half_up")
+// 3
 ```
 
 ### floor()

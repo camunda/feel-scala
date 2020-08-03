@@ -20,17 +20,17 @@ import java.math.BigDecimal
 import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
 import java.util.regex.Pattern
 
+import org.camunda.feel._
 import org.camunda.feel.context.{Context, FunctionProvider}
 import org.camunda.feel.syntaxtree._
-import org.camunda.feel._
 
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 import scala.util.Try
 
 /**
- * @author Philipp
- */
+  * @author Philipp
+  */
 object BuiltinFunctions extends FunctionProvider {
 
   override def getFunctions(name: String): List[ValFunction] =
@@ -120,7 +120,7 @@ object BuiltinFunctions extends FunctionProvider {
 
   private def contextFunctions =
     Map("get entries" -> List(getEntriesFunction),
-      "get value" -> List(getValueFunction))
+        "get value" -> List(getValueFunction))
 
   private def error(e: List[Val]): Val = e match {
     case vars if (vars.exists(_.isInstanceOf[ValError])) =>
@@ -292,18 +292,18 @@ object BuiltinFunctions extends FunctionProvider {
       List("hour", "minute", "second", "offset"),
       _ match {
         case List(ValNumber(hour),
-        ValNumber(minute),
-        ValNumber(second),
-        ValDayTimeDuration(offset)) =>
+                  ValNumber(minute),
+                  ValNumber(second),
+                  ValDayTimeDuration(offset)) =>
           Try {
             val nanos = second.bigDecimal
               .remainder(BigDecimal.ONE)
               .movePointRight(9)
               .intValue
             val localTime = LocalTime.of(hour.intValue,
-              minute.intValue,
-              second.intValue,
-              nanos)
+                                         minute.intValue,
+                                         second.intValue,
+                                         nanos)
             val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
             ValTime(ZonedTime.of(localTime, zonedOffset))
@@ -313,9 +313,9 @@ object BuiltinFunctions extends FunctionProvider {
             ValNull
           }
         case List(ValNumber(hour),
-        ValNumber(minute),
-        ValNumber(second),
-        ValNull) =>
+                  ValNumber(minute),
+                  ValNumber(second),
+                  ValNull) =>
           Try {
             ValLocalTime(
               LocalTime.of(hour.intValue, minute.intValue, second.intValue))
@@ -339,7 +339,7 @@ object BuiltinFunctions extends FunctionProvider {
       List("from", "grouping separator"),
       _ match {
         case List(ValString(from), ValString(grouping))
-          if (isValidGroupingSeparator(grouping)) =>
+            if (isValidGroupingSeparator(grouping)) =>
           ValNumber(from.replace(grouping, ""))
         case List(ValString(from), ValString(grouping)) =>
           ValError(
@@ -353,8 +353,8 @@ object BuiltinFunctions extends FunctionProvider {
       List("from", "grouping separator", "decimal separator"),
       _ match {
         case List(ValString(from), ValString(grouping), ValString(decimal))
-          if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
-            decimal) && grouping != decimal) =>
+            if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
+              decimal) && grouping != decimal) =>
           ValNumber(from.replace(grouping, "").replace(decimal, "."))
         case List(ValString(from), ValString(grouping), ValString(decimal)) =>
           ValError(
@@ -547,8 +547,8 @@ object BuiltinFunctions extends FunctionProvider {
       List("input", "pattern", "replacement"),
       _ match {
         case List(ValString(input),
-        ValString(pattern),
-        ValString(replacement)) =>
+                  ValString(pattern),
+                  ValString(replacement)) =>
           ValString(input.replaceAll(pattern, replacement))
         case e => error(e)
       }
@@ -559,9 +559,9 @@ object BuiltinFunctions extends FunctionProvider {
       List("input", "pattern", "replacement", "flags"),
       _ match {
         case List(ValString(input),
-        ValString(pattern),
-        ValString(replacement),
-        ValString(flags)) => {
+                  ValString(pattern),
+                  ValString(replacement),
+                  ValString(flags)) => {
           val p = Pattern.compile(pattern, patternFlags(flags))
           val m = p.matcher(input)
           ValString(m.replaceAll(replacement))
@@ -873,7 +873,7 @@ object BuiltinFunctions extends FunctionProvider {
         case List(ValList(list), ValNumber(start), ValNumber(length)) =>
           ValList(
             list.slice(listIndex(list, start.intValue),
-              listIndex(list, start.intValue) + length.intValue))
+                       listIndex(list, start.intValue) + length.intValue))
         case e => error(e)
       }
     )
@@ -1000,7 +1000,7 @@ object BuiltinFunctions extends FunctionProvider {
       List("list", "precedes"),
       _ match {
         case List(ValList(list), ValFunction(params, f, _))
-          if (params.size == 2) => {
+            if (params.size == 2) => {
           try {
             ValList(list.sortWith {
               case (x, y) =>
@@ -1029,41 +1029,53 @@ object BuiltinFunctions extends FunctionProvider {
   def decimalFunction =
     ValFunction(List("n", "scale"), _ match {
       case List(ValNumber(n), ValNumber(scale)) =>
-        ValNumber(n.setScale(scale.intValue, RoundingMode.HALF_EVEN))
+        round(n, scale, RoundingMode.HALF_EVEN)
       case e => error(e)
     })
 
   def decimalFunction3 =
-    ValFunction(List("n", "scale", "mode"), _ match {
-      case List(ValNumber(n), ValNumber(scale), ValString(mode))
-        if(isValidRoundingMode(mode)) =>
-        ValNumber(n.setScale(scale.intValue, RoundingMode.withName(mode.toUpperCase)))
-      case List(ValNumber(n), ValNumber(scale), ValString(mode)) =>
-        ValError(
-          s"illegal arguments for rounding mode. " +
-            s"Must be one of 'CEILING', 'DOWN', 'FLOOR', 'HALF_DOWN', 'HALF_EVEN', 'HALF_UP', 'UNNECESSARY' or 'UP'.")
-      case e => error(e)
-    })
+    ValFunction(
+      List("n", "scale", "mode"),
+      _ match {
+        case List(ValNumber(n), ValNumber(scale), ValString(mode))
+            if (isRoundingMode(mode)) => {
+          val roundingMode = RoundingMode.withName(mode.toUpperCase)
+          round(n, scale, roundingMode)
+        }
+        case List(ValNumber(_), ValNumber(_), ValString(mode)) => {
+          val roundingModes = RoundingMode.values.mkString(", ")
+          ValError(
+            s"Illegal argument '$mode' for rounding mode. Must be one of: $roundingModes")
+        }
+        case e => error(e)
+      }
+    )
 
-  private def isValidRoundingMode(mode: String) =
-    mode.equalsIgnoreCase(RoundingMode.CEILING.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.DOWN.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.FLOOR.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.HALF_DOWN.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.HALF_EVEN.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.HALF_UP.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.UNNECESSARY.toString) ||
-      mode.equalsIgnoreCase(RoundingMode.UP.toString)
+  private def isRoundingMode(mode: String) =
+    RoundingMode.values.map(_.toString).contains(mode.toUpperCase)
+
+  private def round(n: Number,
+                    scale: Number,
+                    roundingMode: RoundingMode.Value): Val = {
+    try {
+      val x = n.setScale(scale.intValue, roundingMode)
+      ValNumber(x)
+    } catch {
+      case e: ArithmeticException =>
+        ValError(
+          s"Failed to apply rounding mode '$roundingMode': ${e.getMessage}")
+    }
+  }
 
   def floorFunction =
     ValFunction(List("n"), _ match {
-      case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.FLOOR))
+      case List(ValNumber(n)) => round(n, 0, RoundingMode.FLOOR)
       case e                  => error(e)
     })
 
   def ceilingFunction =
     ValFunction(List("n"), _ match {
-      case List(ValNumber(n)) => ValNumber(n.setScale(0, RoundingMode.CEILING))
+      case List(ValNumber(n)) => round(n, 0, RoundingMode.CEILING)
       case e                  => error(e)
     })
 

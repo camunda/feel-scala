@@ -17,12 +17,10 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.FeelIntegrationTest
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import org.camunda.feel.syntaxtree._
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.math.BigDecimal.double2bigDecimal
-import scala.math.BigDecimal.int2bigDecimal
+import scala.math.BigDecimal.{double2bigDecimal, int2bigDecimal}
 
 /**
   * @author Philipp
@@ -32,14 +30,16 @@ class BuiltinNumberFunctionsTest
     with Matchers
     with FeelIntegrationTest {
 
-  "A decimal() function" should "return number with a given scale and optional rounding mode" in {
+  "A decimal() function" should "return number with a given scale" in {
 
     eval(" decimal((1/3), 2) ") should be(ValNumber(0.33))
     eval(" decimal(1.5, 0) ") should be(ValNumber(2))
     eval(" decimal(2.5, 0) ") should be(ValNumber(2))
+  }
 
-    // with optional rounding mode
+  it should "use the given rounding mode" in {
     // see https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html
+
     eval(""" decimal(5.5, 0, "UP") """) should be(ValNumber(6))
     eval(""" decimal(5.5, 0, "DOWN") """) should be(ValNumber(5))
     eval(""" decimal(5.5, 0, "CEILING") """) should be(ValNumber(6))
@@ -47,7 +47,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(5.5, 0, "HALF_UP") """) should be(ValNumber(6))
     eval(""" decimal(5.5, 0, "HALF_DOWN") """) should be(ValNumber(5))
     eval(""" decimal(5.5, 0, "HALF_EVEN") """) should be(ValNumber(6))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(5.5, 0, "UNNECESSARY") """)
+    eval(""" decimal(5.5, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(2.5, 0, "UP") """) should be(ValNumber(3))
     eval(""" decimal(2.5, 0, "DOWN") """) should be(ValNumber(2))
@@ -56,7 +58,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(2.5, 0, "HALF_UP") """) should be(ValNumber(3))
     eval(""" decimal(2.5, 0, "HALF_DOWN") """) should be(ValNumber(2))
     eval(""" decimal(2.5, 0, "HALF_EVEN") """) should be(ValNumber(2))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(2.5, 0, "UNNECESSARY") """)
+    eval(""" decimal(2.5, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(1.6, 0, "UP") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "DOWN") """) should be(ValNumber(1))
@@ -65,7 +69,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(1.6, 0, "HALF_UP") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "HALF_DOWN") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "HALF_EVEN") """) should be(ValNumber(2))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(1.6, 0, "UNNECESSARY") """)
+    eval(""" decimal(1.6, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(1.1, 0, "UP") """) should be(ValNumber(2))
     eval(""" decimal(1.1, 0, "DOWN") """) should be(ValNumber(1))
@@ -74,7 +80,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(1.1, 0, "HALF_UP") """) should be(ValNumber(1))
     eval(""" decimal(1.1, 0, "HALF_DOWN") """) should be(ValNumber(1))
     eval(""" decimal(1.1, 0, "HALF_EVEN") """) should be(ValNumber(1))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(1.1, 0, "UNNECESSARY") """)
+    eval(""" decimal(1.1, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(1.0, 0, "UP") """) should be(ValNumber(1))
     eval(""" decimal(1.0, 0, "DOWN") """) should be(ValNumber(1))
@@ -101,7 +109,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-1.1, 0, "HALF_UP") """) should be(ValNumber(-1))
     eval(""" decimal(-1.1, 0, "HALF_DOWN") """) should be(ValNumber(-1))
     eval(""" decimal(-1.1, 0, "HALF_EVEN") """) should be(ValNumber(-1))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(-1.1, 0, "UNNECESSARY") """)
+    eval(""" decimal(-1.1, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(-1.6, 0, "UP") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "DOWN") """) should be(ValNumber(-1))
@@ -110,7 +120,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-1.6, 0, "HALF_UP") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "HALF_DOWN") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "HALF_EVEN") """) should be(ValNumber(-2))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(-1.6, 0, "UNNECESSARY") """)
+    eval(""" decimal(-1.6, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(-2.5, 0, "UP") """) should be(ValNumber(-3))
     eval(""" decimal(-2.5, 0, "DOWN") """) should be(ValNumber(-2))
@@ -119,7 +131,9 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-2.5, 0, "HALF_UP") """) should be(ValNumber(-3))
     eval(""" decimal(-2.5, 0, "HALF_DOWN") """) should be(ValNumber(-2))
     eval(""" decimal(-2.5, 0, "HALF_EVEN") """) should be(ValNumber(-2))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(-2.5, 0, "UNNECESSARY") """)
+    eval(""" decimal(-2.5, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
 
     eval(""" decimal(-5.5, 0, "UP") """) should be(ValNumber(-6))
     eval(""" decimal(-5.5, 0, "DOWN") """) should be(ValNumber(-5))
@@ -128,17 +142,22 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-5.5, 0, "HALF_UP") """) should be(ValNumber(-6))
     eval(""" decimal(-5.5, 0, "HALF_DOWN") """) should be(ValNumber(-5))
     eval(""" decimal(-5.5, 0, "HALF_EVEN") """) should be(ValNumber(-6))
-    an [ArithmeticException] should be thrownBy eval(""" decimal(-5.5, 0, "UNNECESSARY") """)
+    eval(""" decimal(-5.5, 0, "UNNECESSARY") """) should be(
+      ValError(
+        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+  }
 
-    // case-insensitive rounding mode
+  it should "use the given rounding mode (case-insensitive)" in {
     eval(""" decimal(1.5, 0, "CEILING") """) should be(ValNumber(2))
     eval(""" decimal(1.5, 0, "ceiling") """) should be(ValNumber(2))
     eval(""" decimal(1.5, 0, "CeiLing") """) should be(ValNumber(2))
+  }
 
+  it should "fail if the rounding mode is not valid" in {
     // invalid rounding mode
-    eval(""" decimal(1.5, 0, "UNKNOWN") """) should be(
-      ValError("illegal arguments for rounding mode. " +
-        "Must be one of 'CEILING', 'DOWN', 'FLOOR', 'HALF_DOWN', 'HALF_EVEN', 'HALF_UP', 'UNNECESSARY' or 'UP'.")
+    eval(""" decimal(1.5, 0, "unknown") """) should be(
+      ValError(
+        "Illegal argument 'unknown' for rounding mode. Must be one of: UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY")
     )
 
   }
