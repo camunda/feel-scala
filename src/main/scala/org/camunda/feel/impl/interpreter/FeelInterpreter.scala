@@ -489,8 +489,8 @@ class FeelInterpreter {
       c: (Any, Any) => Boolean,
       f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case ValNull                 => withVal(y, y => f(c(ValNull, y)))
-      case x if (y == ValNull)     => f(c(x, ValNull))
+      case ValNull                 => f(c(ValNull, y.toOption.getOrElse(ValNull)))
+      case x if (y == ValNull)     => f(c(x.toOption.getOrElse(ValNull), ValNull))
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
       case ValBoolean(x)           => withBoolean(y, y => f(c(x, y)))
       case ValString(x)            => withString(y, y => f(c(x, y)))
