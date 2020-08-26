@@ -75,4 +75,40 @@ class InterpreterExpressionTest
     eval("null != null") should be(ValBoolean(false))
   }
 
+  it should "compare to nullable variable" in {
+
+    eval("null = x", Map("x" -> ValNull)) should be(ValBoolean(true))
+    eval("null = x", Map("x" -> 1)) should be(ValBoolean(false))
+
+    eval("null != x", Map("x" -> ValNull)) should be(ValBoolean(false))
+    eval("null != x", Map("x" -> 1)) should be(ValBoolean(true))
+  }
+
+  it should "compare to nullable context entry" in {
+
+    eval("null = {x: null}.x") should be(ValBoolean(true))
+    eval("null = {x: 1}.x") should be(ValBoolean(false))
+
+    eval("null != {x: null}.x") should be(ValBoolean(false))
+    eval("null != {x: 1}.x") should be(ValBoolean(true))
+  }
+
+  it should "compare to not existing variable" in {
+
+    eval("null = x") should be(ValBoolean(true))
+    eval("null = x.y") should be(ValBoolean(true))
+
+    eval("x = null") should be(ValBoolean(true))
+    eval("x.y = null") should be(ValBoolean(true))
+  }
+
+  it should "compare to not existing context entry" in {
+
+    eval("null = {}.x") should be(ValBoolean(true))
+    eval("null = {x: null}.x.y") should be(ValBoolean(true))
+
+    eval("{}.x = null") should be(ValBoolean(true))
+    eval("{x: null}.x.y = null") should be(ValBoolean(true))
+  }
+
 }
