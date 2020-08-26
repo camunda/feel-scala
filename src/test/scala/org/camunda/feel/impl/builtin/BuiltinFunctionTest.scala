@@ -40,4 +40,24 @@ class BuiltinFunctionsTest
     eval(" not(false) ") should be(ValBoolean(true))
   }
 
+  "A is defined() function" should "return true if the value is present" in {
+
+    eval("is defined(null)") should be(ValBoolean(true))
+
+    eval("is defined(1)") should be(ValBoolean(true))
+    eval("is defined(true)") should be(ValBoolean(true))
+    eval("is defined([])") should be(ValBoolean(true))
+    eval("is defined({})") should be(ValBoolean(true))
+    eval(""" is defined( {"a":1}.a ) """) should be(ValBoolean(true))
+  }
+
+  it should "return false if the value is not present" in {
+
+    eval("is defined(a)") should be(ValBoolean(false))
+    eval("is defined(a.b)") should be(ValBoolean(false))
+
+    eval("is defined({}.a)") should be(ValBoolean(false))
+    eval("is defined({}.a.b)") should be(ValBoolean(false))
+  }
+
 }

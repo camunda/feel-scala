@@ -57,7 +57,10 @@ object BuiltinFunctions extends FunctionProvider {
       "years and months duration" -> List(durationFunction2)
     )
 
-  private def booleanFunctions = Map("not" -> List(notFunction))
+  private def booleanFunctions = Map(
+    "not" -> List(notFunction),
+    "is defined" -> List(isDefinedFunction)
+  )
 
   private def stringFunctions =
     Map(
@@ -1113,6 +1116,15 @@ object BuiltinFunctions extends FunctionProvider {
             .getVariable(key)
             .getOrElse(ValNull)
         case e => error(e)
+      }
+    )
+
+  private def isDefinedFunction =
+    ValFunction(
+      params = List("value"),
+      invoke = _ match {
+        case (value: ValError) :: Nil => ValBoolean(false)
+        case _                        => ValBoolean(true)
       }
     )
 

@@ -138,13 +138,30 @@ duration("P1Y") / duration("P1M")
 | greater than or equal | `>=` | `>= 10` |
 | between | `between _ and _` | `x between 3 and 9` |
 
-* less than/greater than/between are only supported for: 
+The operators less than, greater than, and between are only supported for: 
   * number
   * date
   * time
   * date-time
   * year-month-duration
   * day-time-duration 
+  
+Any value can be compared with `null` to check if it is equal to `null`, or if it exists. Comparing `null` to a value different from `null` results in `false`. It returns `true` if the value, or the context entry (e.g. the property of a variable) is `null` or doesn't exist. The built-in function [is defined()](feel-built-in-functions.md#is-defined) can be used to differentiate between a value that is `null` and a value that doesn't exist. 
+
+```js
+null = null
+// true
+
+"foo" = null
+// false
+
+x = null
+// true - if "x" is null or doesn't exist
+
+x.y = null
+// true - if "x" is null, "x" doesn't exist, 
+//           "y" is null, or "x" has no property "y" 
+```  
 
 ### Disjunction and Conjunction
 
