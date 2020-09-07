@@ -43,6 +43,8 @@ trait FeelIntegrationTest {
   val interpreter: FeelInterpreter =
     new FeelInterpreter
 
+  private val clock: TimeTravelClock = new TimeTravelClock
+
   def eval(expression: String,
            variables: Map[String, Any] = Map(),
            functions: Map[String, ValFunction] = Map()): Val = {
@@ -82,8 +84,14 @@ trait FeelIntegrationTest {
 
   val rootContext: EvalContext = EvalContext.wrap(
     Context.StaticContext(variables = Map.empty,
-                          functions = BuiltinFunctions.functions))(
+                          functions = new BuiltinFunctions(clock).functions))(
     ValueMapper.defaultValueMapper)
+
+  def withClock(testCode: TimeTravelClock => Any): Unit = {
+    try {
+      testCode(clock)
+    } finally clock.reset()
+  }
 
   def date(date: String): Date = date
 

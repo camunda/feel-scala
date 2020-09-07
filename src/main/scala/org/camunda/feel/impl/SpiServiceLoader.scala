@@ -18,11 +18,12 @@ package org.camunda.feel.impl
 
 import java.util.ServiceLoader
 
+import org.camunda.feel.FeelEngineClock
 import org.camunda.feel.context.{CustomFunctionProvider, FunctionProvider}
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
-import scala.reflect.{ClassTag, classTag}
 import scala.collection.JavaConverters._
+import scala.reflect.{ClassTag, classTag}
 
 object SpiServiceLoader {
 
@@ -37,6 +38,11 @@ object SpiServiceLoader {
       case p :: Nil => p
       case ps       => FunctionProvider.CompositeFunctionProvider(ps)
     }
+
+  def loadClock: FeelEngineClock = {
+    loadServiceProvider[FeelEngineClock]().headOption
+      .getOrElse(FeelEngineClock.SystemClock)
+  }
 
   private def loadServiceProvider[T: ClassTag](): List[T] =
     try {

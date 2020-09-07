@@ -19,4 +19,5 @@ The following pages should give an overview how to use the FEEL engine and what 
   * How to extend/customize
     * [Function Provider SPI](function-provider-spi)
     * [Value Mapper SPI](value-mapper-spi)
+    * [FEEL Engine Clock SPI](feel-engine-clock-spi)
 * [Examples](examples)

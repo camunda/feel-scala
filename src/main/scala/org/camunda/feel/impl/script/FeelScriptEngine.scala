@@ -42,7 +42,8 @@ trait FeelScriptEngine
 
   lazy val engine: FeelEngine =
     new FeelEngine(functionProvider = SpiServiceLoader.loadFunctionProvider,
-                   valueMapper = SpiServiceLoader.loadValueMapper)
+                   valueMapper = SpiServiceLoader.loadValueMapper,
+                   clock = SpiServiceLoader.loadClock)
 
   def getFactory: ScriptEngineFactory = factory
 
