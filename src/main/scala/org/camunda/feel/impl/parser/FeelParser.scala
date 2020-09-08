@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.parser
 
-import org.camunda.feel.syntaxtree._
 import org.camunda.feel._
+import org.camunda.feel.syntaxtree._
 
 import scala.util.Try
 import scala.util.parsing.combinator.JavaTokenParsers
@@ -43,6 +43,11 @@ object FeelParser extends JavaTokenParsers {
     | "for\\b".r
     | "between\\b".r
     | "instance\\b".r | "of\\b".r)
+
+  private lazy val dateTimeWords: Parser[String] = ("date and time".r
+    | "date".r
+    | "time".r
+    | "duration".r)
 
   // list of built-in function names with whitespaces
   // -- other names match the 'function name' pattern
@@ -109,8 +114,8 @@ object FeelParser extends JavaTokenParsers {
   private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
   // 2 i)
   private lazy val expression9 =
-    literal |
-      name ^^ (n => Ref(List(n))) |
+    not(dateTimeWords) ~> name ^^ (n => Ref(List(n))) |
+      literal |
       "?" ^^^ ConstInputValue |
       simplePositiveUnaryTest |
       "(" ~> textualExpression <~ ")" |
@@ -304,15 +309,15 @@ object FeelParser extends JavaTokenParsers {
 
   // 47
   private lazy val ifExpression
-    : Parser[If] = "if" ~> expression ~! "then" ~! expression ~ "else" ~! expression ^^ {
+    : Parser[If] = "if" ~> expression ~ "then" ~! expression ~ "else" ~! expression ^^ {
     case condition ~ _ ~ statement ~ _ ~ elseStatement =>
       If(condition, statement, elseStatement)
   }
 
   // 48 - no separator in spec grammar but in examples
-  private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~! rep1sep(
+  private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~ rep1sep(
     listIterator,
-    ",") ~! "satisfies" ~! expression ^^ {
+    ",") ~ "satisfies" ~! expression ^^ {
     case "some" ~ iterators ~ _ ~ condition  => SomeItem(iterators, condition)
     case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
   }
@@ -351,7 +356,7 @@ object FeelParser extends JavaTokenParsers {
 
   // 53
   private lazy val instanceOf
-    : Parser[String] = "instance" ~! "of" ~! typeName ^^ {
+    : Parser[String] = "instance" ~ "of" ~! typeName ^^ {
     case _ ~ _ ~ typeName => typeName
   }
 
@@ -422,7 +427,7 @@ object FeelParser extends JavaTokenParsers {
 
   // 57
   private lazy val functionDefinition
-    : Parser[FunctionDefinition] = "function" ~! "(" ~> repsep(
+    : Parser[FunctionDefinition] = "function" ~ "(" ~> repsep(
     formalParameter,
     ",") ~! ")" ~! (externalJavaFunction | expression) ^^ {
     case params ~ _ ~ body => FunctionDefinition(params, body)

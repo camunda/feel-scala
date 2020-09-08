@@ -111,4 +111,47 @@ class InterpreterExpressionTest
     eval("{x: null}.x.y = null") should be(ValBoolean(true))
   }
 
+  "A variable name" should "not be a key-word" in {
+
+    eval("some = true") shouldBe a[ValError]
+    eval("every = true") shouldBe a[ValError]
+    eval("if = true") shouldBe a[ValError]
+    eval("then = true") shouldBe a[ValError]
+    eval("else = true") shouldBe a[ValError]
+    eval("function = true") shouldBe a[ValError]
+    eval("for = true") shouldBe a[ValError]
+    eval("between = true") shouldBe a[ValError]
+    eval("instance = true") shouldBe a[ValError]
+    eval("of = true") shouldBe a[ValError]
+    eval("not = true") shouldBe a[ValError]
+    eval("in = true") shouldBe a[ValError]
+  }
+
+  List(
+    "something",
+    "everything",
+    "often",
+    "orY",
+    "andX",
+    "trueX",
+    "falseY",
+    "nullOrString",
+    "functionX",
+    "instances",
+    "forDev",
+    "ifImportant",
+    "thenX",
+    "elseY",
+    "betweenXandY",
+    "notThis",
+    "inside"
+  ).foreach { variableName =>
+    it should s"contain a key-word ($variableName)" in {
+
+      eval(s"$variableName = true", Map(variableName -> true)) should be(
+        ValBoolean(true))
+    }
+
+  }
+
 }
