@@ -44,11 +44,6 @@ object FeelParser extends JavaTokenParsers {
     | "between\\b".r
     | "instance\\b".r | "of\\b".r)
 
-  private lazy val dateTimeWords: Parser[String] = ("date and time".r
-    | "date".r
-    | "time".r
-    | "duration".r)
-
   // list of built-in function names with whitespaces
   // -- other names match the 'function name' pattern
   private lazy val builtinFunctionName: Parser[String] = ("date and time"
@@ -118,7 +113,7 @@ object FeelParser extends JavaTokenParsers {
   private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
   // 2 i)
   private lazy val expression9 =
-    not(dateTimeWords) ~> name ^^ (n => Ref(List(n))) |
+    not(dateTimeLiteral) ~> name ^^ (n => Ref(List(n))) |
       literal |
       "?" ^^^ ConstInputValue |
       simplePositiveUnaryTest |
