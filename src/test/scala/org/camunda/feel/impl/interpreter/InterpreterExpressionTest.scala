@@ -144,7 +144,10 @@ class InterpreterExpressionTest
     "elseY",
     "betweenXandY",
     "notThis",
-    "inside"
+    "inside",
+    "durationX",
+    "dateX",
+    "timeX"
   ).foreach { variableName =>
     it should s"contain a key-word ($variableName)" in {
 
