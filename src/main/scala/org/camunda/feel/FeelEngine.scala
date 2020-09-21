@@ -91,7 +91,8 @@ object FeelEngine {
     def build: FeelEngine = new FeelEngine(
       functionProvider = functionProvider_,
       valueMapper = valueMapper_,
-      configuration = configuration_
+      configuration = configuration_,
+      clock = clock_
     )
 
   }
