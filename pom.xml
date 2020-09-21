@@ -11,7 +11,7 @@
 
   <groupId>org.camunda.feel</groupId>
   <artifactId>feel-engine</artifactId>
-  <version>1.12.2-SNAPSHOT</version>
+  <version>1.12.2</version>
   <name>FEEL Scala Engine</name>
 
   <properties>
@@ -305,7 +305,7 @@
     <connection>scm:git:git@github.com:camunda/feel-scala.git</connection>
     <url>scm:git:git@github.com:camunda/feel-scala.git</url>
     <developerConnection>scm:git:git@github.com:camunda/feel-scala.git</developerConnection>
-    <tag>1.1.0</tag>
+    <tag>1.12.2</tag>
   </scm>
 
   <distributionManagement>
