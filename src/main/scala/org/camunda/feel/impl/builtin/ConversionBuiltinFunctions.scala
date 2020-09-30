@@ -173,9 +173,15 @@ object ConversionBuiltinFunctions {
     params = List("from", "grouping separator", "decimal separator"),
     invoke = {
       case List(ValString(from), ValString(grouping), ValString(decimal))
-          if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
-            decimal) && grouping != decimal) =>
+        if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
+          decimal) && grouping != decimal) =>
         ValNumber(from.replace(grouping, "").replace(decimal, "."))
+      case List(ValString(from), _, ValString(decimal))
+        if isValidDecimalSeparator(decimal) =>
+        ValNumber(from.replace(decimal, "."))
+      case List(ValString(from), ValString(grouping), _)
+        if isValidGroupingSeparator(grouping) =>
+        ValNumber(from.replace(grouping, ""))
       case List(ValString(from), ValString(grouping), ValString(decimal)) =>
         ValError(
           s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'")
