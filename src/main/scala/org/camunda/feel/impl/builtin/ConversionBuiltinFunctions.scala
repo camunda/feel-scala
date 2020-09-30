@@ -176,10 +176,10 @@ object ConversionBuiltinFunctions {
         if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
           decimal) && grouping != decimal) =>
         ValNumber(from.replace(grouping, "").replace(decimal, "."))
-      case List(ValString(from), _, ValString(decimal))
+      case List(ValString(from), ValNull, ValString(decimal))
         if isValidDecimalSeparator(decimal) =>
         ValNumber(from.replace(decimal, "."))
-      case List(ValString(from), ValString(grouping), _)
+      case List(ValString(from), ValString(grouping), ValNull)
         if isValidGroupingSeparator(grouping) =>
         ValNumber(from.replace(grouping, ""))
       case List(ValString(from), ValString(grouping), ValString(decimal)) =>
