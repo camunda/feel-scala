@@ -5,7 +5,6 @@ import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.RoundingMode
-import scala.math.Numeric.BigDecimalAsIfIntegral.abs
 
 object NumericBuiltinFunctions {
 
