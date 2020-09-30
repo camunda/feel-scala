@@ -185,6 +185,16 @@ class BuiltinNumberFunctionsTest
     eval(" modulo(12, 5) ") should be(ValNumber(2))
   }
 
+  it should "return the negative reminder of the division of dividend by divisor" in {
+
+    eval(" modulo(-12, 5) ") should be(ValNumber(-2))
+  }
+
+  it should "return the positive reminder of the division of dividend by divisor" in {
+
+    eval(" modulo(12, -5) ") should be(ValNumber(2))
+  }
+
   "A sqrt() function" should "return square root" in {
 
     eval(" sqrt(16) ") should be(ValNumber(4))
