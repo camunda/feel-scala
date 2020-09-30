@@ -219,6 +219,10 @@ class BuiltinNumberFunctionsTest
 
     eval(" odd(5) ") should be(ValBoolean(true))
     eval(" odd(2) ") should be(ValBoolean(false))
+  }
+
+  it should "return true if negative number is odd" in {
+
     eval(" odd(-5)") should be(ValBoolean(true))
     eval(" odd(-2)") should be(ValBoolean(false))
   }
