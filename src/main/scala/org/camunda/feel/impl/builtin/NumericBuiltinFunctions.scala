@@ -5,7 +5,6 @@ import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.RoundingMode
-import scala.math.Numeric.BigDecimalAsIfIntegral.abs
 
 object NumericBuiltinFunctions {
 
@@ -101,7 +100,7 @@ object NumericBuiltinFunctions {
 
   private def oddFunction =
     builtinFunction(params = List("number"), invoke = {
-      case List(ValNumber(n)) => ValBoolean(abs(n) % 2 == 1)
+      case List(ValNumber(n)) => ValBoolean(n.abs % 2 == 1)
     })
 
   private def evenFunction =
