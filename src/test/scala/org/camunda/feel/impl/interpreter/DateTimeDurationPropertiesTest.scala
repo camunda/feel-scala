@@ -44,6 +44,11 @@ class DateTimeDurationPropertiesTest
     eval(""" date("2017-03-10").day """) should be(ValNumber(10))
   }
 
+  it should "has a weekday property" in {
+
+    eval(""" date("2020-09-30").weekday """) should be(ValNumber(3))
+  }
+
   ///// -----
 
   "A time" should "has a hour property" in {
@@ -119,6 +124,12 @@ class DateTimeDurationPropertiesTest
 
     eval(""" date and time("2017-03-10T11:45:30+02:00").day """) should be(
       ValNumber(10))
+  }
+
+  it should "has a weekday property" in {
+
+    eval(""" date and time("2020-09-30T22:50:30+02:00").weekday """) should be(
+      ValNumber(3))
   }
 
   it should "has a hour property" in {

@@ -903,9 +903,10 @@ class FeelInterpreter {
       case ValList(list) => ValList(list map (item => path(item, key)))
       case ValDate(date) =>
         key match {
-          case "year"  => ValNumber(date.getYear)
-          case "month" => ValNumber(date.getMonthValue)
-          case "day"   => ValNumber(date.getDayOfMonth)
+          case "year"     => ValNumber(date.getYear)
+          case "month"    => ValNumber(date.getMonthValue)
+          case "day"      => ValNumber(date.getDayOfMonth)
+          case "weekday"  => ValNumber(date.getDayOfWeek.getValue)
           case e =>
             error(
               v,
@@ -938,12 +939,13 @@ class FeelInterpreter {
         }
       case ValDateTime(dateTime) =>
         key match {
-          case "year"   => ValNumber(dateTime.getYear)
-          case "month"  => ValNumber(dateTime.getMonthValue)
-          case "day"    => ValNumber(dateTime.getDayOfMonth)
-          case "hour"   => ValNumber(dateTime.getHour)
-          case "minute" => ValNumber(dateTime.getMinute)
-          case "second" => ValNumber(dateTime.getSecond)
+          case "year"     => ValNumber(dateTime.getYear)
+          case "month"    => ValNumber(dateTime.getMonthValue)
+          case "day"      => ValNumber(dateTime.getDayOfMonth)
+          case "weekday"  => ValNumber(dateTime.getDayOfWeek.getValue)
+          case "hour"     => ValNumber(dateTime.getHour)
+          case "minute"   => ValNumber(dateTime.getMinute)
+          case "second"   => ValNumber(dateTime.getSecond)
           case "time offset" =>
             ValDayTimeDuration(
               Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
