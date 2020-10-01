@@ -16,8 +16,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "day of year" -> List(dateTimeFunction(getDayOfYear)),
     "day of week" -> List(dateTimeFunction(getDayOfWeek)),
     "month of year" -> List(dateTimeFunction(getMonthOfYear)),
-    "week of year" -> List(dateTimeFunction(getWeekOfYear)),
-    "weekday" -> List(dateTimeFunction(getWeekday))
+    "week of year" -> List(dateTimeFunction(getWeekOfYear))
   )
 
   private def nowFunction = builtinFunction(
@@ -70,9 +69,5 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     val weekOfYear = date.get(temporalField)
     ValNumber(weekOfYear)
   }
-
-  private def getWeekday(date: Date): ValNumber = {
-    ValNumber(date.getDayOfWeek.getValue)
-  }
-
+  
 }

@@ -87,12 +87,4 @@ class BuiltinTemporalFunctionsTest
     eval(""" week of year(date(2005,1,3)) """) should be(ValNumber(1))
     eval(""" week of year(date(2005,1,9)) """) should be(ValNumber(1))
   }
-
-  "The weekday() function" should "return the day of the week" in {
-
-    eval(s"weekday($date)") should be(ValNumber(2))
-    eval(s"weekday($localDateTime)") should be(ValNumber(2))
-    eval(s"weekday($dateTime)") should be(ValNumber(2))
-  }
-
 }
