@@ -12,9 +12,9 @@ It is integrated in the following projects:
 
 **Features:** :sparkles:
 
-* full support for unary-tests and expressions (DMN 1.2)
+* Full support for unary-tests and expressions (DMN 1.2)
 * including built-in functions
-* extensible by own functions and custom object mappers
+* extensible by own functions and custom object mappers.
 
 ## Usage
 
@@ -22,9 +22,9 @@ The [documentation](https://camunda.github.io/feel-scala/) describes the support
 
 ## Install
 
-The FEEL engine can be used/integrated in two different ways
-* as a native Scala application (i.e. calling the engine API)
-* as a script engine (i.e. using the Java script engine API)
+The FEEL engine can be used/integrated in two different ways:
+* As a native Scala application (i.e. calling the engine API)
+* As a script engine (i.e. using the Java script engine API)
 
 Add the engine as dependency to your project's `pom.xml`:
 
