@@ -100,7 +100,7 @@ object NumericBuiltinFunctions {
 
   private def oddFunction =
     builtinFunction(params = List("number"), invoke = {
-      case List(ValNumber(n)) => ValBoolean(n % 2 == 1)
+      case List(ValNumber(n)) => ValBoolean(n.abs % 2 == 1)
     })
 
   private def evenFunction =
