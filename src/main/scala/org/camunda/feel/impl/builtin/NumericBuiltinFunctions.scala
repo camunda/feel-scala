@@ -79,7 +79,7 @@ object NumericBuiltinFunctions {
   private def moduloFunction =
     builtinFunction(params = List("dividend", "divisor"), invoke = {
       case List(ValNumber(dividend), ValNumber(divisor)) =>
-        ValNumber(dividend % divisor)
+        ValNumber(((dividend % divisor) + divisor) % divisor)
     })
 
   private def sqrtFunction =
