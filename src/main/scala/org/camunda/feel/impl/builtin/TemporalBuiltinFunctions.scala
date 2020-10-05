@@ -69,5 +69,5 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     val weekOfYear = date.get(temporalField)
     ValNumber(weekOfYear)
   }
-  
+
 }
