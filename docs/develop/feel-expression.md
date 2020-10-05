@@ -364,15 +364,23 @@ Values of type date, time, date-time and duration have special properties to acc
 ```js
 date("2017-03-10").year                   
 date("2017-03-10").month                
-date("2017-03-10").day                    
+date("2017-03-10").day
+date("2017-03-10").weekday
 
 time("11:45:30+02:00").hour            
 time("11:45:30+02:00").minute         
 time("11:45:30+02:00").second        
 time("11:45:30+02:00").time offset   
 
-date and time("2017-03-10T11:45:30+02:00")    
-// all properties of date and time
+date and time("2017-03-10T11:45:30+02:00").year
+date and time("2017-03-10T11:45:30+02:00").month
+date and time("2017-03-10T11:45:30+02:00").day
+date and time("2017-03-10T11:45:30+02:00").weekday
+date and time("2017-03-10T11:45:30+02:00").hour
+date and time("2017-03-10T11:45:30+02:00").minute
+date and time("2017-03-10T11:45:30+02:00").second
+date and time("2017-03-10T11:45:30+02:00").time offset
+date and time("2017-03-10T11:45:30+02:00").timezone
 
 duration("P2Y3M").years                  
 duration("P2Y3M").months               
