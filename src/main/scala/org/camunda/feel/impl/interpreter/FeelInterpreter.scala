@@ -122,11 +122,12 @@ class FeelInterpreter {
       case In(x, test) =>
         withVal(eval(x), x => eval(test)(context + (inputKey -> x)))
       case InstanceOf(x, typeName) =>
-        typeName match {
-          case "Any" if eval(x) != ValNull => ValBoolean(true)
-          case _ =>
-            withVal(eval(x), x => withType(x, t => ValBoolean(t == typeName)))
-        }
+        withValOrNull(eval(x), x => {
+          typeName match {
+            case "Any" if x != ValNull => ValBoolean(true)
+            case _ => withType(x, t => ValBoolean(t == typeName))
+          }
+        })
 
       // context
       case Ref(names)               => ref(context.variable(names.head), names.tail)
