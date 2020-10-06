@@ -227,4 +227,9 @@ class BuiltinNumberFunctionsTest
     eval(" odd(-2)") should be(ValBoolean(false))
   }
 
+  "A even() function" should "return true if number is even" in {
+
+    eval(" even(5) ") should be(ValBoolean(false))
+    eval(" even(2) ") should be(ValBoolean(true))
+  }
 }
