@@ -232,5 +232,4 @@ class BuiltinNumberFunctionsTest
     eval(" even(5) ") should be(ValBoolean(false))
     eval(" even(2) ") should be(ValBoolean(true))
   }
-
 }

@@ -60,6 +60,13 @@ class InterpreterExpressionTest
     eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
   }
 
+  it should "be a instance of Any should always pass" in {
+    eval("x instance of Any", Map("x" -> "yes")) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> 1)) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> true)) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> null)) should be(ValBoolean(false))
+  }
+
   it should "be an escaped identifier" in {
     // regular identifier
     eval(" `x` ", Map("x" -> "foo")) should be(ValString("foo"))
