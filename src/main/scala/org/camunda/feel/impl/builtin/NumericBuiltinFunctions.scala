@@ -12,7 +12,7 @@ object NumericBuiltinFunctions {
     "decimal" -> List(decimalFunction, decimalFunction3),
     "floor" -> List(floorFunction),
     "ceiling" -> List(ceilingFunction),
-    "abs" -> List(absFunctionNumber, absFunctionN),
+    "abs" -> List(absFunction(paramName = "number"), absFunction(paramName = "n")),
     "modulo" -> List(moduloFunction),
     "sqrt" -> List(sqrtFunction),
     "log" -> List(logFunction),
@@ -75,10 +75,6 @@ object NumericBuiltinFunctions {
     builtinFunction(params = List(paramName), invoke = {
       case List(ValNumber(n)) => ValNumber(n.abs)
     })
-
-  private def absFunctionNumber = absFunction("number")
-
-  private def absFunctionN = absFunction("n")
 
   private def moduloFunction =
     builtinFunction(params = List("dividend", "divisor"), invoke = {
