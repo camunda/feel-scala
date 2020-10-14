@@ -180,6 +180,18 @@ class BuiltinNumberFunctionsTest
     eval(" abs(-10) ") should be(ValNumber(10))
   }
 
+  it should "be invoked with named parameter number" in {
+
+    eval(" abs(number: 1) ") should be(ValNumber(1))
+    eval(" abs(number: -1) ") should be(ValNumber(1))
+  }
+
+  it should "be invoked with named parameter n" in {
+
+    eval(" abs(n: 1) ") should be(ValNumber(1))
+    eval(" abs(n: -1) ") should be(ValNumber(1))
+  }
+
   "A modulo() function" should "return the remainder of the division of dividend by divisor" in {
 
     eval(" modulo(12, 5) ") should be(ValNumber(2))
