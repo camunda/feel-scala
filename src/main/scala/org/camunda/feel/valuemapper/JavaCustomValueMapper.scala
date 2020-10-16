@@ -17,6 +17,7 @@
 package org.camunda.feel.valuemapper
 
 import org.camunda.feel.syntaxtree.Val
+import scala.collection.JavaConverters._
 
 abstract class JavaCustomValueMapper extends CustomValueMapper {
 
@@ -63,4 +64,19 @@ abstract class JavaCustomValueMapper extends CustomValueMapper {
     * starting with the highest priority.
     */
   override val priority: Int = 1
+}
+
+object JavaCustomValueMapper {
+
+  case class CompositeValueMapper(
+      customMappers: java.util.List[CustomValueMapper])
+      extends ValueMapper {
+    var valueMappers: ValueMapper.CompositeValueMapper =
+      ValueMapper.CompositeValueMapper(customMappers.asScala.toList);
+
+    override def toVal(x: Any): Val = valueMappers.toVal(x)
+
+    override def unpackVal(value: Val): Any = valueMappers.unpackVal(value)
+  }
+
 }

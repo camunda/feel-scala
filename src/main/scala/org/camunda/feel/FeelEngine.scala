@@ -35,6 +35,7 @@ import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
 import scala.collection.JavaConverters._
+import scala.runtime.BoxesRunTime
 
 object FeelEngine {
 
@@ -147,6 +148,23 @@ class FeelEngine(
     eval(FeelParser.parseExpression, expression, context)
   }
 
+  private def doThrowException(evalUnaryTestsResult: Either[Any, Any]) = {
+    val left = evalUnaryTestsResult.asInstanceOf[Left[_, _]]
+    val failure = left.value.asInstanceOf[Failure]
+    val message = failure.message
+    throw new RuntimeException(message)
+  }
+
+  def evalExpressionAsValue[T](expression: String, context: Context): T = {
+    val either = evalExpression(expression, context)
+    either match {
+      case right: Right[_, _] =>
+        right.value.asInstanceOf[T]
+      case _ =>
+        doThrowException(either)
+    }
+  }
+
   def evalUnaryTests(
       expression: String,
       variables: java.util.Map[String, Object]): EvalUnaryTestsResult =
@@ -165,6 +183,17 @@ class FeelEngine(
                      context: Context): EvalUnaryTestsResult = {
     eval(FeelParser.parseUnaryTests, expression, context)
       .map(value => value.asInstanceOf[Boolean])
+  }
+
+  def evalUnaryTestsAsBoolean(expression: String, context: Context): Boolean = {
+    val either = evalUnaryTests(expression, context)
+    either match {
+      case right: Right[_, _] =>
+        val value = right.value
+        BoxesRunTime.unboxToBoolean(value)
+      case _ =>
+        doThrowException(either)
+    }
   }
 
   private def eval(parser: String => ParseResult[Exp],
