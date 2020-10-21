@@ -251,7 +251,7 @@
               <shadedClassifierName>scala-shaded</shadedClassifierName>
               <createDependencyReducedPom>true</createDependencyReducedPom>
               <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
-              <createSourcesJar>false</createSourcesJar>
+              <createSourcesJar>true</createSourcesJar>
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
               <artifactSet>
                 <excludes>
