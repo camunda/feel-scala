@@ -19,6 +19,7 @@
     <scala.version>2.13.0</scala.version>
     <scala.binary.version>2.13.0</scala.binary.version>
     <version.log4j>2.9.0</version.log4j>
+    <plugin.version.shade>3.2.4</plugin.version.shade>
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
@@ -202,6 +203,40 @@
             <goals>
               <goal>format</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${plugin.version.shade}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>scala-shaded</shadedClassifierName>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
+              <createSourcesJar>true</createSourcesJar>
+              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.slf4j:slf4j-api</exclude>
+                </excludes>
+              </artifactSet>
+
+              <relocations>
+                <relocation>
+                  <pattern>scala</pattern>
+                  <shadedPattern>camundajar.impl.scala</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
           </execution>
         </executions>
       </plugin>
