@@ -29,14 +29,21 @@ case class ObjectContext(obj: Any) extends Context {
   override val variableProvider = new VariableProvider {
     override def getVariable(name: String): Option[Any] = {
 
-      val field = obj.getClass.getFields find (f => f.getName == name)
+      val objClass = obj.getClass
+      val fields = objClass.getFields find (field => field.getName == name)
 
-      field.map(f => f.get(obj)) orElse {
-        val methods = obj.getClass.getMethods
-        val method = methods find (m =>
-          m.getName == name || m.getName == getGetterName(name))
+      fields.map(_.get(obj)) orElse {
+        val methods = objClass.getMethods find (method => {
+          val methodName = method.getName
+          val returnType = method.getReturnType
+          methodName == name ||
+          methodName == getGetterName(name) ||
+          ((returnType == java.lang.Boolean.TYPE ||
+          returnType == classOf[java.lang.Boolean]) &&
+          methodName == getBooleanGetterName(name))
+        })
 
-        method.map(m => m.invoke(obj))
+        methods.map(_.invoke(obj))
       }
     }
 
@@ -72,6 +79,9 @@ case class ObjectContext(obj: Any) extends Context {
   }
 
   private def getGetterName(fieldName: String) =
-    "get" + fieldName.charAt(0).toUpper + fieldName.substring(1)
+    "get" + fieldName.capitalize
+
+  private def getBooleanGetterName(fieldName: String) =
+    "is" + fieldName.capitalize
 
 }
