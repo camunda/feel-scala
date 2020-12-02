@@ -22,9 +22,9 @@ The [documentation](https://camunda.github.io/feel-scala/) describes the support
 
 ## Install
 
-The FEEL engine can be used/integrated in two different ways
-* as a native Scala application (i.e. calling the engine API)
-* as a script engine (i.e. using the Java script engine API)
+The FEEL engine can be integrated in two different ways
+* as a [native Scala/Java application](#as-native-scala-application) (i.e. calling the engine API)
+* as a [script engine](#as-script-engine) (i.e. using the Java script engine API)
 
 Add the engine as dependency to your project's `pom.xml`:
 
@@ -37,6 +37,8 @@ Add the engine as dependency to your project's `pom.xml`:
 ```
 
 Or, download the [JAR file](https://github.com/camunda/feel-scala/releases) _(feel-engine-${VERSION}-complete.jar)_ and copy it into your application.
+
+> For trying out FEEL expression quickly in development, have a look at the [FEEL REPL](#feel-repl). 
 
 ### As Native Scala Application
 
@@ -129,6 +131,16 @@ You can also evaluate unary tests instead of an expression by using one of the n
 
 * `feel-unary-tests`
 * `feel-scala-unary-tests`
+
+### FEEL REPL
+
+The easiest way to try out your FEEL expressions in development is to use the REPL (Read-Eval-Print-Loop) of the FEEL engine. It is a simple script based on [Ammonite](http://ammonite.io/) that downloads the dependency to the FEEL engine and initialize it for you.    
+
+1) Download Ammonite: http://ammonite.io/#Ammonite-REPL
+2) Download the script: [feel-repl.sc](/feel-repl.sc)
+3) Run the script: `amm --predef feel-repl.sc`
+
+![the-feel-repl](/assets/feel-repl.png)
 
 ## Contribution
 
