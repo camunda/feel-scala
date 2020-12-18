@@ -1,8 +1,8 @@
 module.exports = {
   title: 'FEEL-Scala',
   tagline: 'A FEEL parser and interpreter written in Scala.',
-  url: 'https://camunda.github.io/feel-scala',
-  baseUrl: '/',
+  url: 'https://camunda.github.io',
+  baseUrl: '/feel-scala/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
