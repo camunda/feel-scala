@@ -39,8 +39,8 @@ def unpackJson(json: ujson.Value): Any = {
 println(fansi.Color.LightBlue("===== FEEL Engine REPL ======"))
 println(fansi.Color.LightBlue("""> Evaluate FEEL expressions using 'feel("1 + 3")'"""))
 println(fansi.Color.LightBlue("""> Provide variables using 'feel("x + 3", Map("x" -> 2))'"""))
-println(fansi.Color.LightBlue("""> Provide variables as Map or JSON string using 'feel("x + 3", Map("x" -> 2))'"""))
+println(fansi.Color.LightBlue("""> Provide variables as Map using 'feel("x + 3", Map("x" -> 2))'"""))
+println(fansi.Color.LightBlue("""> Provide variables as JSON string using 'feel("x + 3", "{ \"x\" : 2 }")'"""))
 
 // usage: amm --predef feel-repl.sc
-
 
