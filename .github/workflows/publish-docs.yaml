@@ -23,9 +23,12 @@ jobs:
           cd docs
           npm ci
       - name: Build
-        run: npm run build
+        run: |
+          cd docs
+          npm run build
       - name: Publish
         run: |
+          cd docs
           # Configure git client
           echo "Git repo - $REPO"
           echo "Git user - $GIT_USERNAME"
