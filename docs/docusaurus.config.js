@@ -83,7 +83,7 @@ module.exports = {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/camunda/feel-scala/edit/master/new-docs/',
+            'https://github.com/camunda/feel-scala/edit/master/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
