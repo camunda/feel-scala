@@ -22,6 +22,7 @@ Using the SPI, the function can be implemented in Scala/Java and is not limited 
   ]}>
   
 <TabItem value="scala">
+
 Create a sub-class of `org.camunda.feel.spi.CustomFunctionProvider` and implement the method `getFunction()` which returns the function for the given name. If a function can have different parameters (i.e. different parameter count) then override `getFunctions()` instead.
 
 ```scala
