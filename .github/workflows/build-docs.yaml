@@ -13,8 +13,8 @@ jobs:
         with:
           node-version: 12
       - name: Install Dependencies
-        run: npm ci
-      - name: Build
         run: |
           cd docs
-          npm run build
+          npm ci
+      - name: Build
+        run: npm run build

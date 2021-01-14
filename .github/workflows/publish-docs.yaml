@@ -19,12 +19,13 @@ jobs:
         with:
           node-version: 12
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          cd docs
+          npm ci
       - name: Build
         run: npm run build
       - name: Publish
         run: |
-          cd docs
           # Configure git client
           echo "Git repo - $REPO"
           echo "Git user - $GIT_USERNAME"
