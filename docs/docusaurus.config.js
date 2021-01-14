@@ -61,6 +61,10 @@ module.exports = {
       contextualSearch: true,
     },
     hideableSidebar: true,
+    // syntax highlighter
+    prism: {
+      additionalLanguages: ['java', 'scala'],
+    },
   },
   presets: [
     [
