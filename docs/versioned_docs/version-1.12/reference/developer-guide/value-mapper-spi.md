@@ -20,6 +20,7 @@ Using the SPI, the transformation can be customized to support more/custom data 
   ]}>
   
 <TabItem value="scala">
+
 Create a sub-class of `org.camunda.feel.valuemapper.CustomValueMapper`. Implement the method `toVal()` and `unpackVal()` to transform the object. Set the `priority` of the value mapper to define the precedence compared to the other mappers. 
 
 ```scala
