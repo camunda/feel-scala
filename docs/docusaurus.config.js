@@ -70,7 +70,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/',
+            'https://github.com/camunda/feel-scala/edit/master/docs/',
           lastVersion: 'current',
           // onlyIncludeVersions: ['current', '1.12', '1.11'],
           versions: {
