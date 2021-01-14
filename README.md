@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.camunda.feel/feel-engine/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.camunda.feel/feel-engine)
 
-A parser and interpreter for FEEL that is written in Scala (see [What is FEEL?](https://camunda.github.io/feel-scala/develop/what-is-feel)).
+A parser and interpreter for FEEL that is written in Scala (see [What is FEEL?](https://camunda.github.io/feel-scala/docs/reference/)).
 
 The FEEL engine started as a slack time project, grown to a community-driven project and is now officially maintained by [Camunda](https://camunda.org/) :rocket: 
 

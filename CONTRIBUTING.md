@@ -14,7 +14,7 @@ If you have an idea how to improve the project then please create a [new issue](
 
 ### Improving Documentation
 
-If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. The documentation is located in the repository at `/docs/*.md`.
+If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. Use the link on the page to edit it.
 
 ### Providing Pull Requests
 
@@ -39,6 +39,17 @@ Build the JAR files with
 ```
 mvn install
 ```
+
+## Building the Documentation
+
+The documentation is located in the `/docs` folder. It is built with [Docusaurus](https://v2.docusaurus.io/)
+
+For development, use the following command (build + serve + auto-reload):
+```
+npm run start
+```
+
+The documentation is published using GitHub actions.
 
 ## Styleguides
 
