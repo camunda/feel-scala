@@ -55,7 +55,7 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} Camunda`,
     },
     algolia: {
-      apiKey: "x",
+      apiKey: "bd44884f520f7b356b5a48dbdd6ed797",
       indexName: "feel-scala",
       searchParameters: {}, // Optional (if provided by Algolia)
       contextualSearch: true,
