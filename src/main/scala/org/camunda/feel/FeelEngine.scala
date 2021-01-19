@@ -175,8 +175,8 @@ class FeelEngine(
     parse(parser, expression)
       .flatMap(expr => eval(expr, context))
 
-  def parse(parser: String => Parsed[Exp],
-            expression: String): Either[Failure, ParsedExpression] =
+  private def parse(parser: String => Parsed[Exp],
+                    expression: String): Either[Failure, ParsedExpression] =
     parser(expression) match {
       case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
       case Parsed.Failure(_, _, extra) =>

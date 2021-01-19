@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.camunda</groupId>
     <artifactId>camunda-release-parent</artifactId>
     <version>3.7</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>org.camunda.feel</groupId>
@@ -29,9 +31,9 @@
     <dependencies>
 
       <dependency>
-        <groupId>org.scala-lang.modules</groupId>
-        <artifactId>scala-parser-combinators_2.13</artifactId>
-        <version>1.1.2</version>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala.version}</version>
       </dependency>
 
       <dependency>
@@ -68,6 +70,12 @@
   </dependencyManagement>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.lihaoyi</groupId>
       <artifactId>fastparse_2.13</artifactId>
@@ -232,6 +240,13 @@
               <className>org/camunda/feel/FeelEngine</className>
               <differenceType>7004</differenceType>
               <method>FeelEngine(*)</method>
+            </ignored>
+            <!-- ignore changes of a private generated method -->
+            <ignored>
+              <className>org/camunda/feel/FeelEngine</className>
+              <differenceType>7006</differenceType>
+              <method>scala.util.parsing.combinator.Parsers$ParseResult $*(java.lang.String)</method>
+              <to>fastparse.Parsed</to>
             </ignored>
           </ignored>
         </configuration>
