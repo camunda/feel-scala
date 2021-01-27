@@ -64,8 +64,9 @@ trait FeelIntegrationTest {
     FeelParser.parseExpression(expression) match {
       case Parsed.Success(exp, _) =>
         interpreter.eval(exp)(rootContext + context)
-      case e: Parsed.Failure => {
-        ValError(s"failed to parse expression '$expression':\n$e")
+      case Parsed.Failure(_, _, extra) => {
+        ValError(
+          s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
       }
     }
   }
