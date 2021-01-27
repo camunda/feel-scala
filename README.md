@@ -7,7 +7,7 @@ A parser and interpreter for FEEL that is written in Scala (see [What is FEEL?](
 The FEEL engine started as a slack time project, grown to a community-driven project and is now officially maintained by [Camunda](https://camunda.org/) :rocket: 
 
 It is integrated in the following projects:
-* [Camunda BPM Platform](https://docs.camunda.org/manual/user-guide/dmn-engine/feel/) as part of the DMN engine
+* [Camunda Platform](https://docs.camunda.org/manual/user-guide/dmn-engine/feel/) as part of the DMN engine
 * [Zeebe](https://docs.zeebe.io/reference/expressions.html#the-expression-language) as expression language
 
 **Features:** :sparkles:
