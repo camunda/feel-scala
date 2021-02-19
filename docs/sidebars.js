@@ -24,6 +24,9 @@ module.exports = {
     ],
   },
   Samples: [
-    'samples/samples'
+    'samples/samples',
+    'samples/temporal-samples',
+    'samples/list-samples',
+    'samples/context-samples'
   ],
 };
