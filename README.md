@@ -147,8 +147,9 @@ The easiest way to try out your FEEL expressions in development is to use the RE
 See the [Contribution Guide](./CONTRIBUTING.md).
 
 The following resources can help to understand the general concepts behind the implementation: 
-* [Scala's Combinator Parsing](https://www.artima.com/pins1ed/combinator-parsing.html)
 * [Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
+* [Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html)
+* [FastParse - Documentation of the Parser Library](https://www.lihaoyi.com/fastparse)
 
 ## License
 
