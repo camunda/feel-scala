@@ -68,7 +68,8 @@ object FeelParser extends JavaTokenParsers {
       "day of year",
       "day of week",
       "month of year",
-      "week of year"
+      "week of year",
+      "put all"
     ).!
   )
 

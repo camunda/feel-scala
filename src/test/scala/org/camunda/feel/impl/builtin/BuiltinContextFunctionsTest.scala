@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
+import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -47,7 +48,7 @@ class BuiltinContextFunctionsTest
       Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
   }
 
-  it should "return empty list if emtpy" in {
+  it should "return empty list if empty" in {
 
     eval(""" get entries({}) """) should be(ValList(List()))
   }
@@ -60,6 +61,127 @@ class BuiltinContextFunctionsTest
   it should "return null if not contains" in {
 
     eval(""" get value({}, "foo") """) should be(ValNull)
+  }
+
+  "A put function" should "add an entry to an empty context" in {
+
+    eval(""" put({}, "x", 1) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(1)))
+      ))
+  }
+
+  it should "add an entry to an existing context" in {
+
+    eval(""" put({x:1}, "y", 2) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
+      ))
+  }
+
+  it should "override an entry of an existing context" in {
+
+    eval(""" put({x:1}, "x", 2) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(2)))
+      ))
+  }
+
+  it should "add a context entry to an existing context" in {
+
+    eval(""" put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
+      ValBoolean(true))
+  }
+
+  it should "return null if the value is not present" in {
+
+    eval(""" put({}, "x", notExisting) """) should be(ValNull)
+  }
+
+  "A put all function" should "return a single empty context" in {
+
+    eval(""" put all({}) """) should be(
+      ValContext(
+        StaticContext(variables = Map.empty)
+      ))
+  }
+
+  it should "return a single context" in {
+
+    eval(""" put all({x:1}) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(1)))
+      ))
+  }
+
+  it should "combine empty contexts" in {
+
+    eval(""" put all({}, {}) """) should be(
+      ValContext(
+        StaticContext(variables = Map.empty)
+      ))
+  }
+
+  it should "add all entries to an empty context" in {
+
+    eval(""" put all({}, {x:1}) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(1)))
+      ))
+  }
+
+  it should "add an entry to an context" in {
+
+    eval(""" put all({x:1}, {y:2}) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
+      ))
+  }
+
+  it should "add all entries to an context" in {
+
+    eval(""" put all({x:1}, {y:2, z:3}) """) should be(
+      ValContext(
+        StaticContext(variables =
+          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
+      ))
+  }
+
+  it should "override an entry of the existing context" in {
+
+    eval(""" put all({x:1}, {x:2}) """) should be(
+      ValContext(
+        StaticContext(variables = Map("x" -> ValNumber(2)))
+      ))
+  }
+
+  it should "override entries in order" in {
+
+    eval(""" put all({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
+      ValContext(
+        StaticContext(variables =
+          Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2)))
+      ))
+  }
+
+  it should "combine three contexts" in {
+
+    eval(""" put all({x:1}, {y:2}, {z:3}) """) should be(
+      ValContext(
+        StaticContext(variables =
+          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
+      ))
+  }
+
+  it should "add a nested context" in {
+
+    eval(""" put all({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(
+      ValBoolean(true))
+  }
+
+  it should "return null if one entry is not a context" in {
+
+    eval(""" put all({}, 1) """) should be(ValNull)
   }
 
 }
