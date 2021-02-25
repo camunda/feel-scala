@@ -1,8 +1,3 @@
----
-id: feel-grammar
-title: FEEL Grammar
----
-
 ## EBNF
 
 This is the original grammar from the spec.
