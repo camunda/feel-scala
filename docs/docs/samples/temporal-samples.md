@@ -37,3 +37,14 @@ Return the duration between now and the next Tuesday at 08:00.
     + duration("P"+string(x)+"D")
 )[day of week(item) = "Tuesday"][1] - now()
 ```
+
+## Calculate the Next Weekday
+
+Return the next day that is not a weekend at 00:00.
+
+```js
+(for x in 1..3 
+  return date and time(today(),time("00:00:00Z")) 
+    + duration("P"+string(x)+"D")
+)[not(day of week(item) in ("Saturday","Sunday"))][1]
+```
