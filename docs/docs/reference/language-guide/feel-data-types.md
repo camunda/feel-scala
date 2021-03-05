@@ -32,6 +32,8 @@ A whole or floating point number.
 
 ### String
 
+A sequence of characters enclosed in double quotes `"`. The sequence can also contain escaped characters starting with `\` (e.g. `\'`, `\"`, `\\`, `\n`, `\r`, `\t`, unicode like `\u269D` or `\U101EF`).
+
 * Java Type: `java.lang.String`
 
 ```js
@@ -39,6 +41,8 @@ A whole or floating point number.
 ```
 
 ### Boolean
+
+A boolean value. It is either true or false. 
 
 * Java Type: `java.lang.Boolean`
 
@@ -48,6 +52,8 @@ false
 ```
 
 ### Date 
+
+A date value without a time component.
 
 * Format: `yyyy-MM-dd`.
 * Java Type: `java.time.LocalDate`

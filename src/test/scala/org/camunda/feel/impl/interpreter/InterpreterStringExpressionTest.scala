@@ -76,4 +76,20 @@ class InterpreterStringExpressionTest
     eval(""" "a" != null """) should be(ValBoolean(true))
   }
 
+  List(""" \' """,
+       """ \" """,
+       """ \\ """,
+       """ \n """,
+       """ \r """,
+       """ \t """,
+       """ \u269D """,
+       """ \U101EF """)
+    .foreach { escapeChar =>
+      it should s"contains an escape sequence ($escapeChar)" in {
+
+        eval(s""" "a $escapeChar b" """) should be(
+          ValString(s"""a $escapeChar b"""))
+      }
+    }
+
 }

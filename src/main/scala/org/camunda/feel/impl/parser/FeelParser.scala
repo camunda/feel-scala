@@ -101,9 +101,10 @@ object FeelParser {
         0)
     )
 
+  // 33 + 64
+  // characters or string escape sequences (\', \", \\, \n, \r, \t, \u269D, \U101EF)
   private def stringLiteralWithQuotes[_: P]: P[String] =
-    P("\"" ~~ (!"\"" ~~ AnyChar.!).repX ~~ "\"")
-      .map(_.mkString)
+    P("\"" ~~ (("\\" | !"\"") ~~ AnyChar).repX.! ~~ "\"")
 
   // 1 a)
   private def expression[_: P]: P[Exp] = P(textualExpression)
