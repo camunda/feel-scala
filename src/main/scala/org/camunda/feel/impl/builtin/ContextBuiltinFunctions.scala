@@ -3,14 +3,7 @@ package org.camunda.feel.impl.builtin
 import org.camunda.feel.context.Context
 import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValContext,
-  ValError,
-  ValList,
-  ValNull,
-  ValString
-}
+import org.camunda.feel.syntaxtree._
 
 object ContextBuiltinFunctions {
 
@@ -18,7 +11,8 @@ object ContextBuiltinFunctions {
     "get entries" -> List(getEntriesFunction),
     "get value" -> List(getValueFunction),
     "put" -> List(putFunction),
-    "put all" -> List(putAllFunction)
+    "put all" -> List(putAllFunction),
+    "context" -> List(contextFunction)
   )
 
   private def getEntriesFunction = builtinFunction(
@@ -72,6 +66,32 @@ object ContextBuiltinFunctions {
     hasVarArgs = true
   )
 
-  private def isListOfContexts(list: List[Val]) =
+  private def isListOfContexts(list: List[Val]): Boolean =
     list.forall(_.isInstanceOf[ValContext])
+
+  private def contextFunction = builtinFunction(
+    params = List("entries"),
+    invoke = {
+      case List(ValList(entries)) if isListOfKeyValuePairs(entries) =>
+        ValContext(StaticContext(variables = entries.flatMap {
+          case ValContext(context) =>
+            val getValue = context.variableProvider.getVariable(_)
+            getValue("key")
+              .map { case ValString(key) => key }
+              .flatMap(key => getValue("value").map(value => key -> value))
+        }.toMap))
+      case _ => ValNull
+    }
+  )
+
+  private def isListOfKeyValuePairs(list: List[Val]): Boolean =
+    list.forall {
+      case ValContext(context) =>
+        val keys = context.variableProvider.keys.toList
+        keys.contains("value") && context.variableProvider
+          .getVariable("key")
+          .exists(_.isInstanceOf[ValString])
+      case _ => false
+    }
+
 }

@@ -184,4 +184,90 @@ class BuiltinContextFunctionsTest
     eval(""" put all({}, 1) """) should be(ValNull)
   }
 
+  "A context function" should "return an empty context" in {
+
+    eval(""" context([]) """) should be(ValContext(StaticContext(Map.empty)))
+  }
+
+  it should "return a context with one entry" in {
+
+    eval(""" context([{"key":"a", "value":1}]) """) should be(
+      ValContext(
+        StaticContext(Map(
+          "a" -> ValNumber(1)
+        ))))
+  }
+
+  it should "return a context with multiple entries" in {
+
+    eval(
+      """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """) should be(
+      ValContext(
+        StaticContext(
+          Map(
+            "a" -> ValNumber(1),
+            "b" -> ValBoolean(true),
+            "c" -> ValString("ok")
+          ))))
+  }
+
+  it should "return a context with a nested list" in {
+
+    eval(""" context([{"key":"a", "value":[1,2,3]}]) """) should be(
+      ValContext(
+        StaticContext(Map(
+          "a" -> ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+        ))))
+  }
+
+  it should "return a context with a nested context" in {
+
+    eval(""" context([{"key":"a", "value": {x:1} }]) = {a: {x:1}} """) should be(
+      ValBoolean(true))
+  }
+
+  it should "override entries in order" in {
+
+    eval(
+      """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """) should be(
+      ValContext(
+        StaticContext(Map(
+          "a" -> ValNumber(2)
+        ))))
+  }
+
+  it should "be the reverse operation to `get entries()`" in {
+
+    eval(""" context(get entries({})) = {} """) should be(ValBoolean(true))
+    eval(""" context(get entries({a:1})) = {a:1} """) should be(
+      ValBoolean(true))
+    eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(
+      ValBoolean(true))
+    eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(
+      ValBoolean(true))
+  }
+
+  it should "return null if one entry is not a context" in {
+
+    eval(""" context([{"key":"a", "value":1}, "x"]) """) should be(ValNull)
+  }
+
+  it should "return null if one entry doesn't contain a key" in {
+
+    eval(""" context([{"key":"a", "value":1}, {"value":2}]) """) should be(
+      ValNull)
+  }
+
+  it should "return null if one entry doesn't contain a value" in {
+
+    eval(""" context([{"key":"a", "value":1}, {"key":"b"}]) """) should be(
+      ValNull)
+  }
+
+  it should "return null if the key of one entry is not a string" in {
+
+    eval(""" context([{"key":"a", "value":1}, {"key":2, "value":2}]) """) should be(
+      ValNull)
+  }
+
 }

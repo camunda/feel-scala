@@ -114,3 +114,22 @@ string(1.1)
 string(date("2012-12-25"))
 // "2012-12-25"
 ```
+
+## context()
+
+Constructs a context of the given list of key-value pairs. It is the reverse function to [get entries()](feel-built-in-functions-context.md#get-entries).
+
+Each key-value pair must be a context with two entries: `key` and `value`. The entry with name `key` must have a value of the type `string`.
+
+It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts in the given list.    
+
+Returns `null` if one of the entries is not a context, or if a context doesn't contain the required entries.
+
+* parameters:
+  * `entries`: list of contexts 
+* result: context  
+
+```js
+context([{"key":"a", "value":1}, {"key":"b", "value":2}])
+// {a:1, b:2}
+```
