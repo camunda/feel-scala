@@ -50,3 +50,17 @@
   background-size: 100% 100%;
 }
 
+.hero--primary {
+  background-image: url(/feel-scala/img/camunda-gradient.png);
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+.button--hero {
+  background-color: #fff;
+}
+
+.button--hero:hover {
+  background-color: #e6e7e8;
+}
