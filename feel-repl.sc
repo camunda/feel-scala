@@ -1,5 +1,5 @@
 // import the FEEL engine library
-import $ivy.`org.camunda.feel:feel-engine:1.12.4`, org.camunda.feel._
+import $ivy.`org.camunda.feel:feel-engine:1.13.0`, org.camunda.feel._
 
 // import a logging library
 import $ivy.`org.apache.logging.log4j:log4j-slf4j-impl:2.14.0`, org.apache.logging.log4j.core.config.Configurator, org.apache.logging.log4j.Level
