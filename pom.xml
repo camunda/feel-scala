@@ -4,8 +4,8 @@
 
   <parent>
     <groupId>org.camunda</groupId>
-    <artifactId>camunda-release-parent</artifactId>
-    <version>3.7</version>
+    <artifactId>camunda-bpm-release-parent</artifactId>
+    <version>2.2.1</version>
     <relativePath />
   </parent>
 
@@ -23,6 +23,7 @@
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
+    <skip-third-party-bom>false</skip-third-party-bom>
   </properties>
 
   <dependencyManagement>
