@@ -48,3 +48,40 @@ Return the next day that is not a weekend at 00:00.
     + duration("P"+string(x)+"D")
 )[not(day of week(item) in ("Saturday","Sunday"))][1]
 ```
+
+## Change the format of Dates
+
+Transform a given list of date-time values into a custom format.
+
+```js
+for d in dates return { 
+  date: date(date and time(d)), 
+  day: string(date.day),
+  month: substring(month of year(date), 1, 3),
+  year: string(date.year),
+  formatted: day + "-" + month + "-" + year
+}.formatted
+```
+
+Input:
+```js
+["2021-04-21T07:25:06.000Z","2021-04-22T07:25:06.000Z"]
+```
+
+Output:
+```js
+["21-Apr-2021","22-Apr-2021"]
+```
+
+## Create a Unix Timestamp
+
+Return the current point in time as a Unix timestamp.
+
+```js
+(now() - date and time("1970-01-01T00:00Z")) / duration("PT1S") * 1000
+```
+
+Output:
+```js
+1618200039000
+```
