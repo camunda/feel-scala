@@ -293,7 +293,7 @@
     <profile>
       <id>license-header-check</id>
       <properties>
-        <plugin.version.license>3.0</plugin.version.license>
+        <plugin.version.license>4.1</plugin.version.license>
         <license.inlineHeader>
           Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
           under one or more contributor license agreements. See the NOTICE file
