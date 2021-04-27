@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.parser
 
 import fastparse.JavaWhitespace._
+import fastparse.Parsed.Success
 import fastparse._
 import org.camunda.feel._
 import org.camunda.feel.syntaxtree._
@@ -118,7 +119,29 @@ object FeelParser {
 
   // 2 a)
   private def textualExpression[_: P]: P[Exp] =
-    P(functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
+    P(expressionInParentheses | functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
+
+  private def expressionInParentheses[_: P]: P[Exp] =
+    P("(" ~ expression ~ ")").flatMap(continuation)
+
+  // optimize parsing the expression from left to right by using `flapMap()`
+  // `flatMap()` takes the parsed (left) part of the expression and continues with the (right) part
+  // it does backtracking if `flatMap()` is not successful
+  private def continuation[_: P](base: Exp): P[Exp] = P(
+    continuationExpression(base).flatMap(continuation) |
+      End.map(_ => base)
+  )
+
+  private def continuationExpression[_: P](base: Exp): P[Exp] =
+    filterContinuation(base) | pathContinuation(base)
+
+  private def filterContinuation[_: P](base: Exp): P[Exp] =
+    P("[" ~ expression ~ "]")
+      .map(filter => Filter(base, filter))
+
+  private def pathContinuation[_: P](base: Exp): P[Exp] =
+    P(("." ~ name).rep(1))
+      .map(ops => ops.foldLeft(base)(PathExpression))
 
   // 2b)
   private def expression2[_: P]: P[Exp] = P(disjunction)

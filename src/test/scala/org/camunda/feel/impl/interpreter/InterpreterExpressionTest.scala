@@ -76,6 +76,49 @@ class InterpreterExpressionTest
     eval(" `a-b` ", Map("a-b" -> 3)) should be(ValNumber(3))
   }
 
+  it should "contains parentheses" in {
+    eval("(1 + 2)") should be(ValNumber(3))
+    eval("(1 + 2) + 3") should be(ValNumber(6))
+    eval("1 + (2 + 3)") should be(ValNumber(6))
+
+    eval("([1,2,3])[1]") should be(ValNumber(1))
+    eval("({x:1}).x") should be(ValNumber(1))
+    eval("{x:(1)}.x") should be(ValNumber(1))
+
+    eval("[1,2,3,4][(1)]") should be(ValNumber(1))
+  }
+
+  it should "contains nested filter expressions" in {
+    eval("[1,2,3,4][item > 2][1]") should be(ValNumber(3))
+    eval("([1,2,3,4])[item > 2][1]") should be(ValNumber(3))
+    eval("([1,2,3,4][item > 2])[1]") should be(ValNumber(3))
+  }
+
+  it should "contains nested path expressions" in {
+    eval("{x:{y:1}}.x.y") should be(ValNumber(1))
+    eval("{x:{y:{z:1}}}.x.y.z") should be(ValNumber(1))
+
+    eval("({x:{y:{z:1}}}).x.y.z") should be(ValNumber(1))
+    eval("({x:{y:{z:1}}}.x).y.z") should be(ValNumber(1))
+    eval("({x:{y:{z:1}}}.x.y).z") should be(ValNumber(1))
+  }
+
+  it should "contains nested filter and path expressions" in {
+    eval("[{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x.y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x).y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y)[2]") should be(ValNumber(2))
+
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x[2].y") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}])[2].x.y") should be(ValNumber(2))
+
+    eval("[{x:[1,2]},{x:[3,4]},{x:[5,6]}][2].x[1]") should be(ValNumber(3))
+
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}]).x[2][1]") should be(ValNumber(3))
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x)[2][1]") should be(ValNumber(3))
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x[2])[1]") should be(ValNumber(3))
+  }
+
   "Null" should "compare to null" in {
 
     eval("null = null") should be(ValBoolean(true))
@@ -161,7 +204,6 @@ class InterpreterExpressionTest
       eval(s"$variableName = true", Map(variableName -> true)) should be(
         ValBoolean(true))
     }
-
   }
 
 }
