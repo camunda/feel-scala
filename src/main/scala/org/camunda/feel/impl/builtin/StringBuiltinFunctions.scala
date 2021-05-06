@@ -19,7 +19,8 @@ object StringBuiltinFunctions {
     "starts with" -> List(startsWithFunction),
     "ends with" -> List(endsWithFunction),
     "matches" -> List(matchesFunction, matchesFunction3),
-    "split" -> List(splitFunction)
+    "split" -> List(splitFunction),
+    "extract" -> List(extractFunction, extractFunction3)
   )
 
   private def substringFunction = builtinFunction(
@@ -179,6 +180,28 @@ object StringBuiltinFunctions {
         val p = Pattern.compile(delimiter)
         val r = p.split(string, -1)
         ValList(r.map(ValString).toList)
+      }
+    }
+  )
+  
+  private def extractFunction = builtinFunction(
+    params = List("input", "pattern"),
+    invoke = {
+      case List(ValString(input), ValString(pattern)) => {
+        val p = Pattern.compile(pattern)
+        val m = p.matcher(input)
+        m.find
+      }
+    }
+  )
+  
+  private def extractFunction3 = builtinFunction(
+    params = List("input", "pattern", "flags"),
+    invoke = {
+      case List(ValString(input), ValString(pattern), ValString(flags)) => {
+        val p = Pattern.compile(pattern, patternFlags(flags))
+        val m = p.matcher(input)
+        m.find
       }
     }
   )
