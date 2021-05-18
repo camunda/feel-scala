@@ -38,6 +38,23 @@ Return the duration between now and the next Tuesday at 08:00.
 )[day of week(item) = "Tuesday"][1] - now()
 ```
 
+## Calculate the Duration between Times
+
+Return the duration between now and the next time it is 09:00 in Europe/Berlin timezone.
+
+```js
+{
+  time: time("09:00:00@Europe/Berlin"),
+  date: if (time(now()) < time) then today() else today() + duration("P1D"),
+  duration: date and time(date, time) - now()
+}.duration
+```
+
+Output:
+``` 
+duration("PT18H30M38S")
+```
+
 ## Calculate the Next Weekday
 
 Return the next day that is not a weekend at 00:00.
