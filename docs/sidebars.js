@@ -6,7 +6,19 @@ module.exports = {
     "Language Guide": [
       'reference/language-guide/feel-data-types',
       'reference/language-guide/feel-unary-tests',
-      'reference/language-guide/feel-expression'
+      {
+        "Expressions": [
+          'reference/language-guide/feel-boolean-expressions',
+          'reference/language-guide/feel-string-expressions',
+          'reference/language-guide/feel-numeric-expressions',
+          'reference/language-guide/feel-list-expressions',
+          'reference/language-guide/feel-context-expressions',
+          'reference/language-guide/feel-temporal-expressions',
+          'reference/language-guide/feel-variables',
+          'reference/language-guide/feel-control-flow',
+          'reference/language-guide/feel-functions'
+        ]
+      }
     ],
     "Built-in Functions": [
       'reference/builtin-functions/feel-built-in-functions-conversion',
