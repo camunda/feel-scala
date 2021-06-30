@@ -3,43 +3,89 @@ id: feel-unary-tests
 title: Unary-Tests
 ---
 
-Unary-Tests can be used only for input entries of a decision table. They are a special kind of expression with additional operators. The operators get the value of the input expression implicitly as the first argument. 
+A unary-tests expression is a special kind of boolean expression. It should be used for the input
+entries of a decision table (i.e. the conditions of a rule).
 
-The result of the expression must be either `true` or `false`.
+A unary-tests expression returns `true` if one of the following conditions is fulfilled:
 
-An unary-tests expression is `true` if one of the following conditions is fulfilled:
 * the expression evaluates to `true` when the input value is applied to it
-* the expression evaluates to a list and the input value is equal to at least one of the values in that list
-* the expression evaluates to a value and the input value is equal to that value 
+* the expression evaluates to a list, and the input value is equal to at least one of the values in
+  that list
+* the expression evaluates to a value, and the input value is equal to that value
+* the expression is equal to `-` (a dash)
 
 ### Comparison
 
-Compare the input value to `x`.
+Compares the input value with a given value. Both values must be of the same type.
 
-| operator | symbol | example |
-|----------|-----------------|---------|
-| equal to | (none) | `"valid"` |
-| less than | `<`  | `< 10` |
-| less than or equal | `<=` | `<= 10` |
-| greater than | `>` | `> 10` |
-| greater than or equal | `>=` | `>= 10` |
+The input value is passed implicitly as the first argument of the operator.
 
-* less than/greater than are only supported for: 
-  * number
-  * date
-  * time
-  * date-time
-  * year-month-duration
-  * day-time-duration 
+<table>
+  <tr>
+    <th>Operator</th>
+    <th>Description</th>
+    <th>Supported types</th>
+  </tr>
+
+  <tr>
+    <td>(none)</td>
+    <td>equal to</td>
+    <td>any</td>
+  </tr>
+
+  <tr>
+    <td>&lt;</td>
+    <td>less than</td>
+    <td>number, date, time, date-time, duration</td>
+  </tr>
+
+  <tr>
+    <td>&lt;=</td>
+    <td>less than or equal to</td>
+    <td>number, date, time, date-time, duration</td>
+  </tr>
+
+  <tr>
+    <td>&gt;</td>
+    <td>greater than</td>
+    <td>number, date, time, date-time, duration</td>
+  </tr>
+
+  <tr>
+    <td>&gt;=</td>
+    <td>greater than or equal</td>
+    <td>number, date, time, date-time, duration</td>
+  </tr>
+
+</table>
+
+```js
+"valid"
+
+< 10
+
+<= date("2020-04-06")
+
+> time("08:00:00")
+
+>= duration("P5D")
+```
 
 ### Interval
 
-Test if the input value is within the interval `x` and `y`.
+Checks if the input value is within a given interval between `x` and `y`.
 
-An interval can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If the interval is open then the value is not included.
+An interval have two boundaries that can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If a
+boundary is closed then it includes the given value (i.e. less/greater than or equal). Otherwise, it
+excludes the value (i.e. less/greater than).
+
+The input value is passed implicitly to the operator.
 
 ```js
 (2..5)
+// input > 2 and input < 5
+
+]2..5[
 // input > 2 and input < 5
 
 [2..5]
@@ -49,9 +95,12 @@ An interval can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If the interval 
 // input > 2 and input <= 5
 ```
 
-### Disjunction
+### Disjunction / Or
 
-Test if at least of the expressions is `true`.
+Combines multiple unary-test expressions following the ternary logic.
+
+* returns `true` if at least one unary-test evaluates to `true`
+* otherwise, it returns `false` 
 
 ```js
 2, 3, 4
@@ -61,9 +110,12 @@ Test if at least of the expressions is `true`.
 // input < 10 or input > 50
 ```
 
-### Negation
+### Negation / Not
 
-Test if the expression is `false`.
+Negates a given unary-test expression. The expression can be a comparison, an interval, or a
+disjunction.
+
+It returns `true` if the given unary-test evaluates to `false`.
 
 ```js
 not("valid")
@@ -73,16 +125,16 @@ not(2, 3)
 // input != 2 and input != 3 
 ```
 
-### Expression
+### Expressions
 
-It is also possible to use a boolean [expression](feel-expression) instead of an operator. For example, invoking a built-in function.
+Evaluates an expression that returns a boolean value. For example, [invoking a function](feel-functions#invocation).
 
-The input value can be accessed by the special variable `?`.
+The input value can be accessed in the expression by using the symbol `?` (a question mark).
 
 ```js
-ends with(?, "@camunda.com")
-// test if the input value (string) ends with "@camunda.com"
+contains(?, "good")
+// check if the input value (string) contains "good"
 
-list contains(?, "invalid")
-// test if the input value (list) contains "invalid"
+ends with(?, "@camunda.com")
+// checks if the input value (string) ends with "@camunda.com"
 ```

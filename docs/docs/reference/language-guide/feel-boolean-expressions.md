@@ -174,7 +174,7 @@ false and "otherwise"
 
 Combines multiple boolean values following the ternary logic.
 
-* the result is `true` if one value is `true`
+* the result is `true` if at least one value is `true`
 * the result is `false` if all values are `false`
 * otherwise, the result is `null` (i.e. if a value is not a boolean)
 
