@@ -3,13 +3,11 @@ id: feel-data-types
 title: Data Types
 ---
 
-A value can have one of the following types.
+FEEL defines the following types.
 
 ### Null
 
 Nothing, null or nil (i.e. the value is not present).
-
-Some operations/functions return `null` if an argument in not valid or types doesn't match.
 
 * Java Type: `null`
 
@@ -19,15 +17,19 @@ null
 
 ### Number
 
-A whole or floating point number.
+A whole or floating point number. The number can be negative.
 
 * not-a-number (NaN), positive/negative infinity are represented as `null`
 * Java Type: `java.math.BigDecimal`
 
 ```js
 1
+
 2.3
+
 .4
+    
+-5
 ```
 
 ### String
@@ -48,6 +50,7 @@ A boolean value. It is either true or false.
 
 ```js
 true
+
 false
 ```
 
@@ -93,7 +96,7 @@ date and time("2015-09-18T10:31:10+01:00")
 date and time("2015-09-18T10:31:10@Europe/Paris")
 ```
 
-### Day-Time-Duration
+### Days-Time-Duration
 
 A duration based on seconds. It can contain days, hours, minutes and seconds.
 
@@ -107,7 +110,7 @@ duration("PT30M")
 duration("P1DT6H")
 ```
 
-### Year-Month-Duration
+### Years-Months-Duration
 
 A duration based on the calendar. It can contain years and months.
 
@@ -122,7 +125,7 @@ duration("P1Y6M")
 
 ### List
 
-A list of elements. Can be empty.
+A list of elements. The elements can be of any type. The list can be empty.
 
 * Java Type: `java.util.List`
 
@@ -136,7 +139,8 @@ A list of elements. Can be empty.
 
 ### Context
 
-A list of key-value-pairs. Can be empty.
+A list of entries. Each entry has a key and a value. The value can be any type. The context can be
+empty.
 
 * Java Type: `java.util.Map`
 

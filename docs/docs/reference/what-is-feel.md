@@ -1,40 +1,42 @@
 ---
 id: what-is-feel
 title: What is FEEL?
-slug: /reference/
 ---
 
-FEEL (Friendly Enough Expression Language) is a part of the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write expressions for decision tables and literal expressions in a simple way what can easily understand by business professionals and developers.
+FEEL (Friendly Enough Expression Language) is a part of
+the [DMN specification](http://www.omg.org/spec/DMN/) of the OMG. It is designed to write
+expressions for decision tables and literal expressions in a simple way what can easily understand
+by business professionals and developers.
 
-## Unary Tests vs. Expression
+## Unary-Tests vs. Expressions
 
-FEEL has two entry points: unary-tests and expressions. 
+FEEL has two types of expressions for different use cases.
 
-### Unary Tests
+### Unary-Tests
 
-Unary-Tests can be used only for input entries of a decision table. They are a special kind of expression with a different grammar. The expression gets the value of the input expression implicitly as the first argument. The result of the expression must be either `true` or `false`.
-
-Examples:
+A unary-tests expression is a special kind of boolean expression. It should be used for the input
+entries of a decision table (i.e. the conditions of a rule).
 
 ```js
 < 7                                                 
-// input less than 7
+// checks if the input value is less than 7
 
 not(2,4)                                            
-// input is not 2 or 4
+// checks if the input value is neither 2 nor 4
 
 [date("2015-09-17")..date("2015-09-19")]            
-// input is between '2015-09-17' and '2015-09-19'
+// checks if the input value is between '2015-09-17' and '2015-09-19'
 
 <= duration("P1D")                                  
-// input is less or equal one day    
+// checks if the input value is less than or equal to one day    
 ```
 
-### Expression
+Learn [more](./language-guide/feel-unary-tests.md).
 
-Expressions can be used everywhere, e.g. in a decision table as input expression or output entry. An expression takes no implicit arguments like unary-tests.
+### Expressions
 
-Examples:
+General expressions that can return values of different types. They can be used everywhere, for
+example, in a decision table as input expression or as output entry.
 
 ```js
 applicant.monthly.income * 12                                           
@@ -47,3 +49,5 @@ sum( credit_history[record_date > date("2011-01-01")].weight )
 
 some ch in credit_history satisfies ch.event = "bankruptcy"      
 ```
+
+Learn [more](./language-guide/feel-expressions-introduction.md).
