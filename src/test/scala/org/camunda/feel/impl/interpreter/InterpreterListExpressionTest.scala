@@ -96,6 +96,40 @@ class InterpreterListExpressionTest
     eval("[1,2,3,4][i]", Map("i" -> -2)) should be(ValNumber(3))
   }
 
+  it should "be filtered multiple times (from literal)" in {
+    eval("[[1]][1][1]") should be(ValNumber(1))
+    eval("[[[1]]][1][1][1]") should be(ValNumber(1))
+    eval("[[[[1]]]][1][1][1][1]") should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from variable)" in {
+    val listOfLists = List(List(1))
+
+    eval("xs[1][1]", Map("xs"->listOfLists)) should be(ValNumber(1))
+    eval("xs[1][1][1]", Map("xs"->List(listOfLists))) should be(ValNumber(1))
+    eval("xs[1][1][1][1]", Map("xs"->List(List(listOfLists)))) should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from function invocation)" in {
+    eval("append([], [1])[1][1]") should be(ValNumber(1))
+    eval("append([], [[1]])[1][1][1]") should be(ValNumber(1))
+    eval("append([], [[[1]]])[1][1][1][1]") should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from path)" in {
+    val listOfLists = List(List(1))
+
+    eval("x.y[1][1]", Map("x"->Map("y" -> listOfLists))) should be(ValNumber(1))
+    eval("x.y[1][1][1]", Map("x"->Map("y" -> List(listOfLists)))) should be(ValNumber(1))
+    eval("x.y[1][1][1][1]", Map("x"->Map("y" -> List(List(listOfLists))))) should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from context projection)" in {
+    eval("{x:[[1]]}.x[1][1]") should be(ValNumber(1))
+    eval("{x:[[[1]]]}.x[1][1][1]") should be(ValNumber(1))
+    eval("{x:[[[[1]]]]}.x[1][1][1][1]") should be(ValNumber(1))
+  }
+
   it should "fail if one element fails" in {
 
     eval("[1, {}.x]") should be(
