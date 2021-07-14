@@ -483,7 +483,7 @@ object FeelParser {
   // 52
   private def filteredExpression9[_: P]: P[Exp] =
     P(expression9.flatMap(x =>
-      ("[" ~/ expression ~ "]").?.map(_.fold(x)(filterExp =>
+      ("[" ~ expression ~ "]").?.map(_.fold(x)(filterExp =>
         Filter(x, filterExp)))))
 
   // 40

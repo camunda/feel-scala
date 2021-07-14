@@ -88,6 +88,14 @@ class InterpreterExpressionTest
     eval("[1,2,3,4][(1)]") should be(ValNumber(1))
   }
 
+  it should "contain parentheses in a context literal" in {
+    val context = Map("xs" -> List(1, 2, 3))
+
+    eval("{x:(xs[1])}.x", context) should be(ValNumber(1))
+    eval("{x:(xs)[1]}.x", context) should be(ValNumber(1))
+    eval("{x:(xs)}.x", context) should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+  }
+
   it should "contains nested filter expressions" in {
     eval("[1,2,3,4][item > 2][1]") should be(ValNumber(3))
     eval("([1,2,3,4])[item > 2][1]") should be(ValNumber(3))
