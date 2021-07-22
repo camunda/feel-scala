@@ -102,22 +102,17 @@ object FeelParser {
         0)
     )
 
-  // 33 + 64
   // characters or string escape sequences (\', \", \\, \n, \r, \t, \u269D, \U101EF)
   private def stringLiteralWithQuotes[_: P]: P[String] =
     P("\"" ~~ (("\\" | !"\"") ~~ AnyChar).repX.! ~~ "\"")
 
-  // 1 a)
   private def expression[_: P]: P[Exp] = P(textualExpression)
 
-  // 1 b)
   private def expression10[_: P] = P(boxedExpression)
 
-  // 3
   private def textualExpressions[_: P]: P[ConstList] =
     P(textualExpression.rep(1, sep = ",").map(s => ConstList(s.toList)))
 
-  // 2 a)
   private def textualExpression[_: P]: P[Exp] =
     P(expressionInParentheses | functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
 
@@ -143,18 +138,14 @@ object FeelParser {
     P(("." ~ name).rep(1))
       .map(ops => ops.foldLeft(base)(PathExpression))
 
-  // 2b)
   private def expression2[_: P]: P[Exp] = P(disjunction)
 
-  // 2 c)
   private def expression3[_: P]: P[Exp] = P(conjunction)
 
-  // 2 d)
   private def expression4[_: P]: P[Exp] =
     P(expression5.flatMap(x =>
       comparison(x).?.map(_.fold(x)(comparisonExpr => comparisonExpr))))
 
-  // 51
   private def comparison[_: P](x: Exp): P[Exp] = {
     (StringIn("<=", ">=", "<", ">", "!=", "=").! ~ expression5).map {
       case ("=", y)  => Equal(x, y)
@@ -171,30 +162,23 @@ object FeelParser {
       ("in" ~ positiveUnaryTest).map(y => In(x, y))
   }
 
-  // 2 e)
   private def expression5[_: P] = P(arithmeticExpression)
 
-  // 2 f)
   private def expression6[_: P] =
     P(expression7.flatMap(x =>
       instanceOf.?.map(_.fold(x)(typeName => InstanceOf(x, typeName)))))
 
-  // 53
   private def instanceOf[_: P]: P[String] =
     P("instance" ~ "of" ~/ typeName)
 
-  // 54
   private def typeName[_: P]: P[String] =
     P(qualifiedName.map(_.mkString(".")))
 
-  // 2 g)
   private def expression7[_: P] = P(pathExpression)
 
-  // 2 h)
   private def expression8[_: P] =
     P(functionInvocation | filteredExpression9)
 
-  // 2 i)
   private def expression9[_: P] =
     P(
       (!dateTimeLiteral ~ name.map(n => Ref(List(n)))) |
@@ -207,16 +191,13 @@ object FeelParser {
 
   private def inputValueSymbol[_: P] = P("?").map(_ => ConstInputValue)
 
-  // 6
   private def simpleExpressions[_: P]: P[ConstList] =
     P[ConstList](
       simpleExpression.rep(1, sep = ",").map(s => ConstList(s.toList)))
 
-  // 5
   private def simpleExpression[_: P]: P[Exp] =
     P[Exp](arithmeticExpression | simpleValue)
 
-  // 4 a) -> 21+22
   private def arithmeticExpression[_: P] =
     P(arithmeticExpression2 ~ (CharIn("+\\-").! ~ arithmeticExpression2).rep)
       .map {
@@ -230,7 +211,6 @@ object FeelParser {
           }
       }
 
-  // 4 b) -> 23+24
   private def arithmeticExpression2[_: P] =
     P(arithmeticExpression3 ~ (CharIn("*/").! ~ arithmeticExpression3).rep)
       .map {
@@ -244,32 +224,28 @@ object FeelParser {
           }
       }
 
-  // 4 c) -> 25
   private def arithmeticExpression3[_: P] =
     P(arithmeticExpression4 ~ ("**" ~ arithmeticExpression4).rep)
       .map { case (base, ops) => ops.foldLeft(base)(Exponentiation) }
 
-  // 4 d) -> 26
   private def arithmeticExpression4[_: P] = P("-".!.? ~ expression6).map {
     case (Some("-"), exp) => ArithmeticNegation(exp)
     case (_, exp)         => exp
   }
 
-  // 17
   private def unaryTests[_: P]: P[Exp] = P(
     ("not" ~ "(" ~ positiveUnaryTests ~ ")").map(Not) |
       positiveUnaryTests |
       P("-").map(_ => ConstBool(true))
   )
 
-  // 16
   private def positiveUnaryTests[_: P]: P[Exp] =
     P(positiveUnaryTest.rep(1, ",").map {
       case Seq(test) => test
       case tests     => AtLeastOne(tests.toList)
     })
 
-  // 15 - in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
+  // in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
   //    - however, parse simple positive unary test first since this is most usual
   private def positiveUnaryTest[_: P]: P[Exp] =
     P(
@@ -278,21 +254,18 @@ object FeelParser {
         expression.map(UnaryTestExpression)
     )
 
-  // 14
   private def simpleUnaryTests[_: P]: P[Exp] = P[Exp](
     P("-").map(_ => ConstBool(true)) |
       ("not" ~ "(" ~ simplePositiveUnaryTests ~ ")").map(Not) |
       simplePositiveUnaryTests
   )
 
-  // 13
   private def simplePositiveUnaryTests[_: P]: P[Exp] =
     P(simplePositiveUnaryTest.rep(1, ",").map {
       case test :: Nil => test
       case tests       => AtLeastOne(tests.toList)
     })
 
-  // 7
   private def simplePositiveUnaryTest[_: P]: P[Exp] =
     P(
       "<" ~ endpoint.map(InputLessThan) |
@@ -303,10 +276,10 @@ object FeelParser {
         simpleValue.map(InputEqualTo)
     )
 
-  // 18 - allow any expression as endpoint
+  // allow any expression as endpoint
   private def endpoint[_: P]: P[Exp] = P(simpleValue | expression)
 
-  // 19 - need to exclude function invocation from qualified name
+  // need to exclude function invocation from qualified name
   private def simpleValue[_: P] =
     P(
       simpleLiteral |
@@ -314,20 +287,16 @@ object FeelParser {
         inputValueSymbol
     )
 
-  // 33
   private def literal[_: P]: P[Exp] =
     P(P("null").map(_ => ConstNull) | simpleLiteral)
 
-  // 34
   private def simpleLiteral[_: P] =
     P(booleanLiteral | dateTimeLiteral | stringLiteral | numericLiteral)
 
-  // 36
   private def booleanLiteral[_: P]: P[ConstBool] =
     P(P("true").map(_ => ConstBool(true)) | P("false").map(_ =>
       ConstBool(false)))
 
-  // 62
   private def dateTimeLiteral[_: P]: P[Exp] =
     P(
       ("date" ~ "(" ~ stringLiteralWithQuotes ~ ")").map(parseDate) |
@@ -337,11 +306,9 @@ object FeelParser {
         ("duration" ~ "(" ~ stringLiteralWithQuotes ~ ")").map(parseDuration)
     ).opaque("expected date time literal")
 
-  // 35 -
   private def stringLiteral[_: P]: P[ConstString] =
     P(stringLiteralWithQuotes.map(ConstString))
 
-  // 37
   private def numericLiteral[_: P]: P[ConstNumber] =
     P(CharIn("\\-").? ~~ (integral ~~ fractional.?) | fractional).!.map(
       number => ConstNumber(BigDecimal(number))
@@ -351,17 +318,14 @@ object FeelParser {
 
   private def fractional[_: P] = P("." ~~ digits)
 
-  // 39
   private def digits[_: P] = P(CharsWhileIn("0-9"))
 
-  // 38
   private def digit[_: P] = P(CharIn("0-9"))
 
-  // 20
   private def qualifiedName[_: P]: P[List[String]] =
     P(name.repX(1, sep = ".").map(_.toList))
 
-  // 27 - simplified name definition
+  // simplified name definition
   private def name[_: P]: P[String] =
     P(escapedIdentifier | "time offset".! | identifier.!)
 
@@ -376,16 +340,13 @@ object FeelParser {
         s + ps.mkString
     })
 
-  // 28
   private def nameStart[_: P] =
     P((nameStartChar ~ namePartChar.rep).map {
       case (s, ps) => s + ps.mkString
     })
 
-  // 29
   private def namePart[_: P]: P[String] = P(namePartChar.rep(1).map(_.mkString))
 
-  // 30- unknown unicode chars CharIn("\\uC0-\\uD6") | CharIn("\\uD8-\\uF6") | CharIn("\\uF8-\\u2FF") | CharIn("\\u370-\\u37D") | CharIn("\\u37F-\u1FFF")
   private def nameStartChar[_: P]: P[String] = P(
     (
       "?" | CharIn("A-Z") | "_" | CharIn("a-z") |
@@ -396,14 +357,11 @@ object FeelParser {
     ).!
   )
 
-  // 31 - unknown unicode char "[\\uB7]".r
   private def namePartChar[_: P] =
     P(nameStartChar | digit | CharIn("\u0300-\u036F") | CharIn("\u203F-\u2040"))
 
-  // 32
   private def additionalNameSymbols[_: P] = P("." | "/" | "-" | "’" | "+" | "*")
 
-  // 8
   private def interval[_: P]: P[Interval] =
     P(intervalStart.! ~ endpoint ~ ".." ~/ endpoint ~/ intervalEnd.!)
       .map {
@@ -421,13 +379,10 @@ object FeelParser {
                               ClosedIntervalBoundary(end))
       }
 
-  // 9 + 10
   private def intervalStart[_: P] = P(CharIn("(", "]", "["))
 
-  // 11 + 12
   private def intervalEnd[_: P] = P(CharIn(")", "[", "]"))
 
-  // 46
   private def forExpression[_: P]: P[For] =
     P(("for" ~ listIterator.rep(1, sep = ",") ~/ "return" ~/ expression).map {
       case (iterators, exp) =>
@@ -442,14 +397,12 @@ object FeelParser {
         syntaxtree.Range(start, end)
     })
 
-  // 47
   private def ifExpression[_: P]: P[If] =
     P(("if" ~ expression ~ "then" ~ expression ~ "else" ~ expression).map {
       case (condition, statement, elseStatement) =>
         If(condition, statement, elseStatement)
     })
 
-  // 48 - no separator in spec grammar but in examples
   private def quantifiedExpression[_: P]: P[Exp] =
     P(
       (("some" | "every").! ~ listIterator
@@ -460,17 +413,15 @@ object FeelParser {
           EveryItem(iterators.toList, condition)
       })
 
-  // 49
   private def disjunction[_: P]: P[Exp] =
     P(expression3 ~ ("or" ~ expression3).rep)
       .map { case (base, ops) => ops.foldLeft(base)(Disjunction) }
 
-  // 50
   private def conjunction[_: P]: P[Exp] =
     P(expression4 ~ ("and" ~ expression4).rep)
       .map { case (base, ops) => ops.foldLeft(base)(Conjunction) }
 
-  // 45 - allow nested path expressions
+  // allow nested path expressions
   private def pathExpression[_: P]: P[Exp] =
     P(expression8 ~ ("." ~ name).rep ~ ("[" ~ expression ~ "]").?)
       .map {
@@ -480,13 +431,11 @@ object FeelParser {
           Filter(pathExpression, filter)
       }
 
-  // 52
   private def filteredExpression9[_: P]: P[Exp] =
     P(expression9.flatMap(x =>
       ("[" ~ expression ~ "]").?.map(_.fold(x)(filterExp =>
         Filter(x, filterExp)))))
 
-  // 40
   private def functionInvocation[_: P]: P[Exp] =
     P(!dateTimeLiteral ~ (builtinFunctionName.!.map(List(_)) | qualifiedName) ~ parameters)
       .map {
@@ -499,13 +448,11 @@ object FeelParser {
           }
       }
 
-  // 41
   private def parameters[_: P]: P[FunctionParameters] = P(
     P("(" ~ ")").map(_ => PositionalFunctionParameters(List())) |
       "(" ~ (namedParameters | positionalParameters) ~ ")"
   )
 
-  // 42
   private def namedParameters[_: P] =
     P(
       namedParameter
@@ -514,25 +461,21 @@ object FeelParser {
 
   private def namedParameter[_: P] = P(parameterName ~ ":" ~/ expression)
 
-  // 43 - should be FEEL name
+  // should be FEEL name
   private def parameterName[_: P] = P(builtinFunctionParameterNames.! | name)
 
-  // 44
   private def positionalParameters[_: P] = P(
     expression
       .rep(1, sep = ",")
       .map(s => PositionalFunctionParameters(s.toList))
   )
 
-  // 55
   private def boxedExpression[_: P]: P[Exp] =
     P(list | functionDefinition | context)
 
-  // 56
   private def list[_: P]: P[ConstList] =
     P(("[" ~ expression7.rep(0, sep = ",") ~ "]").map(s => ConstList(s.toList)))
 
-  // 57
   private def functionDefinition[_: P]: P[FunctionDefinition] =
     P(
       ("function" ~ "(" ~ formalParameter
@@ -560,18 +503,14 @@ object FeelParser {
   private def functionMethodArgument[_: P] =
     P(qualifiedName.map(_.mkString(".")))
 
-  // 58
   private def formalParameter[_: P] = P(parameterName)
 
-  // 59
   private def context[_: P]: P[ConstContext] =
     P(("{" ~ contextEntry.rep(0, sep = ",") ~ "}").map(s =>
       ConstContext(s.toList)))
 
-  // 60
   private def contextEntry[_: P]: P[(String, Exp)] = P(key ~ ":" ~ expression)
 
-  // 61
   private def key[_: P] = P(name | stringLiteralWithQuotes)
 
   private def parseDate(d: String): Exp = {
