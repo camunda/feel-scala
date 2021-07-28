@@ -162,6 +162,18 @@ class InterpreterUnaryTest
     evalUnaryTests(null, "false") should be(ValBoolean(false))
   }
 
+  it should "compare to a boolean comparison (numeric)" in {
+
+    evalUnaryTests(true, "1 < 2") should be(ValBoolean(true))
+    evalUnaryTests(true, "2 < 1") should be(ValBoolean(false))
+  }
+
+  it should "compare to a boolean comparison (string)" in {
+
+    evalUnaryTests(true, """ "a" = "a" """) should be(ValBoolean(true))
+    evalUnaryTests(true, """ "a" = "b" """) should be(ValBoolean(false))
+  }
+
   "A date" should "compare with '<'" in {
 
     evalUnaryTests(date("2015-09-17"), """< date("2015-09-18")""") should be(

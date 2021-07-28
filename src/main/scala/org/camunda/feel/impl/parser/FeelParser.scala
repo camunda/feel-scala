@@ -234,10 +234,13 @@ object FeelParser {
   }
 
   private def unaryTests[_: P]: P[Exp] = P(
-    ("not" ~ "(" ~ positiveUnaryTests ~ ")").map(Not) |
-      positiveUnaryTests |
-      P("-").map(_ => ConstBool(true))
+    acceptAnyInputValue |
+      ("not" ~ "(" ~ positiveUnaryTests ~ ")").map(Not) |
+      positiveUnaryTests
   )
+
+  private def acceptAnyInputValue[_: P]() =
+    P("-" ~ End).map(_ => ConstBool(true))
 
   private def positiveUnaryTests[_: P]: P[Exp] =
     P(positiveUnaryTest.rep(1, ",").map {
@@ -250,12 +253,12 @@ object FeelParser {
   private def positiveUnaryTest[_: P]: P[Exp] =
     P(
       P("null").map(_ => InputEqualTo(ConstNull)) |
-        simplePositiveUnaryTest |
+        simplePositiveUnaryTest ~ End |
         expression.map(UnaryTestExpression)
     )
 
   private def simpleUnaryTests[_: P]: P[Exp] = P[Exp](
-    P("-").map(_ => ConstBool(true)) |
+    acceptAnyInputValue |
       ("not" ~ "(" ~ simplePositiveUnaryTests ~ ")").map(Not) |
       simplePositiveUnaryTests
   )
