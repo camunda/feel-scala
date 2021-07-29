@@ -428,6 +428,16 @@ class InterpreterUnaryTest
     evalUnaryTests(List(1, 2), "[1,2,3]") should be(ValBoolean(false))
   }
 
+  it should "be checked in an every expression" in {
+    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(ValBoolean(true))
+  }
+
+  it should "be checked in a some expression" in {
+    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(ValBoolean(true))
+  }
+
   "A context" should "be equal to another context" in {
 
     evalUnaryTests(Map.empty, "{}") should be(ValBoolean(true))

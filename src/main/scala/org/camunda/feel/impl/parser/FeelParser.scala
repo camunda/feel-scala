@@ -17,7 +17,6 @@
 package org.camunda.feel.impl.parser
 
 import fastparse.JavaWhitespace._
-import fastparse.Parsed.Success
 import fastparse._
 import org.camunda.feel._
 import org.camunda.feel.syntaxtree._
@@ -47,16 +46,18 @@ object FeelParser {
   private def reservedWord[_: P] =
     P(
       StringIn("null",
-               "true",
-               "false",
-               "function",
-               "if",
-               "then",
-               "else",
-               "for",
-               "between",
-               "instance",
-               "of"))
+        "true",
+        "false",
+        "function",
+        "if",
+        "then",
+        "else",
+        "for",
+        "between",
+        "instance",
+        "of",
+        "some",
+        "every"))
 
   // list of built-in function names with whitespaces
   // -- other names match the 'function name' pattern
