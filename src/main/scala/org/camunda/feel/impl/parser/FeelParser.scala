@@ -115,10 +115,16 @@ object FeelParser {
     P(textualExpression.rep(1, sep = ",").map(s => ConstList(s.toList)))
 
   private def textualExpression[_: P]: P[Exp] =
-    P(expressionInParentheses | functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
+    P(expressionWithContinuation | functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
 
-  private def expressionInParentheses[_: P]: P[Exp] =
-    P("(" ~ expression ~ ")").flatMap(continuation)
+  private def expressionWithContinuation[_: P]: P[Exp] =
+    P(
+      "(" ~ expression ~ ")" |
+        variableExpression |
+        list |
+        context |
+        functionInvocation
+    ).flatMap(continuation)
 
   // optimize parsing the expression from left to right by using `flapMap()`
   // `flatMap()` takes the parsed (left) part of the expression and continues with the (right) part
@@ -139,6 +145,11 @@ object FeelParser {
     P(("." ~ name).rep(1))
       .map(ops => ops.foldLeft(base)(PathExpression))
 
+  // an (escaped) identifier but not the name of a function invocation or path expression
+  private def variableExpression[_: P]: P[Exp] =
+    P((identifier.! | escapedIdentifier) ~ !"(").map(n => Ref(List(n)))
+
+  // 2b)
   private def expression2[_: P]: P[Exp] = P(disjunction)
 
   private def expression3[_: P]: P[Exp] = P(conjunction)
