@@ -10,30 +10,30 @@ Configurator.setRootLevel(Level.WARN)
 val feelEngine = new FeelEngine()
 
 // define a shortcut function for evaluation
-def feel(expression: String, context: Map[String, Any] = Map.empty) {
+def feel(expression: String, context: Map[String, Any] = Map.empty) = {
   val evalResult = feelEngine.evalExpression(expression, context)
   printResult(evalResult)
 }
 
-def feel(expression: String, jsonContext: String) {
+def feel(expression: String, jsonContext: String) : Any = {
   parseJsonObject(jsonContext)
     .map(context => feel(expression, context))
 }
 
-def unaryTests(expression: String, inputValue: Any, context: Map[String, Any] = Map.empty) {
+def unaryTests(expression: String, inputValue: Any, context: Map[String, Any] = Map.empty) : Unit = {
   val contextWithInputValue = context + (FeelEngine.UnaryTests.defaultInputVariable -> inputValue)
   val evalResult = feelEngine.evalUnaryTests(expression, contextWithInputValue)
   printResult(evalResult)
 }
 
-def unaryTests(expression: String, jsonInputValue: String, jsonContext: String) {
+def unaryTests(expression: String, jsonInputValue: String, jsonContext: String) : Unit = {
   parseJsonObject(jsonContext).map { context =>
     val inputValue = parseJson(jsonInputValue)
     unaryTests(expression, inputValue, context)
   }
 }
 
-private def printResult(evalResult: Either[FeelEngine.Failure, Any]) {
+private def printResult(evalResult: Either[FeelEngine.Failure, Any]) = {
   evalResult match {
     case Right(result) => println(fansi.Color.LightGreen(s"> $result"))
     case Left(failure) => println(fansi.Color.LightRed(s"> $failure"))
