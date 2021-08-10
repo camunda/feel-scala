@@ -10,7 +10,7 @@ Configurator.setRootLevel(Level.WARN)
 val feelEngine = new FeelEngine()
 
 // define a shortcut function for evaluation
-def feel(expression: String, context: Map[String, Any] = Map.empty) = {
+def feel(expression: String, context: Map[String, Any] = Map.empty): Unit = {
   val evalResult = feelEngine.evalExpression(expression, context)
   printResult(evalResult)
 }
@@ -33,7 +33,7 @@ def unaryTests(expression: String, jsonInputValue: String, jsonContext: String) 
   }
 }
 
-private def printResult(evalResult: Either[FeelEngine.Failure, Any]) = {
+private def printResult(evalResult: Either[FeelEngine.Failure, Any]): Unit = {
   evalResult match {
     case Right(result) => println(fansi.Color.LightGreen(s"> $result"))
     case Left(failure) => println(fansi.Color.LightRed(s"> $failure"))
