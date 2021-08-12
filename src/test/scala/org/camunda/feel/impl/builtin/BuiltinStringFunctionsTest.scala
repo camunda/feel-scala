@@ -129,4 +129,14 @@ class BuiltinStringFunctionsTest
              ValString(""))))
   }
 
+  "An extract() function" should "return a list of strings matching a pattern" in {
+
+    eval(""" extract("this is foobar and folbar", "fo[a-z]*") """) should be(
+      ValList(List(ValString("foobar"), ValString("folbar"))))
+
+    eval(""" extract("nothing", "fo[a-z]*") """) should be(ValList(List()))
+
+    eval(""" extract("This is fobbar!", "fo[a-z]*") """) should be(
+      ValList(List(ValString("fobbar"))))
+  }
 }

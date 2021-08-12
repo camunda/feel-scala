@@ -4,6 +4,7 @@ import java.util.regex.Pattern
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
+import scala.collection.mutable.ListBuffer
 
 object StringBuiltinFunctions {
 
@@ -19,7 +20,8 @@ object StringBuiltinFunctions {
     "starts with" -> List(startsWithFunction),
     "ends with" -> List(endsWithFunction),
     "matches" -> List(matchesFunction, matchesFunction3),
-    "split" -> List(splitFunction)
+    "split" -> List(splitFunction),
+    "extract" -> List(extractFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -168,6 +170,23 @@ object StringBuiltinFunctions {
         val p = Pattern.compile(pattern, patternFlags(flags))
         val m = p.matcher(input)
         ValBoolean(m.find)
+      }
+    }
+  )
+
+  private def extractFunction = builtinFunction(
+    params = List("input", "pattern"),
+    invoke = {
+      case List(ValString(input), ValString(pattern)) => {
+        val p = Pattern.compile(pattern)
+        val m = p.matcher(input)
+        val r = ListBuffer[String]()
+        val numPattern = pattern.r
+        val matches = numPattern.findAllIn(input)
+        matches.foreach { m =>
+          r += m
+        }
+        ValList(r.map(ValString).toList)
       }
     }
   )
