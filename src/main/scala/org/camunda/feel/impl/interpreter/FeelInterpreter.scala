@@ -921,7 +921,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the date properies {year, month, day} but fount '$e'")
+              s"expected one of the properties {year, month, day, weekday} but fount '$e'")
         }
       case ValTime(time) =>
         key match {
@@ -934,7 +934,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the time properies {hour, minute, second, time offset, timezone} but fount '$e'")
+              s"expected one of the properties {hour, minute, second, time offset, timezone} but fount '$e'")
         }
       case ValLocalTime(time) =>
         key match {
@@ -946,7 +946,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the (local) time properies {hour, minute, second} but fount '$e'")
+              s"expected one of the time properties {hour, minute, second, time offset, timezone} but fount '$e'")
         }
       case ValDateTime(dateTime) =>
         key match {
@@ -966,7 +966,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the date-time properies {year, month, day, hour, minute, second, time offset, timezone} but fount '$e'")
+              s"expected one of the properties {year, month, day, weekday, hour, minute, second, time offset, timezone} but fount '$e'")
         }
       case ValLocalDateTime(dateTime) =>
         key match {
@@ -982,7 +982,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the (local) date-time properies {year, month, day, hour, minute, second} but fount '$e'")
+              s"expected one of the properties {year, month, day, weekday, hour, minute, second, time offset, timezone} but fount '$e'")
         }
       case ValYearMonthDuration(duration) =>
         key match {
@@ -991,7 +991,7 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the duration properies {years, months} but fount '$e'")
+              s"expected one of the duration properties {years, months} but fount '$e'")
         }
       case ValDayTimeDuration(duration) =>
         key match {
@@ -1002,10 +1002,10 @@ class FeelInterpreter {
           case e =>
             error(
               v,
-              s"expected one of the duration properies {days, hours, minutes, seconds} but fount '$e'")
+              s"expected one of the duration properties {days, hours, minutes, seconds} but fount '$e'")
         }
       case e =>
-        error(e, s"expected Context or List of Contextes but found '$e'")
+        error(e, s"expected Context or List of Contexts but found '$e'")
     }
 
   private def hasTimeZone(dateTime: DateTime) =
