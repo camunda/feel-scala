@@ -1,9 +1,10 @@
 package org.camunda.feel.impl.builtin
 
 import java.util.regex.Pattern
-
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
+
+import scala.util.Try
 
 object StringBuiltinFunctions {
 
@@ -95,7 +96,11 @@ object StringBuiltinFunctions {
     params = List("input", "pattern", "replacement"),
     invoke = {
       case List(ValString(input), ValString(pattern), ValString(replacement)) =>
-        ValString(input.replaceAll(pattern, replacement))
+        Try (Pattern.compile(pattern))
+          .map {pattern =>
+            val m = pattern.matcher(input)
+            ValString(m.replaceAll(replacement))
+          }.getOrElse(ValNull)
     }
   )
 
@@ -105,11 +110,12 @@ object StringBuiltinFunctions {
       case List(ValString(input),
                 ValString(pattern),
                 ValString(replacement),
-                ValString(flags)) => {
-        val p = Pattern.compile(pattern, patternFlags(flags))
-        val m = p.matcher(input)
-        ValString(m.replaceAll(replacement))
-      }
+                ValString(flags)) =>
+        Try (Pattern.compile(pattern, patternFlags(flags)))
+          .map {pattern =>
+            val m = pattern.matcher(input)
+            ValString(m.replaceAll(replacement))
+          }.getOrElse(ValNull)
     }
   )
 
@@ -154,9 +160,11 @@ object StringBuiltinFunctions {
     params = List("input", "pattern"),
     invoke = {
       case List(ValString(input), ValString(pattern)) => {
-        val p = Pattern.compile(pattern)
-        val m = p.matcher(input)
-        ValBoolean(m.find)
+        Try(Pattern.compile(pattern))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValBoolean(m.find)
+          }.getOrElse(ValNull)
       }
     }
   )
@@ -164,22 +172,24 @@ object StringBuiltinFunctions {
   private def matchesFunction3 = builtinFunction(
     params = List("input", "pattern", "flags"),
     invoke = {
-      case List(ValString(input), ValString(pattern), ValString(flags)) => {
-        val p = Pattern.compile(pattern, patternFlags(flags))
-        val m = p.matcher(input)
-        ValBoolean(m.find)
-      }
+      case List(ValString(input), ValString(pattern), ValString(flags)) =>
+        Try(Pattern.compile(pattern, patternFlags(flags)))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValBoolean(m.find)
+          }.getOrElse(ValNull)
     }
   )
 
   private def splitFunction = builtinFunction(
     params = List("string", "delimiter"),
     invoke = {
-      case List(ValString(string), ValString(delimiter)) => {
-        val p = Pattern.compile(delimiter)
-        val r = p.split(string, -1)
-        ValList(r.map(ValString).toList)
-      }
+      case List(ValString(string), ValString(delimiter)) =>
+        Try(Pattern.compile(delimiter))
+          .map { pattern =>
+            val r = pattern.split(string, -1)
+            ValList(r.map(ValString).toList)
+          }.getOrElse(ValNull)
     }
   )
 
