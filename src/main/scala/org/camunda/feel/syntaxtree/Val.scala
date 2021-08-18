@@ -19,6 +19,8 @@ package org.camunda.feel.syntaxtree
 import org.camunda.feel._
 import org.camunda.feel.context.Context
 
+import java.time.Duration
+
 /**
   * FEEL supports the following datatypes:
   * number
@@ -34,6 +36,23 @@ built-in function (10.3.4.1).
   * @author Philipp Ossler
   */
 sealed trait Val extends Ordered[Val] {
+
+  protected val properties: Map[String, Val] = Map.empty
+
+  /**
+    * Returns the value of a given property. The available properties depends on the value type.
+    *
+    * @param name the name of the property
+    * @return the value of the property, or None if it doesn't exist
+    */
+  def property(name: String): Option[Val] = properties.get(name)
+
+  /**
+    * Returns the names of the available properties.
+    *
+    * @return the available property names
+    */
+  def propertyNames(): Iterable[String] = properties.keys
 
   override def compare(that: Val): Int = (this, that) match {
     case (ValNumber(x), ValNumber(y))               => x compare y
@@ -86,19 +105,85 @@ case class ValBoolean(value: Boolean) extends Val
 
 case class ValString(value: String) extends Val
 
-case class ValDate(value: Date) extends Val
+case class ValDate(value: Date) extends Val {
+  override protected val properties: Map[String, Val] = Map(
+    "year" -> ValNumber(value.getYear),
+    "month" -> ValNumber(value.getMonthValue),
+    "day" -> ValNumber(value.getDayOfMonth),
+    "weekday" -> ValNumber(value.getDayOfWeek.getValue)
+  )
+}
 
-case class ValLocalTime(value: LocalTime) extends Val
+case class ValLocalTime(value: LocalTime) extends Val {
+  override protected val properties: Map[String, Val] = Map(
+    "hour" -> ValNumber(value.getHour),
+    "minute" -> ValNumber(value.getMinute),
+    "second" -> ValNumber(value.getSecond),
+    "time offset" -> ValNull,
+    "timezone" -> ValNull
+  )
+}
 
-case class ValTime(value: Time) extends Val
+case class ValTime(value: Time) extends Val {
+  override protected val properties: Map[String, Val] = Map(
+    "hour" -> ValNumber(value.getHour),
+    "minute" -> ValNumber(value.getMinute),
+    "second" -> ValNumber(value.getSecond),
+    "time offset" ->
+      ValDayTimeDuration(Duration.ofSeconds(value.getOffsetInTotalSeconds)),
+    "timezone" -> value.getZoneId.map(ValString).getOrElse(ValNull)
+  )
+}
 
-case class ValLocalDateTime(value: LocalDateTime) extends Val
+case class ValLocalDateTime(value: LocalDateTime) extends Val {
+  override val properties: Map[String, Val] = Map(
+    "year" -> ValNumber(value.getYear),
+    "month" -> ValNumber(value.getMonthValue),
+    "day" -> ValNumber(value.getDayOfMonth),
+    "weekday" -> ValNumber(value.getDayOfWeek.getValue),
+    "hour" -> ValNumber(value.getHour),
+    "minute" -> ValNumber(value.getMinute),
+    "second" -> ValNumber(value.getSecond),
+    "time offset" -> ValNull,
+    "timezone" -> ValNull
+  )
+}
 
-case class ValDateTime(value: DateTime) extends Val
+case class ValDateTime(value: DateTime) extends Val {
+  override val properties: Map[String, Val] = Map(
+    "year" -> ValNumber(value.getYear),
+    "month" -> ValNumber(value.getMonthValue),
+    "day" -> ValNumber(value.getDayOfMonth),
+    "weekday" -> ValNumber(value.getDayOfWeek.getValue),
+    "hour" -> ValNumber(value.getHour),
+    "minute" -> ValNumber(value.getMinute),
+    "second" -> ValNumber(value.getSecond),
+    "time offset" -> ValDayTimeDuration(
+      Duration.ofSeconds(value.getOffset.getTotalSeconds)),
+    "timezone" -> {
+      if (hasTimeZone) ValString(value.getZone.getId)
+      else ValNull
+    }
+  )
 
-case class ValYearMonthDuration(value: YearMonthDuration) extends Val
+  private def hasTimeZone = !value.getOffset.equals(value.getZone)
+}
 
-case class ValDayTimeDuration(value: DayTimeDuration) extends Val
+case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
+  override val properties: Map[String, Val] = Map(
+    "years" -> ValNumber(value.getYears),
+    "months" -> ValNumber(value.getMonths)
+  )
+}
+
+case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
+  override val properties: Map[String, Val] = Map(
+    "days" -> ValNumber(value.toDays),
+    "hours" -> ValNumber(value.toHours % 24),
+    "minutes" -> ValNumber(value.toMinutes % 60),
+    "seconds" -> ValNumber(value.getSeconds % 60)
+  )
+}
 
 case class ValError(error: String) extends Val
 
