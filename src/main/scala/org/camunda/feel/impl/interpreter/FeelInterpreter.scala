@@ -912,104 +912,14 @@ class FeelInterpreter {
           case _      => ValError(s"context contains no entry with key '$key'")
         }
       case ValList(list) => ValList(list map (item => path(item, key)))
-      case ValDate(date) =>
-        key match {
-          case "year"    => ValNumber(date.getYear)
-          case "month"   => ValNumber(date.getMonthValue)
-          case "day"     => ValNumber(date.getDayOfMonth)
-          case "weekday" => ValNumber(date.getDayOfWeek.getValue)
-          case e =>
-            error(
-              v,
-              s"expected one of the properties {year, month, day, weekday} but fount '$e'")
+      case value =>
+        value.property(key).getOrElse {
+          val propertyNames: String = value.propertyNames().mkString(",")
+          error(
+            value,
+            s"No property found with name '$key' of value '$value'. Available properties: $propertyNames")
         }
-      case ValTime(time) =>
-        key match {
-          case "hour"   => ValNumber(time.getHour)
-          case "minute" => ValNumber(time.getMinute)
-          case "second" => ValNumber(time.getSecond)
-          case "time offset" =>
-            ValDayTimeDuration(Duration.ofSeconds(time.getOffsetInTotalSeconds))
-          case "timezone" => time.getZoneId.map(ValString(_)).getOrElse(ValNull)
-          case e =>
-            error(
-              v,
-              s"expected one of the properties {hour, minute, second, time offset, timezone} but fount '$e'")
-        }
-      case ValLocalTime(time) =>
-        key match {
-          case "hour"        => ValNumber(time.getHour)
-          case "minute"      => ValNumber(time.getMinute)
-          case "second"      => ValNumber(time.getSecond)
-          case "time offset" => ValNull
-          case "timezone"    => ValNull
-          case e =>
-            error(
-              v,
-              s"expected one of the time properties {hour, minute, second, time offset, timezone} but fount '$e'")
-        }
-      case ValDateTime(dateTime) =>
-        key match {
-          case "year"    => ValNumber(dateTime.getYear)
-          case "month"   => ValNumber(dateTime.getMonthValue)
-          case "day"     => ValNumber(dateTime.getDayOfMonth)
-          case "weekday" => ValNumber(dateTime.getDayOfWeek.getValue)
-          case "hour"    => ValNumber(dateTime.getHour)
-          case "minute"  => ValNumber(dateTime.getMinute)
-          case "second"  => ValNumber(dateTime.getSecond)
-          case "time offset" =>
-            ValDayTimeDuration(
-              Duration.ofSeconds(dateTime.getOffset.getTotalSeconds))
-          case "timezone" =>
-            if (hasTimeZone(dateTime)) ValString(dateTime.getZone.getId)
-            else ValNull
-          case e =>
-            error(
-              v,
-              s"expected one of the properties {year, month, day, weekday, hour, minute, second, time offset, timezone} but fount '$e'")
-        }
-      case ValLocalDateTime(dateTime) =>
-        key match {
-          case "year"        => ValNumber(dateTime.getYear)
-          case "month"       => ValNumber(dateTime.getMonthValue)
-          case "day"         => ValNumber(dateTime.getDayOfMonth)
-          case "weekday"     => ValNumber(dateTime.getDayOfWeek.getValue)
-          case "hour"        => ValNumber(dateTime.getHour)
-          case "minute"      => ValNumber(dateTime.getMinute)
-          case "second"      => ValNumber(dateTime.getSecond)
-          case "time offset" => ValNull
-          case "timezone"    => ValNull
-          case e =>
-            error(
-              v,
-              s"expected one of the properties {year, month, day, weekday, hour, minute, second, time offset, timezone} but fount '$e'")
-        }
-      case ValYearMonthDuration(duration) =>
-        key match {
-          case "years"  => ValNumber(duration.getYears)
-          case "months" => ValNumber(duration.getMonths)
-          case e =>
-            error(
-              v,
-              s"expected one of the duration properties {years, months} but fount '$e'")
-        }
-      case ValDayTimeDuration(duration) =>
-        key match {
-          case "days"    => ValNumber(duration.toDays)
-          case "hours"   => ValNumber(duration.toHours % 24)
-          case "minutes" => ValNumber(duration.toMinutes % 60)
-          case "seconds" => ValNumber(duration.getSeconds % 60)
-          case e =>
-            error(
-              v,
-              s"expected one of the duration properties {days, hours, minutes, seconds} but fount '$e'")
-        }
-      case e =>
-        error(e, s"expected Context or List of Contexts but found '$e'")
     }
-
-  private def hasTimeZone(dateTime: DateTime) =
-    !dateTime.getOffset.equals(dateTime.getZone)
 
   private def evalContextEntry(key: String, exp: Exp)(
       implicit context: EvalContext): Val =
