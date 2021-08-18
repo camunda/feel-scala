@@ -214,6 +214,10 @@ class DateTimeDurationPropertiesTest
       ValNull)
   }
 
+  it should "has a weekday property" in {
+    eval(""" date and time("2020-09-30T22:50:30").weekday """) should be(ValNumber(3))
+  }
+
   ///// -----
 
   "A year-month-duration" should "has a years property" in {
