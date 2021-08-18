@@ -973,6 +973,7 @@ class FeelInterpreter {
           case "year"        => ValNumber(dateTime.getYear)
           case "month"       => ValNumber(dateTime.getMonthValue)
           case "day"         => ValNumber(dateTime.getDayOfMonth)
+          case "weekday"     => ValNumber(dateTime.getDayOfWeek.getValue)
           case "hour"        => ValNumber(dateTime.getHour)
           case "minute"      => ValNumber(dateTime.getMinute)
           case "second"      => ValNumber(dateTime.getSecond)
