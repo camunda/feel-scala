@@ -254,6 +254,12 @@
               <differenceType>7004</differenceType>
               <method>* $anonfun*(*)</method>
             </ignored>
+            <ignored>
+              <!-- allow new methods in the interface-->
+              <className>org/camunda/feel/**</className>
+              <differenceType>7012</differenceType>
+              <method>*</method>
+            </ignored>
           </ignored>
         </configuration>
       </plugin>
