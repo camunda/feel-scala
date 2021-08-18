@@ -1,9 +1,9 @@
 package org.camunda.feel.impl.builtin
 
-import java.util.regex.Pattern
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 
+import java.util.regex.Pattern
 import scala.util.Try
 
 object StringBuiltinFunctions {
@@ -96,11 +96,15 @@ object StringBuiltinFunctions {
     params = List("input", "pattern", "replacement"),
     invoke = {
       case List(ValString(input), ValString(pattern), ValString(replacement)) =>
-        Try (Pattern.compile(pattern))
-          .map {pattern =>
+        Try(Pattern.compile(pattern))
+          .map { pattern =>
             val m = pattern.matcher(input)
             ValString(m.replaceAll(replacement))
-          }.getOrElse(ValNull)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
@@ -111,11 +115,15 @@ object StringBuiltinFunctions {
                 ValString(pattern),
                 ValString(replacement),
                 ValString(flags)) =>
-        Try (Pattern.compile(pattern, patternFlags(flags)))
-          .map {pattern =>
+        Try(Pattern.compile(pattern, patternFlags(flags)))
+          .map { pattern =>
             val m = pattern.matcher(input)
             ValString(m.replaceAll(replacement))
-          }.getOrElse(ValNull)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
@@ -164,7 +172,11 @@ object StringBuiltinFunctions {
           .map { pattern =>
             val m = pattern.matcher(input)
             ValBoolean(m.find)
-          }.getOrElse(ValNull)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
       }
     }
   )
@@ -177,7 +189,11 @@ object StringBuiltinFunctions {
           .map { pattern =>
             val m = pattern.matcher(input)
             ValBoolean(m.find)
-          }.getOrElse(ValNull)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
@@ -189,7 +205,11 @@ object StringBuiltinFunctions {
           .map { pattern =>
             val r = pattern.split(string, -1)
             ValList(r.map(ValString).toList)
-          }.getOrElse(ValNull)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern for delimiter '$delimiter'")
+          }
+          .get
     }
   )
 

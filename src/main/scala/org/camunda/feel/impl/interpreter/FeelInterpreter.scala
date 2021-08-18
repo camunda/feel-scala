@@ -777,8 +777,14 @@ class FeelInterpreter {
       }
     }
 
-    val result = function.invoke(paramList)
-    context.valueMapper.toVal(result)
+    function.invoke(paramList) match {
+      case ValError(failure) => {
+        // TODO (saig0): customize error handling (#260)
+        logger.warn(s"Failed to invoke function: $failure")
+        ValNull
+      }
+      case result => context.valueMapper.toVal(result)
+    }
   }
 
   private def findFunction(ctx: EvalContext,
