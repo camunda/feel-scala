@@ -87,6 +87,10 @@ class BuiltinStringFunctionsTest
     """ replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """) should be(
     ValString("(012) 345-6789")))
 
+  it should "return null if the pattern is invalid" in {
+    eval(""" replace("abc", "([a-z)", "$1") """) should be(ValNull)
+  }
+
   "A contains() function" should "return if contains the match" in {
 
     eval(""" contains("foobar", "ob") """) should be(ValBoolean(true))
@@ -115,6 +119,10 @@ class BuiltinStringFunctionsTest
     eval(""" matches("foobar", "^fo*z") """) should be(ValBoolean(false))
   }
 
+  it should "return null if the pattern is invalid" in {
+    eval(""" matches("abc", "[a-z") """) should be(ValNull)
+  }
+
   "A split() function" should "return a list of substrings" in {
 
     eval(""" split("John Doe", "\s") """) should be(
@@ -127,6 +135,10 @@ class BuiltinStringFunctionsTest
              ValString("c"),
              ValString(""),
              ValString(""))))
+  }
+
+  it should "return null if the pattern is invalid" in {
+    eval(""" split("abc", "[a-z") """) should be(ValNull)
   }
 
 }
