@@ -36,6 +36,8 @@ import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
 import scala.collection.JavaConverters._
 import fastparse._
+
+import scala.util.Try
 object FeelEngine {
 
   type EvalExpressionResult = Either[Failure, Any]
@@ -177,12 +179,16 @@ class FeelEngine(
 
   private def parse(parser: String => Parsed[Exp],
                     expression: String): Either[Failure, ParsedExpression] =
-    parser(expression) match {
-      case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
-      case Parsed.Failure(_, _, extra) =>
-        Left(Failure(
-          s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
-    }
+    Try {
+      parser(expression) match {
+        case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
+        case Parsed.Failure(_, _, extra) =>
+          Left(Failure(
+            s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
+      }
+    }.recover(failure =>
+        Left(Failure(s"failed to parse expression '$expression': $failure")))
+      .get
 
   private def validate(
       exp: ParsedExpression): Either[Failure, ParsedExpression] = {
@@ -196,7 +202,12 @@ class FeelEngine(
   }
 
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
-    validate(exp).flatMap(_ => eval(exp, rootContext + context))
+    Try {
+      validate(exp).flatMap(_ => eval(exp, rootContext + context))
+    }.recover(failure =>
+        Left(
+          Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
+      .get
 
   private def eval(exp: ParsedExpression,
                    context: EvalContext): EvalExpressionResult = {
