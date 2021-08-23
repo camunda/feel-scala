@@ -1,5 +1,5 @@
 // import the FEEL engine library
-import $ivy.`org.camunda.feel:feel-engine:1.13.2`, org.camunda.feel._
+import $ivy.`org.camunda.feel:feel-engine:1.13.3`, org.camunda.feel._
 
 // import a logging library
 import $ivy.`org.apache.logging.log4j:log4j-slf4j-impl:2.14.0`, org.apache.logging.log4j.core.config.Configurator, org.apache.logging.log4j.Level
@@ -8,6 +8,8 @@ Configurator.setRootLevel(Level.WARN)
 
 // initialize the FEEL engine
 val feelEngine = new FeelEngine()
+
+val feelEngineVersion = classOf[FeelEngine].getPackage.getImplementationVersion
 
 // define a shortcut function for evaluation
 def feel(expression: String, context: Map[String, Any] = Map.empty): Unit = {
@@ -63,7 +65,7 @@ private def unpackJson(json: ujson.Value): Any = {
 }
 
 // print on loading the script
-println(fansi.Color.LightBlue("===== FEEL Engine REPL ======"))
+println(fansi.Color.LightBlue(s"===== FEEL Engine REPL ($feelEngineVersion) ======"))
 println(fansi.Color.LightBlue("""> Evaluate FEEL expressions using 'feel("1 + 3")'"""))
 println(fansi.Color.LightBlue("""> Evaluate FEEL unary-tests using 'unaryTests("[2..5]", 4)'"""))
 println(fansi.Color.LightBlue("""> Provide variables as Map using 'feel("x + 3", Map("x" -> 2))'"""))
