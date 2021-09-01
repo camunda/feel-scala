@@ -95,6 +95,10 @@ class InterpreterExpressionTest
     eval("2 * 3 instance of number") should be(ValBoolean(true))
   }
 
+  it should "be an instance of (function definition)" in {
+    eval(""" (function() "foo") instance of Any """) should be(ValBoolean(true))
+  }
+
   it should "be a instance of Any should always pass" in {
     eval("x instance of Any", Map("x" -> "yes")) should be(ValBoolean(true))
     eval("x instance of Any", Map("x" -> 1)) should be(ValBoolean(true))
