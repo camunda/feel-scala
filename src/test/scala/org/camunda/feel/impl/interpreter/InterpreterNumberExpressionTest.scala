@@ -196,18 +196,32 @@ class InterpreterNumberExpressionTest
   }
 
   it should "compare with 'in'" in {
-
     eval("x in < 2", Map("x" -> 1)) should be(ValBoolean(true))
     eval("x in < 2", Map("x" -> 2)) should be(ValBoolean(false))
 
+    eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
+    eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))
+  }
+
+  it should "compare with 'in' with interval (..)" in {
     eval("x in (2 .. 4)", Map("x" -> 3)) should be(ValBoolean(true))
     eval("x in (2 .. 4)", Map("x" -> 4)) should be(ValBoolean(false))
 
-    eval("x in (2,4,6)", Map("x" -> 4)) should be(ValBoolean(true))
-    eval("x in (2,4,6)", Map("x" -> 5)) should be(ValBoolean(false))
+    eval("3 in (2..4)") should be(ValBoolean(true))
+    eval("4 in (2..4)") should be(ValBoolean(false))
+  }
 
-    eval("3 in (2 .. 4)") should be(ValBoolean(true))
-    eval("4 in (2 .. 4)") should be(ValBoolean(false))
+  it should "compare with 'in' with interval [..]" in {
+    eval("3 in [2 .. 4]") should be(ValBoolean(true))
+    eval("4 in [2 .. 4]") should be(ValBoolean(true))
+  }
+
+  it should "compare with 'in' (multiple positive tests)" in {
+    eval("5 in (< 3, >= 5)") should be(ValBoolean(true))
+  }
+
+  it should "compare multiplication with 'in'" in {
+    eval("2 * 3 in > 3") should be(ValBoolean(true))
   }
 
   it should "be null if nAn" in {

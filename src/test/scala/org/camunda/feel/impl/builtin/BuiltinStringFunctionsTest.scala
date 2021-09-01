@@ -46,6 +46,11 @@ class BuiltinStringFunctionsTest
     eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
   }
 
+  it should "be invoked with named parameters" in {
+    eval(""" substring(string: "foobar", start position:3) """) should be(
+      ValString("obar"))
+  }
+
   "A string length() function" should "return the length of a String" in {
 
     eval(""" string length("foo") """) should be(ValNumber(3))
