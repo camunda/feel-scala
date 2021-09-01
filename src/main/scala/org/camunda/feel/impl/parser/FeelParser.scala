@@ -39,526 +39,508 @@ object FeelParser {
   def parseUnaryTests(expression: String): Parsed[Exp] =
     parse(expression, fullUnaryExpression(_))
 
-  private def fullExpression[_: P] = P(Start ~ expression ~ End)
+  // --------------- entry parsers ---------------
 
-  private def fullUnaryExpression[_: P] = P(Start ~ unaryTests ~ End)
+  private def fullExpression[_: P]: P[Exp] = P(Start ~ expression ~ End)
 
-  private def reservedWord[_: P] =
+  private def fullUnaryExpression[_: P]: P[Exp] = P(Start ~ unaryTests ~ End)
+
+  // --------------- common parsers ---------------
+
+  // language key words that can't be used as variable names
+  private def reservedWord[_: P]: P[String] =
     P(
-      StringIn("null",
+      StringIn(
+        "null",
         "true",
         "false",
         "function",
-        "if",
-        "then",
-        "else",
-        "for",
-        "between",
-        "instance",
-        "of",
-        "some",
-        "every"))
-
-  // list of built-in function names with whitespaces
-  // -- other names match the 'function name' pattern
-  private def builtinFunctionName[_: P] =
-    P(
-      StringIn(
-        "date and time",
-        "years and months duration",
-        "string length",
-        "upper case",
-        "lower case",
-        "substring before",
-        "substring after",
-        "starts with",
-        "ends with",
-        "list contains",
-        "insert before",
-        "index of",
-        "distinct values",
-        "get entries",
-        "get value",
-        "is defined",
-        "day of year",
-        "day of week",
-        "month of year",
-        "week of year",
-        "put all"
+        "in"
       )
-    )
+    ).!
 
-  // list of built-in function parameter names with whitespaces
-  // -- other names match the 'parameter name' pattern
-  private def builtinFunctionParameterNames[_: P] =
-    P(StringIn("start position", "grouping separator", "decimal separator"))
+  // an identifier which is not a reserved word. but, it can contain a reserved word.
+  private def identifier[_: P]: P[String] =
+    P(
+      reservedWord.? ~~ javaLikeIdentifier
+    ).!
 
-  // an identifier which is not a reserved word. however, it can contain a reserved word.
-  private def identifier[_: P] = P(reservedWord.? ~~ javaLikeIdentifier)
-
-  private def javaLikeIdentifier[_: P] =
+  private def javaLikeIdentifier[_: P]: P[String] =
     P(
       CharPred(Character.isJavaIdentifierStart) ~~ CharsWhile(
         Character.isJavaIdentifierPart,
         0)
-    )
+    ).!
 
-  // characters or string escape sequences (\', \", \\, \n, \r, \t, \u269D, \U101EF)
-  private def stringLiteralWithQuotes[_: P]: P[String] =
-    P("\"" ~~ (("\\" | !"\"") ~~ AnyChar).repX.! ~~ "\"")
-
-  private def expression[_: P]: P[Exp] = P(textualExpression)
-
-  private def expression10[_: P] = P(boxedExpression)
-
-  private def textualExpressions[_: P]: P[ConstList] =
-    P(textualExpression.rep(1, sep = ",").map(s => ConstList(s.toList)))
-
-  private def textualExpression[_: P]: P[Exp] =
-    P(expressionWithContinuation | functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2)
-
-  private def expressionWithContinuation[_: P]: P[Exp] =
+  // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
+  private def escapedIdentifier[_: P]: P[String] =
     P(
-      "(" ~ expression ~ ")" |
-        variableExpression |
-        list |
-        context |
-        functionInvocation
-    ).flatMap(continuation)
+      "`" ~~ (!"`" ~~ AnyChar.!).repX(1) ~~ "`"
+    ).map(_.mkString)
 
-  // optimize parsing the expression from left to right by using `flapMap()`
-  // `flatMap()` takes the parsed (left) part of the expression and continues with the (right) part
-  // it does backtracking if `flatMap()` is not successful
-  private def continuation[_: P](base: Exp): P[Exp] = P(
-    continuationExpression(base).flatMap(continuation) |
-      End.map(_ => base)
+  // use only if the identifier is followed by a predefined character (e.g. `(` or `:`)
+  private def identifierWithWhitespaces[_: P]: P[String] =
+    P(
+      identifier ~~ (" " ~~ identifier).repX(1)
+    ).!
+
+  private def name[_: P]: P[String] = P(
+    identifier | escapedIdentifier
   )
 
-  private def continuationExpression[_: P](base: Exp): P[Exp] =
-    filterContinuation(base) | pathContinuation(base)
+  private def qualifiedName[_: P]: P[List[String]] =
+    P(
+      name.rep(1, sep = ".")
+    ).map(_.toList)
 
-  private def filterContinuation[_: P](base: Exp): P[Exp] =
-    P("[" ~ expression ~ "]")
-      .map(filter => Filter(base, filter))
+  // a string wrapped in double quotes. it can contain an escape sequences (e.g. \', \", \\, \n, \r, \t, \u269D, \U101EF).
+  private def stringWithQuotes[_: P]: P[String] = P(
+    "\"" ~~ (("\\" | !"\"") ~~ AnyChar).repX.! ~~ "\""
+  )
 
-  private def pathContinuation[_: P](base: Exp): P[Exp] =
-    P(("." ~ name).rep(1))
-      .map(ops => ops.foldLeft(base)(PathExpression))
+  // --------------- utility parsers ---------------
 
-  // an (escaped) identifier but not the name of a function invocation or path expression
-  private def variableExpression[_: P]: P[Exp] =
-    P((identifier.! | escapedIdentifier) ~ !"(").map(n => Ref(List(n)))
+  // shortcut function to define an optional parser
+  private def optional[_: P](optionalParser: Exp => P[Exp]): Exp => P[Exp] = {
+    base =>
+      optionalParser(base).?.map(
+        _.fold(base)(result => result)
+      )
+  }
 
-  // 2b)
-  private def expression2[_: P]: P[Exp] = P(disjunction)
+  // --------------- expressions ---------------
 
-  private def expression3[_: P]: P[Exp] = P(conjunction)
+  // use different levels to define the precedence of the operators  (i.e. how they can be chained)
+  private def expression[_: P]: P[Exp] = expLvl1
 
-  private def expression4[_: P]: P[Exp] =
-    P(expression5.flatMap(x =>
-      comparison(x).?.map(_.fold(x)(comparisonExpr => comparisonExpr))))
+  private def expLvl1[_: P]: P[Exp] = ifOp | forOp | quantifiedOp | disjunction
 
-  private def comparison[_: P](x: Exp): P[Exp] = {
-    (StringIn("<=", ">=", "<", ">", "!=", "=").! ~ expression5).map {
+  private def expLvl2[_: P]: P[Exp] = conjunction
+
+  private def expLvl3[_: P]: P[Exp] =
+    expLvl4.flatMap(optional(comparison)) | simplePositiveUnaryTest
+
+  private def expLvl4[_: P]: P[Exp] = mathOperator
+
+  private def expLvl5[_: P]: P[Exp] = value
+
+  // --------------- mathematical/arithmetic operators ---------------
+
+  // use different levels to define the precedence of the operators
+  private def mathOperator[_: P]: P[Exp] = mathOpLvl1
+
+  private def mathOpLvl1[_: P]: P[Exp] = addSub
+
+  private def mathOpLvl2[_: P]: P[Exp] = mulDiv
+
+  private def mathOpLvl3[_: P]: P[Exp] = exponent
+
+  private def mathOpLvl4[_: P]: P[Exp] = mathNegation
+
+  // --------------- expression parsers ---------------
+
+  private def ifOp[_: P]: P[Exp] =
+    P(
+      "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression
+    ).map {
+      case (condition, thenExp, elseExp) => If(condition, thenExp, elseExp)
+    }
+
+  private def forOp[_: P]: P[Exp] =
+    P(
+      "for" ~ listIterator.rep(1, sep = ",") ~ "return" ~ expression
+    ).map {
+      case (iterators, exp) => For(iterators.toList, exp)
+    }
+
+  private def listIterator[_: P]: P[(String, Exp)] = P(
+    name ~ "in" ~ (range | value)
+  )
+
+  private def range[_: P]: P[Exp] =
+    P(
+      expLvl4 ~ ".." ~ expLvl4
+    ).map {
+      case (start, end) => Range(start, end)
+    }
+
+  private def quantifiedOp[_: P]: P[Exp] =
+    P(
+      ("some" | "every").! ~ listIterator
+        .rep(1, sep = ",") ~ "satisfies" ~ expression
+    ).map {
+      case ("some", iterators, condition) =>
+        SomeItem(iterators.toList, condition)
+      case ("every", iterators, condition) =>
+        EveryItem(iterators.toList, condition)
+    }
+
+  private def disjunction[_: P]: P[Exp] =
+    P(
+      expLvl2 ~ ("or" ~ expLvl2).rep
+    ).map {
+      case (base, ops) => ops.foldLeft(base)(Disjunction)
+    }
+
+  private def conjunction[_: P]: P[Exp] =
+    P(
+      expLvl3 ~ ("and" ~ expLvl3).rep
+    ).map {
+      case (base, ops) => ops.foldLeft(base)(Conjunction)
+    }
+
+  private def comparison[_: P](value: Exp): P[Exp] =
+    binaryComparison(value) | between(value) | instanceOf(value) | in(value)
+
+  private def binaryComparison[_: P](x: Exp): P[Exp] =
+    P(
+      StringIn("<=", ">=", "<", ">", "!=", "=").! ~ expLvl4
+    ).map {
       case ("=", y)  => Equal(x, y)
       case ("!=", y) => Not(Equal(x, y))
       case ("<", y)  => LessThan(x, y)
       case ("<=", y) => LessOrEqual(x, y)
       case (">", y)  => GreaterThan(x, y)
       case (">=", y) => GreaterOrEqual(x, y)
-    } |
-      ("between" ~ expression5 ~ "and" ~ expression5).map {
-        case (a, b) => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
-      } |
-      ("in" ~ "(" ~ positiveUnaryTests ~ ")").map(y => In(x, y)) |
-      ("in" ~ positiveUnaryTest).map(y => In(x, y))
-  }
+    }
 
-  private def expression5[_: P] = P(arithmeticExpression)
+  private def between[_: P](x: Exp): P[Exp] =
+    P(
+      "between" ~ expLvl4 ~ "and" ~ expLvl4
+    ).map {
+      case (a, b) => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
+    }
 
-  private def expression6[_: P] =
-    P(expression7.flatMap(x =>
-      instanceOf.?.map(_.fold(x)(typeName => InstanceOf(x, typeName)))))
-
-  private def instanceOf[_: P]: P[String] =
-    P("instance" ~ "of" ~/ typeName)
+  private def instanceOf[_: P](value: Exp): P[Exp] =
+    P(
+      "instance" ~ "of" ~ typeName
+    ).map(InstanceOf(value, _))
 
   private def typeName[_: P]: P[String] =
-    P(qualifiedName.map(_.mkString(".")))
-
-  private def expression7[_: P] = P(pathExpression)
-
-  private def expression8[_: P] =
-    P(functionInvocation | filteredExpression9)
-
-  private def expression9[_: P] =
     P(
-      (!dateTimeLiteral ~ name.map(n => Ref(List(n)))) |
-        literal |
-        inputValueSymbol |
-        simplePositiveUnaryTest |
-        "(" ~ textualExpression ~ ")" |
-        expression10
-    )
+      qualifiedName
+    ).map(_.mkString("."))
 
-  private def inputValueSymbol[_: P] = P("?").map(_ => ConstInputValue)
-
-  private def simpleExpressions[_: P]: P[ConstList] =
-    P[ConstList](
-      simpleExpression.rep(1, sep = ",").map(s => ConstList(s.toList)))
-
-  private def simpleExpression[_: P]: P[Exp] =
-    P[Exp](arithmeticExpression | simpleValue)
-
-  private def arithmeticExpression[_: P] =
-    P(arithmeticExpression2 ~ (CharIn("+\\-").! ~ arithmeticExpression2).rep)
-      .map {
-        case (base, ops) =>
-          ops.foldLeft(base) {
-            case (left, (op, right)) =>
-              op match {
-                case "+" => Addition(left, right)
-                case "-" => Subtraction(left, right)
-              }
-          }
-      }
-
-  private def arithmeticExpression2[_: P] =
-    P(arithmeticExpression3 ~ (CharIn("*/").! ~ arithmeticExpression3).rep)
-      .map {
-        case (base, ops) =>
-          ops.foldLeft(base) {
-            case (left, (op, right)) =>
-              op match {
-                case "*" => Multiplication(left, right)
-                case "/" => Division(left, right)
-              }
-          }
-      }
-
-  private def arithmeticExpression3[_: P] =
-    P(arithmeticExpression4 ~ ("**" ~ arithmeticExpression4).rep)
-      .map { case (base, ops) => ops.foldLeft(base)(Exponentiation) }
-
-  private def arithmeticExpression4[_: P] = P("-".!.? ~ expression6).map {
-    case (Some("-"), exp) => ArithmeticNegation(exp)
-    case (_, exp)         => exp
-  }
-
-  private def unaryTests[_: P]: P[Exp] = P(
-    acceptAnyInputValue |
-      ("not" ~ "(" ~ positiveUnaryTests ~ ")").map(Not) |
-      positiveUnaryTests
-  )
-
-  private def acceptAnyInputValue[_: P]() =
-    P("-" ~ End).map(_ => ConstBool(true))
-
-  private def positiveUnaryTests[_: P]: P[Exp] =
-    P(positiveUnaryTest.rep(1, ",").map {
-      case Seq(test) => test
-      case tests     => AtLeastOne(tests.toList)
-    })
-
-  // in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
-  //    - however, parse simple positive unary test first since this is most usual
-  private def positiveUnaryTest[_: P]: P[Exp] =
+  private def in[_: P](value: Exp): P[Exp] =
     P(
-      P("null").map(_ => InputEqualTo(ConstNull)) |
-        simplePositiveUnaryTest ~ End |
-        expression.map(UnaryTestExpression)
-    )
+      "in" ~ (("(" ~ positiveUnaryTests ~ ")") | positiveUnaryTest)
+    ).map(In(value, _))
 
-  private def simpleUnaryTests[_: P]: P[Exp] = P[Exp](
-    acceptAnyInputValue |
-      ("not" ~ "(" ~ simplePositiveUnaryTests ~ ")").map(Not) |
-      simplePositiveUnaryTests
-  )
+  // --------------- mathematical parsers ---------------
 
-  private def simplePositiveUnaryTests[_: P]: P[Exp] =
-    P(simplePositiveUnaryTest.rep(1, ",").map {
-      case test :: Nil => test
-      case tests       => AtLeastOne(tests.toList)
-    })
-
-  private def simplePositiveUnaryTest[_: P]: P[Exp] =
+  private def addSub[_: P]: P[Exp] =
     P(
-      "<" ~ endpoint.map(InputLessThan) |
-        "<=" ~ endpoint.map(InputLessOrEqual) |
-        ">" ~ endpoint.map(InputGreaterThan) |
-        ">=" ~ endpoint.map(InputGreaterOrEqual) |
-        interval |
-        simpleValue.map(InputEqualTo)
-    )
+      mathOpLvl2 ~ (CharIn("+\\-").! ~ mathOpLvl2).rep
+    ).map {
+      case (value, ops) =>
+        ops.foldLeft(value) {
+          case (x, ("+", y)) => Addition(x, y)
+          case (x, ("-", y)) => Subtraction(x, y)
+        }
+    }
 
-  // allow any expression as endpoint
-  private def endpoint[_: P]: P[Exp] = P(simpleValue | expression)
-
-  // need to exclude function invocation from qualified name
-  private def simpleValue[_: P] =
+  private def mulDiv[_: P]: P[Exp] =
     P(
-      simpleLiteral |
-        !functionInvocation ~ qualifiedName.map(Ref(_)) |
-        inputValueSymbol
-    )
+      mathOpLvl3 ~ (CharIn("*/").! ~ mathOpLvl3).rep
+    ).map {
+      case (value, ops) =>
+        ops.foldLeft(value) {
+          case (x, ("*", y)) => Multiplication(x, y)
+          case (x, ("/", y)) => Division(x, y)
+        }
+    }
+
+  private def exponent[_: P]: P[Exp] =
+    P(
+      mathOpLvl4 ~ ("**" ~ mathOpLvl4).rep
+    ).map {
+      case (value, ops) => ops.foldLeft(value)(Exponentiation)
+    }
+
+  private def mathNegation[_: P]: P[Exp] =
+    P(
+      "-".!.? ~ expLvl5
+    ).map {
+      case (Some("-"), value) => ArithmeticNegation(value)
+      case (None, value)      => value
+    }
+
+  // --------------- value/terminal parsers ---------------
+
+  private def value[_: P]: P[Exp] =
+    terminalValue.flatMap(optional(chainedValueOp))
+
+  private def terminalValue[_: P]: P[Exp] =
+    temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
   private def literal[_: P]: P[Exp] =
-    P(P("null").map(_ => ConstNull) | simpleLiteral)
+    nullLiteral | boolean | string | number | temporal | list | context
 
-  private def simpleLiteral[_: P] =
-    P(booleanLiteral | dateTimeLiteral | stringLiteral | numericLiteral)
-
-  private def booleanLiteral[_: P]: P[ConstBool] =
-    P(P("true").map(_ => ConstBool(true)) | P("false").map(_ =>
-      ConstBool(false)))
-
-  private def dateTimeLiteral[_: P]: P[Exp] =
+  private def nullLiteral[_: P]: P[Exp] =
     P(
-      ("date" ~ "(" ~ stringLiteralWithQuotes ~ ")").map(parseDate) |
-        ("time" ~ "(" ~ stringLiteralWithQuotes ~ ")").map(parseTime) |
-        ("date and time" ~ "(" ~ stringLiteralWithQuotes ~ ")")
-          .map(parseDateTime) |
-        ("duration" ~ "(" ~ stringLiteralWithQuotes ~ ")").map(parseDuration)
-    ).opaque("expected date time literal")
+      "null"
+    ).map(_ => ConstNull)
 
-  private def stringLiteral[_: P]: P[ConstString] =
-    P(stringLiteralWithQuotes.map(ConstString))
+  private def boolean[_: P]: P[Exp] =
+    P(
+      "true" | "false"
+    ).!.map {
+      case "true"  => ConstBool(true)
+      case "false" => ConstBool(false)
+    }
 
-  private def numericLiteral[_: P]: P[ConstNumber] =
-    P(CharIn("\\-").? ~~ (integral ~~ fractional.?) | fractional).!.map(
-      number => ConstNumber(BigDecimal(number))
-    )
+  private def string[_: P]: P[Exp] =
+    P(
+      stringWithQuotes
+    ).map(ConstString)
 
-  private def integral[_: P] = P("0" | CharIn("1-9") ~~ digits.?)
+  private def number[_: P]: P[Exp] =
+    P(
+      "-".? ~~ ((integral ~~ fractional.?) | fractional)
+    ).!.map(number => ConstNumber(BigDecimal(number)))
 
-  private def fractional[_: P] = P("." ~~ digits)
-
-  private def digits[_: P] = P(CharsWhileIn("0-9"))
-
-  private def digit[_: P] = P(CharIn("0-9"))
-
-  private def qualifiedName[_: P]: P[List[String]] =
-    P(name.repX(1, sep = ".").map(_.toList))
-
-  // simplified name definition
-  private def name[_: P]: P[String] =
-    P(escapedIdentifier | "time offset".! | identifier.!)
-
-  private def escapedIdentifier[_: P]: P[String] =
-    P("`" ~~ (!"`" ~~ AnyChar.!).repX(1) ~~ "`")
-      .map(_.mkString)
-
-  // FEEL name definition
-  private def feelName[_: P]: P[String] =
-    P((nameStart ~ (namePart | additionalNameSymbols).rep.!).map {
-      case (s, ps) =>
-        s + ps.mkString
-    })
-
-  private def nameStart[_: P] =
-    P((nameStartChar ~ namePartChar.rep).map {
-      case (s, ps) => s + ps.mkString
-    })
-
-  private def namePart[_: P]: P[String] = P(namePartChar.rep(1).map(_.mkString))
-
-  private def nameStartChar[_: P]: P[String] = P(
-    (
-      "?" | CharIn("A-Z") | "_" | CharIn("a-z") |
-        CharIn("\u200C-\u200D") | CharIn("\u2070-\u218F") | CharIn(
-        "\u2C00-\u2FEF") | CharIn("\u3001-\uD7FF") | CharIn(
-        "\uF900-\uFDCF"
-      ) | CharIn("\uFDF0-\uFFFD") | CharIn("\u10000-\uEFFFF")
+  private def integral[_: P]: P[String] =
+    P(
+      CharIn("0-9") ~~ digits.?
     ).!
+
+  private def fractional[_: P]: P[String] =
+    P(
+      "." ~~ digits
+    ).!
+
+  private def digits[_: P]: P[String] =
+    P(
+      CharsWhileIn("0-9")
+    ).!
+
+  private def temporal[_: P]: P[Exp] =
+    P(
+      ("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")"
+    ).map {
+      case ("duration", value)      => parseDuration(value)
+      case ("date and time", value) => parseDateTime(value)
+      case ("date", value)          => parseDate(value)
+      case ("time", value)          => parseTime(value)
+    }
+
+  private def list[_: P]: P[Exp] =
+    P(
+      "[" ~ expression.rep(0, sep = ",") ~ "]"
+    ).map(items => ConstList(items.toList))
+
+  private def context[_: P]: P[Exp] =
+    P(
+      "{" ~ contextEntry.rep(0, sep = ",") ~ "}"
+    ).map(entries => ConstContext(entries.toList))
+
+  private def contextEntry[_: P]: P[(String, Exp)] = P(
+    (name | stringWithQuotes) ~ ":" ~ expression
   )
 
-  private def namePartChar[_: P] =
-    P(nameStartChar | digit | CharIn("\u0300-\u036F") | CharIn("\u203F-\u2040"))
-
-  private def additionalNameSymbols[_: P] = P("." | "/" | "-" | "’" | "+" | "*")
-
-  private def interval[_: P]: P[Interval] =
-    P(intervalStart.! ~ endpoint ~ ".." ~/ endpoint ~/ intervalEnd.!)
-      .map {
-        case ("(" | "]", start, end, ")" | "[") =>
-          syntaxtree.Interval(OpenIntervalBoundary(start),
-                              OpenIntervalBoundary(end))
-        case ("(" | "]", start, end, "]") =>
-          syntaxtree.Interval(OpenIntervalBoundary(start),
-                              ClosedIntervalBoundary(end))
-        case ("[", start, end, ")" | "[") =>
-          syntaxtree.Interval(ClosedIntervalBoundary(start),
-                              OpenIntervalBoundary(end))
-        case ("[", start, end, "]") =>
-          syntaxtree.Interval(ClosedIntervalBoundary(start),
-                              ClosedIntervalBoundary(end))
-      }
-
-  private def intervalStart[_: P] = P(CharIn("(", "]", "["))
-
-  private def intervalEnd[_: P] = P(CharIn(")", "[", "]"))
-
-  private def forExpression[_: P]: P[For] =
-    P(("for" ~ listIterator.rep(1, sep = ",") ~/ "return" ~/ expression).map {
-      case (iterators, exp) =>
-        syntaxtree.For(iterators.toList, exp)
-    })
-
-  private def listIterator[_: P] = P(name ~ "in" ~/ (range | expression))
-
-  private def range[_: P]: P[syntaxtree.Range] =
-    P((expression ~ ".." ~ expression).map {
-      case (start, end) =>
-        syntaxtree.Range(start, end)
-    })
-
-  private def ifExpression[_: P]: P[If] =
-    P(("if" ~ expression ~ "then" ~ expression ~ "else" ~ expression).map {
-      case (condition, statement, elseStatement) =>
-        If(condition, statement, elseStatement)
-    })
-
-  private def quantifiedExpression[_: P]: P[Exp] =
+  private def variableRef[_: P]: P[Exp] =
     P(
-      (("some" | "every").! ~ listIterator
-        .rep(1, sep = ",") ~ "satisfies" ~/ expression).map {
-        case ("some", iterators, condition) =>
-          SomeItem(iterators.toList, condition)
-        case ("every", iterators, condition) =>
-          EveryItem(iterators.toList, condition)
-      })
+      qualifiedName
+    ).map(Ref(_))
 
-  private def disjunction[_: P]: P[Exp] =
-    P(expression3 ~ ("or" ~ expression3).rep)
-      .map { case (base, ops) => ops.foldLeft(base)(Disjunction) }
+  private def inputValue[_: P]: P[Exp] =
+    P(
+      "?"
+    ).map(_ => ConstInputValue)
 
-  private def conjunction[_: P]: P[Exp] =
-    P(expression4 ~ ("and" ~ expression4).rep)
-      .map { case (base, ops) => ops.foldLeft(base)(Conjunction) }
+  private def functionDefinition[_: P]: P[Exp] =
+    P(
+      "function" ~ "(" ~ parameter
+        .rep(0, sep = ",") ~ ")" ~ (externalFunction | expression)
+    ).map {
+      case (parameters, body) => FunctionDefinition(parameters.toList, body)
+    }
 
-  // allow nested path expressions
-  private def pathExpression[_: P]: P[Exp] =
-    P(expression8 ~ ("." ~ name).rep ~ ("[" ~ expression ~ "]").?)
-      .map {
-        case (base, ops, None) => ops.foldLeft(base)(PathExpression)
-        case (base, ops, Some(filter)) =>
-          val pathExpression = ops.foldLeft(base)(PathExpression)
-          Filter(pathExpression, filter)
-      }
+  private def parameter[_: P]: P[String] = parameterName
 
-  private def filteredExpression9[_: P]: P[Exp] =
-    P(expression9.flatMap(x =>
-      ("[" ~ expression ~ "]").?.map(_.fold(x)(filterExp =>
-        Filter(x, filterExp)))))
+  // parameter names from built-in functions can have whitespaces. the name is limited by `,` or `:`.
+  private def parameterName[_: P]: P[String] = identifierWithWhitespaces | name
+
+  private def externalFunction[_: P]: P[Exp] = P(
+    "external" ~ externalJavaFunction
+  )
+
+  private def externalJavaFunction[_: P]: P[Exp] =
+    P(
+      "{" ~
+        "java" ~ ":" ~ "{" ~
+        "class" ~ ":" ~ stringWithQuotes ~ "," ~
+        "method signature" ~ ":" ~ javaMethodSignature ~
+        "}" ~ "}"
+    ).map {
+      case (className, (methodName, parameters)) =>
+        JavaFunctionInvocation(className, methodName, parameters.toList)
+    }
+
+  private def javaMethodSignature[_: P]: P[(String, Seq[String])] = P(
+    "\"" ~ name ~ "(" ~ javaMethodParameter_.rep(0, sep = ",") ~ ")" ~ "\""
+  )
+
+  private def javaMethodParameter_[_: P]: P[String] =
+    P(
+      qualifiedName
+    ).map(_.mkString)
 
   private def functionInvocation[_: P]: P[Exp] =
-    P(!dateTimeLiteral ~ (builtinFunctionName.!.map(List(_)) | qualifiedName) ~ parameters)
-      .map {
-        case (names, params) =>
-          names match {
-            case name :: Nil => FunctionInvocation(name, params)
-            case _ =>
-              val path = Ref(names.dropRight(1))
-              QualifiedFunctionInvocation(path, names.last, params)
-          }
-      }
-
-  private def parameters[_: P]: P[FunctionParameters] = P(
-    P("(" ~ ")").map(_ => PositionalFunctionParameters(List())) |
-      "(" ~ (namedParameters | positionalParameters) ~ ")"
-  )
-
-  private def namedParameters[_: P] =
     P(
-      namedParameter
-        .rep(1, sep = ",")
-        .map(p => NamedFunctionParameters(p.toMap)))
+      (identifierWithWhitespaces
+        .map(List(_)) | qualifiedName) ~ "(" ~ functionParameters.? ~ ")"
+    ).map {
+      case (name :: Nil, None) =>
+        FunctionInvocation(name, PositionalFunctionParameters(List.empty))
+      case (name :: Nil, Some(parameters)) =>
+        FunctionInvocation(name, parameters)
+      case (names, None) =>
+        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
+                                    names.last,
+                                    PositionalFunctionParameters(List.empty))
+      case (names, Some(parameters)) =>
+        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
+                                    names.last,
+                                    parameters)
+    }
 
-  private def namedParameter[_: P] = P(parameterName ~ ":" ~/ expression)
+  private def functionParameters[_: P]: P[FunctionParameters] =
+    namedParameters | positionalParameters
 
-  // should be FEEL name
-  private def parameterName[_: P] = P(builtinFunctionParameterNames.! | name)
-
-  private def positionalParameters[_: P] = P(
-    expression
-      .rep(1, sep = ",")
-      .map(s => PositionalFunctionParameters(s.toList))
-  )
-
-  private def boxedExpression[_: P]: P[Exp] =
-    P(list | functionDefinition | context)
-
-  private def list[_: P]: P[ConstList] =
-    P(("[" ~ expression7.rep(0, sep = ",") ~ "]").map(s => ConstList(s.toList)))
-
-  private def functionDefinition[_: P]: P[FunctionDefinition] =
+  private def namedParameters[_: P]: P[NamedFunctionParameters] =
     P(
-      ("function" ~ "(" ~ formalParameter
-        .rep(0, sep = ",") ~/ ")" ~/ (externalJavaFunction | expression)).map {
-        case (params, body) => FunctionDefinition(params.toList, body)
-      }
-    )
+      (parameterName ~ ":" ~ expression).rep(1, sep = ",")
+    ).map(params => NamedFunctionParameters(params.toMap))
 
-  private def externalJavaFunction[_: P]: P[JavaFunctionInvocation] = P(
-    ("external" ~ "{" ~ "java" ~ ":" ~ "{" ~ functionClassName ~ "," ~ functionMethodSignature ~ "}" ~ "}")
-      .map {
-        case (className, (methodName, arguments)) =>
-          JavaFunctionInvocation(className, methodName, arguments.toList)
-      }
-  )
+  private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
+    P(
+      expression.rep(1, sep = ",")
+    ).map(params => PositionalFunctionParameters(params.toList))
 
-  private def functionClassName[_: P] =
-    P("class" ~/ ":" ~ stringLiteralWithQuotes)
+  // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
+  private def chainedValueOp[_: P](value: Exp): P[Exp] =
+    (path(value) | filter(value)).flatMap(optional(chainedValueOp))
 
-  private def functionMethodSignature[_: P] = P(
-    "method signature" ~/ ":" ~/ "\"" ~ name ~/ "(" ~ functionMethodArgument
-      .rep(0, sep = ",") ~ ")" ~/ "\""
-  )
+  private def path[_: P](value: Exp): P[Exp] =
+    P(
+      ("." ~ (valueProperty | name)).rep(1)
+    ).map(ops => ops.foldLeft(value)(PathExpression))
 
-  private def functionMethodArgument[_: P] =
-    P(qualifiedName.map(_.mkString(".")))
+  // list all properties that doesn't match to the regular name (i.e. with whitespaces)
+  // - generic parser with whitespace doesn't work because there is no fixed follow-up character
+  private def valueProperty[_: P]: P[String] =
+    P(
+      "time offset"
+    ).!
 
-  private def formalParameter[_: P] = P(parameterName)
+  private def filter[_: P](base: Exp): P[Exp] =
+    P(
+      ("[" ~ expression ~ "]").rep(1)
+    ).map(ops => ops.foldLeft(base)(Filter))
 
-  private def context[_: P]: P[ConstContext] =
-    P(("{" ~ contextEntry.rep(0, sep = ",") ~ "}").map(s =>
-      ConstContext(s.toList)))
+  // --------------- unary-tests expressions ---------------
 
-  private def contextEntry[_: P]: P[(String, Exp)] = P(key ~ ":" ~ expression)
+  private def unaryTests[_: P]: P[Exp] =
+    negation | positiveUnaryTests | anyInput
 
-  private def key[_: P] = P(name | stringLiteralWithQuotes)
+  private def negation[_: P]: P[Exp] =
+    P(
+      "not" ~ "(" ~ positiveUnaryTests ~ ")"
+    ).map(Not)
+
+  private def positiveUnaryTests[_: P]: P[Exp] =
+    P(
+      positiveUnaryTest.rep(1, sep = ",")
+    ).map {
+      case test :: Nil => test
+      case tests       => AtLeastOne(tests.toList)
+    }
+
+  // boolean literals are ambiguous for unary-tests. give precedence to comparison with input.
+  private def positiveUnaryTest[_: P]: P[Exp] =
+    boolean.map(InputEqualTo) | expression.map(UnaryTestExpression)
+
+  private def anyInput[_: P]: P[Exp] =
+    P(
+      "-"
+    ).map(_ => ConstBool(true))
+
+  private def simplePositiveUnaryTest[_: P]: P[Exp] = unaryComparison | interval
+
+  private def unaryComparison[_: P]: P[Exp] =
+    P(
+      StringIn("<=", ">=", "<", ">").! ~ endpoint
+    ).map {
+      case ("<", x)  => InputLessThan(x)
+      case ("<=", x) => InputLessOrEqual(x)
+      case (">", x)  => InputGreaterThan(x)
+      case (">=", x) => InputGreaterOrEqual(x)
+    }
+
+  // allow more expressions compared to the spec to align unary-tests with other expression
+  private def endpoint[_: P]: P[Exp] = expLvl4
+
+  private def interval[_: P]: P[Exp] =
+    P(
+      intervalStart ~ ".." ~ intervalEnd
+    ).map {
+      case (start, end) => Interval(start, end)
+    }
+
+  private def intervalStart[_: P]: P[IntervalBoundary] =
+    P(
+      CharIn("(", "]", "[").! ~ endpoint
+    ).map {
+      case ("(", x) => OpenIntervalBoundary(x)
+      case ("]", x) => OpenIntervalBoundary(x)
+      case ("[", x) => ClosedIntervalBoundary(x)
+    }
+
+  private def intervalEnd[_: P]: P[IntervalBoundary] =
+    P(
+      endpoint ~ CharIn(")", "[", "]").!
+    ).map {
+      case (y, ")") => OpenIntervalBoundary(y)
+      case (y, "[") => OpenIntervalBoundary(y)
+      case (y, "]") => ClosedIntervalBoundary(y)
+    }
+
+  // --------------- temporal parsers ---------------
 
   private def parseDate(d: String): Exp = {
     Try(ConstDate(d)).filter(_ => isValidDate(d)).getOrElse(ConstNull)
   }
 
   private def parseTime(t: String): Exp = {
-    if (isOffsetTime(t)) {
-      Try(ConstTime(t)).getOrElse(ConstNull)
-    } else {
-      Try(ConstLocalTime(t)).getOrElse(ConstNull)
-    }
+    Try {
+      if (isOffsetTime(t)) {
+        ConstTime(t)
+      } else {
+        ConstLocalTime(t)
+      }
+    }.getOrElse(ConstNull)
   }
 
   private def parseDateTime(dt: String): Exp = {
-    if (isValidDate(dt)) {
-      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse(ConstNull)
-    } else if (isOffsetDateTime(dt)) {
-      Try(ConstDateTime(dt)).getOrElse(ConstNull)
-    } else if (isLocalDateTime(dt)) {
-      Try(ConstLocalDateTime(dt)).getOrElse(ConstNull)
-    } else {
-      ConstNull
-    }
+    Try {
+      if (isValidDate(dt)) {
+        ConstLocalDateTime((dt: Date).atTime(0, 0))
+      } else if (isOffsetDateTime(dt)) {
+        ConstDateTime(dt)
+      } else {
+        ConstLocalDateTime(dt)
+      }
+    }.getOrElse(ConstNull)
   }
 
   private def parseDuration(d: String): Exp = {
-    if (isYearMonthDuration(d)) {
-      Try(ConstYearMonthDuration(d)).getOrElse(ConstNull)
-    } else if (isDayTimeDuration(d)) {
-      Try(ConstDayTimeDuration(d)).getOrElse(ConstNull)
-    } else {
-      ConstNull
-    }
+    Try {
+      if (isYearMonthDuration(d)) {
+        ConstYearMonthDuration(d)
+      } else {
+        ConstDayTimeDuration(d)
+      }
+    }.getOrElse(ConstNull)
   }
 }
