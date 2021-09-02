@@ -199,23 +199,6 @@ object StringBuiltinFunctions {
     }
   )
 
-  private def extractFunction = builtinFunction(
-    params = List("input", "pattern"),
-    invoke = {
-      case List(ValString(input), ValString(pattern)) => {
-        val p = Pattern.compile(pattern)
-        val m = p.matcher(input)
-        val r = ListBuffer[String]()
-        val numPattern = pattern.r
-        val matches = numPattern.findAllIn(input)
-        matches.foreach { m =>
-          r += m
-        }
-        ValList(r.map(ValString).toList)
-      }
-    }
-  )
-
   private def splitFunction = builtinFunction(
     params = List("string", "delimiter"),
     invoke = {
@@ -227,6 +210,22 @@ object StringBuiltinFunctions {
           }
           .recover { _ =>
             ValError(s"Invalid pattern for delimiter '$delimiter'")
+          }
+          .get
+    }
+  )
+
+  private def extractFunction = builtinFunction(
+    params = List("input", "pattern"),
+    invoke = {
+      case List(ValString(input), ValString(pattern)) =>
+        Try(pattern.r)
+          .map { regex =>
+            val matches = regex.findAllIn(input).map(ValString)
+            ValList(matches.toList)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
           }
           .get
     }
