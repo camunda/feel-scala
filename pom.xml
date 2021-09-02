@@ -281,19 +281,43 @@
               <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
               <createSourcesJar>true</createSourcesJar>
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+
               <artifactSet>
                 <excludes>
                   <exclude>org.slf4j:slf4j-api</exclude>
-                  <exclude>com.lihaoyi:*</exclude>
                 </excludes>
               </artifactSet>
+
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                  </excludes>
+                </filter>
+              </filters>
 
               <relocations>
                 <relocation>
                   <pattern>scala</pattern>
                   <shadedPattern>camundajar.impl.scala</shadedPattern>
                 </relocation>
+
+                <relocation>
+                  <pattern>fastparse</pattern>
+                  <shadedPattern>camundajar.impl.fastparse</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>geny</pattern>
+                  <shadedPattern>camundajar.impl.geny</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>sourcecode</pattern>
+                  <shadedPattern>camundajar.impl.sourcecode</shadedPattern>
+                </relocation>
+
               </relocations>
+
             </configuration>
           </execution>
         </executions>
