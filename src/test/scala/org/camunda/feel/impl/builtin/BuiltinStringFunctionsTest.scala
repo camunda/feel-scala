@@ -137,8 +137,18 @@ class BuiltinStringFunctionsTest
              ValString(""))))
   }
 
-  it should "return null if the pattern is invalid" in {
-    eval(""" split("abc", "[a-z") """) should be(ValNull)
+  "An extract() function" should "return a list of strings matching a pattern" in {
+
+    eval(""" extract("this is foobar and folbar", "fo[a-z]*") """) should be(
+      ValList(List(ValString("foobar"), ValString("folbar"))))
+
+    eval(""" extract("nothing", "fo[a-z]*") """) should be(ValList(List()))
+
+    eval(""" extract("This is fobbar!", "fo[a-z]*") """) should be(
+      ValList(List(ValString("fobbar"))))
   }
 
+  it should "return null if the pattern is invalid" in {
+    eval(""" extract("abc", "[a-z") """) should be(ValNull)
+  }
 }
