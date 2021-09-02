@@ -284,6 +284,7 @@
               <artifactSet>
                 <excludes>
                   <exclude>org.slf4j:slf4j-api</exclude>
+                  <exclude>com.lihaoyi:*</exclude>
                 </excludes>
               </artifactSet>
 
