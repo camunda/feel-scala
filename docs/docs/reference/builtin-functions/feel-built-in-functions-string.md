@@ -155,3 +155,18 @@ split("John Doe", "\s" )
 split("a;b;c;;", ";")
 // ["a", "b", "c", "", ""]
 ```
+
+## extract()
+
+Returns all matches of the pattern in the given string. Returns an empty list if the pattern doesn't
+match.
+
+* parameters:
+  * `string`: string
+  * `pattern`: string (regular expression)
+* result: list of strings
+
+```js
+extract("references are 1234, 1256, 1378", "12[0-9]*")
+// ["1234","1256"]
+```
