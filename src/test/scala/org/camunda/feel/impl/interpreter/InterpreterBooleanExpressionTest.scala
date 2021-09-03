@@ -58,6 +58,10 @@ class InterpreterBooleanExpressionTest
     eval("2 and 4") should be(ValNull)
   }
 
+  it should "be in conjunction with between" in {
+    eval("1 between 1 and 3 and 2 between 1 and 3") should be(ValBoolean(true))
+  }
+
   it should "be in disjunction" in {
 
     eval("false or true") should be(ValBoolean(true))
@@ -72,6 +76,14 @@ class InterpreterBooleanExpressionTest
     eval("2 or false") should be(ValNull)
 
     eval("2 or 4") should be(ValNull)
+  }
+
+  it should "be in disjunction with comparison" in {
+    eval("1 = 1 or 1 = 2") should be(ValBoolean(true))
+  }
+
+  it should "be in conjunction and disjunction" in {
+    eval("true and false or true and true") should be(ValBoolean(true))
   }
 
   it should "negate" in {

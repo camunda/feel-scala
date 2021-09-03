@@ -28,10 +28,11 @@ class InterpreterContextExpressionTest
     with Matchers
     with FeelIntegrationTest {
 
-  "A context" should "be accessed" in {
-
+  "A context" should "be accessed (variable)" in {
     eval("ctx.a", Map("ctx" -> Map("a" -> 1))) should be(ValNumber(1))
+  }
 
+  it should "be accessed (literal)" in {
     eval("{ a: 1 }.a") should be(ValNumber(1))
   }
 
@@ -92,6 +93,10 @@ class InterpreterContextExpressionTest
     eval("{ a:1, b:{ a:2, c:a+3 } }.b.c") should be(ValNumber(5))
   }
 
+  it should "be filtered and accessed" in {
+    eval("[{a:1}, {a:2}][1].a") should be(ValNumber(1))
+  }
+
   it should "fail if one entry fails" in {
 
     eval(" { a:1, b: {}.x } ") should be(
@@ -124,6 +129,10 @@ class InterpreterContextExpressionTest
     eval("{x:1} != {y:1}") should be(ValBoolean(true))
 
     eval("{x:1} != {x:true}") should be(ValBoolean(true))
+  }
+
+  it should "be accessed and compared" in {
+    eval("{x:1}.x = 1") should be(ValBoolean(true))
   }
 
   it should "fail to compare if not a context" in {

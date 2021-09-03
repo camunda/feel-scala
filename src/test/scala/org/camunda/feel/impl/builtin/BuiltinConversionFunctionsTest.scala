@@ -159,6 +159,13 @@ class BuiltinConversionFunctionsTest
     eval(""" number("1.500", ".", null) """) should be(ValNumber(1500))
   }
 
+  it should "be invoked with named parameter" in {
+
+    eval(
+      """ number(from: "1.500", grouping separator: ".", decimal separator: null) """) should be(
+      ValNumber(1500))
+  }
+
   "A string() function" should "convert Number" in {
 
     eval(""" string(1.1) """) should be(ValString("1.1"))
