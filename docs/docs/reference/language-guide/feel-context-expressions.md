@@ -5,13 +5,19 @@ title: Context Expressions
 
 ### Literal
 
-Creates a new context with the given entries. Each entry has a key and a value. The value can be any
-type.
+Creates a new context with the given entries. Each entry has a key and a value. The key is either a
+name or a string. The value can be any type.
 
 ```js
 {
   a: 1,
   b: 2
+}
+// {a:1, b:2}
+
+{
+  "a": 1,
+  "b": 2
 }
 // {a:1, b:2}
 ```
