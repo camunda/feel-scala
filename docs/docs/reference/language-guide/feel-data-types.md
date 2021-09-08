@@ -139,15 +139,18 @@ A list of elements. The elements can be of any type. The list can be empty.
 
 ### Context
 
-A list of entries. Each entry has a key and a value. The value can be any type. The context can be
-empty.
+A list of entries. Each entry has a key and a value. The key is either a name or a string. The value
+can be any type. The context can be empty.
 
 * Java Type: `java.util.Map`
 
 ```js
 {}
+
+{a:1}
+{b: 2, c: "valid"}
+{nested: {d: 3}}
+
 {"a": 1}
 {"b": 2, "c": "valid"}
-
-{"nested": {"d": 3}}
 ```
