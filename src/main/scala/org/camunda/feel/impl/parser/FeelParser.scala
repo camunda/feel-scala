@@ -100,6 +100,8 @@ import org.camunda.feel.{
   isOffsetTime,
   isValidDate,
   isYearMonthDuration,
+  isLocalDateTime,
+  isDayTimeDuration,
   stringToDate,
   stringToDateTime,
   stringToDayTimeDuration,
@@ -410,12 +412,14 @@ object FeelParser {
 
   private def temporal[_: P]: P[Exp] =
     P(
-      ("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")"
+      (("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")") |
+        ("@".! ~ stringWithQuotes)
     ).map {
       case ("duration", value)      => parseDuration(value)
       case ("date and time", value) => parseDateTime(value)
       case ("date", value)          => parseDate(value)
       case ("time", value)          => parseTime(value)
+      case ("@", value)             => parseTemporalValue(value)
     }
 
   private def list[_: P]: P[Exp] =
@@ -653,6 +657,26 @@ object FeelParser {
         ConstYearMonthDuration(d)
       } else {
         ConstDayTimeDuration(d)
+      }
+    }.getOrElse(ConstNull)
+  }
+
+  private def parseTemporalValue(value: String): Exp = {
+    Try {
+      if (isValidDate(value)) {
+        ConstDate(value)
+      } else if (isOffsetTime(value)) {
+        ConstTime(value)
+      } else if (isOffsetDateTime(value)) {
+        ConstDateTime(value)
+      } else if (isLocalDateTime(value)) {
+        ConstLocalDateTime(value)
+      } else if (isYearMonthDuration(value)) {
+        ConstYearMonthDuration(value)
+      } else if (isDayTimeDuration(value)) {
+        ConstDayTimeDuration(value)
+      } else {
+        ConstLocalTime(value)
       }
     }.getOrElse(ConstNull)
   }
