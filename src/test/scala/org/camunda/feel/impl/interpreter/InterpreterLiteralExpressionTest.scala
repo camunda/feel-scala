@@ -50,7 +50,7 @@ class InterpreterLiteralExpressionTest
     eval("null") should be(ValNull)
   }
 
-  it should "be a context" in {
+  it should "be a context (identifier as key)" in {
 
     eval("{ a : 1 }")
       .asInstanceOf[ValContext]
@@ -78,6 +78,15 @@ class InterpreterLiteralExpressionTest
       .context
       .variableProvider
       .getVariables should be(Map("b" -> ValNumber(1)))
+  }
+
+  it should "be a context (string as key)" in {
+    val result = eval(""" {"a":1} """)
+
+    result shouldBe a [ValContext]
+    result match {
+      case ValContext(context) => context.variableProvider.getVariables should be(Map("a" -> ValNumber(1)))
+    }
   }
 
   it should "be a list" in {
