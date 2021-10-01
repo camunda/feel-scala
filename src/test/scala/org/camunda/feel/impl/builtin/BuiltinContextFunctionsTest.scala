@@ -48,6 +48,22 @@ class BuiltinContextFunctionsTest
       Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
   }
 
+  "A get entries function" should "return all entries when invoked with 'm' argument" in {
+
+    val list = eval(""" get entries(m:{foo: 123}) """)
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items(0)
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(
+      Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
+  }
+
   it should "return empty list if empty" in {
 
     eval(""" get entries({}) """) should be(ValList(List()))
@@ -242,6 +258,8 @@ class BuiltinContextFunctionsTest
     eval(""" context(get entries({a:1})) = {a:1} """) should be(
       ValBoolean(true))
     eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(
+      ValBoolean(true))
+    eval(""" context(get entries(m:{a:1,b:2})) = {a:1, b:2} """) should be(
       ValBoolean(true))
     eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(
       ValBoolean(true))

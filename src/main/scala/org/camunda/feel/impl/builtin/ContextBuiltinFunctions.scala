@@ -8,15 +8,16 @@ import org.camunda.feel.syntaxtree._
 object ContextBuiltinFunctions {
 
   def functions = Map(
-    "get entries" -> List(getEntriesFunction),
+    "get entries" -> List(getEntriesFunction("context"),
+                          getEntriesFunction("m")),
     "get value" -> List(getValueFunction),
     "put" -> List(putFunction),
     "put all" -> List(putAllFunction),
     "context" -> List(contextFunction)
   )
 
-  private def getEntriesFunction = builtinFunction(
-    params = List("context"),
+  private def getEntriesFunction(paramName: String) = builtinFunction(
+    params = List(paramName),
     invoke = {
       case List(ValContext(c: Context)) =>
         c.variableProvider.getVariables.map {
