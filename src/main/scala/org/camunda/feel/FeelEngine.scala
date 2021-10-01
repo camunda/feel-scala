@@ -35,7 +35,9 @@ import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
 import scala.collection.JavaConverters._
+import fastparse._
 
+import scala.util.Try
 object FeelEngine {
 
   type EvalExpressionResult = Either[Failure, Any]
@@ -108,7 +110,8 @@ class FeelEngine(
     val functionProvider: FunctionProvider = FeelEngine.defaultFunctionProvider,
     val valueMapper: ValueMapper = FeelEngine.defaultValueMapper,
     val configuration: Configuration = FeelEngine.defaultConfiguration,
-    val clock: FeelEngineClock = FeelEngine.defaultClock) {
+    val clock: FeelEngineClock = FeelEngine.defaultClock
+) {
 
   val interpreter = new FeelInterpreter()
 
@@ -120,7 +123,8 @@ class FeelEngine(
       s"value-mapper: $valueMapper, " +
       s"function-provider: $functionProvider, " +
       s"clock: $clock, " +
-      s"configuration: $configuration]")
+      s"configuration: $configuration]"
+  )
 
   private val rootContext: EvalContext = new EvalContext(
     valueMapper = valueMapper,
@@ -167,19 +171,24 @@ class FeelEngine(
       .map(value => value.asInstanceOf[Boolean])
   }
 
-  private def eval(parser: String => ParseResult[Exp],
+  private def eval(parser: String => Parsed[Exp],
                    expression: String,
                    context: Context): EvalExpressionResult =
     parse(parser, expression)
       .flatMap(expr => eval(expr, context))
 
-  private def parse(parser: String => ParseResult[Exp],
+  private def parse(parser: String => Parsed[Exp],
                     expression: String): Either[Failure, ParsedExpression] =
-    parser(expression) match {
-      case Success(exp, _) => Right(ParsedExpression(exp, expression))
-      case e: NoSuccess =>
-        Left(Failure(s"failed to parse expression '$expression': $e"))
-    }
+    Try {
+      parser(expression) match {
+        case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
+        case Parsed.Failure(_, _, extra) =>
+          Left(Failure(
+            s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
+      }
+    }.recover(failure =>
+        Left(Failure(s"failed to parse expression '$expression': $failure")))
+      .get
 
   private def validate(
       exp: ParsedExpression): Either[Failure, ParsedExpression] = {
@@ -193,7 +202,12 @@ class FeelEngine(
   }
 
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
-    validate(exp).flatMap(_ => eval(exp, rootContext + context))
+    Try {
+      validate(exp).flatMap(_ => eval(exp, rootContext + context))
+    }.recover(failure =>
+        Left(
+          Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
+      .get
 
   private def eval(exp: ParsedExpression,
                    context: EvalContext): EvalExpressionResult = {

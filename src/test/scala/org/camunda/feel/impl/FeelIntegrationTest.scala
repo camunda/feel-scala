@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl
 
+import fastparse.Parsed
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.context.Context
 import org.camunda.feel.impl.interpreter.{
@@ -24,7 +25,6 @@ import org.camunda.feel.impl.interpreter.{
   FeelInterpreter
 }
 import org.camunda.feel.impl.parser.FeelParser
-import org.camunda.feel.impl.parser.FeelParser.{NoSuccess, Success}
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
 import org.camunda.feel.{
@@ -45,14 +45,16 @@ trait FeelIntegrationTest {
 
   private val clock: TimeTravelClock = new TimeTravelClock
 
-  def eval(expression: String,
-           variables: Map[String, Any] = Map(),
-           functions: Map[String, ValFunction] = Map()): Val = {
+  def eval(
+      expression: String,
+      variables: Map[String, Any] = Map(),
+      functions: Map[String, ValFunction] = Map()
+  ): Val = {
 
-    val context = Context.StaticContext(
-      variables = variables,
-      functions = functions.map { case (n, f) => n -> List(f) }.toMap
-    )
+    val context =
+      Context.StaticContext(variables = variables, functions = functions.map {
+        case (n, f) => n -> List(f)
+      }.toMap)
 
     eval(expression, context)
   }
@@ -60,10 +62,11 @@ trait FeelIntegrationTest {
   def eval(expression: String, context: Context): Val = {
 
     FeelParser.parseExpression(expression) match {
-      case Success(exp, _) =>
+      case Parsed.Success(exp, _) =>
         interpreter.eval(exp)(rootContext + context)
-      case e: NoSuccess => {
-        ValError(s"failed to parse expression '$expression':\n$e")
+      case Parsed.Failure(_, _, extra) => {
+        ValError(
+          s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
       }
     }
   }
@@ -75,8 +78,8 @@ trait FeelIntegrationTest {
     val ctx = rootContext ++ variables + (UnaryTests.defaultInputVariable -> input)
 
     FeelParser.parseUnaryTests(expression) match {
-      case Success(exp, _) => interpreter.eval(exp)(ctx)
-      case e: NoSuccess => {
+      case Parsed.Success(exp, _) => interpreter.eval(exp)(ctx)
+      case e: Parsed.Failure => {
         ValError(s"failed to parse expression '$expression':\n$e")
       }
     }
@@ -84,8 +87,8 @@ trait FeelIntegrationTest {
 
   val rootContext: EvalContext = EvalContext.wrap(
     Context.StaticContext(variables = Map.empty,
-                          functions = new BuiltinFunctions(clock).functions))(
-    ValueMapper.defaultValueMapper)
+                          functions = new BuiltinFunctions(clock).functions)
+  )(ValueMapper.defaultValueMapper)
 
   def withClock(testCode: TimeTravelClock => Any): Unit = {
     try {

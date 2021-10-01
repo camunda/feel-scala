@@ -1,9 +1,11 @@
 package org.camunda.feel.impl.builtin
 
-import java.util.regex.Pattern
-
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
+import scala.collection.mutable.ListBuffer
+
+import java.util.regex.Pattern
+import scala.util.Try
 
 object StringBuiltinFunctions {
 
@@ -19,7 +21,8 @@ object StringBuiltinFunctions {
     "starts with" -> List(startsWithFunction),
     "ends with" -> List(endsWithFunction),
     "matches" -> List(matchesFunction, matchesFunction3),
-    "split" -> List(splitFunction)
+    "split" -> List(splitFunction),
+    "extract" -> List(extractFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -95,7 +98,15 @@ object StringBuiltinFunctions {
     params = List("input", "pattern", "replacement"),
     invoke = {
       case List(ValString(input), ValString(pattern), ValString(replacement)) =>
-        ValString(input.replaceAll(pattern, replacement))
+        Try(Pattern.compile(pattern))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValString(m.replaceAll(replacement))
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
@@ -105,11 +116,16 @@ object StringBuiltinFunctions {
       case List(ValString(input),
                 ValString(pattern),
                 ValString(replacement),
-                ValString(flags)) => {
-        val p = Pattern.compile(pattern, patternFlags(flags))
-        val m = p.matcher(input)
-        ValString(m.replaceAll(replacement))
-      }
+                ValString(flags)) =>
+        Try(Pattern.compile(pattern, patternFlags(flags)))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValString(m.replaceAll(replacement))
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
@@ -154,9 +170,15 @@ object StringBuiltinFunctions {
     params = List("input", "pattern"),
     invoke = {
       case List(ValString(input), ValString(pattern)) => {
-        val p = Pattern.compile(pattern)
-        val m = p.matcher(input)
-        ValBoolean(m.find)
+        Try(Pattern.compile(pattern))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValBoolean(m.find)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
       }
     }
   )
@@ -164,22 +186,48 @@ object StringBuiltinFunctions {
   private def matchesFunction3 = builtinFunction(
     params = List("input", "pattern", "flags"),
     invoke = {
-      case List(ValString(input), ValString(pattern), ValString(flags)) => {
-        val p = Pattern.compile(pattern, patternFlags(flags))
-        val m = p.matcher(input)
-        ValBoolean(m.find)
-      }
+      case List(ValString(input), ValString(pattern), ValString(flags)) =>
+        Try(Pattern.compile(pattern, patternFlags(flags)))
+          .map { pattern =>
+            val m = pattern.matcher(input)
+            ValBoolean(m.find)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 
   private def splitFunction = builtinFunction(
     params = List("string", "delimiter"),
     invoke = {
-      case List(ValString(string), ValString(delimiter)) => {
-        val p = Pattern.compile(delimiter)
-        val r = p.split(string, -1)
-        ValList(r.map(ValString).toList)
-      }
+      case List(ValString(string), ValString(delimiter)) =>
+        Try(Pattern.compile(delimiter))
+          .map { pattern =>
+            val r = pattern.split(string, -1)
+            ValList(r.map(ValString).toList)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern for delimiter '$delimiter'")
+          }
+          .get
+    }
+  )
+
+  private def extractFunction = builtinFunction(
+    params = List("input", "pattern"),
+    invoke = {
+      case List(ValString(input), ValString(pattern)) =>
+        Try(pattern.r)
+          .map { regex =>
+            val matches = regex.findAllIn(input).map(ValString)
+            ValList(matches.toList)
+          }
+          .recover { _ =>
+            ValError(s"Invalid pattern '$pattern'")
+          }
+          .get
     }
   )
 

@@ -44,6 +44,19 @@ class DateTimeDurationPropertiesTest
     eval(""" date("2017-03-10").day """) should be(ValNumber(10))
   }
 
+  it should "has a weekday property" in {
+
+    eval(""" date("2020-09-30").weekday """) should be(ValNumber(3))
+  }
+
+  it should "return an error if the property is not available" in {
+    val result = eval(""" date("2020-09-30").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:")
+  }
+
   ///// -----
 
   "A time" should "has a hour property" in {
@@ -74,6 +87,14 @@ class DateTimeDurationPropertiesTest
     eval(""" time("11:45:30+02:00").timezone """) should be(ValNull)
   }
 
+  it should "return an error if the property is not available" in {
+    val result = eval(""" time("11:45:30+02:00").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:")
+  }
+
   ///// -----
 
   "A local time" should "has a hour property" in {
@@ -101,6 +122,14 @@ class DateTimeDurationPropertiesTest
     eval(""" time("11:45:30").timezone """) should be(ValNull)
   }
 
+  it should "return an error if the property is not available" in {
+    val result = eval(""" time("11:45:30").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValLocalTime(11:45:30)'. Available properties:")
+  }
+
   ///// -----
 
   "A date-time" should "has a year property" in {
@@ -119,6 +148,12 @@ class DateTimeDurationPropertiesTest
 
     eval(""" date and time("2017-03-10T11:45:30+02:00").day """) should be(
       ValNumber(10))
+  }
+
+  it should "has a weekday property" in {
+
+    eval(""" date and time("2020-09-30T22:50:30+02:00").weekday """) should be(
+      ValNumber(3))
   }
 
   it should "has a hour property" in {
@@ -151,6 +186,14 @@ class DateTimeDurationPropertiesTest
       ValString("Europe/Paris"))
     eval(""" date and time("2017-03-10T11:45:30+02:00").timezone """) should be(
       ValNull)
+  }
+
+  it should "return an error if the property is not available" in {
+    val result = eval(""" date and time("2020-09-30T22:50:30+02:00").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:")
   }
 
   ///// -----
@@ -203,6 +246,19 @@ class DateTimeDurationPropertiesTest
       ValNull)
   }
 
+  it should "has a weekday property" in {
+    eval(""" date and time("2020-09-30T22:50:30").weekday """) should be(
+      ValNumber(3))
+  }
+
+  it should "return an error if the property is not available" in {
+    val result = eval(""" date and time("2020-09-30T22:50:30").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties:")
+  }
+
   ///// -----
 
   "A year-month-duration" should "has a years property" in {
@@ -213,6 +269,14 @@ class DateTimeDurationPropertiesTest
   it should "has a months property" in {
 
     eval(""" duration("P2Y3M").months """) should be(ValNumber(3))
+  }
+
+  it should "return an error if the property is not available" in {
+    val result = eval(""" duration("P2Y3M").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValYearMonthDuration(P2Y3M)'. Available properties:")
   }
 
   ///// -----
@@ -235,6 +299,14 @@ class DateTimeDurationPropertiesTest
   it should "has a seconds property" in {
 
     eval(""" duration("P1DT2H10M30S").seconds """) should be(ValNumber(30))
+  }
+
+  it should "return an error if the property is not available" in {
+    val result = eval(""" duration("P1DT2H10M30S").x """)
+
+    result shouldBe a[ValError]
+    result.asInstanceOf[ValError].error should startWith(
+      "No property found with name 'x' of value 'ValDayTimeDuration(PT26H10M30S)'. Available properties:")
   }
 
 }

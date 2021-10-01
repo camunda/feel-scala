@@ -13,15 +13,16 @@ Release version: 1.x.y
 Release date: 
 
 * [ ] inform the maintainers of other teams about the release
- * Camunda BPM: @koevskinikola / @ThorbenLindhauer
- * Zeebe: @saig0 / @npepinpe
+  * Camunda BPM: @koevskinikola / @ThorbenLindhauer
+  * Zeebe: @saig0 / @npepinpe
 * [ ] schedule a release date
 * [ ] before building the release, inform the maintainers of other teams about the code freeze
 * [ ] build the release using the CI job: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
 * [ ] deploy to Maven Central by releasing the staging repository: https://oss.sonatype.org/#stagingRepositories
 * [ ] if major/minor release, archive the documentation of the previous version
-  * copy `/docs/develop/` to `/docs/<PREVIOUS_VERSION>` 
-  * add entry point for the version to `/docs/index.md`
+  * use `npm run docusaurus docs:version 1.x` in `/docs` to copy the existing docs under the released version (`1.x` = the released version)
+  * update the latest version in `/docs/docusaurus.config.js` under `docs > versions > current > label`
+* [ ] update the version that is used by the FEEL REPL script `/feel-repl.sc` under `import $ivy.org.camunda.feel:feel-engine:1.x.y`
 * [ ] create a release in GitHub for the tag: https://github.com/camunda/feel-scala/releases
   * attach the artifacts from Nexus: https://app.camunda.com/nexus/#browse/search=keyword%3Dfeel-scala
   * write the changelog

@@ -14,7 +14,7 @@ If you have an idea how to improve the project then please create a [new issue](
 
 ### Improving Documentation
 
-If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. The documentation is located in the repository at `/docs/*.md`.
+If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. Use the link on the page to edit it.
 
 ### Providing Pull Requests
 
@@ -40,6 +40,17 @@ Build the JAR files with
 mvn install
 ```
 
+## Building the Documentation
+
+The documentation is located in the `/docs` folder. It is built with [Docusaurus](https://v2.docusaurus.io/)
+
+For development, use the following command (build + serve + auto-reload):
+```
+npm run start
+```
+
+The documentation is published using GitHub actions.
+
 ## Styleguides
 
 ### Source Code
@@ -48,7 +59,27 @@ Scala code is formatted using [Scalafmt](https://scalameta.org/scalafmt/). The f
 
 ### Git Commit Messages
 
-Commit messages should include a short description of the changes and reference the issue.
+Commit messages should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) format.
+
+For example:
+
+```
+feat(builtin-function): add random() function
+
+* add new built-in function random()
+* it returns a random number between 0.0 and 1.0
+```
+
+Available commit types:
+
+* `feat` - enhancements, new features
+* `fix` - bug fixes
+* `refactor` - non-behavior changes
+* `test` - only changes in tests
+* `docs` - changes in the documentation, readme, etc.
+* `style` - apply code styles
+* `build` - changes to the build (e.g. to Maven's `pom.xml`)
+* `ci` - changes to the CI (e.g. to GitHub related configs)
 
 ## Public API and Backwards Compatibility
 

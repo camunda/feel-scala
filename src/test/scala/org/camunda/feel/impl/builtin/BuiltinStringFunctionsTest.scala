@@ -46,6 +46,11 @@ class BuiltinStringFunctionsTest
     eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
   }
 
+  it should "be invoked with named parameters" in {
+    eval(""" substring(string: "foobar", start position:3) """) should be(
+      ValString("obar"))
+  }
+
   "A string length() function" should "return the length of a String" in {
 
     eval(""" string length("foo") """) should be(ValNumber(3))
@@ -87,6 +92,10 @@ class BuiltinStringFunctionsTest
     """ replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """) should be(
     ValString("(012) 345-6789")))
 
+  it should "return null if the pattern is invalid" in {
+    eval(""" replace("abc", "([a-z)", "$1") """) should be(ValNull)
+  }
+
   "A contains() function" should "return if contains the match" in {
 
     eval(""" contains("foobar", "ob") """) should be(ValBoolean(true))
@@ -115,6 +124,10 @@ class BuiltinStringFunctionsTest
     eval(""" matches("foobar", "^fo*z") """) should be(ValBoolean(false))
   }
 
+  it should "return null if the pattern is invalid" in {
+    eval(""" matches("abc", "[a-z") """) should be(ValNull)
+  }
+
   "A split() function" should "return a list of substrings" in {
 
     eval(""" split("John Doe", "\s") """) should be(
@@ -129,4 +142,18 @@ class BuiltinStringFunctionsTest
              ValString(""))))
   }
 
+  "An extract() function" should "return a list of strings matching a pattern" in {
+
+    eval(""" extract("this is foobar and folbar", "fo[a-z]*") """) should be(
+      ValList(List(ValString("foobar"), ValString("folbar"))))
+
+    eval(""" extract("nothing", "fo[a-z]*") """) should be(ValList(List()))
+
+    eval(""" extract("This is fobbar!", "fo[a-z]*") """) should be(
+      ValList(List(ValString("fobbar"))))
+  }
+
+  it should "return null if the pattern is invalid" in {
+    eval(""" extract("abc", "[a-z") """) should be(ValNull)
+  }
 }

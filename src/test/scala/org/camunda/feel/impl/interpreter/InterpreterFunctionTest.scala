@@ -129,6 +129,14 @@ class InterpreterFunctionTest
     eval("f(x:1,y:1)", functions = functions) should be(ValString("ok"))
   }
 
+  it should "be invoked and followed by a path" in {
+    eval(""" date(2019,09,17).year """) should be(ValNumber(2019))
+  }
+
+  it should "be invoked and followed by a filter" in {
+    eval(""" index of([1,2,3,2],2)[1]  """) should be(ValNumber(2))
+  }
+
   "An external java function definition" should "be invoked with one double parameter" in {
 
     val functions = Map(

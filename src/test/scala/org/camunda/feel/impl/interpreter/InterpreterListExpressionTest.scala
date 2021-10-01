@@ -44,6 +44,10 @@ class InterpreterListExpressionTest
       ValBoolean(false))
   }
 
+  it should "be checked with 'some' (range)" in {
+    eval("some x in 1..5 satisfies x > 3") should be(ValBoolean(true))
+  }
+
   it should "be checked with 'every'" in {
 
     eval("every x in [1,2,3] satisfies x >= 1") should be(ValBoolean(true))
@@ -60,6 +64,10 @@ class InterpreterListExpressionTest
       ValBoolean(false))
   }
 
+  it should "be checked with 'every' (range)" in {
+    eval("every x in 1..5 satisfies x < 10") should be(ValBoolean(true))
+  }
+
   it should "be processed in a for-expression" in {
 
     eval("for x in [1,2] return x * 2") should be(
@@ -70,6 +78,16 @@ class InterpreterListExpressionTest
 
     eval("for x in xs return x * 2", Map("xs" -> List(1, 2))) should be(
       ValList(List(ValNumber(2), ValNumber(4))))
+  }
+
+  it should "be processed in a for-expression (range)" in {
+    eval("for x in 1..3 return x") should be(
+      ValList(
+        List(
+          ValNumber(1),
+          ValNumber(2),
+          ValNumber(3)
+        )))
   }
 
   it should "be filtered via boolean expression" in {
@@ -94,6 +112,44 @@ class InterpreterListExpressionTest
 
     eval("[1,2,3,4][i]", Map("i" -> 2)) should be(ValNumber(2))
     eval("[1,2,3,4][i]", Map("i" -> -2)) should be(ValNumber(3))
+  }
+
+  it should "be filtered multiple times (from literal)" in {
+    eval("[[1]][1][1]") should be(ValNumber(1))
+    eval("[[[1]]][1][1][1]") should be(ValNumber(1))
+    eval("[[[[1]]]][1][1][1][1]") should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from variable)" in {
+    val listOfLists = List(List(1))
+
+    eval("xs[1][1]", Map("xs" -> listOfLists)) should be(ValNumber(1))
+    eval("xs[1][1][1]", Map("xs" -> List(listOfLists))) should be(ValNumber(1))
+    eval("xs[1][1][1][1]", Map("xs" -> List(List(listOfLists)))) should be(
+      ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from function invocation)" in {
+    eval("append([], [1])[1][1]") should be(ValNumber(1))
+    eval("append([], [[1]])[1][1][1]") should be(ValNumber(1))
+    eval("append([], [[[1]]])[1][1][1][1]") should be(ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from path)" in {
+    val listOfLists = List(List(1))
+
+    eval("x.y[1][1]", Map("x" -> Map("y" -> listOfLists))) should be(
+      ValNumber(1))
+    eval("x.y[1][1][1]", Map("x" -> Map("y" -> List(listOfLists)))) should be(
+      ValNumber(1))
+    eval("x.y[1][1][1][1]", Map("x" -> Map("y" -> List(List(listOfLists))))) should be(
+      ValNumber(1))
+  }
+
+  it should "be filtered multiple times (from context projection)" in {
+    eval("{x:[[1]]}.x[1][1]") should be(ValNumber(1))
+    eval("{x:[[[1]]]}.x[1][1][1]") should be(ValNumber(1))
+    eval("{x:[[[[1]]]]}.x[1][1][1][1]") should be(ValNumber(1))
   }
 
   it should "fail if one element fails" in {
@@ -132,6 +188,10 @@ class InterpreterListExpressionTest
     eval("[{x:1}] != [{x:2}]") should be(ValBoolean(true))
 
     eval("[1] != [true]") should be(ValBoolean(true))
+  }
+
+  it should "be accessed and compared" in {
+    eval("[1][1] = 1") should be(ValBoolean(true))
   }
 
   it should "fail to compare if not a list" in {

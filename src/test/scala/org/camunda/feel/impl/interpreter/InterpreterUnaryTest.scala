@@ -162,6 +162,18 @@ class InterpreterUnaryTest
     evalUnaryTests(null, "false") should be(ValBoolean(false))
   }
 
+  it should "compare to a boolean comparison (numeric)" in {
+
+    evalUnaryTests(true, "1 < 2") should be(ValBoolean(true))
+    evalUnaryTests(true, "2 < 1") should be(ValBoolean(false))
+  }
+
+  it should "compare to a boolean comparison (string)" in {
+
+    evalUnaryTests(true, """ "a" = "a" """) should be(ValBoolean(true))
+    evalUnaryTests(true, """ "a" = "b" """) should be(ValBoolean(false))
+  }
+
   "A date" should "compare with '<'" in {
 
     evalUnaryTests(date("2015-09-17"), """< date("2015-09-18")""") should be(
@@ -426,6 +438,16 @@ class InterpreterUnaryTest
     evalUnaryTests(List(1, 2), "[1]") should be(ValBoolean(false))
     evalUnaryTests(List(1, 2), "[2,1]") should be(ValBoolean(false))
     evalUnaryTests(List(1, 2), "[1,2,3]") should be(ValBoolean(false))
+  }
+
+  it should "be checked in an every expression" in {
+    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(ValBoolean(true))
+  }
+
+  it should "be checked in a some expression" in {
+    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(ValBoolean(true))
   }
 
   "A context" should "be equal to another context" in {

@@ -87,5 +87,4 @@ class BuiltinTemporalFunctionsTest
     eval(""" week of year(date(2005,1,3)) """) should be(ValNumber(1))
     eval(""" week of year(date(2005,1,9)) """) should be(ValNumber(1))
   }
-
 }

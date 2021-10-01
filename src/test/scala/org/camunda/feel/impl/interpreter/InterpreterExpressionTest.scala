@@ -29,14 +29,45 @@ class InterpreterExpressionTest
     with Matchers
     with FeelIntegrationTest {
 
-  "An expression" should "be an if-then-else" in {
-
+  "An expression" should "be an if-then-else (with parentheses)" in {
     val exp = """ if (x < 5) then "low" else "high" """
 
     eval(exp, Map("x" -> 2)) should be(ValString("low"))
     eval(exp, Map("x" -> 7)) should be(ValString("high"))
 
     eval(exp, Map("x" -> "foo")) should be(ValString("high"))
+  }
+
+  it should "be an if-then-else (without parentheses)" in {
+    eval("if x < 5 then 1 else 2", Map("x" -> 2)) should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with literal)" in {
+    eval("if true then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with path)" in {
+    eval("if {a: true}.a then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with filter)" in {
+    eval("if [true][1] then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with conjunction)" in {
+    eval("if true and true then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with disjunction)" in {
+    eval("if false or true then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with in-test)" in {
+    eval("if 1 in < 5 then 1 else 2") should be(ValNumber(1))
+  }
+
+  it should "be an if-then-else (with instance of)" in {
+    eval("if 1 instance of number then 1 else 2") should be(ValNumber(1))
   }
 
   it should "be a simple positive unary test" in {
@@ -48,7 +79,7 @@ class InterpreterExpressionTest
       ValBoolean(false))
   }
 
-  it should "be an instance of" in {
+  it should "be an instance of (literal)" in {
 
     eval("x instance of number", Map("x" -> 1)) should be(ValBoolean(true))
     eval("x instance of number", Map("x" -> "NaN")) should be(ValBoolean(false))
@@ -60,6 +91,21 @@ class InterpreterExpressionTest
     eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
   }
 
+  it should "be an instance of (multiplication)" in {
+    eval("2 * 3 instance of number") should be(ValBoolean(true))
+  }
+
+  it should "be an instance of (function definition)" in {
+    eval(""" (function() "foo") instance of Any """) should be(ValBoolean(true))
+  }
+
+  it should "be a instance of Any should always pass" in {
+    eval("x instance of Any", Map("x" -> "yes")) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> 1)) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> true)) should be(ValBoolean(true))
+    eval("x instance of Any", Map("x" -> null)) should be(ValBoolean(false))
+  }
+
   it should "be an escaped identifier" in {
     // regular identifier
     eval(" `x` ", Map("x" -> "foo")) should be(ValString("foo"))
@@ -67,6 +113,58 @@ class InterpreterExpressionTest
     eval(" `a b` ", Map("a b" -> "foo")) should be(ValString("foo"))
     // with operator
     eval(" `a-b` ", Map("a-b" -> 3)) should be(ValNumber(3))
+  }
+
+  it should "contains parentheses" in {
+    eval("(1 + 2)") should be(ValNumber(3))
+    eval("(1 + 2) + 3") should be(ValNumber(6))
+    eval("1 + (2 + 3)") should be(ValNumber(6))
+
+    eval("([1,2,3])[1]") should be(ValNumber(1))
+    eval("({x:1}).x") should be(ValNumber(1))
+    eval("{x:(1)}.x") should be(ValNumber(1))
+
+    eval("[1,2,3,4][(1)]") should be(ValNumber(1))
+  }
+
+  it should "contain parentheses in a context literal" in {
+    val context = Map("xs" -> List(1, 2, 3))
+
+    eval("{x:(xs[1])}.x", context) should be(ValNumber(1))
+    eval("{x:(xs)[1]}.x", context) should be(ValNumber(1))
+    eval("{x:(xs)}.x", context) should be(
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+  }
+
+  it should "contains nested filter expressions" in {
+    eval("[1,2,3,4][item > 2][1]") should be(ValNumber(3))
+    eval("([1,2,3,4])[item > 2][1]") should be(ValNumber(3))
+    eval("([1,2,3,4][item > 2])[1]") should be(ValNumber(3))
+  }
+
+  it should "contains nested path expressions" in {
+    eval("{x:{y:1}}.x.y") should be(ValNumber(1))
+    eval("{x:{y:{z:1}}}.x.y.z") should be(ValNumber(1))
+
+    eval("({x:{y:{z:1}}}).x.y.z") should be(ValNumber(1))
+    eval("({x:{y:{z:1}}}.x).y.z") should be(ValNumber(1))
+    eval("({x:{y:{z:1}}}.x.y).z") should be(ValNumber(1))
+  }
+
+  it should "contains nested filter and path expressions" in {
+    eval("[{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x.y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x).y[2]") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y)[2]") should be(ValNumber(2))
+
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x[2].y") should be(ValNumber(2))
+    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}])[2].x.y") should be(ValNumber(2))
+
+    eval("[{x:[1,2]},{x:[3,4]},{x:[5,6]}][2].x[1]") should be(ValNumber(3))
+
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}]).x[2][1]") should be(ValNumber(3))
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x)[2][1]") should be(ValNumber(3))
+    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x[2])[1]") should be(ValNumber(3))
   }
 
   "Null" should "compare to null" in {
@@ -154,7 +252,6 @@ class InterpreterExpressionTest
       eval(s"$variableName = true", Map(variableName -> true)) should be(
         ValBoolean(true))
     }
-
   }
 
 }

@@ -16,517 +16,531 @@
  */
 package org.camunda.feel.impl.parser
 
+import fastparse.JavaWhitespace._
+import fastparse._
 import org.camunda.feel._
 import org.camunda.feel.syntaxtree._
 
 import scala.util.Try
-import scala.util.parsing.combinator.JavaTokenParsers
 
-object FeelParser extends JavaTokenParsers {
+/**
+  * The parser is written following the FEEL grammar definition in the DMN specification.
+  *
+  * In order to understand how the parser works, it is recommended to read the documentation first:
+  * [[https://www.lihaoyi.com/fastparse]]. Additional resources:
+  * [[https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html]],
+  * [[https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html]]
+  */
+object FeelParser {
 
-  def parseExpression(exp: String): ParseResult[Exp] = parseExp(expression, exp)
+  def parseExpression(expression: String): Parsed[Exp] =
+    parse(expression, fullExpression(_))
 
-  def parseUnaryTests(expression: String): ParseResult[Exp] =
-    parseExp(unaryTests, expression)
+  def parseUnaryTests(expression: String): Parsed[Exp] =
+    parse(expression, fullUnaryExpression(_))
 
-  private def parseExp[T](parser: Parser[T], exp: String) =
-    parseAll(parser, exp)
+  // --------------- entry parsers ---------------
 
-  // override to ignore comment '// ...' and '/* ... */'
-  protected override val whiteSpace =
-    """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+  private def fullExpression[_: P]: P[Exp] = P(Start ~ expression ~ End)
 
-  private lazy val reservedWord: Parser[String] = ("null\\b".r
-    | "true\\b".r | "false\\b".r
-    | "function\\b".r
-    | "if\\b".r | "then\\b".r | "else\\b".r
-    | "for\\b".r
-    | "between\\b".r
-    | "instance\\b".r | "of\\b".r)
+  private def fullUnaryExpression[_: P]: P[Exp] = P(Start ~ unaryTests ~ End)
 
-  // list of built-in function names with whitespaces
-  // -- other names match the 'function name' pattern
-  private lazy val builtinFunctionName: Parser[String] = ("date and time"
-    | "years and months duration"
-    | "string length"
-    | "upper case"
-    | "lower case"
-    | "substring before"
-    | "substring after"
-    | "starts with"
-    | "ends with"
-    | "list contains"
-    | "insert before"
-    | "index of"
-    | "distinct values"
-    | "get entries"
-    | "get value"
-    | "is defined"
-    | "day of year"
-    | "day of week"
-    | "month of year"
-    | "week of year")
+  // --------------- common parsers ---------------
 
-  // list of built-in function parameter names with whitespaces
-  // -- other names match the 'parameter name' pattern
-  private lazy val builtinFunctionParameterNames
-    : Parser[String] = ("start position"
-    | "grouping separator"
-    | "decimal separator")
+  // language key words that can't be used as variable names
+  private def reservedWord[_: P]: P[String] =
+    P(
+      StringIn(
+        "null",
+        "true",
+        "false",
+        "function",
+        "in"
+      )
+    ).!
 
-  private lazy val identifier = not(reservedWord) ~> ident
+  // an identifier which is not a reserved word. but, it can contain a reserved word.
+  private def identifier[_: P]: P[String] =
+    P(
+      reservedWord.? ~~ javaLikeIdentifier
+    ).!
 
-  // Java-like string literal: ("\""+"""([^"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*"""+"\"")
-  // modification: allow '\'
-  private lazy val stringLiteralWithQuotes: Parser[String] =
-    ("\"" + """([^"\x00-\x1F\x7F]|\\u[a-fA-F0-9]{4})*""" + "\"").r ^^ (_.replaceAll(
-      "\"",
-      ""))
+  private def javaLikeIdentifier[_: P]: P[String] =
+    P(
+      CharPred(Character.isJavaIdentifierStart) ~~ CharsWhile(
+        Character.isJavaIdentifierPart,
+        0)
+    ).!
 
-  // 1 a)
-  private lazy val expression: Parser[Exp] = textualExpression
-  // 1 b)
-  private lazy val expression10 = boxedExpression
+  // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
+  private def escapedIdentifier[_: P]: P[String] =
+    P(
+      "`" ~~ (!"`" ~~ AnyChar.!).repX(1) ~~ "`"
+    ).map(_.mkString)
 
-  // 3
-  private lazy val textualExpressions: Parser[ConstList] = rep1sep(
-    textualExpression,
-    ",") ^^ ConstList
+  // use only if the identifier is followed by a predefined character (e.g. `(` or `:`)
+  private def identifierWithWhitespaces[_: P]: P[String] =
+    P(
+      identifier ~~ (" " ~~ identifier).repX(1)
+    ).!
 
-  // 2 a)
-  private lazy val textualExpression
-    : Parser[Exp] = functionDefinition | forExpression | ifExpression | quantifiedExpression | expression2
-  // 2b)
-  private lazy val expression2 = disjunction
-  // 2 c)
-  private lazy val expression3 = conjunction
-  // 2 d)
-  private lazy val expression4: Parser[Exp] = expression5 >> optionalComparison
-  // 2 e)
-  private lazy val expression5 = arithmeticExpression
-  // 2 f)
-  private lazy val expression6 = expression7 >> (x =>
-    instanceOf.? ^^ (_.fold(x)(InstanceOf(x, _))))
-  // 2 g)
-  private lazy val expression7 = pathExpression
-  // 2 h)
-  private lazy val expression8 = functionInvocation | builtinFunctionInvocation | filteredExpression9
-  // 2 i)
-  private lazy val expression9 =
-    not(dateTimeLiteral) ~> name ^^ (n => Ref(List(n))) |
-      literal |
-      "?" ^^^ ConstInputValue |
-      simplePositiveUnaryTest |
-      "(" ~> textualExpression <~ ")" |
-      expression10
-
-  // 6
-  private lazy val simpleExpressions: Parser[ConstList] = rep1sep(
-    simpleExpression,
-    ",") ^^ ConstList
-
-  // 5
-  private lazy val simpleExpression
-    : Parser[Exp] = arithmeticExpression | simpleValue
-
-  // 4 a) -> 21+22
-  private lazy val arithmeticExpression =
-    chainl1(arithmeticExpression2, "+" ^^^ Addition | "-" ^^^ Subtraction)
-  // 4 b) -> 23+24
-  private lazy val arithmeticExpression2 =
-    chainl1(arithmeticExpression3, "*" ^^^ Multiplication | "/" ^^^ Division)
-  // 4 c) -> 25
-  private lazy val arithmeticExpression3 =
-    chainl1(arithmeticExpression4, "**" ^^^ Exponentiation)
-  // 4 d) -> 26
-  private lazy val arithmeticExpression4 = opt("-") ~ expression6 ^^ {
-    case Some(_) ~ e => ArithmeticNegation(e)
-    case None ~ e    => e
-  }
-
-  // 17
-  private lazy val unaryTests: Parser[Exp] =
-    "not" ~! "(" ~> positiveUnaryTests <~ ")" ^^ Not |
-      positiveUnaryTests |
-      "-" ^^^ ConstBool(true)
-
-  // 16
-  private lazy val positiveUnaryTests: Parser[Exp] = rep1sep(positiveUnaryTest,
-                                                             ",") ^^ {
-    case test :: Nil => test
-    case tests       => AtLeastOne(tests)
-  }
-
-  // 15 - in DMN 1.2 it's only 'expression' (which also covers simple positive unary test)
-  //    - however, parse simple positive unary test first since this is most usual
-  private lazy val positiveUnaryTest: Parser[Exp] = (
-    "null" ^^^ InputEqualTo(ConstNull) |
-      simplePositiveUnaryTest |
-      expression ^^ (UnaryTestExpression(_))
+  private def name[_: P]: P[String] = P(
+    identifier | escapedIdentifier
   )
 
-  // 14
-  private lazy val simpleUnaryTests: Parser[Exp] =
-    "-" ^^^ ConstBool(true) |
-      "not" ~! "(" ~> simplePositiveUnaryTests <~ ")" ^^ Not |
-      simplePositiveUnaryTests
+  private def qualifiedName[_: P]: P[List[String]] =
+    P(
+      name.rep(1, sep = ".")
+    ).map(_.toList)
 
-  // 13
-  private lazy val simplePositiveUnaryTests: Parser[Exp] = rep1sep(
-    simplePositiveUnaryTest,
-    ",") ^^ {
-    case test :: Nil => test
-    case tests       => AtLeastOne(tests)
+  // a string wrapped in double quotes. it can contain an escape sequences (e.g. \', \", \\, \n, \r, \t, \u269D, \U101EF).
+  private def stringWithQuotes[_: P]: P[String] = P(
+    "\"" ~~ (("\\" | !"\"") ~~ AnyChar).repX.! ~~ "\""
+  )
+
+  // --------------- utility parsers ---------------
+
+  // shortcut function to define an optional parser
+  private def optional[_: P](optionalParser: Exp => P[Exp]): Exp => P[Exp] = {
+    base =>
+      optionalParser(base).?.map(
+        _.fold(base)(result => result)
+      )
   }
 
-  // 7
-  private lazy val simplePositiveUnaryTest: Parser[Exp] =
-    "<" ~> endpoint ^^ InputLessThan |
-      "<=" ~> endpoint ^^ InputLessOrEqual |
-      ">" ~> endpoint ^^ InputGreaterThan |
-      ">=" ~> endpoint ^^ InputGreaterOrEqual |
-      interval |
-      simpleValue ^^ InputEqualTo
+  // --------------- expressions ---------------
 
-  // 18 - allow any expression as endpoint
-  private lazy val endpoint: Parser[Exp] = simpleValue | expression
+  // use different levels to define the precedence of the operators  (i.e. how they can be chained)
+  private def expression[_: P]: P[Exp] = expLvl1
 
-  // 19 - need to exclude function invocation from qualified name
-  private lazy val simpleValue =
-    simpleLiteral |
-      not(""".+\(.*\)""".r) ~> qualifiedName ^^ (Ref(_)) |
-      "?" ^^^ ConstInputValue
+  private def expLvl1[_: P]: P[Exp] = ifOp | forOp | quantifiedOp | disjunction
 
-  // 33
-  private lazy val literal: Parser[Exp] = "null" ^^^ ConstNull | simpleLiteral
+  private def expLvl2[_: P]: P[Exp] = conjunction
 
-  // 34
-  private lazy val simpleLiteral = booleanLiteral | dateTimeLiteral | stringLiteraL | numericLiteral
+  private def expLvl3[_: P]: P[Exp] =
+    expLvl4.flatMap(optional(comparison)) | simplePositiveUnaryTest
 
-  // 36
-  private lazy val booleanLiteral: Parser[ConstBool] = "true" ^^^ ConstBool(
-    true) | "false" ^^^ ConstBool(false)
+  private def expLvl4[_: P]: P[Exp] = mathOperator
 
-  // 62
-  private lazy val dateTimeLiteral: Parser[Exp] =
-    "date" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDate |
-      "time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseTime |
-      "date and time" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDateTime |
-      "duration" ~ "(" ~> stringLiteralWithQuotes <~ ")" ^^ parseDuration |
-      failure("expected date time literal")
+  private def expLvl5[_: P]: P[Exp] = value
 
-  // 35 -
-  private lazy val stringLiteraL
-    : Parser[ConstString] = stringLiteralWithQuotes ^^ ConstString
+  // --------------- mathematical/arithmetic operators ---------------
 
-  // 37 - use combined regex instead of multiple parsers
-  private lazy val numericLiteral: Parser[ConstNumber] =
-    """(-?(\d+(\.\d+)?|\d*\.\d+))""".r ^^ (ConstNumber(_))
+  // use different levels to define the precedence of the operators
+  private def mathOperator[_: P]: P[Exp] = mathOpLvl1
 
-  // 39
-  private lazy val digits: Parser[String] = rep1(digit) ^^ (_.mkString)
+  private def mathOpLvl1[_: P]: P[Exp] = addSub
 
-  // 38
-  private lazy val digit: Parser[String] = "[0-9]".r
+  private def mathOpLvl2[_: P]: P[Exp] = mulDiv
 
-  // 20
-  private lazy val qualifiedName: Parser[List[String]] = rep1sep(name, ".")
+  private def mathOpLvl3[_: P]: P[Exp] = exponent
 
-  // 27 - simplified name definition
-  private lazy val name
-    : Parser[String] = escapedIdentifier | "time offset" | identifier
+  private def mathOpLvl4[_: P]: P[Exp] = mathNegation
 
-  private lazy val escapedIdentifier
-    : Parser[String] = ("`" ~> """([^`"\x00-\x1F\x7F\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""".r <~ "`")
+  // --------------- expression parsers ---------------
 
-  // FEEL name definition
-  private lazy val feelName: Parser[String] = nameStart ~! rep(
-    namePart | additionalNameSymbols) ^^ { case s ~ ps => s + ps.mkString }
+  private def ifOp[_: P]: P[Exp] =
+    P(
+      "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression
+    ).map {
+      case (condition, thenExp, elseExp) => If(condition, thenExp, elseExp)
+    }
 
-  // 28
-  private lazy val nameStart = nameStartChar ~! rep(namePartChar) ^^ {
-    case s ~ ps => s + ps.mkString
-  }
+  private def forOp[_: P]: P[Exp] =
+    P(
+      "for" ~ listIterator.rep(1, sep = ",") ~ "return" ~ expression
+    ).map {
+      case (iterators, exp) => For(iterators.toList, exp)
+    }
 
-  // 29
-  private lazy val namePart = rep1(namePartChar) ^^ (_.mkString)
+  private def listIterator[_: P]: P[(String, Exp)] = P(
+    name ~ "in" ~ (range | value)
+  )
 
-  // 30- unknown unicode chars "[\\uC0-\\uD6]".r | "[\\uD8-\\uF6]".r | "[\\uF8-\\u2FF]".r | "[\\u370-\\u37D]".r | "[\\u37F-\u1FFF]".r
-  private lazy val nameStartChar = "?" | "[A-Z]".r | "_" | "[a-z]".r |
-    "[\u200C-\u200D]".r | "[\u2070-\u218F]".r | "[\u2C00-\u2FEF]".r | "[\u3001-\uD7FF]".r | "[\uF900-\uFDCF]".r | "[\uFDF0-\uFFFD]".r | "[\u10000-\uEFFFF]".r
+  private def range[_: P]: P[Exp] =
+    P(
+      expLvl4 ~ ".." ~ expLvl4
+    ).map {
+      case (start, end) => Range(start, end)
+    }
 
-  // 31 - unknown unicode char "[\\uB7]".r
-  private lazy val namePartChar = nameStartChar | digit | "[\u0300-\u036F]".r | "[\u203F-\u2040]".r
+  private def quantifiedOp[_: P]: P[Exp] =
+    P(
+      ("some" | "every").! ~ listIterator
+        .rep(1, sep = ",") ~ "satisfies" ~ expression
+    ).map {
+      case ("some", iterators, condition) =>
+        SomeItem(iterators.toList, condition)
+      case ("every", iterators, condition) =>
+        EveryItem(iterators.toList, condition)
+    }
 
-  // 32
-  private lazy val additionalNameSymbols = "." | "/" | "-" | "’" | "+" | "*"
+  private def disjunction[_: P]: P[Exp] =
+    P(
+      expLvl2 ~ ("or" ~ expLvl2).rep
+    ).map {
+      case (base, ops) => ops.foldLeft(base)(Disjunction)
+    }
 
-  // 8
-  private lazy val interval
-    : Parser[Interval] = (openIntervalStart | closedIntervalStart) ~ endpoint ~ ".." ~! endpoint ~! (openIntervalEnd | closedIntervalEnd) ^^ {
-    case ("(" | "]") ~ start ~ _ ~ end ~ (")" | "[") =>
-      syntaxtree.Interval(OpenIntervalBoundary(start),
-                          OpenIntervalBoundary(end))
-    case ("(" | "]") ~ start ~ _ ~ end ~ "]" =>
-      syntaxtree.Interval(OpenIntervalBoundary(start),
-                          ClosedIntervalBoundary(end))
-    case "[" ~ start ~ _ ~ end ~ (")" | "[") =>
-      syntaxtree.Interval(ClosedIntervalBoundary(start),
-                          OpenIntervalBoundary(end))
-    case "[" ~ start ~ _ ~ end ~ "]" =>
-      syntaxtree.Interval(ClosedIntervalBoundary(start),
-                          ClosedIntervalBoundary(end))
-  }
+  private def conjunction[_: P]: P[Exp] =
+    P(
+      expLvl3 ~ ("and" ~ expLvl3).rep
+    ).map {
+      case (base, ops) => ops.foldLeft(base)(Conjunction)
+    }
 
-  // 9
-  private lazy val openIntervalStart = "(" | "]"
+  private def comparison[_: P](value: Exp): P[Exp] =
+    binaryComparison(value) | between(value) | instanceOf(value) | in(value)
 
-  // 10
-  private lazy val closedIntervalStart = "["
+  private def binaryComparison[_: P](x: Exp): P[Exp] =
+    P(
+      StringIn("<=", ">=", "<", ">", "!=", "=").! ~ expLvl4
+    ).map {
+      case ("=", y)  => Equal(x, y)
+      case ("!=", y) => Not(Equal(x, y))
+      case ("<", y)  => LessThan(x, y)
+      case ("<=", y) => LessOrEqual(x, y)
+      case (">", y)  => GreaterThan(x, y)
+      case (">=", y) => GreaterOrEqual(x, y)
+    }
 
-  // 11
-  private lazy val openIntervalEnd = ")" | "["
+  private def between[_: P](x: Exp): P[Exp] =
+    P(
+      "between" ~ expLvl4 ~ "and" ~ expLvl4
+    ).map {
+      case (a, b) => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
+    }
 
-  // 12
-  private lazy val closedIntervalEnd = "]"
+  private def instanceOf[_: P](value: Exp): P[Exp] =
+    P(
+      "instance" ~ "of" ~ typeName
+    ).map(InstanceOf(value, _))
 
-  // 46
-  private lazy val forExpression: Parser[For] = "for" ~> rep1sep(
-    listIterator,
-    ",") ~! "return" ~! expression ^^ {
-    case iterators ~ _ ~ exp => syntaxtree.For(iterators, exp)
-  }
+  private def typeName[_: P]: P[String] =
+    P(
+      qualifiedName
+    ).map(_.mkString("."))
 
-  private lazy val listIterator = name ~ "in" ~! (range | expression) ^^ {
-    case name ~ _ ~ list => (name, list)
-  }
+  private def in[_: P](value: Exp): P[Exp] =
+    P(
+      "in" ~ (("(" ~ positiveUnaryTests ~ ")") | positiveUnaryTest)
+    ).map(In(value, _))
 
-  private lazy val range
-    : Parser[syntaxtree.Range] = expression ~ ".." ~ expression ^^ {
-    case start ~ _ ~ end => syntaxtree.Range(start, end)
-  }
+  // --------------- mathematical parsers ---------------
 
-  // 47
-  private lazy val ifExpression
-    : Parser[If] = "if" ~> expression ~ "then" ~! expression ~ "else" ~! expression ^^ {
-    case condition ~ _ ~ statement ~ _ ~ elseStatement =>
-      If(condition, statement, elseStatement)
-  }
+  private def addSub[_: P]: P[Exp] =
+    P(
+      mathOpLvl2 ~ (CharIn("+\\-").! ~ mathOpLvl2).rep
+    ).map {
+      case (value, ops) =>
+        ops.foldLeft(value) {
+          case (x, ("+", y)) => Addition(x, y)
+          case (x, ("-", y)) => Subtraction(x, y)
+        }
+    }
 
-  // 48 - no separator in spec grammar but in examples
-  private lazy val quantifiedExpression: Parser[Exp] = ("some" | "every") ~ rep1sep(
-    listIterator,
-    ",") ~ "satisfies" ~! expression ^^ {
-    case "some" ~ iterators ~ _ ~ condition  => SomeItem(iterators, condition)
-    case "every" ~ iterators ~ _ ~ condition => EveryItem(iterators, condition)
-  }
+  private def mulDiv[_: P]: P[Exp] =
+    P(
+      mathOpLvl3 ~ (CharIn("*/").! ~ mathOpLvl3).rep
+    ).map {
+      case (value, ops) =>
+        ops.foldLeft(value) {
+          case (x, ("*", y)) => Multiplication(x, y)
+          case (x, ("/", y)) => Division(x, y)
+        }
+    }
 
-  // 49
-  private lazy val disjunction: Parser[Exp] =
-    chainl1(expression3, "or" ^^^ Disjunction)
+  private def exponent[_: P]: P[Exp] =
+    P(
+      mathOpLvl4 ~ ("**" ~ mathOpLvl4).rep
+    ).map {
+      case (value, ops) => ops.foldLeft(value)(Exponentiation)
+    }
 
-  // 50
-  private lazy val conjunction: Parser[Exp] =
-    chainl1(expression4, "and" ^^^ Conjunction)
+  private def mathNegation[_: P]: P[Exp] =
+    P(
+      "-".!.? ~ expLvl5
+    ).map {
+      case (Some("-"), value) => ArithmeticNegation(value)
+      case (None, value)      => value
+    }
 
-  // 51
-  private lazy val optionalComparison: Exp => Parser[Exp] = (x: Exp) => {
-    simpleComparison(x) |
-      "between" ~! expression5 ~! "and" ~! expression5 ^^ {
-        case _ ~ a ~ _ ~ b =>
-          Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
-      } |
-      "in" ~ "(" ~! positiveUnaryTests <~ ")" ^^ {
-        case _ ~ _ ~ tests => In(x, tests)
-      } |
-      "in" ~! positiveUnaryTest ^^ { case _ ~ test => In(x, test) } |
-      success(x) // no comparison
-  }
+  // --------------- value/terminal parsers ---------------
 
-  private lazy val simpleComparison = (x: Exp) =>
-    ("<=" | ">=" | "<" | ">" | "!=" | "=") ~! expression5 ^^ {
-      case "=" ~ y  => Equal(x, y)
-      case "!=" ~ y => Not(Equal(x, y))
-      case "<" ~ y  => LessThan(x, y)
-      case "<=" ~ y => LessOrEqual(x, y)
-      case ">" ~ y  => GreaterThan(x, y)
-      case ">=" ~ y => GreaterOrEqual(x, y)
-  }
+  private def value[_: P]: P[Exp] =
+    terminalValue.flatMap(optional(chainedValueOp))
 
-  // 53
-  private lazy val instanceOf
-    : Parser[String] = "instance" ~ "of" ~! typeName ^^ {
-    case _ ~ _ ~ typeName => typeName
-  }
+  private def terminalValue[_: P]: P[Exp] =
+    temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
-  // 54
-  private lazy val typeName: Parser[String] = qualifiedName ^^ (_.mkString("."))
+  private def literal[_: P]: P[Exp] =
+    nullLiteral | boolean | string | number | temporal | list | context
 
-  // 45 - allow nested path expressions
-  private lazy val pathExpression: Parser[Exp] = chainl1(
-    expression8,
-    name,
-    "." ^^^ PathExpression) ~ opt("[" ~> expression <~ "]") ^^ {
-    case path ~ None         => path
-    case path ~ Some(filter) => Filter(path, filter)
-  }
+  private def nullLiteral[_: P]: P[Exp] =
+    P(
+      "null"
+    ).map(_ => ConstNull)
 
-  // 52
-  private lazy val filteredExpression9
-    : Parser[Exp] = expression9 ~ ("[" ~! expression <~ "]").? ^^ {
-    case list ~ Some(_ ~ filter) => Filter(list, filter)
-    case list ~ None             => list
-  }
+  private def boolean[_: P]: P[Exp] =
+    P(
+      "true" | "false"
+    ).!.map {
+      case "true"  => ConstBool(true)
+      case "false" => ConstBool(false)
+    }
 
-  // 40
-  private lazy val functionInvocation
-    : Parser[Exp] = not(dateTimeLiteral) ~> qualifiedName ~ parameters ^^ {
-    case names ~ params =>
-      names match {
-        case name :: Nil => FunctionInvocation(name, params)
-        case _ =>
-          QualifiedFunctionInvocation(Ref(names.dropRight(1)),
-                                      names.last,
-                                      params)
-      }
-  }
+  private def string[_: P]: P[Exp] =
+    P(
+      stringWithQuotes
+    ).map(ConstString)
 
-  private lazy val builtinFunctionInvocation
-    : Parser[Exp] = not(dateTimeLiteral) ~> builtinFunctionName ~ parameters ^^ {
-    case name ~ params => syntaxtree.FunctionInvocation(name, params)
-  }
+  private def number[_: P]: P[Exp] =
+    P(
+      "-".? ~~ ((integral ~~ fractional.?) | fractional)
+    ).!.map(number => ConstNumber(BigDecimal(number)))
 
-  // 41
-  private lazy val parameters
-    : Parser[FunctionParameters] = "(" ~> ")" ^^^ PositionalFunctionParameters(
-    List()) |
-    "(" ~> (namedParameters | positionalParameters) <~ ")"
+  private def integral[_: P]: P[String] =
+    P(
+      CharIn("0-9") ~~ digits.?
+    ).!
 
-  // 42
-  private lazy val namedParameters = rep1sep(namedParameter, ",") ^^ (p =>
-    NamedFunctionParameters(p.toMap))
+  private def fractional[_: P]: P[String] =
+    P(
+      "." ~~ digits
+    ).!
 
-  private lazy val namedParameter = parameterName ~ ":" ~! expression ^^ {
-    case name ~ _ ~ value => (name, value)
-  }
+  private def digits[_: P]: P[String] =
+    P(
+      CharsWhileIn("0-9")
+    ).!
 
-  // 43 - should be FEEL name
-  private lazy val parameterName = builtinFunctionParameterNames | name
+  private def temporal[_: P]: P[Exp] =
+    P(
+      ("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")"
+    ).map {
+      case ("duration", value)      => parseDuration(value)
+      case ("date and time", value) => parseDateTime(value)
+      case ("date", value)          => parseDate(value)
+      case ("time", value)          => parseTime(value)
+    }
 
-  // 44
-  private lazy val positionalParameters = rep1sep(expression, ",") ^^ (PositionalFunctionParameters)
+  private def list[_: P]: P[Exp] =
+    P(
+      "[" ~ expression.rep(0, sep = ",") ~ "]"
+    ).map(items => ConstList(items.toList))
 
-  // 55
-  private lazy val boxedExpression
-    : Parser[Exp] = list | functionDefinition | context
+  private def context[_: P]: P[Exp] =
+    P(
+      "{" ~ contextEntry.rep(0, sep = ",") ~ "}"
+    ).map(entries => ConstContext(entries.toList))
 
-  // 56
-  private lazy val list: Parser[ConstList] = "[" ~> "]" ^^^ ConstList(List()) |
-    "[" ~> rep1sep(expression7, ",") <~ "]" ^^ (ConstList)
+  private def contextEntry[_: P]: P[(String, Exp)] = P(
+    (name | stringWithQuotes) ~ ":" ~ expression
+  )
 
-  // 57
-  private lazy val functionDefinition
-    : Parser[FunctionDefinition] = "function" ~ "(" ~> repsep(
-    formalParameter,
-    ",") ~! ")" ~! (externalJavaFunction | expression) ^^ {
-    case params ~ _ ~ body => FunctionDefinition(params, body)
-  }
+  private def variableRef[_: P]: P[Exp] =
+    P(
+      qualifiedName
+    ).map(Ref(_))
 
-  private lazy val externalJavaFunction
-    : Parser[JavaFunctionInvocation] = "external" ~ "{" ~ "java" ~ ":" ~ "{" ~> functionClassName ~ "," ~ functionMethodSignature <~ "}" ~ "}" ^^ {
-    case className ~ _ ~ Tuple2(methodName, arguments) =>
-      JavaFunctionInvocation(className, methodName, arguments)
-  }
+  private def inputValue[_: P]: P[Exp] =
+    P(
+      "?"
+    ).map(_ => ConstInputValue)
 
-  private lazy val functionClassName = "class" ~! ":" ~> stringLiteralWithQuotes
+  private def functionDefinition[_: P]: P[Exp] =
+    P(
+      "function" ~ "(" ~ parameter
+        .rep(0, sep = ",") ~ ")" ~ (externalFunction | expression)
+    ).map {
+      case (parameters, body) => FunctionDefinition(parameters.toList, body)
+    }
 
-  private lazy val functionMethodSignature = "method signature" ~! ":" ~! "\"" ~> name ~! "(" ~! repsep(
-    functionMethodArgument,
-    ",") <~ ")" ~! "\"" ^^ {
-    case methodName ~ _ ~ arguments => (methodName, arguments)
-  }
+  private def parameter[_: P]: P[String] = parameterName
 
-  private lazy val functionMethodArgument = qualifiedName ^^ (_.mkString("."))
+  // parameter names from built-in functions can have whitespaces. the name is limited by `,` or `:`.
+  private def parameterName[_: P]: P[String] = identifierWithWhitespaces | name
 
-  // 58
-  private lazy val formalParameter = parameterName
+  private def externalFunction[_: P]: P[Exp] = P(
+    "external" ~ externalJavaFunction
+  )
 
-  // 59
-  private lazy val context: Parser[ConstContext] = "{" ~> repsep(
-    contextEntry,
-    ",") <~ "}" ^^ (ConstContext)
+  private def externalJavaFunction[_: P]: P[Exp] =
+    P(
+      "{" ~
+        "java" ~ ":" ~ "{" ~
+        "class" ~ ":" ~ stringWithQuotes ~ "," ~
+        "method signature" ~ ":" ~ javaMethodSignature ~
+        "}" ~ "}"
+    ).map {
+      case (className, (methodName, parameters)) =>
+        JavaFunctionInvocation(className, methodName, parameters.toList)
+    }
 
-  // 60
-  private lazy val contextEntry = key ~ ":" ~! expression ^^ {
-    case key ~ _ ~ value => (key -> value)
-  }
+  private def javaMethodSignature[_: P]: P[(String, Seq[String])] = P(
+    "\"" ~ name ~ "(" ~ javaMethodParameter_.rep(0, sep = ",") ~ ")" ~ "\""
+  )
 
-  // 61
-  private lazy val key = name | stringLiteralWithQuotes
+  private def javaMethodParameter_[_: P]: P[String] =
+    P(
+      qualifiedName
+    ).map(_.mkString)
+
+  private def functionInvocation[_: P]: P[Exp] =
+    P(
+      (identifierWithWhitespaces
+        .map(List(_)) | qualifiedName) ~ "(" ~ functionParameters.? ~ ")"
+    ).map {
+      case (name :: Nil, None) =>
+        FunctionInvocation(name, PositionalFunctionParameters(List.empty))
+      case (name :: Nil, Some(parameters)) =>
+        FunctionInvocation(name, parameters)
+      case (names, None) =>
+        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
+                                    names.last,
+                                    PositionalFunctionParameters(List.empty))
+      case (names, Some(parameters)) =>
+        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
+                                    names.last,
+                                    parameters)
+    }
+
+  private def functionParameters[_: P]: P[FunctionParameters] =
+    namedParameters | positionalParameters
+
+  private def namedParameters[_: P]: P[NamedFunctionParameters] =
+    P(
+      (parameterName ~ ":" ~ expression).rep(1, sep = ",")
+    ).map(params => NamedFunctionParameters(params.toMap))
+
+  private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
+    P(
+      expression.rep(1, sep = ",")
+    ).map(params => PositionalFunctionParameters(params.toList))
+
+  // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
+  private def chainedValueOp[_: P](value: Exp): P[Exp] =
+    (path(value) | filter(value)).flatMap(optional(chainedValueOp))
+
+  private def path[_: P](value: Exp): P[Exp] =
+    P(
+      ("." ~ (valueProperty | name)).rep(1)
+    ).map(ops => ops.foldLeft(value)(PathExpression))
+
+  // list all properties that doesn't match to the regular name (i.e. with whitespaces)
+  // - generic parser with whitespace doesn't work because there is no fixed follow-up character
+  private def valueProperty[_: P]: P[String] =
+    P(
+      "time offset"
+    ).!
+
+  private def filter[_: P](base: Exp): P[Exp] =
+    P(
+      ("[" ~ expression ~ "]").rep(1)
+    ).map(ops => ops.foldLeft(base)(Filter))
+
+  // --------------- unary-tests expressions ---------------
+
+  private def unaryTests[_: P]: P[Exp] =
+    negation | positiveUnaryTests | anyInput
+
+  private def negation[_: P]: P[Exp] =
+    P(
+      "not" ~ "(" ~ positiveUnaryTests ~ ")"
+    ).map(Not)
+
+  private def positiveUnaryTests[_: P]: P[Exp] =
+    P(
+      positiveUnaryTest.rep(1, sep = ",")
+    ).map {
+      case test :: Nil => test
+      case tests       => AtLeastOne(tests.toList)
+    }
+
+  // boolean literals are ambiguous for unary-tests. give precedence to comparison with input.
+  private def positiveUnaryTest[_: P]: P[Exp] =
+    boolean.map(InputEqualTo) | expression.map(UnaryTestExpression)
+
+  private def anyInput[_: P]: P[Exp] =
+    P(
+      "-"
+    ).map(_ => ConstBool(true))
+
+  private def simplePositiveUnaryTest[_: P]: P[Exp] = unaryComparison | interval
+
+  private def unaryComparison[_: P]: P[Exp] =
+    P(
+      StringIn("<=", ">=", "<", ">").! ~ endpoint
+    ).map {
+      case ("<", x)  => InputLessThan(x)
+      case ("<=", x) => InputLessOrEqual(x)
+      case (">", x)  => InputGreaterThan(x)
+      case (">=", x) => InputGreaterOrEqual(x)
+    }
+
+  // allow more expressions compared to the spec to align unary-tests with other expression
+  private def endpoint[_: P]: P[Exp] = expLvl4
+
+  private def interval[_: P]: P[Exp] =
+    P(
+      intervalStart ~ ".." ~ intervalEnd
+    ).map {
+      case (start, end) => Interval(start, end)
+    }
+
+  private def intervalStart[_: P]: P[IntervalBoundary] =
+    P(
+      CharIn("(", "]", "[").! ~ endpoint
+    ).map {
+      case ("(", x) => OpenIntervalBoundary(x)
+      case ("]", x) => OpenIntervalBoundary(x)
+      case ("[", x) => ClosedIntervalBoundary(x)
+    }
+
+  private def intervalEnd[_: P]: P[IntervalBoundary] =
+    P(
+      endpoint ~ CharIn(")", "[", "]").!
+    ).map {
+      case (y, ")") => OpenIntervalBoundary(y)
+      case (y, "[") => OpenIntervalBoundary(y)
+      case (y, "]") => ClosedIntervalBoundary(y)
+    }
+
+  // --------------- temporal parsers ---------------
 
   private def parseDate(d: String): Exp = {
-    if (isValidDate(d)) {
-      Try(ConstDate(d)).getOrElse {
-        logger.warn(s"Failed to parse date from '$d'");
-        ConstNull
-      }
-    } else {
-      logger.warn(s"Failed to parse date from '$d'");
-      ConstNull
-    }
+    Try(ConstDate(d)).filter(_ => isValidDate(d)).getOrElse(ConstNull)
   }
 
   private def parseTime(t: String): Exp = {
-    if (isOffsetTime(t)) {
-      Try(ConstTime(t)).getOrElse {
-        logger.warn(s"Failed to parse time from '$t'");
-        ConstNull
+    Try {
+      if (isOffsetTime(t)) {
+        ConstTime(t)
+      } else {
+        ConstLocalTime(t)
       }
-    } else {
-      Try(ConstLocalTime(t)).getOrElse {
-        logger.warn(s"Failed to parse local-time from '$t'");
-        ConstNull
-      }
-    }
+    }.getOrElse(ConstNull)
   }
 
   private def parseDateTime(dt: String): Exp = {
-    if (isValidDate(dt)) {
-      Try(ConstLocalDateTime((dt: Date).atTime(0, 0))).getOrElse {
-        logger.warn(s"Failed to parse date(-time) from '$dt'");
-        ConstNull
+    Try {
+      if (isValidDate(dt)) {
+        ConstLocalDateTime((dt: Date).atTime(0, 0))
+      } else if (isOffsetDateTime(dt)) {
+        ConstDateTime(dt)
+      } else {
+        ConstLocalDateTime(dt)
       }
-    } else if (isOffsetDateTime(dt)) {
-      Try(ConstDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse date-time from '$dt'");
-        ConstNull
-      }
-    } else if (isLocalDateTime(dt)) {
-      Try(ConstLocalDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse local-date-time from '$dt'");
-        ConstNull
-      }
-    } else {
-      logger.warn(s"Failed to parse date-time from '$dt'");
-      ConstNull
-    }
+    }.getOrElse(ConstNull)
   }
 
   private def parseDuration(d: String): Exp = {
-    if (isYearMonthDuration(d)) {
-      Try(ConstYearMonthDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse year-month-duration from '$d'");
-        ConstNull
+    Try {
+      if (isYearMonthDuration(d)) {
+        ConstYearMonthDuration(d)
+      } else {
+        ConstDayTimeDuration(d)
       }
-    } else if (isDayTimeDuration(d)) {
-      Try(ConstDayTimeDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse day-time-duration from '$d'");
-        ConstNull
-      }
-    } else {
-      logger.warn(s"Failed to parse duration from '$d'");
-      ConstNull
-    }
+    }.getOrElse(ConstNull)
   }
-
 }

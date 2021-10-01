@@ -16,17 +16,17 @@
  */
 package org.camunda.feel.impl.script
 
-import java.io.{Closeable, IOException, Reader}
+import fastparse.Parsed
 
+import java.io.{Closeable, IOException, Reader}
 import javax.script._
 import org.camunda.feel.FeelEngine
-import org.camunda.feel.FeelEngine.EvalExpressionResult
+import org.camunda.feel.FeelEngine.{EvalExpressionResult, Failure}
 import org.camunda.feel.impl.SpiServiceLoader
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression}
 import org.camunda.feel.impl.parser.FeelParser._
 
 import scala.collection.JavaConverters._
-
 import scala.annotation.tailrec
 
 trait FeelScriptEngine
@@ -36,14 +36,16 @@ trait FeelScriptEngine
 
   val eval: (String, Map[String, Any]) => EvalExpressionResult
 
-  val parse: String => ParseResult[Exp]
+  val parse: String => Parsed[Exp]
 
   val factory: ScriptEngineFactory
 
   lazy val engine: FeelEngine =
-    new FeelEngine(functionProvider = SpiServiceLoader.loadFunctionProvider,
-                   valueMapper = SpiServiceLoader.loadValueMapper,
-                   clock = SpiServiceLoader.loadClock)
+    new FeelEngine(
+      functionProvider = SpiServiceLoader.loadFunctionProvider,
+      valueMapper = SpiServiceLoader.loadValueMapper,
+      clock = SpiServiceLoader.loadClock
+    )
 
   def getFactory: ScriptEngineFactory = factory
 
@@ -76,10 +78,11 @@ trait FeelScriptEngine
   }
 
   def compile(script: String): CompiledScript = parse(script) match {
-    case Success(exp, _) =>
+    case Parsed.Success(exp, _) =>
       CompiledFeelScript(this, ParsedExpression(exp, script))
-    case e: NoSuccess =>
-      throw new ScriptException(s"failed to parse expression '$script':\n$e")
+    case Parsed.Failure(_, _, extra) =>
+      throw new ScriptException(
+        s"failed to parse expression '$script':\n${extra.trace().aggregateMsg}")
   }
 
   private def handleEvaluationResult(result: EvalExpressionResult): Object =

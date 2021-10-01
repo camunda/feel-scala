@@ -47,9 +47,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(5.5, 0, "HALF_UP") """) should be(ValNumber(6))
     eval(""" decimal(5.5, 0, "HALF_DOWN") """) should be(ValNumber(5))
     eval(""" decimal(5.5, 0, "HALF_EVEN") """) should be(ValNumber(6))
-    eval(""" decimal(5.5, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(5.5, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(2.5, 0, "UP") """) should be(ValNumber(3))
     eval(""" decimal(2.5, 0, "DOWN") """) should be(ValNumber(2))
@@ -58,9 +56,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(2.5, 0, "HALF_UP") """) should be(ValNumber(3))
     eval(""" decimal(2.5, 0, "HALF_DOWN") """) should be(ValNumber(2))
     eval(""" decimal(2.5, 0, "HALF_EVEN") """) should be(ValNumber(2))
-    eval(""" decimal(2.5, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(2.5, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(1.6, 0, "UP") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "DOWN") """) should be(ValNumber(1))
@@ -69,9 +65,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(1.6, 0, "HALF_UP") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "HALF_DOWN") """) should be(ValNumber(2))
     eval(""" decimal(1.6, 0, "HALF_EVEN") """) should be(ValNumber(2))
-    eval(""" decimal(1.6, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(1.6, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(1.1, 0, "UP") """) should be(ValNumber(2))
     eval(""" decimal(1.1, 0, "DOWN") """) should be(ValNumber(1))
@@ -80,9 +74,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(1.1, 0, "HALF_UP") """) should be(ValNumber(1))
     eval(""" decimal(1.1, 0, "HALF_DOWN") """) should be(ValNumber(1))
     eval(""" decimal(1.1, 0, "HALF_EVEN") """) should be(ValNumber(1))
-    eval(""" decimal(1.1, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(1.1, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(1.0, 0, "UP") """) should be(ValNumber(1))
     eval(""" decimal(1.0, 0, "DOWN") """) should be(ValNumber(1))
@@ -109,9 +101,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-1.1, 0, "HALF_UP") """) should be(ValNumber(-1))
     eval(""" decimal(-1.1, 0, "HALF_DOWN") """) should be(ValNumber(-1))
     eval(""" decimal(-1.1, 0, "HALF_EVEN") """) should be(ValNumber(-1))
-    eval(""" decimal(-1.1, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(-1.1, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(-1.6, 0, "UP") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "DOWN") """) should be(ValNumber(-1))
@@ -120,9 +110,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-1.6, 0, "HALF_UP") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "HALF_DOWN") """) should be(ValNumber(-2))
     eval(""" decimal(-1.6, 0, "HALF_EVEN") """) should be(ValNumber(-2))
-    eval(""" decimal(-1.6, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(-1.6, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(-2.5, 0, "UP") """) should be(ValNumber(-3))
     eval(""" decimal(-2.5, 0, "DOWN") """) should be(ValNumber(-2))
@@ -131,9 +119,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-2.5, 0, "HALF_UP") """) should be(ValNumber(-3))
     eval(""" decimal(-2.5, 0, "HALF_DOWN") """) should be(ValNumber(-2))
     eval(""" decimal(-2.5, 0, "HALF_EVEN") """) should be(ValNumber(-2))
-    eval(""" decimal(-2.5, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(-2.5, 0, "UNNECESSARY") """) should be(ValNull)
 
     eval(""" decimal(-5.5, 0, "UP") """) should be(ValNumber(-6))
     eval(""" decimal(-5.5, 0, "DOWN") """) should be(ValNumber(-5))
@@ -142,9 +128,7 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(-5.5, 0, "HALF_UP") """) should be(ValNumber(-6))
     eval(""" decimal(-5.5, 0, "HALF_DOWN") """) should be(ValNumber(-5))
     eval(""" decimal(-5.5, 0, "HALF_EVEN") """) should be(ValNumber(-6))
-    eval(""" decimal(-5.5, 0, "UNNECESSARY") """) should be(
-      ValError(
-        "Failed to apply rounding mode 'UNNECESSARY': Rounding necessary"))
+    eval(""" decimal(-5.5, 0, "UNNECESSARY") """) should be(ValNull)
   }
 
   it should "use the given rounding mode (case-insensitive)" in {
@@ -153,13 +137,8 @@ class BuiltinNumberFunctionsTest
     eval(""" decimal(1.5, 0, "CeiLing") """) should be(ValNumber(2))
   }
 
-  it should "fail if the rounding mode is not valid" in {
-    // invalid rounding mode
-    eval(""" decimal(1.5, 0, "unknown") """) should be(
-      ValError(
-        "Illegal argument 'unknown' for rounding mode. Must be one of: UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY")
-    )
-
+  it should "return null if the rounding mode is not valid" in {
+    eval(""" decimal(1.5, 0, "unknown") """) should be(ValNull)
   }
 
   "A floor() function" should "return greatest integer <= _" in {
@@ -178,6 +157,18 @@ class BuiltinNumberFunctionsTest
 
     eval(" abs(10) ") should be(ValNumber(10))
     eval(" abs(-10) ") should be(ValNumber(10))
+  }
+
+  it should "be invoked with named parameter number" in {
+
+    eval(" abs(number: 1) ") should be(ValNumber(1))
+    eval(" abs(number: -1) ") should be(ValNumber(1))
+  }
+
+  it should "be invoked with named parameter n" in {
+
+    eval(" abs(n: 1) ") should be(ValNumber(1))
+    eval(" abs(n: -1) ") should be(ValNumber(1))
   }
 
   "A modulo() function" should "return the remainder of the division of dividend by divisor" in {
