@@ -54,13 +54,16 @@ class BuiltinContextFunctionsTest
   }
 
   "A get value function" should "return the value" in {
-
     eval(""" get value({foo: 123}, "foo") """) should be(ValNumber(123))
   }
 
-  it should "return null if not contains" in {
+  "A get value function" should "return the value when arguments are named 'm' and 'key'" in {
+    eval(""" get value(m:{foo: 123}, key:"foo") """) should be(ValNumber(123))
+  }
 
+  it should "return null if not contains" in {
     eval(""" get value({}, "foo") """) should be(ValNull)
+    eval(""" get value(m:{}, key:"foo") """) should be(ValNull)
   }
 
   "A put function" should "add an entry to an empty context" in {
