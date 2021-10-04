@@ -33,7 +33,11 @@ object ListBuiltinFunctions {
     "union" -> List(unionFunction),
     "distinct values" -> List(distinctValuesFunction),
     "flatten" -> List(flattenFunction),
-    "sort" -> List(sortFunction)
+    "sort" -> List(sortFunction),
+    "joining" -> List(joiningFunction,
+                      joiningWithDelimiterFunction,
+                      joiningWithDelimiterAndPrefixFunction,
+                      joiningWithDelimiterAndPrefixAndSuffixFunction)
   )
 
   private def listContainsFunction =
@@ -381,4 +385,62 @@ object ListBuiltinFunctions {
           s"expect boolean function with 2 arguments, but found '${params.size}'")
     }
   )
+
+  private def joiningFunction = builtinFunction(
+    params = List("list"),
+    invoke = {
+      case List(ValList(list)) =>
+        fromListOf[ValString, String](list)(
+          valStr => valStr.value,
+          strings => ValString(strings.mkString))
+    }
+  )
+
+  private def joiningWithDelimiterFunction = builtinFunction(
+    params = List("list", "delimiter"),
+    invoke = {
+      case List(ValList(list), ValString(delimiter)) =>
+        fromListOf[ValString, String](list)(
+          valStr => valStr.value,
+          strings => ValString(strings.mkString(delimiter)))
+    }
+  )
+
+  private def joiningWithDelimiterAndPrefixFunction = builtinFunction(
+    params = List("list", "delimiter", "prefix"),
+    invoke = {
+      case List(ValList(list), ValString(delimiter), ValString(prefix)) =>
+        fromListOf[ValString, String](list)(
+          valStr => valStr.value,
+          strings => ValString(s"$prefix${strings.mkString(delimiter)}"))
+    }
+  )
+
+  private def joiningWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
+    params = List("list", "delimiter", "prefix", "suffix"),
+    invoke = {
+      case List(ValList(list),
+                ValString(delimiter),
+                ValString(prefix),
+                ValString(suffix)) =>
+        fromListOf[ValString, String](list)(
+          valStr => valStr.value,
+          strings => ValString(s"$prefix${strings.mkString(delimiter)}$suffix"))
+    }
+  )
+
+  //generic helper for lifting generic List of values in concrete type implementation.
+  private def fromListOf[A <: Val, B](list: List[Val])(
+      elementSupplier: => A => B,
+      f: => List[B] => Val): Val = {
+    list
+      .map(_ match {
+        case n: A => n
+        case x    => ValError(s"expected string but found '$x'")
+      })
+      .find(_.isInstanceOf[ValError]) match {
+      case Some(e) => e
+      case None    => f(list.asInstanceOf[List[A]].map(elementSupplier))
+    }
+  }
 }

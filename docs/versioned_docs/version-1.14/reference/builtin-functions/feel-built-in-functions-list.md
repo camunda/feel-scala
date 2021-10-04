@@ -318,3 +318,23 @@ flatten([[1,2],[[3]], 4])
 sort(list: [3,1,4,5,2], precedes: function(x,y) x < y) 
 // [1,2,3,4,5]
 ```
+
+## joining()
+
+* parameters:
+  * `list`: the list of strings to join
+  * `delimiter`: (optional) the string that is used between each element (default: "" empty string)
+  * `prefix`: (optional) the string that is used at the beginning of the joined result (default: "" empty string)
+  * `suffix`: (optional) the string that is used at the end of the joined result (default: "" empty string)
+* result: the joined list as a string
+
+```js
+joining(["a","b","c"])
+// "abc"
+
+joining(["a","b","c"], ", ")
+// "a, b, c"
+
+joining(["a","b","c"], ", ", "[", "]")
+// "[a, b, c]"
+```
