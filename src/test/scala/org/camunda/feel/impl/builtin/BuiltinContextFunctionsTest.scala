@@ -48,7 +48,7 @@ class BuiltinContextFunctionsTest
       Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
   }
 
-  "A get entries function" should "return all entries when invoked with 'm' argument" in {
+  it should "return all entries when invoked with 'm' argument" in {
 
     val list = eval(""" get entries(m:{foo: 123}) """)
     list match {
