@@ -51,17 +51,12 @@ class BuiltinContextFunctionsTest
   "A get entries function" should "return all entries when invoked with 'm' argument" in {
 
     val list = eval(""" get entries(m:{foo: 123}) """)
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items(0)
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(
-      Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
+    list match {
+      case ValList(List(ValContext(context))) =>
+        context.variableProvider.getVariables should be(
+          Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
+      case other => fail(s"Expected list with one context but found '$other'")
+    }
   }
 
   it should "return empty list if empty" in {
