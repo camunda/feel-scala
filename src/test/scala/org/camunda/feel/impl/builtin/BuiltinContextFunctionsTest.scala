@@ -254,8 +254,6 @@ class BuiltinContextFunctionsTest
       ValBoolean(true))
     eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(
       ValBoolean(true))
-    eval(""" context(get entries(m:{a:1,b:2})) = {a:1, b:2} """) should be(
-      ValBoolean(true))
     eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(
       ValBoolean(true))
   }
