@@ -57,7 +57,7 @@ class BuiltinContextFunctionsTest
     eval(""" get value({foo: 123}, "foo") """) should be(ValNumber(123))
   }
 
-  "A get value function" should "return the value when arguments are named 'm' and 'key'" in {
+  it should "return the value when arguments are named 'm' and 'key'" in {
     eval(""" get value(m:{foo: 123}, key:"foo") """) should be(ValNumber(123))
   }
 
