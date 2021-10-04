@@ -61,6 +61,11 @@ class BuiltinContextFunctionsTest
     eval(""" get value(m:{foo: 123}, key:"foo") """) should be(ValNumber(123))
   }
 
+  it should "return the value when arguments are named 'context' and 'key'" in {
+    eval(""" get value(context:{foo: 123}, key:"foo") """) should be(
+      ValNumber(123))
+  }
+
   it should "return null if not contains" in {
     eval(""" get value({}, "foo") """) should be(ValNull)
     eval(""" get value(m:{}, key:"foo") """) should be(ValNull)
