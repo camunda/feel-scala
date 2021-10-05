@@ -54,6 +54,18 @@ class BuiltinContextFunctionsTest
     }
   }
 
+  it should "return entries in the same order as in the method parameter" in {
+    val entries = eval(""" get entries({a: "foo", b: "bar"}) """)
+    entries match {
+      case ValList(List(ValContext(firstContext), ValContext(secondContext))) =>
+        firstContext.variableProvider.getVariables should be(
+          Map("key" -> ValString("a"), "value" -> ValString("foo")))
+        secondContext.variableProvider.getVariables should be(
+          Map("key" -> ValString("b"), "value" -> ValString("bar")))
+      case other => fail(s"Expected list with one context but found '$other'")
+    }
+  }
+
   it should "return empty list if empty" in {
 
     eval(""" get entries({}) """) should be(ValList(List()))
