@@ -10,15 +10,19 @@ object NumericBuiltinFunctions {
 
   def functions = Map(
     "decimal" -> List(decimalFunction, decimalFunction3),
-    "floor" -> List(floorFunction),
-    "ceiling" -> List(ceilingFunction),
+    "floor" -> List(floorFunction, floorFunction2),
+    "ceiling" -> List(ceilingFunction, ceilingFunction2),
     "abs" -> List(absFunction(paramName = "number"), absFunction(paramName = "n")),
     "modulo" -> List(moduloFunction),
     "sqrt" -> List(sqrtFunction),
     "log" -> List(logFunction),
     "exp" -> List(expFunction),
     "odd" -> List(oddFunction),
-    "even" -> List(evenFunction)
+    "even" -> List(evenFunction),
+    "round up" -> List(roundUpFunction),
+    "round down" -> List(roundDownFunction),
+    "round half up" -> List(roundHalfUpFunction),
+    "round half down" -> List(roundHalfDownFunction)
   )
 
   private def decimalFunction = builtinFunction(
@@ -44,6 +48,16 @@ object NumericBuiltinFunctions {
       }
     }
   )
+
+  private def floorFunction2 =
+    builtinFunction(params = List("n", "scala"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) => round(n, scale, RoundingMode.FLOOR)
+    })
+
+  private def ceilingFunction2 =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) => round(n, scale, RoundingMode.CEILING)
+    })
 
   private def floorFunction =
     builtinFunction(params = List("n"), invoke = {
@@ -108,4 +122,67 @@ object NumericBuiltinFunctions {
       case List(ValNumber(n)) => ValBoolean(n % 2 == 0)
     })
 
+  private def roundUpFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        n match {
+          case n if n < 0 =>
+            round(n, scale, RoundingMode.FLOOR)
+          case _ =>
+            round(n, scale, RoundingMode.CEILING)
+        }
+    })
+
+  private def roundDownFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        n match {
+          case n if n < 0 =>
+            round(n, scale, RoundingMode.CEILING)
+          case _ =>
+            round(n, scale, RoundingMode.FLOOR)
+        }
+    })
+
+  private def roundHalfUpFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        n match {
+          case n if n < 0 =>
+            scale match {
+              case scale if scale > 0 =>
+                round(n, scale, RoundingMode.HALF_DOWN)
+              case _ =>
+                round(n, scale, RoundingMode.HALF_UP)
+            }
+          case _ =>
+            scale match {
+              case scale if scale > 0 =>
+                round(n, scale, RoundingMode.HALF_DOWN)
+              case _ =>
+                round(n, scale, RoundingMode.CEILING)
+            }
+        }
+    })
+
+  private def roundHalfDownFunction =
+    builtinFunction(params = List("n", "scala"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        n match {
+          case n if n < 0 =>
+            scale match {
+              case scale if scale > 0 =>
+                round(n, scale, RoundingMode.HALF_UP)
+              case _ =>
+                round(n, scale, RoundingMode.HALF_DOWN)
+            }
+          case _ =>
+            scale match {
+              case scale if scale > 0 =>
+                round(n, scale, RoundingMode.FLOOR)
+              case _ =>
+                round(n, scale, RoundingMode.FLOOR)
+            }
+        }
+    })
 }
