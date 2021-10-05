@@ -62,7 +62,7 @@ class BuiltinContextFunctionsTest
           Map("key" -> ValString("a"), "value" -> ValString("foo")))
         secondContext.variableProvider.getVariables should be(
           Map("key" -> ValString("b"), "value" -> ValString("bar")))
-      case other => fail(s"Expected list with one context but found '$other'")
+      case other => fail(s"Expected list with two contexts but found '$other'")
     }
   }
 
