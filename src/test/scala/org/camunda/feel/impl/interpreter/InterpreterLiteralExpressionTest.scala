@@ -18,13 +18,14 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   */
 class InterpreterLiteralExpressionTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -83,9 +84,11 @@ class InterpreterLiteralExpressionTest
   it should "be a context (string as key)" in {
     val result = eval(""" {"a":1} """)
 
-    result shouldBe a [ValContext]
+    result shouldBe a[ValContext]
     result match {
-      case ValContext(context) => context.variableProvider.getVariables should be(Map("a" -> ValNumber(1)))
+      case ValContext(context) =>
+        context.variableProvider.getVariables should be(
+          Map("a" -> ValNumber(1)))
     }
   }
 

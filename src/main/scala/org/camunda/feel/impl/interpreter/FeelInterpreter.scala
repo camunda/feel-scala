@@ -226,7 +226,7 @@ class FeelInterpreter {
                               resultMapping: List[R] => Val): Val = {
 
     foldEither[T, List[R]](List(), it, {
-      case (xs, x) => f(x).right.map(xs :+ _)
+      case (xs, x) => f(x).map(xs :+ _)
     }, resultMapping)
   }
 
@@ -236,7 +236,7 @@ class FeelInterpreter {
                                resultMapping: R => Val): Val = {
 
     val result = it.foldLeft[Either[ValError, R]](Right(start)) { (result, x) =>
-      result.right.flatMap(xs => op(xs, x))
+      result.flatMap(xs => op(xs, x))
     }
 
     result match {

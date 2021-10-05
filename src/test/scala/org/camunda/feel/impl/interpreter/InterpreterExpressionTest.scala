@@ -19,13 +19,14 @@ package org.camunda.feel.impl.interpreter
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   */
 class InterpreterExpressionTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 

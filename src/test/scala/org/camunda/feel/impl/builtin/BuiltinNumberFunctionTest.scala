@@ -18,7 +18,8 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.math.BigDecimal.{double2bigDecimal, int2bigDecimal}
 
@@ -26,7 +27,7 @@ import scala.math.BigDecimal.{double2bigDecimal, int2bigDecimal}
   * @author Philipp
   */
 class BuiltinNumberFunctionsTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
