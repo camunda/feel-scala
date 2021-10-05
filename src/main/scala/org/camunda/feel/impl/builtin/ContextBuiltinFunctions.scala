@@ -10,7 +10,8 @@ object ContextBuiltinFunctions {
   def functions = Map(
     "get entries" -> List(getEntriesFunction("context"),
                           getEntriesFunction("m")),
-    "get value" -> List(getValueFunction),
+    "get value" -> List(getValueFunction(List("m", "key")),
+                        getValueFunction(List("context", "key"))),
     "put" -> List(putFunction),
     "put all" -> List(putAllFunction),
     "context" -> List(contextFunction)
@@ -27,8 +28,8 @@ object ContextBuiltinFunctions {
     }
   )
 
-  private def getValueFunction = builtinFunction(
-    params = List("context", "key"),
+  private def getValueFunction(parameters: List[String]) = builtinFunction(
+    params = parameters,
     invoke = {
       case List(ValContext(c), ValString(key)) =>
         c.variableProvider

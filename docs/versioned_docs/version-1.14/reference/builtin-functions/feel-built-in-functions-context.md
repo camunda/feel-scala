@@ -8,12 +8,12 @@ title: Context Functions
 Returns the value of the context entry with the given key.
 
 * parameters:
-  * `context`: context
+  * `m`: context
   * `key`: string
 * result: any
 
 ```js
-get value({foo: 123}, "foo") 
+get value(m:{foo: 123}, key:"foo") 
 // 123
 ```
 
