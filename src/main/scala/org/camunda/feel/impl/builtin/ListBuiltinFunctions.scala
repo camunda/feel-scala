@@ -425,7 +425,7 @@ object ListBuiltinFunctions {
                 ValString(suffix)) =>
         fromListOf[ValString, String](list)(
           valStr => valStr.value,
-          strings => ValString(s"$prefix${strings.mkString(delimiter)}$suffix"))
+          strings => ValString(strings.mkString(start = prefix, sep = delimiter, end = suffix))
     }
   )
 
