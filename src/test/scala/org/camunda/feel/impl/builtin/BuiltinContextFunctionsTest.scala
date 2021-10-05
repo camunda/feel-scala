@@ -32,23 +32,18 @@ class BuiltinContextFunctionsTest
     with Matchers
     with FeelIntegrationTest {
 
-  "A get entries function" should "return all entries" in {
+  "A get entries function" should "return all entries (when invoked with 'context' argument)" in {
 
-    val list = eval(""" get entries({foo: 123}) """)
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items(0)
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(
-      Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
+    val list = eval(""" get entries(context:{foo: 123}) """)
+    list match {
+      case ValList(List(ValContext(context))) =>
+        context.variableProvider.getVariables should be(
+          Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
+      case other => fail(s"Expected list with one context but found '$other'")
+    }
   }
 
-  it should "return all entries when invoked with 'm' argument" in {
+  it should "return all entries (when invoked with 'm' argument)" in {
 
     val list = eval(""" get entries(m:{foo: 123}) """)
     list match {
