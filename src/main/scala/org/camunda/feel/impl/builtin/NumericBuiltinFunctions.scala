@@ -125,64 +125,24 @@ object NumericBuiltinFunctions {
   private def roundUpFunction =
     builtinFunction(params = List("n", "scale"), invoke = {
       case List(ValNumber(n), ValNumber(scale)) =>
-        n match {
-          case n if n < 0 =>
-            round(n, scale, RoundingMode.FLOOR)
-          case _ =>
-            round(n, scale, RoundingMode.CEILING)
-        }
+        round(n, scale, RoundingMode.UP)
     })
 
   private def roundDownFunction =
     builtinFunction(params = List("n", "scale"), invoke = {
       case List(ValNumber(n), ValNumber(scale)) =>
-        n match {
-          case n if n < 0 =>
-            round(n, scale, RoundingMode.CEILING)
-          case _ =>
-            round(n, scale, RoundingMode.FLOOR)
-        }
+        round(n, scale, RoundingMode.DOWN)
     })
 
   private def roundHalfUpFunction =
     builtinFunction(params = List("n", "scale"), invoke = {
       case List(ValNumber(n), ValNumber(scale)) =>
-        n match {
-          case n if n < 0 =>
-            scale match {
-              case scale if scale > 0 =>
-                round(n, scale, RoundingMode.HALF_DOWN)
-              case _ =>
-                round(n, scale, RoundingMode.HALF_UP)
-            }
-          case _ =>
-            scale match {
-              case scale if scale > 0 =>
-                round(n, scale, RoundingMode.HALF_DOWN)
-              case _ =>
-                round(n, scale, RoundingMode.CEILING)
-            }
-        }
+        round(n, scale, RoundingMode.HALF_UP)
     })
 
   private def roundHalfDownFunction =
     builtinFunction(params = List("n", "scala"), invoke = {
       case List(ValNumber(n), ValNumber(scale)) =>
-        n match {
-          case n if n < 0 =>
-            scale match {
-              case scale if scale > 0 =>
-                round(n, scale, RoundingMode.HALF_UP)
-              case _ =>
-                round(n, scale, RoundingMode.HALF_DOWN)
-            }
-          case _ =>
-            scale match {
-              case scale if scale > 0 =>
-                round(n, scale, RoundingMode.FLOOR)
-              case _ =>
-                round(n, scale, RoundingMode.FLOOR)
-            }
-        }
+        round(n, scale, RoundingMode.HALF_DOWN)
     })
 }
