@@ -311,12 +311,16 @@ class BuiltinListFunctionsTest
     eval(" joining([]) ") should be(ValString(""))
   }
 
-  it should "return joined strings " in {
+  it should "return joined strings" in {
     eval(""" joining(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
+  }
+
+  it should "return joined strings with custom separator" in {
     eval(""" joining(["foo","bar","baz"], "::") """) should be(
       ValString("foo::bar::baz"))
-    eval(""" joining(["foo","bar","baz"], "::", "hello-")  """) should be(
-      ValString("hello-foo::bar::baz"))
+  }
+
+  it should "return joined strings with custom separator, a prefix and a suffix" in {
     eval(""" joining(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
       ValString("hello-foo::bar::baz-goodbye"))
   }

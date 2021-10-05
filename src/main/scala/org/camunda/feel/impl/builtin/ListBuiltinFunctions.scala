@@ -36,7 +36,6 @@ object ListBuiltinFunctions {
     "sort" -> List(sortFunction),
     "joining" -> List(joiningFunction,
                       joiningWithDelimiterFunction,
-                      joiningWithDelimiterAndPrefixFunction,
                       joiningWithDelimiterAndPrefixAndSuffixFunction)
   )
 
@@ -390,9 +389,7 @@ object ListBuiltinFunctions {
     params = List("list"),
     invoke = {
       case List(ValList(list)) =>
-        fromListOf[ValString, String](list)(
-          valStr => valStr.value,
-          strings => ValString(strings.mkString))
+        withListOfStrings(list, strings => ValString(strings.mkString))
     }
   )
 
@@ -400,19 +397,8 @@ object ListBuiltinFunctions {
     params = List("list", "delimiter"),
     invoke = {
       case List(ValList(list), ValString(delimiter)) =>
-        fromListOf[ValString, String](list)(
-          valStr => valStr.value,
-          strings => ValString(strings.mkString(delimiter)))
-    }
-  )
-
-  private def joiningWithDelimiterAndPrefixFunction = builtinFunction(
-    params = List("list", "delimiter", "prefix"),
-    invoke = {
-      case List(ValList(list), ValString(delimiter), ValString(prefix)) =>
-        fromListOf[ValString, String](list)(
-          valStr => valStr.value,
-          strings => ValString(s"$prefix${strings.mkString(delimiter)}"))
+        withListOfStrings(list,
+                          strings => ValString(strings.mkString(delimiter)))
     }
   )
 
@@ -423,24 +409,24 @@ object ListBuiltinFunctions {
                 ValString(delimiter),
                 ValString(prefix),
                 ValString(suffix)) =>
-        fromListOf[ValString, String](list)(
-          valStr => valStr.value,
-          strings => ValString(strings.mkString(start = prefix, sep = delimiter, end = suffix))
+        withListOfStrings(
+          list,
+          strings =>
+            ValString(
+              strings.mkString(start = prefix, sep = delimiter, end = suffix)))
     }
   )
 
-  //generic helper for lifting generic List of values in concrete type implementation.
-  private def fromListOf[A <: Val, B](list: List[Val])(
-      elementSupplier: => A => B,
-      f: => List[B] => Val): Val = {
+  private def withListOfStrings(list: List[Val],
+                                f: List[String] => Val): Val = {
     list
       .map(_ match {
-        case n: A => n
-        case x    => ValError(s"expected string but found '$x'")
+        case n: ValString => n
+        case x            => ValError(s"expected string but found '$x'")
       })
       .find(_.isInstanceOf[ValError]) match {
       case Some(e) => e
-      case None    => f(list.asInstanceOf[List[A]].map(elementSupplier))
+      case None    => f(list.asInstanceOf[List[ValString]].map(_.value))
     }
   }
 }
