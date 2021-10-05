@@ -152,7 +152,7 @@ even(5)
 ## round up()
 
 * parameters:
-  * `number`: number
+  * `n`: number
   * `scale`: number
 * result: boolean
 
