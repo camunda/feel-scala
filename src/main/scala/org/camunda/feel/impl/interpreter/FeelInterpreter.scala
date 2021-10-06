@@ -527,33 +527,44 @@ class FeelInterpreter {
             }
           }
         )
-      case ValContext(x) =>
-        withContext(
-          y,
-          y => {
-            val xVars = x.variableProvider.getVariables
-            val yVars = y.context.variableProvider.getVariables
+      case ValContext(ctx) =>
+        y match {
+          case ValContext(_) =>
+            withContext(
+              y,
+              y => {
+                val xVars = ctx.variableProvider.getVariables
+                val yVars = y.context.variableProvider.getVariables
 
-            if (xVars.keys != yVars.keys) {
-              f(false)
+                if (xVars.keys != yVars.keys) {
+                  f(false)
 
-            } else {
-              val isEqual = xVars.keys.foldRight(true) {
-                case (key, contextIsEqual) =>
-                  contextIsEqual && {
-                    val xVal = context.valueMapper.toVal(xVars(key))
-                    val yVal = context.valueMapper.toVal(yVars(key))
+                } else {
+                  val isEqual = xVars.keys.foldRight(true) {
+                    case (key, contextIsEqual) =>
+                      contextIsEqual && {
+                        val xVal = context.valueMapper.toVal(xVars(key))
+                        val yVal = context.valueMapper.toVal(yVars(key))
 
-                    checkEquality(xVal, yVal, c, f) match {
-                      case ValBoolean(entryIsEqual) => entryIsEqual
-                      case _                        => false
-                    }
+                        checkEquality(xVal, yVal, c, f) match {
+                          case ValBoolean(entryIsEqual) => entryIsEqual
+                          case _                        => false
+                        }
+                      }
                   }
+                  f(isEqual)
+                }
               }
-              f(isEqual)
+            )
+
+          case _ =>
+            ctx.variableProvider.keys.headOption.flatMap(key =>
+              ctx.variableProvider.getVariable(key)) match {
+              case Some(value) => f(c(value.asInstanceOf[Val], y))
+              case None        => ValError(s"$x can not be compared to $y")
             }
-          }
-        )
+        }
+
       case _ =>
         error(
           x,
@@ -565,8 +576,45 @@ class FeelInterpreter {
                      c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case ValNull                => withVal(y, y => ValBoolean(false))
-      case _ if (y == ValNull)    => withVal(x, x => ValBoolean(false))
+      case ValNull             => withVal(y, y => ValBoolean(false))
+      case _ if (y == ValNull) => withVal(x, x => ValBoolean(false))
+      case ValContext(ctx) =>
+        y match {
+          case ValContext(_) =>
+            withContext(
+              y,
+              y => {
+                val xVars = ctx.variableProvider.getVariables
+                val yVars = y.context.variableProvider.getVariables
+
+                if (xVars.keys != yVars.keys) {
+                  f(false)
+
+                } else {
+                  val isEqual = xVars.keys.foldRight(true) {
+                    case (key, contextIsEqual) =>
+                      contextIsEqual && {
+                        val xVal = context.valueMapper.toVal(xVars(key))
+                        val yVal = context.valueMapper.toVal(yVars(key))
+
+                        dualOp(xVal, yVal, c, f) match {
+                          case ValBoolean(entryIsEqual) => entryIsEqual
+                          case _                        => false
+                        }
+                      }
+                  }
+                  f(isEqual)
+                }
+              }
+            )
+
+          case _ =>
+            ctx.variableProvider.keys.headOption.flatMap(key =>
+              ctx.variableProvider.getVariable(key)) match {
+              case Some(value) => f(c(value.asInstanceOf[Val], y))
+              case None        => ValError(s"$x can not be compared to $y")
+            }
+        }
       case _ if (!x.isComparable) => ValError(s"$x is not comparable")
       case _ if (!y.isComparable) => ValError(s"$y is not comparable")
       case _ if (x.getClass != y.getClass) =>

@@ -78,6 +78,78 @@ class InterpreterContextExpressionTest
       .getVariables should be(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))
   }
 
+  it should "be filtered by >= when it is a list of items" in {
+    val filteredList = eval("[{item: 1}, {item: 2}, {item: 3}][item >= 2]")
+
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 2
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+
+    result should contain only (Map("item" -> ValNumber(2)), Map(
+      "item" -> ValNumber(3)))
+  }
+
+  it should "raise an error when the variable used for filtering is not the same of the context" in {
+    val filteredList = eval("[{item: 1}, {item: 2}, {item: 3}][test >= 2]")
+    filteredList shouldBe a[ValError]
+  }
+
+  it should "be filtered by > when it is a list of items" in {
+    val filteredList = eval("[{item: 8}, {item: 2}, {item: 3}][item > 2]")
+
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 2
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+
+    result should contain only (Map("item" -> ValNumber(8)), Map(
+      "item" -> ValNumber(3)))
+  }
+
+  it should "be filtered by < when it is a list of items" in {
+    val filteredList = eval("[{item: 1}, {item: 2}, {item: 3}][item < 3]")
+
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 2
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+
+    result should contain only (Map("item" -> ValNumber(1)), Map(
+      "item" -> ValNumber(2)))
+  }
+
+  it should "be filtered by equality when it is a list of items" in {
+    val filteredList = eval("[{item: 1}, {item: 2}, {item: 3}][item = 2]")
+
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 1
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+
+    result should contain only (Map("item" -> ValNumber(2)))
+  }
+
+  it should "be filtered by <= when it is a list of items" in {
+    val filteredList = eval("[{item: 1}, {item: 2}, {item: 3}][item <= 1]")
+
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 1
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+
+    result should contain only (Map("item" -> ValNumber(1)))
+  }
+
+  it should "be filtered by <= on an empty list" in {
+    val filteredList = eval("[][item <= 1]")
+    val items = filteredList.asInstanceOf[ValList].items
+    items should have size 0
+    val result = items.map(i =>
+      i.asInstanceOf[ValContext].context.variableProvider.getVariables)
+    result shouldBe empty
+  }
+
   it should "be accessed and filtered in a list" in {
 
     eval("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should be(ValNumber(1))
@@ -136,10 +208,7 @@ class InterpreterContextExpressionTest
   }
 
   it should "fail to compare if not a context" in {
-
-    eval("{} = 1") should be(
-      ValError("expect Context but found 'ValNumber(1)'")
-    )
+    eval("{} = 1") shouldBe a[ValError]
   }
 
 }
