@@ -200,3 +200,22 @@ case class ValFunction(params: List[String],
 case class ValContext(context: Context) extends Val
 
 case class ValList(items: List[Val]) extends Val
+
+case class ValRange(tt: String) {
+  // if include value
+  val startIncl: Boolean = tt.head == '['
+  val endIncl: Boolean = tt.last == ']'
+  // [1..10] or (1..10] or [1..10) or (1..10)
+  val start: BigInt = if(startIncl)
+    BigInt(tt.split('.').head.split(tt.head).filter(t => t.nonEmpty).head)
+  else
+    BigInt(tt.split('.').head.split(tt.head).filter(t => t.nonEmpty).head) + 1
+
+  val end: BigInt = if(endIncl)
+    BigInt(tt.split('.').tail.mkString.split(tt.last).head)
+  else
+    BigInt(tt.split('.').tail.mkString.split(tt.last).head) - 1
+  def contains(num: Int): Boolean = {
+    start <= num && num <= end
+  }
+}

@@ -35,6 +35,7 @@ class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
       ListBuiltinFunctions.functions ++
       NumericBuiltinFunctions.functions ++
       ContextBuiltinFunctions.functions ++
+      RangeBuiltinFunction.functions ++
       new TemporalBuiltinFunctions(clock).functions
 
 }
