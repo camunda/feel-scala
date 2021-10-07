@@ -1,12 +1,20 @@
 package org.camunda.feel.impl.builtin
 
+import org.camunda.feel.{Date, FeelEngineClock}
+import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValDate,
+  ValDateTime,
+  ValFunction,
+  ValLocalDateTime,
+  ValNumber,
+  ValString
+}
+
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
-
-import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
-import org.camunda.feel.{Date, FeelEngineClock}
 
 class TemporalBuiltinFunctions(clock: FeelEngineClock) {
 

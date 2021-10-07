@@ -2,7 +2,14 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.Number
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValError,
+  ValNull,
+  ValNumber,
+  ValString
+}
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -12,7 +19,8 @@ object NumericBuiltinFunctions {
     "decimal" -> List(decimalFunction, decimalFunction3),
     "floor" -> List(floorFunction),
     "ceiling" -> List(ceilingFunction),
-    "abs" -> List(absFunction(paramName = "number"), absFunction(paramName = "n")),
+    "abs" -> List(absFunction(paramName = "number"),
+                  absFunction(paramName = "n")),
     "modulo" -> List(moduloFunction),
     "sqrt" -> List(sqrtFunction),
     "log" -> List(logFunction),

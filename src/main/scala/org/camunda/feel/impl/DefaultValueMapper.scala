@@ -16,22 +16,38 @@
  */
 package org.camunda.feel.impl
 
-import java.time._
-
-import org.camunda.feel.context.Context
-import org.camunda.feel.impl.interpreter.ObjectContext
-import org.camunda.feel.syntaxtree._
-import org.camunda.feel.valuemapper.CustomValueMapper
 import org.camunda.feel.{
   Date,
   DateTime,
   DayTimeDuration,
   Time,
-  YearMonthDuration,
-  syntaxtree
+  YearMonthDuration
 }
+import org.camunda.feel.context.Context
+import org.camunda.feel.impl.interpreter.ObjectContext
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValContext,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValError,
+  ValFunction,
+  ValList,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNull,
+  ValNumber,
+  ValString,
+  ValTime,
+  ValYearMonthDuration,
+  ZonedTime
+}
+import org.camunda.feel.valuemapper.CustomValueMapper
 
-import scala.collection.JavaConverters._
+import java.time._
+import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 import scala.math.BigDecimal
 
 class DefaultValueMapper extends CustomValueMapper {
@@ -69,7 +85,7 @@ class DefaultValueMapper extends CustomValueMapper {
           }
           .partition { case (key, value) => value.isInstanceOf[ValFunction] }
 
-        syntaxtree.ValContext(
+        ValContext(
           Context.StaticContext(
             variables = variables,
             functions = functions.map {
@@ -115,7 +131,7 @@ class DefaultValueMapper extends CustomValueMapper {
     case x =>
       try {
         Some(
-          syntaxtree.ValContext(Context.CacheContext(ObjectContext(x)))
+          ValContext(Context.CacheContext(ObjectContext(x)))
         )
       } catch {
         case _: Throwable => None
