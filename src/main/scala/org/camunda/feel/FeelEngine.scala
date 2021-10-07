@@ -17,9 +17,18 @@
 package org.camunda.feel
 
 import fastparse.Parsed
-import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, Failure}
+import org.camunda.feel.FeelEngine.{
+  Configuration,
+  EvalExpressionResult,
+  EvalUnaryTestsResult,
+  Failure
+}
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
-import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
+import org.camunda.feel.impl.interpreter.{
+  BuiltinFunctions,
+  EvalContext,
+  FeelInterpreter
+}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
