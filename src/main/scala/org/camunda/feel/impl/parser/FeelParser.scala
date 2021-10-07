@@ -16,81 +16,10 @@
  */
 package org.camunda.feel.impl.parser
 
-import fastparse.JavaWhitespace._
+import fastparse.JavaWhitespace.whitespace
 import fastparse._
-import org.camunda.feel.syntaxtree.{
-  Addition,
-  ArithmeticNegation,
-  AtLeastOne,
-  ClosedIntervalBoundary,
-  Conjunction,
-  ConstBool,
-  ConstContext,
-  ConstDate,
-  ConstDateTime,
-  ConstDayTimeDuration,
-  ConstInputValue,
-  ConstList,
-  ConstLocalDateTime,
-  ConstLocalTime,
-  ConstNull,
-  ConstNumber,
-  ConstString,
-  ConstTime,
-  ConstYearMonthDuration,
-  Disjunction,
-  Division,
-  Equal,
-  EveryItem,
-  Exp,
-  Exponentiation,
-  Filter,
-  For,
-  FunctionDefinition,
-  FunctionInvocation,
-  FunctionParameters,
-  GreaterOrEqual,
-  GreaterThan,
-  If,
-  In,
-  InputEqualTo,
-  InputGreaterOrEqual,
-  InputGreaterThan,
-  InputLessOrEqual,
-  InputLessThan,
-  InstanceOf,
-  Interval,
-  IntervalBoundary,
-  JavaFunctionInvocation,
-  LessOrEqual,
-  LessThan,
-  Multiplication,
-  NamedFunctionParameters,
-  Not,
-  OpenIntervalBoundary,
-  PathExpression,
-  PositionalFunctionParameters,
-  QualifiedFunctionInvocation,
-  Range,
-  Ref,
-  SomeItem,
-  Subtraction,
-  UnaryTestExpression
-}
-import org.camunda.feel.{
-  Date,
-  isOffsetDateTime,
-  isOffsetTime,
-  isValidDate,
-  isYearMonthDuration,
-  stringToLocalDateTime,
-  stringToLocalTime,
-  stringToDayTimeDuration,
-  stringToYearMonthDuration,
-  stringToDate,
-  stringToTime,
-  stringToDateTime
-}
+import org.camunda.feel.syntaxtree.{Addition, ArithmeticNegation, AtLeastOne, ClosedIntervalBoundary, Conjunction, ConstBool, ConstContext, ConstDate, ConstDateTime, ConstDayTimeDuration, ConstInputValue, ConstList, ConstLocalDateTime, ConstLocalTime, ConstNull, ConstNumber, ConstString, ConstTime, ConstYearMonthDuration, Disjunction, Division, Equal, EveryItem, Exp, Exponentiation, Filter, For, FunctionDefinition, FunctionInvocation, FunctionParameters, GreaterOrEqual, GreaterThan, If, In, InputEqualTo, InputGreaterOrEqual, InputGreaterThan, InputLessOrEqual, InputLessThan, InstanceOf, Interval, IntervalBoundary, JavaFunctionInvocation, LessOrEqual, LessThan, Multiplication, NamedFunctionParameters, Not, OpenIntervalBoundary, PathExpression, PositionalFunctionParameters, QualifiedFunctionInvocation, Range, Ref, SomeItem, Subtraction, UnaryTestExpression}
+import org.camunda.feel.{Date, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToTime, stringToYearMonthDuration}
 
 import scala.util.Try
 

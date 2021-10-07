@@ -16,37 +16,13 @@
  */
 package org.camunda.feel.impl
 
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  Time,
-  YearMonthDuration
-}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Time, YearMonthDuration}
 import org.camunda.feel.context.Context
 import org.camunda.feel.impl.interpreter.ObjectContext
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValBoolean,
-  ValContext,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValFunction,
-  ValList,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValFunction, ValList, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValString, ValTime, ValYearMonthDuration, ZonedTime}
 import org.camunda.feel.valuemapper.CustomValueMapper
 
-import java.time._
+import java.time.{LocalDateTime, ZoneId}
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 import scala.math.BigDecimal
 
