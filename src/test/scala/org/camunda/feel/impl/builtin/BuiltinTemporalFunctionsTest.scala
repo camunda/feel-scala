@@ -19,8 +19,16 @@ package org.camunda.feel.impl.builtin
 import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
 
 import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree.{ValDate, ValDateTime, ValNumber, ValString}
+import org.camunda.feel.syntaxtree.{
+  ValDate,
+  ValDateTime,
+  ValNumber,
+  ValString,
+  ValDayTimeDuration,
+  ValYearMonthDuration
+}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.camunda.feel.{stringToDayTimeDuration, stringToYearMonthDuration}
 
 class BuiltinTemporalFunctionsTest
     extends FlatSpec
@@ -87,4 +95,15 @@ class BuiltinTemporalFunctionsTest
     eval(""" week of year(date(2005,1,3)) """) should be(ValNumber(1))
     eval(""" week of year(date(2005,1,9)) """) should be(ValNumber(1))
   }
+
+  "A abs() function" should "return the absolute value of a days-time-duration" in {
+    eval(""" abs(duration("PT5H")) """) should be(ValDayTimeDuration("PT5H"))
+    eval(""" abs(duration("-PT5H")) """) should be(ValDayTimeDuration("PT5H"))
+  }
+
+  "A abs() function" should "return the absolute value of a years-months-duration" in {
+    eval(""" abs(duration("P2M")) """) should be(ValYearMonthDuration("P2M"))
+    eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
+  }
+
 }

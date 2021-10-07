@@ -78,3 +78,19 @@ Returns the month of the week according to the Gregorian calendar. Note that it 
 month of year(date("2019-09-17"))
 // "September"
 ```
+
+## abs()
+
+Returns the absolute value of a ValDayTimeDuration or ValYearMonthDuration
+
+* parameters: 
+  * `n`: ValDayTimeDuration or ValYearMonthDuration
+* result: ValDayTimeDuration or ValYearMonthDuration
+
+```js
+abs(duration("-PT5H"))
+// "ValDayTimeDuration("PT5H")"
+
+abs(duration("-P2M"))
+// ValYearMonthDuration("P2M")
+```
