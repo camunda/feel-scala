@@ -31,5 +31,8 @@ object RangeBuiltinFunction {
   private def AfterFunction =
     builtinFunction(params = List("valOne", "valTwo"), invoke = {
       case List(ValNumber(valOne), ValNumber(valTwo)) => ValBoolean(valOne > valTwo)
+      case List(ValNumber(valOne), ValString(valTwo)) => ValBoolean(valOne.toInt > ValRange(valTwo).end || (valOne.toInt == ValRange(valTwo).end & !ValRange(valTwo).endIncl))
+      case List(ValString(valOne), ValNumber(valTwo)) => ValBoolean(ValRange(valOne).start > valTwo.toInt || (ValRange(valOne).start == valTwo.toInt & !ValRange(valOne).startIncl))
+      case List(ValString(valOne), ValString(valTwo)) => ValBoolean(ValRange(valOne).start > ValRange(valTwo).end || ((!ValRange(valOne).startIncl | !ValRange(valTwo).endIncl) & ValRange(valOne).start == ValRange(valTwo).end))
     })
 }
