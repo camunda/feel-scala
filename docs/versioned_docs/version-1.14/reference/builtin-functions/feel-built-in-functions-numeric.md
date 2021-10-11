@@ -60,6 +60,90 @@ ceiling(-1.56, 1)
 // -1.5
 ```
 
+## round up()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round up(5.5, 0)
+// 6
+
+round up(-5.5, 0)
+// -6
+
+round up(1.121, 2)
+// 1.13
+
+round up(-1.126, 2)
+// -1.13
+```
+
+## round down()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round down(5.5, 0)
+// 5
+
+round down(-5.5, 0)
+// -5
+
+round down(1.121, 2)
+// 1.12
+
+round down(-1.126, 2)
+// -1.12
+```
+
+## round half up()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round half up(5.5, 0)
+// 6
+
+round half up(-5.5, 0)
+// -6
+
+round half up(1.121, 2)
+// 1.12
+
+round half up(-1.126, 2)
+// -1.13
+```
+
+## round half down()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round half down(5.5, 0)
+// 5
+
+round half down(-5.5, 0)
+// -5
+
+round half down(1.121, 2)
+// 1.12
+
+round half down(-1.126, 2)
+// -1.13
+```
+
 ## abs()
 
 * parameters:
@@ -149,86 +233,3 @@ even(5)
 // false
 ```
 
-## round up()
-
-* parameters:
-  * `n`: number
-  * `scale`: number
-* result: boolean
-
-```js
-round up(5.5, 0)
-// 6
-
-round up(-5.5, 0)
-// -6
-
-round up(1.121, 2)
-// 1.13
-
-round up(-1.126, 2)
-// -1.13
-```
-
-## round down()
-
-* parameters:
-  * `number`: number
-  * `scale`: number
-* result: boolean
-
-```js
-round down(5.5, 0)
-// 5
-
-round down(-5.5, 0)
-// -5
-
-round down(1.121, 2)
-// 1.12
-
-round down(-1.126, 2)
-// -1.12
-```
-
-## round half up()
-
-* parameters:
-  * `number`: number
-  * `scale`: number
-* result: boolean
-
-```js
-round half up(5.5, 0)
-// 6
-
-round half up(-5.5, 0)
-// -6
-
-round half up(1.121, 2)
-// 1.12
-
-round half up(-1.126, 2)
-// -1.13
-```
-
-## round half down()
-
-* parameters:
-  * `number`: number
-  * `scale`: number
-* result: boolean
-
-```js
-round half down(5.5, 0)
-// 5
-
-round half down(-5.5, 0)
-// -5
-
-round half down(1.121, 2)
-// 1.12
-
-round half down(-1.126, 2)
-// -1.13
-```
