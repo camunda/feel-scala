@@ -33,7 +33,10 @@ object ListBuiltinFunctions {
     "union" -> List(unionFunction),
     "distinct values" -> List(distinctValuesFunction),
     "flatten" -> List(flattenFunction),
-    "sort" -> List(sortFunction)
+    "sort" -> List(sortFunction),
+    "joining" -> List(joiningFunction,
+                      joiningWithDelimiterFunction,
+                      joiningWithDelimiterAndPrefixAndSuffixFunction)
   )
 
   private def listContainsFunction =
@@ -381,4 +384,49 @@ object ListBuiltinFunctions {
           s"expect boolean function with 2 arguments, but found '${params.size}'")
     }
   )
+
+  private def joiningFunction = builtinFunction(
+    params = List("list"),
+    invoke = {
+      case List(ValList(list)) =>
+        withListOfStrings(list, strings => ValString(strings.mkString))
+    }
+  )
+
+  private def joiningWithDelimiterFunction = builtinFunction(
+    params = List("list", "delimiter"),
+    invoke = {
+      case List(ValList(list), ValString(delimiter)) =>
+        withListOfStrings(list,
+                          strings => ValString(strings.mkString(delimiter)))
+    }
+  )
+
+  private def joiningWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
+    params = List("list", "delimiter", "prefix", "suffix"),
+    invoke = {
+      case List(ValList(list),
+                ValString(delimiter),
+                ValString(prefix),
+                ValString(suffix)) =>
+        withListOfStrings(
+          list,
+          strings =>
+            ValString(
+              strings.mkString(start = prefix, sep = delimiter, end = suffix)))
+    }
+  )
+
+  private def withListOfStrings(list: List[Val],
+                                f: List[String] => Val): Val = {
+    list
+      .map(_ match {
+        case n: ValString => n
+        case x            => ValError(s"expected string but found '$x'")
+      })
+      .find(_.isInstanceOf[ValError]) match {
+      case Some(e) => e
+      case None    => f(list.asInstanceOf[List[ValString]].map(_.value))
+    }
+  }
 }
