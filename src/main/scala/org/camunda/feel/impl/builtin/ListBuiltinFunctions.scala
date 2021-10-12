@@ -9,7 +9,8 @@ import org.camunda.feel.syntaxtree.{
   ValFunction,
   ValList,
   ValNull,
-  ValNumber
+  ValNumber,
+  ValString
 }
 
 import scala.annotation.tailrec

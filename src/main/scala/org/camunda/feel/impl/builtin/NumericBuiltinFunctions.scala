@@ -59,12 +59,14 @@ object NumericBuiltinFunctions {
 
   private def floorFunction2 =
     builtinFunction(params = List("n", "scala"), invoke = {
-      case List(ValNumber(n), ValNumber(scale)) => round(n, scale, RoundingMode.FLOOR)
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.FLOOR)
     })
 
   private def ceilingFunction2 =
     builtinFunction(params = List("n", "scale"), invoke = {
-      case List(ValNumber(n), ValNumber(scale)) => round(n, scale, RoundingMode.CEILING)
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.CEILING)
     })
 
   private def floorFunction =
