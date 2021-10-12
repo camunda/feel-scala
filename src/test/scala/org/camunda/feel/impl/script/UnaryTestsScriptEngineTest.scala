@@ -16,17 +16,16 @@
  */
 package org.camunda.feel.impl.script
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import javax.script.ScriptContext
 import javax.script.SimpleScriptContext
-import javax.script.Bindings
 import javax.script.ScriptException
 
 /**
   * @author Philipp Ossler
   */
-class UnaryTestsScriptEngineTest extends FlatSpec with Matchers {
+class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
 
   val scriptEngine = new FeelUnaryTestsScriptEngine(
     new FeelUnaryTestsScriptEngineFactory)
