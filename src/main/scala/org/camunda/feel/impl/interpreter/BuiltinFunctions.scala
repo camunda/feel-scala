@@ -16,10 +16,18 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel._
+import org.camunda.feel.FeelEngineClock
 import org.camunda.feel.context.FunctionProvider
-import org.camunda.feel.impl.builtin._
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.impl.builtin.{
+  BooleanBuiltinFunctions,
+  ContextBuiltinFunctions,
+  ConversionBuiltinFunctions,
+  ListBuiltinFunctions,
+  NumericBuiltinFunctions,
+  StringBuiltinFunctions,
+  TemporalBuiltinFunctions
+}
+import org.camunda.feel.syntaxtree.ValFunction
 
 class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
 

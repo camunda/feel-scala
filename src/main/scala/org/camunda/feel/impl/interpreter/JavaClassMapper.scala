@@ -16,7 +16,13 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValNull,
+  ValNumber,
+  ValString
+}
 
 /**
   * @author Philipp

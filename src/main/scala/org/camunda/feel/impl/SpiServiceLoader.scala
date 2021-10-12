@@ -17,12 +17,11 @@
 package org.camunda.feel.impl
 
 import java.util.ServiceLoader
-
 import org.camunda.feel.FeelEngineClock
 import org.camunda.feel.context.{CustomFunctionProvider, FunctionProvider}
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 import scala.reflect.{ClassTag, classTag}
 
 object SpiServiceLoader {
