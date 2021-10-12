@@ -146,12 +146,14 @@ class BuiltinNumberFunctionsTest
 
     eval(" floor(1.5) ") should be(ValNumber(1))
     eval(" floor(-1.5) ") should be(ValNumber(-2))
+    eval(" floor(-1.56, 1) ") should be(ValNumber(-1.6))
   }
 
   "A ceiling() function" should "return smallest integer >= _" in {
 
     eval(" ceiling(1.5) ") should be(ValNumber(2))
     eval(" ceiling(-1.5) ") should be(ValNumber(-1))
+    eval(" ceiling(-1.56, 1) ") should be(ValNumber(-1.5))
   }
 
   "A abs() function" should "return absolute value" in {
@@ -224,4 +226,37 @@ class BuiltinNumberFunctionsTest
     eval(" even(5) ") should be(ValBoolean(false))
     eval(" even(2) ") should be(ValBoolean(true))
   }
+
+  "A round up() function" should "return number with a given scale" in {
+
+    eval(" round up(5.5, 0) ") should be(ValNumber(6))
+    eval(" round up(-5.5, 0) ") should be(ValNumber(-6))
+    eval(" round up(1.121, 2) ") should be(ValNumber(1.13))
+    eval(" round up(-1.126, 2) ") should be(ValNumber(-1.13))
+  }
+
+  "A round down() function" should "return number with a given scale" in {
+
+    eval(" round down(5.5, 0) ") should be(ValNumber(5))
+    eval(" round down(-5.5, 0) ") should be(ValNumber(-5))
+    eval(" round down(1.121, 2) ") should be(ValNumber(1.12))
+    eval(" round down(-1.126, 2) ") should be(ValNumber(-1.12))
+  }
+
+  "A round half up() function" should "return number with a given scale" in {
+
+    eval(" round half up(5.5, 0) ") should be(ValNumber(6))
+    eval(" round half up(-5.5, 0) ") should be(ValNumber(-6))
+    eval(" round half up(1.121, 2) ") should be(ValNumber(1.12))
+    eval(" round half up(-1.126, 2) ") should be(ValNumber(-1.13))
+  }
+
+  "A round half down() function" should "return number with a given scale" in {
+
+    eval(" round half down(5.5, 0) ") should be(ValNumber(5))
+    eval(" round half down(-5.5, 0) ") should be(ValNumber(-5))
+    eval(" round half down(1.121, 2) ") should be(ValNumber(1.12))
+    eval(" round half down(-1.126, 2) ") should be(ValNumber(-1.13))
+  }
+
 }

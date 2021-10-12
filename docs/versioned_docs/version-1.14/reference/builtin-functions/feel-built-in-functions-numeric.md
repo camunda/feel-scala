@@ -28,6 +28,7 @@ decimal(2.5, 0, "half_up")
 
 * parameters:
   * `n`: number
+  * (optional) `scale`: number
 * result: number
 
 ```js
@@ -36,20 +37,111 @@ floor(1.5)
 
 floor(-1.5)
 // -2
+
+floor(-1.56, 1)
+// -1.6
 ```
 
 ## ceiling()
 
 * parameters:
   * `n`: number
+  * (optional) `scale`: number
 * result: number
 
 ```js
 ceiling(1.5)
 // 2
 
-floor(-1.5)
+ceiling(-1.5)
 // -1
+
+ceiling(-1.56, 1)
+// -1.5
+```
+
+## round up()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round up(5.5, 0)
+// 6
+
+round up(-5.5, 0)
+// -6
+
+round up(1.121, 2)
+// 1.13
+
+round up(-1.126, 2)
+// -1.13
+```
+
+## round down()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round down(5.5, 0)
+// 5
+
+round down(-5.5, 0)
+// -5
+
+round down(1.121, 2)
+// 1.12
+
+round down(-1.126, 2)
+// -1.12
+```
+
+## round half up()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round half up(5.5, 0)
+// 6
+
+round half up(-5.5, 0)
+// -6
+
+round half up(1.121, 2)
+// 1.12
+
+round half up(-1.126, 2)
+// -1.13
+```
+
+## round half down()
+
+* parameters:
+  * `n`: number
+  * `scale`: number
+* result: boolean
+
+```js
+round half down(5.5, 0)
+// 5
+
+round half down(-5.5, 0)
+// -5
+
+round half down(1.121, 2)
+// 1.12
+
+round half down(-1.126, 2)
+// -1.13
 ```
 
 ## abs()
@@ -137,6 +229,7 @@ odd(5)
 * result: boolean
 
 ```js
-odd(5)
+even(5)
 // false
 ```
+
