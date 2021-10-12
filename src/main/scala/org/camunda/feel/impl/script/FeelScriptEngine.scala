@@ -19,15 +19,24 @@ package org.camunda.feel.impl.script
 import fastparse.Parsed
 
 import java.io.{Closeable, IOException, Reader}
-import javax.script._
 import org.camunda.feel.FeelEngine
-import org.camunda.feel.FeelEngine.{EvalExpressionResult, Failure}
+import org.camunda.feel.FeelEngine.EvalExpressionResult
 import org.camunda.feel.impl.SpiServiceLoader
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression}
-import org.camunda.feel.impl.parser.FeelParser._
 
-import scala.collection.JavaConverters._
+import javax.script.{
+  AbstractScriptEngine,
+  Bindings,
+  Compilable,
+  CompiledScript,
+  ScriptContext,
+  ScriptEngine,
+  ScriptEngineFactory,
+  ScriptException,
+  SimpleBindings
+}
 import scala.annotation.tailrec
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 trait FeelScriptEngine
     extends AbstractScriptEngine

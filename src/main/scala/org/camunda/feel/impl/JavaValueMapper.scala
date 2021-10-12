@@ -20,7 +20,7 @@ import org.camunda.feel.context.Context
 import org.camunda.feel.syntaxtree.{Val, ValContext, ValList, ValNumber}
 import org.camunda.feel.valuemapper.CustomValueMapper
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 
 /**
   * Transform FEEL types into common Java objects. This includes numbers, lists and contexts.

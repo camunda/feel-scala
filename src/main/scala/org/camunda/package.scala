@@ -17,14 +17,29 @@
 package org.camunda
 
 import scala.math.BigDecimal
-import java.time._
-import java.time.format._
-import java.time.temporal.ChronoField._
-
 import org.slf4j.LoggerFactory
-import java.util.regex.Pattern
+import java.time.temporal.ChronoField.{
+  HOUR_OF_DAY,
+  MINUTE_OF_HOUR,
+  SECOND_OF_MINUTE,
+  NANO_OF_SECOND,
+  YEAR,
+  MONTH_OF_YEAR,
+  DAY_OF_MONTH
+}
 
+import java.util.regex.Pattern
 import org.camunda.feel.syntaxtree.ZonedTime
+
+import java.time.format.{DateTimeFormatterBuilder, SignStyle}
+import java.time.{
+  Duration,
+  LocalDate,
+  LocalDateTime,
+  LocalTime,
+  Period,
+  ZonedDateTime
+}
 
 /**
   * @author Philipp Ossler
