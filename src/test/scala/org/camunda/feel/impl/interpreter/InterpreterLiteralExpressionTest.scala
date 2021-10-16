@@ -33,6 +33,11 @@ class InterpreterLiteralExpressionTest
     eval("2") should be(ValNumber(2))
     eval("2.4") should be(ValNumber(2.4))
     eval("-3") should be(ValNumber(-3))
+    eval("02") should be(ValNumber(2))
+    eval("02.4") should be(ValNumber(2.4))
+    eval("-03") should be(ValNumber(-3))
+    eval("0000002") should be(ValNumber(2))
+
   }
 
   it should "be a string" in {
@@ -83,9 +88,11 @@ class InterpreterLiteralExpressionTest
   it should "be a context (string as key)" in {
     val result = eval(""" {"a":1} """)
 
-    result shouldBe a [ValContext]
+    result shouldBe a[ValContext]
     result match {
-      case ValContext(context) => context.variableProvider.getVariables should be(Map("a" -> ValNumber(1)))
+      case ValContext(context) =>
+        context.variableProvider.getVariables should be(
+          Map("a" -> ValNumber(1)))
     }
   }
 
