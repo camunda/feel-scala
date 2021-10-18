@@ -23,12 +23,17 @@ The following sections cover more general areas that are not restricted to one d
 ### Comments
 
 An Expression can contain comments to explain it and give it more context. This can be done using
-Java-style comments. i.e. `//` to the end of line and `/*.... */`.
+Java-style comments: `//` to the end of line, or `/*.... */` for blocks.
 
 ```js
-// This should return 4
-[1,2,3,4][-1]                                  
+// returns the last item       
+[1,2,3,4][-1]                             
+    
+/* returns the last item */
+[1,2,3,4][-1]
 
-/* This should return 4 */
-[1,2,3,4][-1]                                  
+/* 
+ * returns the last item 
+ */
+[1,2,3,4][-1]   
 ```
