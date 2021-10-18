@@ -37,3 +37,16 @@ Java-style comments: `//` to the end of line, or `/*.... */` for blocks.
  */
 [1,2,3,4][-1]   
 ```
+
+### Parentheses
+
+Parentheses `( .. )` can be used in expressions as a way to separate different parts of an
+expression. Or, to influence the precedence of the operators.
+
+```js
+(5 - 3) * (4 / 2)
+
+x < 5 and (y > 10 or z > 20)
+
+if (5 < 10) then "low" else "high"
+```  
