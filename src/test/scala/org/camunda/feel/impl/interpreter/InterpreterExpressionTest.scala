@@ -255,4 +255,28 @@ class InterpreterExpressionTest
     }
   }
 
+  "A comment" should "be written as end of line comments //" in {
+    eval(""" [1,2,3][1] // the first item """) should be(ValNumber(1))
+  }
+
+  it should "be written as trailing comments /* .. */" in {
+    eval(""" [1,2,3][1] /* the first item */ """) should be(ValNumber(1))
+  }
+
+  it should "be written as single line comments /* .. */" in {
+    eval("""
+        /* the first item */
+        [1,2,3][1]
+        """) should be(ValNumber(1))
+  }
+
+  it should "be written as block comments /* .. */" in {
+    eval("""
+        /*
+         * the first item
+         */
+        [1,2,3][1]
+        """) should be(ValNumber(1))
+  }
+
 }
