@@ -21,7 +21,9 @@ The following sections cover more general areas that are not restricted to one d
 * [Functions](./feel-functions.md)
 
 ### Comments
-An Expression can contain comments to explain it and give it more context. This can be done using Java-style comments. i.e. '//' to the end of line and '/*.... */'.
+
+An Expression can contain comments to explain it and give it more context. This can be done using
+Java-style comments. i.e. `//` to the end of line and `/*.... */`.
 
 ```js
 // This should return 4
