@@ -34,6 +34,11 @@ class InterpreterLiteralExpressionTest
     eval("2") should be(ValNumber(2))
     eval("2.4") should be(ValNumber(2.4))
     eval("-3") should be(ValNumber(-3))
+    eval("02") should be(ValNumber(2))
+    eval("02.4") should be(ValNumber(2.4))
+    eval("-03") should be(ValNumber(-3))
+    eval("0000002") should be(ValNumber(2))
+
   }
 
   it should "be a string" in {
