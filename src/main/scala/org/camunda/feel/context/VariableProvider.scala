@@ -29,9 +29,7 @@ trait VariableProvider {
   def getVariables: Map[String, Any] =
     keys
       .map(key => key -> getVariable(key).getOrElse(None))
-      .toSeq.reverse
       .toMap
-
 }
 
 object VariableProvider {

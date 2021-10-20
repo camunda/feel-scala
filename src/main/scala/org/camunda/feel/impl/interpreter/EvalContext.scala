@@ -76,7 +76,7 @@ class EvalContext(val valueMapper: ValueMapper,
   def addVariable(key: String, variable: Any): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = VariableProvider.CompositeVariableProvider(
-      List(StaticVariableProvider(Map(key -> variable)), variableProvider)),
+      List(variableProvider, StaticVariableProvider(Map(key -> variable)))),
     functionProvider = functionProvider
   )
 
