@@ -19,9 +19,10 @@ package org.camunda.feel.api
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Configuration, Failure}
 import org.camunda.feel.syntaxtree.ParsedExpression
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ExternalFunctionsConfigurationTest extends FlatSpec with Matchers {
+class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
 
   val defaultEngine = new FeelEngine()
 

@@ -17,8 +17,7 @@
 package org.camunda.feel.impl.script
 
 import javax.script.{ScriptEngine, ScriptEngineFactory}
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 /**
   * @author Philipp Ossler

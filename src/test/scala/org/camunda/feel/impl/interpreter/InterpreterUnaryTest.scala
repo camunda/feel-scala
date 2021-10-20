@@ -18,13 +18,14 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   */
 class InterpreterUnaryTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -441,13 +442,17 @@ class InterpreterUnaryTest
   }
 
   it should "be checked in an every expression" in {
-    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(ValBoolean(false))
-    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(ValBoolean(true))
+    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(
+      ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(
+      ValBoolean(true))
   }
 
   it should "be checked in a some expression" in {
-    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(ValBoolean(false))
-    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(ValBoolean(true))
+    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(
+      ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(
+      ValBoolean(true))
   }
 
   "A context" should "be equal to another context" in {

@@ -20,9 +20,10 @@ import org.camunda.feel.FeelEngine
 import org.camunda.feel.context.Context
 import org.camunda.feel.impl.JavaValueMapper
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class BultinValueMapperOutputTest extends FlatSpec with Matchers {
+class BultinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
   val engine =
     new FeelEngine(null, CompositeValueMapper(List(new JavaValueMapper())))

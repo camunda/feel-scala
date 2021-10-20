@@ -17,12 +17,96 @@
 package org.camunda.feel.impl.interpreter
 
 import java.time.{Duration, Period}
-
 import org.camunda.feel.FeelEngine.UnaryTests
-import org.camunda.feel._
 import org.camunda.feel.context.Context
-import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
+import org.camunda.feel.syntaxtree.{
+  Addition,
+  ArithmeticNegation,
+  AtLeastOne,
+  ClosedIntervalBoundary,
+  Comparison,
+  Conjunction,
+  ConstBool,
+  ConstContext,
+  ConstDate,
+  ConstDateTime,
+  ConstDayTimeDuration,
+  ConstInputValue,
+  ConstList,
+  ConstLocalDateTime,
+  ConstLocalTime,
+  ConstNull,
+  ConstNumber,
+  ConstString,
+  ConstTime,
+  ConstYearMonthDuration,
+  Disjunction,
+  Division,
+  Equal,
+  EveryItem,
+  Exp,
+  Exponentiation,
+  Filter,
+  For,
+  FunctionDefinition,
+  FunctionInvocation,
+  FunctionParameters,
+  GreaterOrEqual,
+  GreaterThan,
+  If,
+  In,
+  InputEqualTo,
+  InputGreaterOrEqual,
+  InputGreaterThan,
+  InputLessOrEqual,
+  InputLessThan,
+  InstanceOf,
+  Interval,
+  JavaFunctionInvocation,
+  LessOrEqual,
+  LessThan,
+  Multiplication,
+  NamedFunctionParameters,
+  Not,
+  OpenIntervalBoundary,
+  PathExpression,
+  PositionalFunctionParameters,
+  QualifiedFunctionInvocation,
+  Range,
+  Ref,
+  SomeItem,
+  Subtraction,
+  UnaryTestExpression,
+  Val,
+  ValBoolean,
+  ValContext,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValError,
+  ValFunction,
+  ValList,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNull,
+  ValNumber,
+  ValString,
+  ValTime,
+  ValYearMonthDuration,
+  ZonedTime
+}
+import org.camunda.feel.{
+  Date,
+  DateTime,
+  DayTimeDuration,
+  LocalDateTime,
+  LocalTime,
+  Number,
+  Time,
+  YearMonthDuration,
+  logger
+}
 
 /**
   * @author Philipp Ossler
@@ -226,7 +310,7 @@ class FeelInterpreter {
                               resultMapping: List[R] => Val): Val = {
 
     foldEither[T, List[R]](List(), it, {
-      case (xs, x) => f(x).right.map(xs :+ _)
+      case (xs, x) => f(x).map(xs :+ _)
     }, resultMapping)
   }
 
@@ -236,7 +320,7 @@ class FeelInterpreter {
                                resultMapping: R => Val): Val = {
 
     val result = it.foldLeft[Either[ValError, R]](Right(start)) { (result, x) =>
-      result.right.flatMap(xs => op(xs, x))
+      result.flatMap(xs => op(xs, x))
     }
 
     result match {

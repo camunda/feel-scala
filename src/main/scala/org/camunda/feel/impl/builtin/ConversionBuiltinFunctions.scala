@@ -1,12 +1,22 @@
 package org.camunda.feel.impl.builtin
 
-import java.math.BigDecimal
-import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
-import java.util.regex.Pattern
-
-import org.camunda.feel._
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValError,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNull,
+  ValNumber,
+  ValString,
+  ValTime,
+  ValYearMonthDuration,
+  ZonedTime
+}
 import org.camunda.feel.{
   Date,
   YearMonthDuration,
@@ -20,9 +30,19 @@ import org.camunda.feel.{
   isYearMonthDuration,
   localDateTimeFormatter,
   localTimeFormatter,
-  logger
+  logger,
+  stringToDate,
+  stringToDateTime,
+  stringToDayTimeDuration,
+  stringToLocalDateTime,
+  stringToLocalTime,
+  stringToNumber,
+  stringToYearMonthDuration
 }
 
+import java.math.BigDecimal
+import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
+import java.util.regex.Pattern
 import scala.util.Try
 
 object ConversionBuiltinFunctions {

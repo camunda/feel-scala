@@ -2,7 +2,14 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.Number
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValError,
+  ValNull,
+  ValNumber,
+  ValString
+}
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -10,15 +17,20 @@ object NumericBuiltinFunctions {
 
   def functions = Map(
     "decimal" -> List(decimalFunction, decimalFunction3),
-    "floor" -> List(floorFunction),
-    "ceiling" -> List(ceilingFunction),
-    "abs" -> List(absFunction(paramName = "number"), absFunction(paramName = "n")),
+    "floor" -> List(floorFunction, floorFunction2),
+    "ceiling" -> List(ceilingFunction, ceilingFunction2),
+    "abs" -> List(absFunction(paramName = "number"),
+                  absFunction(paramName = "n")),
     "modulo" -> List(moduloFunction),
     "sqrt" -> List(sqrtFunction),
     "log" -> List(logFunction),
     "exp" -> List(expFunction),
     "odd" -> List(oddFunction),
-    "even" -> List(evenFunction)
+    "even" -> List(evenFunction),
+    "round up" -> List(roundUpFunction),
+    "round down" -> List(roundDownFunction),
+    "round half up" -> List(roundHalfUpFunction),
+    "round half down" -> List(roundHalfDownFunction)
   )
 
   private def decimalFunction = builtinFunction(
@@ -44,6 +56,18 @@ object NumericBuiltinFunctions {
       }
     }
   )
+
+  private def floorFunction2 =
+    builtinFunction(params = List("n", "scala"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.FLOOR)
+    })
+
+  private def ceilingFunction2 =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.CEILING)
+    })
 
   private def floorFunction =
     builtinFunction(params = List("n"), invoke = {
@@ -108,4 +132,27 @@ object NumericBuiltinFunctions {
       case List(ValNumber(n)) => ValBoolean(n % 2 == 0)
     })
 
+  private def roundUpFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.UP)
+    })
+
+  private def roundDownFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.DOWN)
+    })
+
+  private def roundHalfUpFunction =
+    builtinFunction(params = List("n", "scale"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.HALF_UP)
+    })
+
+  private def roundHalfDownFunction =
+    builtinFunction(params = List("n", "scala"), invoke = {
+      case List(ValNumber(n), ValNumber(scale)) =>
+        round(n, scale, RoundingMode.HALF_DOWN)
+    })
 }

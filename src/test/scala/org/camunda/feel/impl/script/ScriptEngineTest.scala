@@ -18,18 +18,16 @@ package org.camunda.feel.impl.script
 
 import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import javax.script.ScriptContext
 import javax.script.SimpleScriptContext
-import javax.script.Bindings
 import javax.script.ScriptException
-import org.camunda.feel.syntaxtree.ValDateTime
 
 /**
   * @author Philipp Ossler
   */
-class ScriptEngineTest extends FlatSpec with Matchers {
+class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
   val scriptEngine = new FeelExpressionScriptEngine(new FeelScriptEngineFactory)
 
