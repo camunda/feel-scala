@@ -56,6 +56,8 @@ case class ConstList(items: List[Exp]) extends Exp
 
 case class ConstContext(entries: List[(String, Exp)]) extends Exp
 
+case class ConstRange(start: RangeBoundary, end: RangeBoundary) extends Exp
+
 case class InputLessThan(x: Exp) extends Exp
 
 case class InputLessOrEqual(x: Exp) extends Exp

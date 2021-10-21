@@ -274,7 +274,7 @@ object FeelParser {
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
   private def literal[_: P]: P[Exp] =
-    nullLiteral | boolean | string | number | temporal | list | context
+    nullLiteral | boolean | string | number | temporal | list | context | rangeWBoundary
 
   private def nullLiteral[_: P]: P[Exp] =
     P(
@@ -505,6 +505,32 @@ object FeelParser {
       case (y, "[") => OpenIntervalBoundary(y)
       case (y, "]") => ClosedIntervalBoundary(y)
     }
+
+  private def rangeWBoundary[_: P]: P[Exp] =
+    P(
+      rangeStart ~ ".." ~ rangeEnd
+    ).map {
+      case (start, end) => ConstRange(start, end)
+    }
+
+  private def rangeStart[_: P]: P[RangeBoundary] =
+    P(
+      CharIn("(", "]", "[").! ~ number
+    ).map {
+      case ("(", x) => OpenRangeBoundary(x)
+      case ("]", x) => OpenRangeBoundary(x)
+      case ("[", x) => ClosedRangeBoundary(x)
+    }
+
+  private def rangeEnd[_: P]: P[RangeBoundary] =
+    P(
+      number ~ CharIn(")", "[", "]").!
+    ).map {
+      case (y, ")") => OpenRangeBoundary(y)
+      case (y, "[") => OpenRangeBoundary(y)
+      case (y, "]") => ClosedRangeBoundary(y)
+    }
+
 
   // --------------- temporal parsers ---------------
 
