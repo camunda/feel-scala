@@ -274,7 +274,8 @@ object FeelParser {
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
   private def literal[_: P]: P[Exp] =
-    nullLiteral | boolean | string | number | temporal | list | context | rangeWBoundary
+    nullLiteral | boolean | string | number | temporal | list | context | rangeWBoundary |
+      rangeWBoundaryLess | rangeWBoundaryLessEqual | rangeWBoundaryGrater | rangeWBoundaryGraterEqual
 
   private def nullLiteral[_: P]: P[Exp] =
     P(
@@ -504,6 +505,34 @@ object FeelParser {
       case (y, ")") => OpenIntervalBoundary(y)
       case (y, "[") => OpenIntervalBoundary(y)
       case (y, "]") => ClosedIntervalBoundary(y)
+    }
+
+  private def rangeWBoundaryLessEqual[_: P]: P[Exp] =
+    P(
+      "<=" ~ endpoint
+    ).map { end =>
+      ConstRange(OpenRangeBoundary(ConstNull), ClosedRangeBoundary(end))
+    }
+
+  private def rangeWBoundaryGraterEqual[_: P]: P[Exp] =
+    P(
+      ">=" ~ endpoint
+    ).map { end =>
+      ConstRange(ClosedRangeBoundary(end), OpenRangeBoundary(ConstNull))
+    }
+
+  private def rangeWBoundaryGrater[_: P]: P[Exp] =
+    P(
+      ">" ~ endpoint
+    ).map { end =>
+      ConstRange(OpenRangeBoundary(end), OpenRangeBoundary(ConstNull))
+    }
+
+  private def rangeWBoundaryLess[_: P]: P[Exp] =
+    P(
+      "<" ~ endpoint
+    ).map { end =>
+      ConstRange(OpenRangeBoundary(ConstNull), OpenRangeBoundary(end))
     }
 
   private def rangeWBoundary[_: P]: P[Exp] =
