@@ -59,15 +59,19 @@ class FeelInterpreter {
           ValContext
         )
       case ConstRange(start, end) =>
-        val sNum = eval(start.value) match {
+        val startValue = eval(start.value) match {
           case ValNumber(x) => x
           case ValNull => null
         }
-        val eNum = eval(end.value) match {
+        val endValue = eval(end.value) match {
           case ValNumber(x) => x
           case ValNull => null
         }
-        ValRange(RangeWBoundary(sNum, eNum, start.isInstanceOf[ClosedRangeBoundary], end.isInstanceOf[ClosedRangeBoundary]))
+        ValRange(
+          RangeWBoundary(
+            startValue, endValue, start.isInstanceOf[ClosedRangeBoundary], end.isInstanceOf[ClosedRangeBoundary]
+          )
+        )
 
       // simple unary tests
       case InputEqualTo(x) =>
