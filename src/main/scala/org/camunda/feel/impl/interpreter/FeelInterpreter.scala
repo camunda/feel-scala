@@ -65,7 +65,7 @@ class FeelInterpreter {
         val eNum = eval(end.value) match {
           case ValNumber(x) => x
         }
-        ValRange(ValTmpRange(sNum, eNum, start.isInstanceOf[ClosedRangeBoundary], end.isInstanceOf[ClosedRangeBoundary]))
+        ValRange(RangeWBoundary(sNum, eNum, start.isInstanceOf[ClosedRangeBoundary], end.isInstanceOf[ClosedRangeBoundary]))
 
       // simple unary tests
       case InputEqualTo(x) =>
