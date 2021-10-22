@@ -515,7 +515,7 @@ object FeelParser {
 
   private def rangeStart[_: P]: P[RangeBoundary] =
     P(
-      CharIn("(", "]", "[").! ~ number
+      CharIn("(", "]", "[").! ~ endpoint
     ).map {
       case ("(", x) => OpenRangeBoundary(x)
       case ("]", x) => OpenRangeBoundary(x)
@@ -524,7 +524,7 @@ object FeelParser {
 
   private def rangeEnd[_: P]: P[RangeBoundary] =
     P(
-      number ~ CharIn(")", "[", "]").!
+      endpoint ~ CharIn(")", "[", "]").!
     ).map {
       case (y, ")") => OpenRangeBoundary(y)
       case (y, "[") => OpenRangeBoundary(y)

@@ -5,8 +5,18 @@ import org.camunda.feel.syntaxtree.{ValBoolean, ValNumber, ValRange}
 
 object RangeBuiltinFunction {
   def functions = Map(
-    "before" -> List(beforeFunction),
-    "after" -> List(afterFunction),
+    "before" -> List(
+      beforeFunction(List("point1", "point2")),
+      beforeFunction(List("point","range")),
+      beforeFunction(List("range", "point")),
+      beforeFunction(List("range1", "range2"))
+    ),
+    "after" -> List(
+      afterFunction(List("point1", "point2")),
+      afterFunction(List("point", "range")),
+      afterFunction(List("range", "point")),
+      afterFunction(List("range1","range2"))
+    ),
     "meets" -> List(),
     "met by" -> List(),
     "overlaps before" -> List(),
@@ -20,19 +30,19 @@ object RangeBuiltinFunction {
     "coincides" -> List()
   )
 
-  private def beforeFunction =
-    builtinFunction(params = List("valOne", "valTwo"), invoke = {
-      case List(ValNumber(valOne), ValNumber(valTwo)) => ValBoolean(valOne < valTwo)
-      case List(ValNumber(valOne), ValRange(valTwo)) => ValBoolean(valOne.toInt < valTwo.start || (valOne.toInt == valTwo.start & !valTwo.startIncl))
-      case List(ValRange(valOne), ValNumber(valTwo)) => ValBoolean(valOne.end < valTwo.toInt || (valOne.end == valTwo.toInt & !valOne.endIncl))
-      case List(ValRange(valOne), ValRange(valTwo)) => ValBoolean(valOne.end < valTwo.start || (!valOne.endIncl | !valTwo.startIncl) & valOne.end == valTwo.start)
+  private def beforeFunction(params: List[String]) =
+    builtinFunction(params = params, invoke = {
+      case List(ValNumber(point1), ValNumber(point2)) => ValBoolean(point1 < point2)
+      case List(ValNumber(point), ValRange(range)) => ValBoolean(point.toInt < range.start || (point.toInt == range.start & !range.startIncl))
+      case List(ValRange(range), ValNumber(point)) => ValBoolean(range.end < point.toInt || (range.end == point.toInt & !range.endIncl))
+      case List(ValRange(range1), ValRange(range2)) => ValBoolean(range1.end < range2.start || (!range1.endIncl | !range2.startIncl) & range1.end == range2.start)
     })
 
-  private def afterFunction =
-    builtinFunction(params = List("valOne", "valTwo"), invoke = {
-      case List(ValNumber(valOne), ValNumber(valTwo)) => ValBoolean(valOne > valTwo)
-      case List(ValNumber(valOne), ValRange(valTwo)) => ValBoolean(valOne.toInt > valTwo.end || (valOne.toInt == valTwo.end & !valTwo.endIncl))
-      case List(ValRange(valOne), ValNumber(valTwo)) => ValBoolean(valOne.start > valTwo.toInt || (valOne.start == valTwo.toInt & !valOne.startIncl))
-      case List(ValRange(valOne), ValRange(valTwo)) => ValBoolean(valOne.start > valTwo.end || ((!valOne.startIncl | !valTwo.endIncl) & valOne.start == valTwo.end))
+  private def afterFunction(params: List[String]) =
+    builtinFunction(params = params, invoke = {
+      case List(ValNumber(point1), ValNumber(point2)) => ValBoolean(point1 > point2)
+      case List(ValNumber(point), ValRange(range)) => ValBoolean(point.toInt > range.end || (point.toInt == range.end & !range.endIncl))
+      case List(ValRange(range), ValNumber(point)) => ValBoolean(range.start > point.toInt || (range.start == point.toInt & !range.startIncl))
+      case List(ValRange(range1), ValRange(range2)) => ValBoolean(range1.start > range2.end || ((!range1.startIncl | !range2.endIncl) & range1.start == range2.end))
     })
 }
