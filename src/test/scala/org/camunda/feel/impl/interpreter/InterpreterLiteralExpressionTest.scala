@@ -101,21 +101,13 @@ class InterpreterLiteralExpressionTest
   }
 
   it should "be a range with boundary" in {
-    eval("[1..3]") should be(ValRange(RangeWBoundary(ValNumber(1).value,ValNumber(3).value, true, true)))
+    eval("[1..3]") should be(ValRange(RangeWithBoundaries(ValNumber(1).value,ValNumber(3).value, true, true)))
 
-    eval("(1..3]") should be(ValRange(RangeWBoundary(ValNumber(1).value, ValNumber(3).value, false, true)))
+    eval("(1..3]") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, false, true)))
 
-    eval("(1..3)") should be(ValRange(RangeWBoundary(ValNumber(1).value, ValNumber(3).value, false, false)))
+    eval("(1..3)") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, false, false)))
 
-    eval("[1..3)") should be(ValRange(RangeWBoundary(ValNumber(1).value, ValNumber(3).value, true, false)))
-
-    eval("< 10") should be(ValRange(RangeWBoundary(null, ValNumber(10).value, false, false)))
-
-    eval("<= 10") should be(ValRange(RangeWBoundary(null, ValNumber(10).value, false, true)))
-
-    eval(">= 10") should be(ValRange(RangeWBoundary(ValNumber(10).value, null, true, false)))
-
-    eval("> 10") should be(ValRange(RangeWBoundary(ValNumber(10).value, null, false, false)))
+    eval("[1..3)") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, true, false)))
   }
 
 }

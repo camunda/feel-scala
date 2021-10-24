@@ -274,8 +274,7 @@ object FeelParser {
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
   private def literal[_: P]: P[Exp] =
-    nullLiteral | boolean | string | number | temporal | list | context | rangeWBoundary |
-      rangeWBoundaryLess | rangeWBoundaryLessEqual | rangeWBoundaryGrater | rangeWBoundaryGraterEqual
+    nullLiteral | boolean | string | number | temporal | list | context | rangeBoundary
 
   private def nullLiteral[_: P]: P[Exp] =
     P(
@@ -507,35 +506,7 @@ object FeelParser {
       case (y, "]") => ClosedIntervalBoundary(y)
     }
 
-  private def rangeWBoundaryLessEqual[_: P]: P[Exp] =
-    P(
-      "<=" ~ endpoint
-    ).map { end =>
-      ConstRange(OpenRangeBoundary(ConstNull), ClosedRangeBoundary(end))
-    }
-
-  private def rangeWBoundaryGraterEqual[_: P]: P[Exp] =
-    P(
-      ">=" ~ endpoint
-    ).map { end =>
-      ConstRange(ClosedRangeBoundary(end), OpenRangeBoundary(ConstNull))
-    }
-
-  private def rangeWBoundaryGrater[_: P]: P[Exp] =
-    P(
-      ">" ~ endpoint
-    ).map { end =>
-      ConstRange(OpenRangeBoundary(end), OpenRangeBoundary(ConstNull))
-    }
-
-  private def rangeWBoundaryLess[_: P]: P[Exp] =
-    P(
-      "<" ~ endpoint
-    ).map { end =>
-      ConstRange(OpenRangeBoundary(ConstNull), OpenRangeBoundary(end))
-    }
-
-  private def rangeWBoundary[_: P]: P[Exp] =
+  private def rangeBoundary[_: P]: P[Exp] =
     P(
       rangeStart ~ ".." ~ rangeEnd
     ).map {
@@ -544,7 +515,7 @@ object FeelParser {
 
   private def rangeStart[_: P]: P[RangeBoundary] =
     P(
-      CharIn("(", "]", "[").! ~ endpoint
+      CharIn("(", "]", "[").! ~ expLvl4
     ).map {
       case ("(", x) => OpenRangeBoundary(x)
       case ("]", x) => OpenRangeBoundary(x)
@@ -553,7 +524,7 @@ object FeelParser {
 
   private def rangeEnd[_: P]: P[RangeBoundary] =
     P(
-      endpoint ~ CharIn(")", "[", "]").!
+      expLvl4 ~ CharIn(")", "[", "]").!
     ).map {
       case (y, ")") => OpenRangeBoundary(y)
       case (y, "[") => OpenRangeBoundary(y)

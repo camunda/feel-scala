@@ -201,5 +201,4 @@ case class ValContext(context: Context) extends Val
 
 case class ValList(items: List[Val]) extends Val
 
-case class RangeWBoundary(start: Number, end: Number, startIncl: Boolean, endIncl: Boolean)
-case class ValRange(range: RangeWBoundary) extends Val
+case class ValRange(range: RangeWithBoundaries) extends Val
