@@ -8,5 +8,8 @@ sealed trait RangeBoundaries {
   def endIncl: ClosedBoundary
 }
 
-case class RangeWithBoundaries(start: Number, end: Number,
-                               startIncl: ClosedBoundary, endIncl: ClosedBoundary) extends RangeBoundaries
+case class RangeWithBoundaries(start: Number,
+                               end: Number,
+                               startIncl: ClosedBoundary,
+                               endIncl: ClosedBoundary)
+    extends RangeBoundaries

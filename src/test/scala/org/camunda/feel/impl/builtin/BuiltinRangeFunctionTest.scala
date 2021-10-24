@@ -5,9 +5,9 @@ import org.camunda.feel.syntaxtree.ValBoolean
 import org.scalatest.{FlatSpec, Matchers}
 
 class BuiltinRangeFunctionTest
-  extends FlatSpec
-  with Matchers
-  with FeelIntegrationTest {
+    extends FlatSpec
+    with Matchers
+    with FeelIntegrationTest {
 
   "A before() function" should "return true when a low number is entered before a high number" in {
 

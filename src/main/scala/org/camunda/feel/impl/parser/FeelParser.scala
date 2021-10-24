@@ -531,7 +531,6 @@ object FeelParser {
       case (y, "]") => ClosedRangeBoundary(y)
     }
 
-
   // --------------- temporal parsers ---------------
 
   private def parseDate(d: String): Exp = {

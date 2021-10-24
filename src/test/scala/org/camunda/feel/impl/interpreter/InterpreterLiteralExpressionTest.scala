@@ -83,9 +83,11 @@ class InterpreterLiteralExpressionTest
   it should "be a context (string as key)" in {
     val result = eval(""" {"a":1} """)
 
-    result shouldBe a [ValContext]
+    result shouldBe a[ValContext]
     result match {
-      case ValContext(context) => context.variableProvider.getVariables should be(Map("a" -> ValNumber(1)))
+      case ValContext(context) =>
+        context.variableProvider.getVariables should be(
+          Map("a" -> ValNumber(1)))
     }
   }
 
@@ -101,13 +103,21 @@ class InterpreterLiteralExpressionTest
   }
 
   it should "be a range with boundary" in {
-    eval("[1..3]") should be(ValRange(RangeWithBoundaries(ValNumber(1).value,ValNumber(3).value, true, true)))
+    eval("[1..3]") should be(ValRange(
+      RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, true, true)))
 
-    eval("(1..3]") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, false, true)))
+    eval("(1..3]") should be(ValRange(
+      RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, false, true)))
 
-    eval("(1..3)") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, false, false)))
+    eval("(1..3)") should be(
+      ValRange(
+        RangeWithBoundaries(ValNumber(1).value,
+                            ValNumber(3).value,
+                            false,
+                            false)))
 
-    eval("[1..3)") should be(ValRange(RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, true, false)))
+    eval("[1..3)") should be(ValRange(
+      RangeWithBoundaries(ValNumber(1).value, ValNumber(3).value, true, false)))
   }
 
 }
