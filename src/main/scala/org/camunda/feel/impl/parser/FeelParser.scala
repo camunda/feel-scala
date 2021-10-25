@@ -365,7 +365,7 @@ object FeelParser {
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
 
   private def literal[_: P]: P[Exp] =
-    nullLiteral | boolean | string | number | temporal | list | context | rangeBoundary
+    nullLiteral | boolean | string | number | temporal | list | context
 
   private def nullLiteral[_: P]: P[Exp] =
     P(
@@ -501,12 +501,12 @@ object FeelParser {
 
   private def namedParameters[_: P]: P[NamedFunctionParameters] =
     P(
-      (parameterName ~ ":" ~ expression).rep(1, sep = ",")
+      (parameterName ~ ":" ~ (rangeBoundary | expression)).rep(1, sep = ",")
     ).map(params => NamedFunctionParameters(params.toMap))
 
   private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
     P(
-      expression.rep(1, sep = ",")
+      (rangeBoundary | expression).rep(1, sep = ",")
     ).map(params => PositionalFunctionParameters(params.toList))
 
   // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
