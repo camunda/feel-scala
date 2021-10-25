@@ -68,6 +68,8 @@ package object feel {
 
   type DayTimeDuration = java.time.Duration
 
+  type ClosedBoundary = Boolean
+
   //// string to type conversions
 
   import scala.language.implicitConversions

@@ -209,3 +209,5 @@ case class ValFunction(params: List[String],
 case class ValContext(context: Context) extends Val
 
 case class ValList(items: List[Val]) extends Val
+
+case class ValRange(range: RangeWithBoundaries) extends Val
