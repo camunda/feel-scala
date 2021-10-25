@@ -18,14 +18,15 @@ package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
-import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.syntaxtree.ParsedExpression
-import org.scalatest.{EitherValues, FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.{EitherValues}
 
 /**
   * @author Philipp Ossler
   */
-class FeelEngineTest extends FlatSpec with Matchers with EitherValues {
+class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
   val engine = new FeelEngine
 
@@ -94,7 +95,7 @@ class FeelEngineTest extends FlatSpec with Matchers with EitherValues {
     val expr = engine.parseExpression("x + 1")
 
     expr shouldBe a[Right[_, ParsedExpression]]
-    engine.eval(expr.right.get, Map("x" -> 3)) should be(Right(4))
+    engine.eval(expr.value, Map("x" -> 3)) should be(Right(4))
   }
 
   it should "fail to parse an expression 'x+'" in {
@@ -106,7 +107,7 @@ class FeelEngineTest extends FlatSpec with Matchers with EitherValues {
     val expr = engine.parseUnaryTests("< 3")
 
     expr shouldBe a[Right[_, ParsedExpression]]
-    engine.eval(expr.right.get, Map(UnaryTests.defaultInputVariable -> 2)) should be(
+    engine.eval(expr.value, Map(UnaryTests.defaultInputVariable -> 2)) should be(
       Right(true))
   }
 

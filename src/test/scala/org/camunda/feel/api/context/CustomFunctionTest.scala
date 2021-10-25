@@ -19,9 +19,10 @@ package org.camunda.feel.api.context
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.context.{CustomFunctionProvider, FunctionProvider}
 import org.camunda.feel.syntaxtree.{ValFunction, ValNumber}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CustomFunctionTest extends FlatSpec with Matchers {
+class CustomFunctionTest extends AnyFlatSpec with Matchers {
 
   val functionProviderFoo = new TestFunctionProvider(
     functions = Map(

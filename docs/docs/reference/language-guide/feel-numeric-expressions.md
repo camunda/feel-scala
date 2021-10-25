@@ -5,7 +5,7 @@ title: Numeric Expressions
 
 ### Literal
 
-Creates a new numeric value.
+Creates a new numeric value. Leading zeros are valid.
 
 ```js
 1
@@ -14,6 +14,10 @@ Creates a new numeric value.
 .5
 
 -2 
+
+01
+
+-0002
 ```
 
 ### Addition
@@ -50,3 +54,4 @@ Creates a new numeric value.
 2 ** 3   
 // 8
 ```
+

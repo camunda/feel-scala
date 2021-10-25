@@ -23,13 +23,14 @@ import org.camunda.feel.context.Context
 import org.camunda.feel.impl._
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   * @author Falko Menge
   */
-class DefaultValueMapperTest extends FlatSpec with Matchers {
+class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
   implicit val valueMapper: ValueMapper =
     ValueMapper.CompositeValueMapper(List(DefaultValueMapper.instance))

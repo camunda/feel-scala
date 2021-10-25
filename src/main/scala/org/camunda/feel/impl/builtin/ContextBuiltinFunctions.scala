@@ -3,7 +3,14 @@ package org.camunda.feel.impl.builtin
 import org.camunda.feel.context.Context
 import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValContext,
+  ValError,
+  ValList,
+  ValNull,
+  ValString
+}
 
 object ContextBuiltinFunctions {
 

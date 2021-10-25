@@ -18,9 +18,13 @@ package org.camunda.feel.examples
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class SpecExampleTest extends FlatSpec with Matchers with FeelIntegrationTest {
+class SpecExampleTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelIntegrationTest {
 
   val context: Val = eval(
     """

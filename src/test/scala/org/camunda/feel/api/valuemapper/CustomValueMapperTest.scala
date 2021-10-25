@@ -21,9 +21,10 @@ import org.camunda.feel.context.{Context, CustomContext, VariableProvider}
 import org.camunda.feel.impl._
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CustomValueMapperTest extends FlatSpec with Matchers {
+class CustomValueMapperTest extends AnyFlatSpec with Matchers {
 
   trait Enum {
     def items: Seq[Enumerated]

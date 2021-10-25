@@ -17,7 +17,41 @@
 package org.camunda.feel.impl.parser
 
 import org.camunda.feel.FeelEngine.Failure
-import org.camunda.feel.syntaxtree.{Comparison, _}
+import org.camunda.feel.syntaxtree.{
+  Addition,
+  ArithmeticNegation,
+  AtLeastOne,
+  Comparison,
+  Conjunction,
+  ConstContext,
+  ConstList,
+  Disjunction,
+  Division,
+  EveryItem,
+  Exp,
+  Exponentiation,
+  Filter,
+  For,
+  FunctionDefinition,
+  If,
+  In,
+  InputEqualTo,
+  InputGreaterOrEqual,
+  InputGreaterThan,
+  InputLessOrEqual,
+  InputLessThan,
+  InstanceOf,
+  Interval,
+  JavaFunctionInvocation,
+  Multiplication,
+  Not,
+  PathExpression,
+  QualifiedFunctionInvocation,
+  Range,
+  SomeItem,
+  Subtraction,
+  UnaryTestExpression
+}
 
 class ExpressionValidator(externalFunctionsEnabled: Boolean) {
 
