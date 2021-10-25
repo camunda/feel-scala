@@ -25,7 +25,8 @@ import org.camunda.feel.impl.builtin.{
   ListBuiltinFunctions,
   NumericBuiltinFunctions,
   StringBuiltinFunctions,
-  TemporalBuiltinFunctions
+  TemporalBuiltinFunctions,
+  RangeBuiltinFunction
 }
 import org.camunda.feel.syntaxtree.ValFunction
 
@@ -43,6 +44,7 @@ class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
       ListBuiltinFunctions.functions ++
       NumericBuiltinFunctions.functions ++
       ContextBuiltinFunctions.functions ++
+      RangeBuiltinFunction.functions ++
       new TemporalBuiltinFunctions(clock).functions
 
 }

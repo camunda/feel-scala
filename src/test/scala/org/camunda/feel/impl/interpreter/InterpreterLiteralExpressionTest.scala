@@ -107,5 +107,4 @@ class InterpreterLiteralExpressionTest
     eval("[ [1], [2] ]") should be(
       ValList(List(ValList(List(ValNumber(1))), ValList(List(ValNumber(2))))))
   }
-
 }

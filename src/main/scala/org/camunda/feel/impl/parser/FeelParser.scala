@@ -39,6 +39,7 @@ import org.camunda.feel.syntaxtree.{
   ArithmeticNegation,
   AtLeastOne,
   ClosedIntervalBoundary,
+  ClosedRangeBoundary,
   Conjunction,
   ConstBool,
   ConstContext,
@@ -51,6 +52,7 @@ import org.camunda.feel.syntaxtree.{
   ConstLocalTime,
   ConstNull,
   ConstNumber,
+  ConstRange,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -84,10 +86,12 @@ import org.camunda.feel.syntaxtree.{
   NamedFunctionParameters,
   Not,
   OpenIntervalBoundary,
+  OpenRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
   Range,
+  RangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -497,12 +501,12 @@ object FeelParser {
 
   private def namedParameters[_: P]: P[NamedFunctionParameters] =
     P(
-      (parameterName ~ ":" ~ expression).rep(1, sep = ",")
+      (parameterName ~ ":" ~ (rangeBoundary | expression)).rep(1, sep = ",")
     ).map(params => NamedFunctionParameters(params.toMap))
 
   private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
     P(
-      expression.rep(1, sep = ",")
+      (rangeBoundary | expression).rep(1, sep = ",")
     ).map(params => PositionalFunctionParameters(params.toList))
 
   // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
@@ -591,6 +595,31 @@ object FeelParser {
       case (y, ")") => OpenIntervalBoundary(y)
       case (y, "[") => OpenIntervalBoundary(y)
       case (y, "]") => ClosedIntervalBoundary(y)
+    }
+
+  private def rangeBoundary[_: P]: P[Exp] =
+    P(
+      rangeStart ~ ".." ~ rangeEnd
+    ).map {
+      case (start, end) => ConstRange(start, end)
+    }
+
+  private def rangeStart[_: P]: P[RangeBoundary] =
+    P(
+      CharIn("(", "]", "[").! ~ expLvl4
+    ).map {
+      case ("(", x) => OpenRangeBoundary(x)
+      case ("]", x) => OpenRangeBoundary(x)
+      case ("[", x) => ClosedRangeBoundary(x)
+    }
+
+  private def rangeEnd[_: P]: P[RangeBoundary] =
+    P(
+      expLvl4 ~ CharIn(")", "[", "]").!
+    ).map {
+      case (y, ")") => OpenRangeBoundary(y)
+      case (y, "[") => OpenRangeBoundary(y)
+      case (y, "]") => ClosedRangeBoundary(y)
     }
 
   // --------------- temporal parsers ---------------

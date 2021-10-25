@@ -25,6 +25,7 @@ import org.camunda.feel.syntaxtree.{
   ArithmeticNegation,
   AtLeastOne,
   ClosedIntervalBoundary,
+  ClosedRangeBoundary,
   Comparison,
   Conjunction,
   ConstBool,
@@ -38,6 +39,7 @@ import org.camunda.feel.syntaxtree.{
   ConstLocalTime,
   ConstNull,
   ConstNumber,
+  ConstRange,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -74,6 +76,7 @@ import org.camunda.feel.syntaxtree.{
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
   Range,
+  RangeWithBoundaries,
   Ref,
   SomeItem,
   Subtraction,
@@ -91,10 +94,11 @@ import org.camunda.feel.syntaxtree.{
   ValLocalTime,
   ValNull,
   ValNumber,
+  ValRange,
   ValString,
   ValTime,
   ValYearMonthDuration,
-  ZonedTime
+  ZonedTime,
 }
 import org.camunda.feel.{
   Date,
@@ -141,6 +145,20 @@ class FeelInterpreter {
               eval(value)(context + ctx).toEither.map(v => ctx + (key -> v))
           },
           ValContext
+        )
+      case ConstRange(start, end) =>
+        withNumbers(
+          eval(start.value),
+          eval(end.value),
+          (startValue, endValue) =>
+            ValRange(
+              RangeWithBoundaries(
+                startValue,
+                endValue,
+                start.isInstanceOf[ClosedRangeBoundary],
+                end.isInstanceOf[ClosedRangeBoundary]
+              )
+          )
         )
 
       // simple unary tests
