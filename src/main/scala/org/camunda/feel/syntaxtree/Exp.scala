@@ -16,7 +16,16 @@
  */
 package org.camunda.feel.syntaxtree
 
-import org.camunda.feel._
+import org.camunda.feel.{
+  Date,
+  DateTime,
+  DayTimeDuration,
+  LocalDateTime,
+  LocalTime,
+  Number,
+  Time,
+  YearMonthDuration
+}
 
 /**
   * @author Philipp Ossler

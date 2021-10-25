@@ -18,13 +18,14 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   */
 class InterpreterLiteralExpressionTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -33,6 +34,11 @@ class InterpreterLiteralExpressionTest
     eval("2") should be(ValNumber(2))
     eval("2.4") should be(ValNumber(2.4))
     eval("-3") should be(ValNumber(-3))
+    eval("02") should be(ValNumber(2))
+    eval("02.4") should be(ValNumber(2.4))
+    eval("-03") should be(ValNumber(-3))
+    eval("0000002") should be(ValNumber(2))
+
   }
 
   it should "be a string" in {

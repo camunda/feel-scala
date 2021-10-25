@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import org.camunda.feel._
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
@@ -28,7 +28,7 @@ import scala.math.BigDecimal.int2bigDecimal
   * @author Philipp
   */
 class BuiltinListFunctionsTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -306,6 +306,24 @@ class BuiltinListFunctionsTest
 
     eval(" product([2,3,4]) ") should be(ValNumber(24))
     eval(" product(2,3,4) ") should be(ValNumber(24))
+  }
+
+  "A joining function" should "return an empty string if the input list is empty" in {
+    eval(" joining([]) ") should be(ValString(""))
+  }
+
+  it should "return joined strings" in {
+    eval(""" joining(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
+  }
+
+  it should "return joined strings with custom separator" in {
+    eval(""" joining(["foo","bar","baz"], "::") """) should be(
+      ValString("foo::bar::baz"))
+  }
+
+  it should "return joined strings with custom separator, a prefix and a suffix" in {
+    eval(""" joining(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
+      ValString("hello-foo::bar::baz-goodbye"))
   }
 
 }

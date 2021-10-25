@@ -18,9 +18,10 @@ package org.camunda.feel.api.context
 
 import org.camunda.feel.context.Context.EmptyContext
 import org.camunda.feel.context.SimpleTestJavaFunctionProvider
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class JavaCustomFunctionTest extends FlatSpec with Matchers {
+class JavaCustomFunctionTest extends AnyFlatSpec with Matchers {
 
   val engine =
     new org.camunda.feel.FeelEngine(new SimpleTestJavaFunctionProvider())

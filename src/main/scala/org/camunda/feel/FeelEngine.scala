@@ -16,6 +16,7 @@
  */
 package org.camunda.feel
 
+import fastparse.Parsed
 import org.camunda.feel.FeelEngine.{
   Configuration,
   EvalExpressionResult,
@@ -28,15 +29,12 @@ import org.camunda.feel.impl.interpreter.{
   EvalContext,
   FeelInterpreter
 }
-import org.camunda.feel.impl.parser.FeelParser._
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
-import scala.collection.JavaConverters._
-import fastparse._
-
+import scala.jdk.CollectionConverters.MapHasAsScala
 import scala.util.Try
 object FeelEngine {
 

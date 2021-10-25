@@ -16,8 +16,9 @@
  */
 package org.camunda.feel.impl.script
 
-import javax.script._
 import org.camunda.feel.impl.parser.FeelParser
+
+import javax.script.ScriptEngineFactory
 
 class FeelUnaryTestsScriptEngine(val factory: ScriptEngineFactory)
     extends FeelScriptEngine {

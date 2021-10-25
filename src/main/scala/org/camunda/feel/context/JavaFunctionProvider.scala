@@ -17,10 +17,12 @@
 package org.camunda.feel.context
 
 import java.util.{Collections, Optional}
-
 import org.camunda.feel.syntaxtree.{Val, ValFunction}
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.{
+  CollectionHasAsScala,
+  ListHasAsScala,
+  SeqHasAsJava
+}
 
 /**
   * Provides one or more functions which can be used in an expression.

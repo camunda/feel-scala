@@ -20,10 +20,12 @@ import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree.{ValDate, ValDateTime, ValNumber, ValString}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 class BuiltinTemporalFunctionsTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest
     with BeforeAndAfter {

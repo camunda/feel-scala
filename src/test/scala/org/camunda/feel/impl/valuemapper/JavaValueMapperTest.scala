@@ -20,9 +20,10 @@ import org.camunda.feel.context.Context
 import org.camunda.feel.impl.{DefaultValueMapper, JavaValueMapper}
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class JavaValueMapperTest extends FlatSpec with Matchers {
+class JavaValueMapperTest extends AnyFlatSpec with Matchers {
 
   val valueMapper =
     ValueMapper.CompositeValueMapper(

@@ -16,13 +16,13 @@
  */
 package org.camunda.feel.impl.script
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * @author Philipp Ossler
   */
-class ScriptEngineFactoryTest extends FlatSpec with Matchers {
+class ScriptEngineFactoryTest extends AnyFlatSpec with Matchers {
 
   val scriptEngineFactory = new FeelScriptEngineFactory
 

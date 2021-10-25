@@ -16,15 +16,15 @@
  */
 package org.camunda.feel.impl.script
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import javax.script.ScriptEngineManager
 import scala.collection.JavaConverters._
 
 /**
   * @author Philipp Ossler
   */
-class ScriptEngineManagerTest extends FlatSpec with Matchers {
+class ScriptEngineManagerTest extends AnyFlatSpec with Matchers {
 
   val scriptEngineManager = new ScriptEngineManager
 

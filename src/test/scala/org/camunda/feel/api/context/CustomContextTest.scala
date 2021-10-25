@@ -25,9 +25,10 @@ import org.camunda.feel.context.{
 }
 import org.camunda.feel.context.VariableProvider.StaticVariableProvider
 import org.camunda.feel.syntaxtree._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CustomContextTest extends FlatSpec with Matchers {
+class CustomContextTest extends AnyFlatSpec with Matchers {
 
   val engine = new FeelEngine
 

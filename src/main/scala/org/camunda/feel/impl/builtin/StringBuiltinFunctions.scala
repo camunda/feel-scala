@@ -1,8 +1,13 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
-import scala.collection.mutable.ListBuffer
+import org.camunda.feel.syntaxtree.{
+  ValBoolean,
+  ValError,
+  ValList,
+  ValNumber,
+  ValString
+}
 
 import java.util.regex.Pattern
 import scala.util.Try
