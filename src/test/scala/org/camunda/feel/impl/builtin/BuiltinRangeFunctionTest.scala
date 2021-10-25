@@ -75,6 +75,26 @@ class BuiltinRangeFunctionTest
     eval(" before([1..10], 20)") should be(ValBoolean(true))
   }
 
+  it should "return false when a number is not in range and after in value with variables" in {
+
+    eval(" before(point:11, range:[5..10])") should be(ValBoolean(false))
+  }
+
+  it should "return true when range end is included and range start is not included using variables for range" in {
+
+    eval(" before(range1:[1..10], range2:(10..20])") should be(ValBoolean(true))
+  }
+
+  it should "return false when a high number is entered before a low number with variables" in {
+
+    eval(" before(point1:10, point2:1)") should be(ValBoolean(false))
+  }
+
+  it should "return true when a high number is entered before a low number with variables" in {
+
+    eval(" before(point1:1, point2:10)") should be(ValBoolean(true))
+  }
+
   "An after() function" should "return true when a low is entered after a high number" in {
 
     eval(" after(10, 5) ") should be(ValBoolean(true))
