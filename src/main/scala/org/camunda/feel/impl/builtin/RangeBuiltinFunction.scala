@@ -17,8 +17,9 @@ object RangeBuiltinFunction {
       afterFunction(List("range", "point")),
       afterFunction(List("range1", "range2"))
     ),
-    "meets" -> List(),
-    "met by" -> List(),
+    "meets" -> List(meetsFunction),
+    "met by" -> List(metByFunction),
+    "overlaps" -> List(overlapsFunction),
     "overlaps before" -> List(),
     "overlaps after" -> List(),
     "finishes" -> List(),
@@ -65,4 +66,41 @@ object RangeBuiltinFunction {
             range1.start > range2.end || ((!range1.startIncl | !range2.endIncl) & range1.start == range2.end))
       }
     )
+
+  private def meetsFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean(range1.endIncl && range2.startIncl && range1.end == range2.start)
+    })
+
+  private def metByFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean(range1.startIncl && range2.endIncl && range1.start == range2.end)
+    })
+
+  private def overlapsFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean((range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) & (range1.start < range2.end | (range1.start == range2.end & range1.startIncl & range2.endIncl)))
+    })
+
+  private def overlapsBeforeFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean(true)
+    })
+
+  private def overlapsAfterFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean(false)
+    })
+
+  private def finishesFunction =
+    builtinFunction(params = List("range1", "range2"), invoke = {
+      case List(ValRange(range1), ValRange(range2)) =>
+        ValBoolean((range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) & (range1.start < range2.end | (range1.start == range2.end & range1.startIncl & range2.endIncl)))
+    })
+
 }
