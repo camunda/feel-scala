@@ -68,28 +68,44 @@ object RangeBuiltinFunction {
     )
 
   private def meetsFunction =
-    builtinFunction(params = List("range1", "range2"), invoke = {
-      case List(ValRange(range1), ValRange(range2)) =>
-        ValBoolean(range1.endIncl && range2.startIncl && range1.end == range2.start)
-    })
+    builtinFunction(
+      params = List("range1", "range2"),
+      invoke = {
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.endIncl && range2.startIncl && range1.end == range2.start)
+      }
+    )
 
   private def metByFunction =
-    builtinFunction(params = List("range1", "range2"), invoke = {
-      case List(ValRange(range1), ValRange(range2)) =>
-        ValBoolean(range1.startIncl && range2.endIncl && range1.start == range2.end)
-    })
+    builtinFunction(
+      params = List("range1", "range2"),
+      invoke = {
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.startIncl && range2.endIncl && range1.start == range2.end)
+      }
+    )
 
   private def overlapsFunction =
-    builtinFunction(params = List("range1", "range2"), invoke = {
-      case List(ValRange(range1), ValRange(range2)) =>
-        ValBoolean((range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) & (range1.start < range2.end | (range1.start == range2.end & range1.startIncl & range2.endIncl)))
-    })
+    builtinFunction(
+      params = List("range1", "range2"),
+      invoke = {
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
+      }
+    )
 
   private def overlapsBeforeFunction =
-    builtinFunction(params = List("range1", "range2"), invoke = {
-      case List(ValRange(range1), ValRange(range2)) =>
-        ValBoolean((range1.start < range2.start || (range1.start == range2.start && range1.startIncl && range2.startIncl )) && (range1.end > range2.end || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl))))
-    })
+    builtinFunction(
+      params = List("range1", "range2"),
+      invoke = {
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && range2.startIncl)) && (range1.end > range2.end || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl))))
+      }
+    )
 
   private def overlapsAfterFunction =
     builtinFunction(params = List("range1", "range2"), invoke = {
@@ -98,9 +114,13 @@ object RangeBuiltinFunction {
     })
 
   private def finishesFunction =
-    builtinFunction(params = List("range1", "range2"), invoke = {
-      case List(ValRange(range1), ValRange(range2)) =>
-        ValBoolean((range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) & (range1.start < range2.end | (range1.start == range2.end & range1.startIncl & range2.endIncl)))
-    })
+    builtinFunction(
+      params = List("range1", "range2"),
+      invoke = {
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.endIncl))) & (range1.start < range2.end | (range1.start == range2.end & range1.startIncl & range2.endIncl)))
+      }
+    )
 
 }
