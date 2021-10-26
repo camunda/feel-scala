@@ -269,4 +269,90 @@ class BuiltinRangeFunctionTest
 
     eval(" overlaps((5..8],[1..5)) ") should be(ValBoolean(false))
   }
+
+  "An overlaps before() function" should "return true when smaller value range1 and higher value range2 overlaps" in {
+
+    eval(" overlaps before([1..5], [3..8]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 has no overlaps to range2" in {
+
+    eval(" overlaps before([1..5],[6..8]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 end and range2 start overlaps and both are included" in {
+
+    eval(" overlaps before([1..5],[5..8]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 end and range2 start overlaps but range2 start not included" in {
+
+    eval(" overlaps before([1..5],(5..8]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when range1 end and range2 start overlaps but range1 end not included" in {
+
+    eval(" overlaps before([1..5),[5..8]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 and range2 are the same except range2 start and range1 end is not included" in {
+
+    eval(" overlaps before([1..5),(1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 and range2 are the same except range2 start is not included" in {
+
+    eval(" overlaps before([1..5],(1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 and range2 are the same except range1 end is not included" in {
+
+    eval(" overlaps before([1..5),[1..5]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when range1 and range2 are the same" in {
+
+    eval(" overlaps before([1..5],[1..5]) ") should be(ValBoolean(false))
+  }
+
+  "An overlaps after() function" should "return true when higher value range1 and higher value range2 overlaps" in {
+
+    eval(" overlaps after([3..8],[1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 has no overlap on range2" in {
+
+    eval(" overlaps after([6..8],[1..5]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 start overlaps range2 end where both is included" in {
+
+    eval(" overlaps after([5..8],[1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 start overlaps range2 end which is not included" in {
+
+    eval(" overlaps after([5..8],[1..5)) ") should be(ValBoolean(false))
+  }
+
+  it should "return ture when range1 start not incl overlaps range2 end not included" in {
+
+    eval(" overlaps after((1..5],[1..5)) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 start not incl. overlaps range2 all included" in {
+
+    eval(" overlaps after((1..5],[1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 all incl. overlaps range2 end not included" in {
+
+    eval(" overlaps after([1..5],[1..5)) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when range1 and range2 are the same" in {
+
+    eval(" overlaps after([1..5],[1..5]) ") should be(ValBoolean(false))
+  }
+
 }
