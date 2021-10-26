@@ -355,4 +355,38 @@ class BuiltinRangeFunctionTest
     eval(" overlaps after([1..5],[1..5]) ") should be(ValBoolean(false))
   }
 
+  "A finishes() function" should "return true when point is equal to range end included" in {
+
+    eval(" finishes(10,[1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when point is same as range end not included" in {
+
+    eval(" finishes(10,[1..10)) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 end is same as range2 end both included" in {
+
+    eval(" finishes([5..10],[1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 end is same as range2 end but range1 end not included" in {
+
+    eval(" finishes([5..10),[1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 end is same as range2 end both not included" in {
+
+    eval(" finishes([5..10),[1..10)) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is same as range2 all included" in {
+
+    eval(" finishes([1..10],[1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is same as range2 but range1 start not included" in {
+
+    eval(" finishes((1..10],[1..10]) ") should be(ValBoolean(true))
+  }
 }
