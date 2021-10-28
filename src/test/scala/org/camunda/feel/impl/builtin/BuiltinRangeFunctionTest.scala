@@ -390,6 +390,56 @@ class BuiltinRangeFunctionTest
     eval(" finishes((1..10],[1..10]) ") should be(ValBoolean(true))
   }
 
+  "A starts() function" should "return true when point is equal to range start" in {
+
+    eval(" starts(1, [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when point is equal to range start not included" in {
+
+    eval(" starts(1, (1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when point is not equal to range start" in {
+
+    eval(" starts(2, [1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 start is equal to range2 start both included" in {
+
+    eval(" starts([1..5], [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 start is equal to range2 start both not included" in {
+
+    eval(" starts((1..5], (1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 start is equal to range2 start but range1 start not included" in {
+
+    eval(" starts((1..5], [1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when range1 start is equal to range2 start which is not included" in {
+
+    eval(" starts([1..5], (1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true range1 is equal to range2" in {
+
+    eval(" starts([1..10], [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is equal to range2 but range1 end not included" in {
+
+    eval(" starts([1..10), [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is equal to range2 where start and end not included" in {
+
+    eval(" starts((1..10), (1..10)) ") should be(ValBoolean(true))
+  }
+
   "A started by() function" should "return true when range start is equal to point" in {
 
     eval(" started by([1..10], 1) ") should be(ValBoolean(true))

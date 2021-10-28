@@ -29,7 +29,10 @@ object RangeBuiltinFunction {
     "finished by" -> List(),
     "includes" -> List(),
     "during" -> List(),
-    "starts" -> List(),
+    "starts" -> List(
+      starts(List("point", "range")),
+      starts(List("range1", "range2"))
+    ),
     "started by" -> List(
       startedBy(List("range", "point")),
       startedBy(List("range1", "range2"))
@@ -135,6 +138,19 @@ object RangeBuiltinFunction {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
             range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl))))
+      }
+    )
+
+  private def starts(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValNumber(point), ValRange(range)) =>
+          ValBoolean(range.start == point && range.startIncl)
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.start == range2.start && range1.startIncl == range2.startIncl && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+          )
       }
     )
 
