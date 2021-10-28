@@ -94,7 +94,7 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range1.end > range2.start || (range1.end == range2.start && (range1.endIncl || range2.startIncl))) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
+            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
       }
     )
 
