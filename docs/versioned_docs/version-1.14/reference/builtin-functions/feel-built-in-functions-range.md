@@ -3,28 +3,70 @@ id: feel-built-in-functions-range
 title: Range Functions
 ---
 
-<!-- ## list contains()
+## before
 
 * parameters:
-  * `list`: list
-  * `element`: any
+  * `range`: range
+  * `point`: number
+  * `range1`: range
+  * `range2`: range
+  * `point1`: number
+  * `point2`: number
 * result: boolean
 
 ```js
-list contains([1,2,3], 2) 
+before(1, 10)
+// true
+
+before(10, 1)
+// false
+
+before(1, [2..5])
+// true
+
+before([1..5], 10)
+// true
+
+before([1..5], [6..10])
+// true
+
+before([1..5),[5..10])
 // true
 ```
 
-## count()
+
+## after
 
 * parameters:
-  * `list`: list
-* result: number
+  * `range`: range
+  * `point`: number
+  * `range1`: range
+  * `range2`: range
+  * `point1`: number
+  * `point2`: number
+* result: boolean
 
-```js
-count([1,2,3]) 
-// 3
-```
- -->
 
- 
+## meets
+
+## met by
+
+## overlaps
+
+## overlaps before
+
+## overlaps after
+
+## finishes
+
+## finished by
+
+## includes
+
+## during
+
+## start
+
+## started by
+
+## coincides
