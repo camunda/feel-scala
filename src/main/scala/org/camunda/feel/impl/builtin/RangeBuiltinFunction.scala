@@ -27,7 +27,10 @@ object RangeBuiltinFunction {
       finishesFunction(List("range1", "range2"))
     ),
     "finished by" -> List(),
-    "includes" -> List(),
+    "includes" -> List(
+      includesFunction(List("range", "point")),
+      includesFunction(List("range1", "range2"))
+    ),
     "during" -> List(
       duringFunction(List("point", "range")),
       duringFunction(List("range1", "range2"))
@@ -108,7 +111,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
+            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl))
+          )
       }
     )
 
@@ -118,7 +122,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl))))
+            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+          )
       }
     )
 
@@ -128,7 +133,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl))))
+            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl)))
+          )
       }
     )
 
@@ -145,13 +151,29 @@ object RangeBuiltinFunction {
       }
     )
 
+  private def includesFunction(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValRange(range), ValNumber(point)) =>
+          ValBoolean(
+            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+          )
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range1.start < range2.start || (range1.start == range2.start && (range1.startIncl || !range2.startIncl))) && (range1.end > range2.end || (range1.end == range2.end && (range1.endIncl || !range2.endIncl)))
+          )
+      }
+    )
+
   private def duringFunction(params: List[String]) =
     builtinFunction(
       params = params,
       invoke = {
         case List(ValNumber(point), ValRange(range)) =>
           ValBoolean(
-            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl))
+            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+          )
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
             (range2.start < range1.start || (range2.start == range1.start && (range2.startIncl || !range1.startIncl))) && (range2.end > range1.end || (range2.end == range1.end && (range2.endIncl || !range1.endIncl)))
