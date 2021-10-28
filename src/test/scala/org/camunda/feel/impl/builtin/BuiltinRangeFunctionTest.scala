@@ -389,4 +389,29 @@ class BuiltinRangeFunctionTest
 
     eval(" finishes((1..10],[1..10]) ") should be(ValBoolean(true))
   }
+
+  "A coincides() function" should "return true when point1 is equal to point2" in {
+
+    eval(" coincides(5, 5) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when point1 is not equal to point2" in {
+
+    eval(" coincides(3, 4) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 is equal to range2" in {
+
+    eval(" coincides([1..5], [1..5]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when range1 is not equal to range2 because of range1 end and start is not included" in {
+
+    eval(" coincides((1..5), [1..5]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when range1 is not equal to range2" in {
+
+    eval(" coincides([1..5], [2..6]) ") should be(ValBoolean(false))
+  }
 }

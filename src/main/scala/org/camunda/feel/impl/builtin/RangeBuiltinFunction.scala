@@ -22,14 +22,19 @@ object RangeBuiltinFunction {
     "overlaps" -> List(overlapsFunction),
     "overlaps before" -> List(overlapsBeforeFunction),
     "overlaps after" -> List(overlapsAfterFunction),
-    "finishes" -> List(finishesFunction(List("point", "range")),
-                       finishesFunction(List("range1", "range2"))),
+    "finishes" -> List(
+      finishesFunction(List("point", "range")),
+      finishesFunction(List("range1", "range2"))
+    ),
     "finished by" -> List(),
     "includes" -> List(),
     "during" -> List(),
     "starts" -> List(),
     "started by" -> List(),
-    "coincides" -> List()
+    "coincides" -> List(
+      coincides(List("point1", "point2")),
+      coincides(List("range1", "range2"))
+    )
   )
 
   private def beforeFunction(params: List[String]) =
@@ -127,6 +132,18 @@ object RangeBuiltinFunction {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
             range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl))))
+      }
+    )
+
+  private def coincides(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValNumber(point1), ValNumber(point2)) =>
+          ValBoolean(point1 == point2)
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.start == range2.start && range1.startIncl == range2.startIncl && range1.end == range2.end && range1.endIncl == range2.endIncl)
       }
     )
 }
