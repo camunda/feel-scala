@@ -8,7 +8,9 @@ import org.camunda.feel.syntaxtree.{
   ValError,
   ValNull,
   ValNumber,
-  ValString
+  ValString,
+  ValYearMonthDuration,
+  ValDayTimeDuration
 }
 
 import scala.math.BigDecimal.RoundingMode
@@ -96,9 +98,16 @@ object NumericBuiltinFunctions {
   }
 
   private def absFunction(paramName: String) =
-    builtinFunction(params = List(paramName), invoke = {
-      case List(ValNumber(n)) => ValNumber(n.abs)
-    })
+    builtinFunction(
+      params = List(paramName),
+      invoke = {
+        case List(ValNumber(n)) => ValNumber(n.abs)
+        case List(ValYearMonthDuration(n)) if n.isNegative =>
+          ValYearMonthDuration(n.negated())
+        case List(ValYearMonthDuration(n)) => ValYearMonthDuration(n)
+        case List(ValDayTimeDuration(n))   => ValDayTimeDuration(n.abs())
+      }
+    )
 
   private def moduloFunction =
     builtinFunction(params = List("dividend", "divisor"), invoke = {

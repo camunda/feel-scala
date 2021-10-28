@@ -78,3 +78,22 @@ Returns the month of the week according to the Gregorian calendar. Note that it 
 month of year(date("2019-09-17"))
 // "September"
 ```
+
+## abs()
+
+Returns the absolute value of a given duration.
+
+* parameters: 
+  * `n`: days-time-duration/years-months-duration
+* result: duration
+
+```js
+abs(duration("-PT5H"))
+// "duration("PT5H")"
+
+abs(duration("PT5H"))
+// "duration("PT5H")"
+
+abs(duration("-P2M"))
+// duration("P2M")
+```
