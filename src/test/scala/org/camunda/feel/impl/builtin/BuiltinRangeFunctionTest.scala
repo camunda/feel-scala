@@ -390,6 +390,76 @@ class BuiltinRangeFunctionTest
     eval(" finishes((1..10],[1..10]) ") should be(ValBoolean(true))
   }
 
+  "A during() function" should "return true when point is in range" in {
+
+    eval(" during(5, [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when point not in range" in {
+
+    eval(" during(12, [1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when point equal to range start included" in {
+
+    eval(" during(1, [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return ture when point is equal to range end included" in {
+
+    eval(" during(10, [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return false when point is equal to range start not included" in {
+
+    eval(" during(1, (1..10]) ") should be(ValBoolean(false))
+  }
+
+  it should "return false when point is equal to range end not included" in {
+
+    eval(" during(10, [1..10)) ") should be(ValBoolean(false))
+  }
+
+  it should "return true when range1 is part of range2" in {
+
+    eval(" during([4..6], [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is part the start of range2" in {
+
+    eval(" during([1..5], [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is part the start of range2 both starts not included" in {
+
+    eval(" during((1..5], (1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is part of range2 and range1 start and end not included" in {
+
+    eval(" during((1..10), [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 is equal to range2 both ranges end not included" in {
+
+    eval(" during([5..10), [1..10)) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 equal to range2 and range1 end not included" in {
+
+    eval(" during([1..10), [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 equal to range2 and range1 start not included" in {
+
+    eval(" during((1..10], [1..10]) ") should be(ValBoolean(true))
+  }
+
+  it should "return true when range1 equal to range2" in {
+
+    eval(" during([1..10], [1..10]) ") should be(ValBoolean(true))
+  }
+
   "A starts() function" should "return true when point is equal to range start" in {
 
     eval(" starts(1, [1..10]) ") should be(ValBoolean(true))
