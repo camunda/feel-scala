@@ -945,16 +945,16 @@ class FeelInterpreter {
         values + (name -> v) // zip
   }
 
-  private def filterList(list: List[Val], filter: Val => Val): Val =
-    list match {
-      case Nil => ValList(List())
-      case x :: xs =>
-        withBoolean(filter(x), _ match {
-          case false => filterList(xs, filter)
-          case true =>
-            withList(filterList(xs, filter), l => ValList(x :: l.items))
-        })
-    }
+  private def filterList(list: List[Val], filter: Val => Val): Val = {
+    val conditionNotFulfilled = ValString("_")
+
+    mapEither[Val, Val](list,
+      item => withBoolean(filter(item), {
+        case true => item
+        case false => conditionNotFulfilled
+      }).toEither,
+      items => ValList(items.filterNot(_ == conditionNotFulfilled)))
+  }
 
   private def filterList(list: List[Val], index: Number): Val = {
 
