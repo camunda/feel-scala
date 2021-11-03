@@ -243,4 +243,53 @@ class InterpreterListExpressionTest
              ValNumber(21))))
   }
 
+  private val hugeList: List[Int] = (1 to 10_000).toList
+
+  "A huge list" should "be defined as range" in {
+    eval("for x in 1..10000 return x") should be(
+      ValList(
+        hugeList.map(ValNumber(_))
+      ))
+  }
+
+  it should "be be checked with 'some'" in {
+    eval("some x in xs satisfies x >= 10000", Map("xs" -> hugeList)) should be(
+      ValBoolean(true))
+  }
+
+  it should "be be checked with 'some' (invalid condition)" in {
+    eval("some x in xs satisfies null", Map("xs" -> hugeList)) should be(
+      ValNull)
+  }
+
+  it should "be be checked with 'every'" in {
+    eval("every x in xs satisfies x > 0", Map("xs" -> hugeList)) should be(
+      ValBoolean(true))
+  }
+
+  it should "be be checked with 'every' (invalid condition)" in {
+    eval("every x in xs satisfies null", Map("xs" -> hugeList)) should be(
+      ValNull)
+  }
+
+  it should "be iterated with `for`" in {
+    eval("for x in xs return x", Map("xs" -> hugeList)) should be(
+      ValList(
+        hugeList.map(ValNumber(_))
+      ))
+  }
+
+  it should "be filtered" in {
+    eval("xs[item <= 5000]", Map("xs" -> hugeList)) should be(
+      ValList(
+        hugeList.take(5_000).map(ValNumber(_))
+      ))
+  }
+
+  it should "be accessed by index" in {
+    eval("xs[-1]", Map("xs"->hugeList)) should be (
+      ValNumber(hugeList.last)
+    )
+  }
+
 }

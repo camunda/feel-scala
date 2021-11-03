@@ -180,6 +180,18 @@ class BuiltinListFunctionsTest
     eval("all(0)") should be(ValNull)
   }
 
+  it should "return true if all items are true (huge list)" in {
+    val hugeList = (1 to 10_000).map(_ => true).toList
+
+    eval("all(xs)", Map("xs" -> hugeList)) should be (ValBoolean(true))
+  }
+
+  it should "return null if items are not boolean values (huge list)" in {
+    val hugeList = (1 to 10_000).toList
+
+    eval("all(xs)", Map("xs" -> hugeList)) should be (ValNull)
+  }
+
   "A or() / any() function" should "return false if empty list" in {
 
     eval(" or([]) ") should be(ValBoolean(false))
@@ -205,6 +217,18 @@ class BuiltinListFunctionsTest
 
     eval("or(0)") should be(ValNull)
     eval("any(0)") should be(ValNull)
+  }
+
+  it should "return false if all items are false (huge list)" in {
+    val hugeList = (1 to 10_000).map(_ => false).toList
+
+    eval("any(xs)", Map("xs" -> hugeList)) should be (ValBoolean(false))
+  }
+
+  it should "return null if items are not boolean values (huge list)" in {
+    val hugeList = (1 to 10_000).toList
+
+    eval("any(xs)", Map("xs" -> hugeList)) should be (ValNull)
   }
 
   "A sublist() function" should "return list starting with _" in {
@@ -284,6 +308,16 @@ class BuiltinListFunctionsTest
 
     eval(" flatten([[1,2],[[3]], 4]) ") should be(
       ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
+  }
+
+  it should "flatten a huge list of lists" in {
+    val hugeList = (1 to 10_000).map(List(_)).toList
+
+    eval("flatten(xs)", Map("xs" -> hugeList)) should be (
+      ValList(
+        hugeList.flatten.map(ValNumber(_))
+      )
+    )
   }
 
   "A sort() function" should "sort list of numbers" in {
