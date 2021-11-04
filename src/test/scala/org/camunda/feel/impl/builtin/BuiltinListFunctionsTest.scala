@@ -180,6 +180,12 @@ class BuiltinListFunctionsTest
     eval("all(0)") should be(ValNull)
   }
 
+  it should "return null if one item is not a boolean value" in {
+
+    eval("and(true, null, true)") should be(ValNull)
+    eval("all(true, null, true)") should be(ValNull)
+  }
+
   it should "return true if all items are true (huge list)" in {
     val hugeList = (1 to 10_000).map(_ => true).toList
 
@@ -217,6 +223,12 @@ class BuiltinListFunctionsTest
 
     eval("or(0)") should be(ValNull)
     eval("any(0)") should be(ValNull)
+  }
+
+  it should "return null if one item is not a boolean value" in {
+
+    eval("or(false, null, false)") should be(ValNull)
+    eval("any(false, null, false)") should be(ValNull)
   }
 
   it should "return false if all items are false (huge list)" in {
