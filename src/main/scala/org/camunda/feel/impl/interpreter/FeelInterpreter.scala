@@ -538,37 +538,32 @@ class FeelInterpreter {
       implicit context: EvalContext): Val =
     atLeastOne(xs map (x => () => eval(x)), f)
 
-  private def atLeastOne(xs: List[() => Val], f: Boolean => Val): Val =
-    xs match {
-      case Nil => f(false)
-      case x :: xs =>
-        x() match {
-          case ValBoolean(true)  => f(true)
-          case ValBoolean(false) => atLeastOne(xs, f)
-          case other =>
-            atLeastOne(xs, f) match {
-              case ValBoolean(true) => f(true)
-              case _                => ValNull
-            }
+  private def atLeastOne(items: List[() => Val], f: Boolean => Val): Val = {
+    items.foldLeft(f(false)) {
+      case (ValBoolean(true), _) => f(true)
+      case (ValNull, item) =>
+        item() match {
+          case ValBoolean(true) => f(true)
+          case _                => ValNull
         }
+      case (_, item) => withBooleanOrNull(item(), f)
     }
+  }
 
   private def all(xs: List[Exp], f: Boolean => Val)(
       implicit context: EvalContext): Val =
     all(xs map (x => () => eval(x)), f)
 
-  private def all(xs: List[() => Val], f: Boolean => Val): Val = xs match {
-    case Nil => f(true)
-    case x :: xs =>
-      x() match {
-        case ValBoolean(false) => f(false)
-        case ValBoolean(true)  => all(xs, f)
-        case other =>
-          all(xs, f) match {
-            case ValBoolean(false) => f(false)
-            case _                 => ValNull
-          }
-      }
+  private def all(items: List[() => Val], f: Boolean => Val): Val = {
+    items.foldLeft(f(true)) {
+      case (ValBoolean(false), _) => f(false)
+      case (ValNull, item) =>
+        item() match {
+          case ValBoolean(false) => f(false)
+          case _                 => ValNull
+        }
+      case (_, item) => withBooleanOrNull(item(), f)
+    }
   }
 
   private def inputKey(implicit context: EvalContext): String =
@@ -945,16 +940,19 @@ class FeelInterpreter {
         values + (name -> v) // zip
   }
 
-  private def filterList(list: List[Val], filter: Val => Val): Val =
-    list match {
-      case Nil => ValList(List())
-      case x :: xs =>
-        withBoolean(filter(x), _ match {
-          case false => filterList(xs, filter)
-          case true =>
-            withList(filterList(xs, filter), l => ValList(x :: l.items))
-        })
-    }
+  private def filterList(list: List[Val], filter: Val => Val): Val = {
+    val conditionNotFulfilled = ValString("_")
+
+    mapEither[Val, Val](
+      list,
+      item =>
+        withBoolean(filter(item), {
+          case true  => item
+          case false => conditionNotFulfilled
+        }).toEither,
+      items => ValList(items.filterNot(_ == conditionNotFulfilled))
+    )
+  }
 
   private def filterList(list: List[Val], index: Number): Val = {
 

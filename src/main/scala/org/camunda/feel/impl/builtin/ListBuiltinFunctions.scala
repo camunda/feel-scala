@@ -215,18 +215,13 @@ object ListBuiltinFunctions {
       case List(ValList(list)) => all(list)
     }, hasVarArgs = true)
 
-  private def all(xs: List[Val]): Val = xs match {
-    case Nil => ValBoolean(true)
-    case x :: xs =>
-      x match {
-        case ValBoolean(false) => ValBoolean(false)
-        case ValBoolean(true)  => all(xs)
-        case other =>
-          all(xs) match {
-            case ValBoolean(false) => ValBoolean(false)
-            case _                 => ValNull
-          }
-      }
+  private def all(items: List[Val]): Val = {
+    items.foldLeft[Val](ValBoolean(true)) {
+      case (ValBoolean(false), _)               => ValBoolean(false)
+      case (ValBoolean(true), item: ValBoolean) => item
+      case (ValNull, ValBoolean(false))         => ValBoolean(false)
+      case (_, _)                               => ValNull
+    }
   }
 
   private def orFunction =
@@ -234,18 +229,13 @@ object ListBuiltinFunctions {
       case List(ValList(list)) => atLeastOne(list)
     }, hasVarArgs = true)
 
-  private def atLeastOne(xs: List[Val]): Val = xs match {
-    case Nil => ValBoolean(false)
-    case x :: xs =>
-      x match {
-        case ValBoolean(true)  => ValBoolean(true)
-        case ValBoolean(false) => atLeastOne(xs)
-        case other =>
-          atLeastOne(xs) match {
-            case ValBoolean(true) => ValBoolean(true)
-            case _                => ValNull
-          }
-      }
+  private def atLeastOne(items: List[Val]): Val = {
+    items.foldLeft[Val](ValBoolean(false)) {
+      case (ValBoolean(true), _)                 => ValBoolean(true)
+      case (ValBoolean(false), item: ValBoolean) => item
+      case (ValNull, ValBoolean(true))           => ValBoolean(true)
+      case (_, _)                                => ValNull
+    }
   }
 
   private def sublistFunction =
@@ -362,10 +352,11 @@ object ListBuiltinFunctions {
       case List(ValList(list)) => ValList(flatten(list))
     })
 
-  private def flatten(list: List[Val]): List[Val] = list match {
-    case Nil              => Nil
-    case ValList(l) :: xs => flatten(l) ++ flatten(xs)
-    case x :: xs          => x :: flatten(xs)
+  private def flatten(list: List[Val]): List[Val] = {
+    list.flatten {
+      case ValList(items) => flatten(items)
+      case item           => List(item)
+    }
   }
 
   private def sortFunction = builtinFunction(
