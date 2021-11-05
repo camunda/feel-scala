@@ -252,22 +252,25 @@ class InterpreterListExpressionTest
       ))
   }
 
-  it should "be be checked with 'some'" in {
+  it should "be checked with 'some'" in {
     eval("some x in xs satisfies x >= 10000", Map("xs" -> hugeList)) should be(
       ValBoolean(true))
+
+    eval("some x in xs satisfies x > 10000", Map("xs" -> hugeList)) should be(
+      ValBoolean(false))
   }
 
-  it should "be be checked with 'some' (invalid condition)" in {
+  it should "be checked with 'some' (invalid condition)" in {
     eval("some x in xs satisfies null", Map("xs" -> hugeList)) should be(
       ValNull)
   }
 
-  it should "be be checked with 'every'" in {
+  it should "be checked with 'every'" in {
     eval("every x in xs satisfies x > 0", Map("xs" -> hugeList)) should be(
       ValBoolean(true))
   }
 
-  it should "be be checked with 'every' (invalid condition)" in {
+  it should "be checked with 'every' (invalid condition)" in {
     eval("every x in xs satisfies null", Map("xs" -> hugeList)) should be(
       ValNull)
   }
