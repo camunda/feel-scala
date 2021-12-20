@@ -90,7 +90,7 @@ import org.camunda.feel.syntaxtree.{
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
+  IterationContext,
   RangeBoundary,
   Ref,
   SomeItem,
@@ -245,14 +245,14 @@ object FeelParser {
     }
 
   private def listIterator[_: P]: P[(String, Exp)] = P(
-    name ~ "in" ~ (range | value)
+    name ~ "in" ~ (iterationContext | value)
   )
 
-  private def range[_: P]: P[Exp] =
+  private def iterationContext[_: P]: P[Exp] =
     P(
       expLvl4 ~ ".." ~ expLvl4
     ).map {
-      case (start, end) => Range(start, end)
+      case (start, end) => IterationContext(start, end)
     }
 
   private def quantifiedOp[_: P]: P[Exp] =

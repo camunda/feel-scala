@@ -47,7 +47,7 @@ import org.camunda.feel.syntaxtree.{
   Not,
   PathExpression,
   QualifiedFunctionInvocation,
-  Range,
+  IterationContext,
   SomeItem,
   Subtraction,
   UnaryTestExpression
@@ -80,7 +80,7 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
 
     case c: Comparison        => validate(c.x) ++ validate(c.y)
     case Interval(start, end) => validate(start.value) ++ validate(end.value)
-    case Range(start, end)    => validate(start) ++ validate(end)
+    case IterationContext(start, end)    => validate(start) ++ validate(end)
 
     case Addition(x, y)        => validate(x) ++ validate(y)
     case Subtraction(x, y)     => validate(x) ++ validate(y)

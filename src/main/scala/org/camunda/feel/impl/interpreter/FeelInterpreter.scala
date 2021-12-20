@@ -75,7 +75,7 @@ import org.camunda.feel.syntaxtree.{
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
+  IterationContext,
   RangeWithBoundaries,
   Ref,
   SomeItem,
@@ -280,7 +280,7 @@ class FeelInterpreter {
                 }
           }
         )
-      case Range(start, end) =>
+      case IterationContext(start, end) =>
         withNumbers(eval(start), eval(end), (x, y) => {
           val range = if (x < y) {
             (x to y).by(1)
