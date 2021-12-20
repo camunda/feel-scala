@@ -24,7 +24,6 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedIntervalBoundary,
   ClosedRangeBoundary,
   Comparison,
   Conjunction,
@@ -61,21 +60,21 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
+  IterationContext,
   JavaFunctionInvocation,
   LessOrEqual,
   LessThan,
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenIntervalBoundary,
+  OpenRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  IterationContext,
   RangeWithBoundaries,
   Ref,
   SomeItem,
@@ -98,7 +97,7 @@ import org.camunda.feel.syntaxtree.{
   ValString,
   ValTime,
   ValYearMonthDuration,
-  ZonedTime,
+  ZonedTime
 }
 import org.camunda.feel.{
   Date,
@@ -172,10 +171,10 @@ class FeelInterpreter {
         withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
       case InputGreaterOrEqual(x) =>
         withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
-      case interval @ Interval(start, end) =>
+      case InputInRange(range @ ConstRange(start, end)) =>
         unaryOpDual(eval(start.value),
                     eval(end.value),
-                    isInInterval(interval),
+                    isInRange(range),
                     ValBoolean)
 
       case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
@@ -521,15 +520,15 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
-  private def isInInterval(interval: Interval): (Val, Val, Val) => Boolean =
+  private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
-      val inStart: Boolean = interval.start match {
-        case OpenIntervalBoundary(_)   => i > x
-        case ClosedIntervalBoundary(_) => i >= x
+      val inStart: Boolean = range.start match {
+        case OpenRangeBoundary(_)   => i > x
+        case ClosedRangeBoundary(_) => i >= x
       }
-      val inEnd = interval.end match {
-        case OpenIntervalBoundary(_)   => i < y
-        case ClosedIntervalBoundary(_) => i <= y
+      val inEnd = range.end match {
+        case OpenRangeBoundary(_)   => i < y
+        case ClosedRangeBoundary(_) => i <= y
       }
       inStart && inEnd
     }
