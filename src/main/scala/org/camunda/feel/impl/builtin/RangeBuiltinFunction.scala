@@ -22,14 +22,34 @@ object RangeBuiltinFunction {
     "overlaps" -> List(overlapsFunction),
     "overlaps before" -> List(overlapsBeforeFunction),
     "overlaps after" -> List(overlapsAfterFunction),
-    "finishes" -> List(finishesFunction(List("point", "range")),
-                       finishesFunction(List("range1", "range2"))),
-    "finished by" -> List(),
-    "includes" -> List(),
-    "during" -> List(),
-    "starts" -> List(),
-    "started by" -> List(),
-    "coincides" -> List()
+    "finishes" -> List(
+      finishesFunction(List("point", "range")),
+      finishesFunction(List("range1", "range2"))
+    ),
+    "finished by" -> List(
+      finishedByFunction(List("point", "range")),
+      finishedByFunction(List("range1", "range2"))
+    ),
+    "includes" -> List(
+      includesFunction(List("range", "point")),
+      includesFunction(List("range1", "range2"))
+    ),
+    "during" -> List(
+      duringFunction(List("point", "range")),
+      duringFunction(List("range1", "range2"))
+    ),
+    "starts" -> List(
+      starts(List("point", "range")),
+      starts(List("range1", "range2"))
+    ),
+    "started by" -> List(
+      startedBy(List("range", "point")),
+      startedBy(List("range1", "range2"))
+    ),
+    "coincides" -> List(
+      coincides(List("point1", "point2")),
+      coincides(List("range1", "range2"))
+    )
   )
 
   private def beforeFunction(params: List[String]) =
@@ -94,7 +114,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
+            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl))
+          )
       }
     )
 
@@ -104,7 +125,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl))))
+            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+          )
       }
     )
 
@@ -114,7 +136,8 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl))))
+            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl)))
+          )
       }
     )
 
@@ -126,7 +149,92 @@ object RangeBuiltinFunction {
           ValBoolean(range.endIncl && range.end == point)
         case List(ValRange(range1), ValRange(range2)) =>
           ValBoolean(
-            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl))))
+            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl)))
+          )
+      }
+    )
+
+  private def finishedByFunction(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValRange(range), ValNumber(point)) =>
+          ValBoolean(
+            range.endIncl && range.end == point
+          )
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start < range2.start || (range1.start == range2.start && (range1.startIncl || !range2.startIncl)))
+          )
+      }
+    )
+
+  private def includesFunction(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValRange(range), ValNumber(point)) =>
+          ValBoolean(
+            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+          )
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range1.start < range2.start || (range1.start == range2.start && (range1.startIncl || !range2.startIncl))) && (range1.end > range2.end || (range1.end == range2.end && (range1.endIncl || !range2.endIncl)))
+          )
+      }
+    )
+
+  private def duringFunction(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValNumber(point), ValRange(range)) =>
+          ValBoolean(
+            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+          )
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            (range2.start < range1.start || (range2.start == range1.start && (range2.startIncl || !range1.startIncl))) && (range2.end > range1.end || (range2.end == range1.end && (range2.endIncl || !range1.endIncl)))
+          )
+      }
+    )
+
+  private def starts(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValNumber(point), ValRange(range)) =>
+          ValBoolean(range.start == point && range.startIncl)
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.start == range2.start && range1.startIncl == range2.startIncl && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+          )
+      }
+    )
+
+  private def startedBy(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValRange(range), ValNumber(point)) =>
+          ValBoolean(range.start == point && range.startIncl)
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.start == range2.start && range1.startIncl == range2.startIncl && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl)))
+          )
+      }
+    )
+
+  private def coincides(params: List[String]) =
+    builtinFunction(
+      params = params,
+      invoke = {
+        case List(ValNumber(point1), ValNumber(point2)) =>
+          ValBoolean(point1 == point2)
+        case List(ValRange(range1), ValRange(range2)) =>
+          ValBoolean(
+            range1.start == range2.start && range1.startIncl == range2.startIncl && range1.end == range2.end && range1.endIncl == range2.endIncl
+          )
       }
     )
 }
