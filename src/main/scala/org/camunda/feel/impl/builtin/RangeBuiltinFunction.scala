@@ -1,7 +1,19 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{ValBoolean, ValNumber, ValRange}
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNumber,
+  ValRange,
+  ValTime,
+  ValYearMonthDuration
+}
 
 object RangeBuiltinFunction {
   def functions = Map(
@@ -52,20 +64,33 @@ object RangeBuiltinFunction {
     )
   )
 
+  private def isPointValue(value: Val): Boolean = value match {
+    case _: ValNumber            => true
+    case _: ValDate              => true
+    case _: ValTime              => true
+    case _: ValLocalTime         => true
+    case _: ValDateTime          => true
+    case _: ValLocalDateTime     => true
+    case _: ValYearMonthDuration => true
+    case _: ValDayTimeDuration   => true
+    case _                       => false
+  }
+
   private def beforeFunction(params: List[String]) =
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point1), ValNumber(point2)) =>
-          ValBoolean(point1 < point2)
-        case List(point: ValNumber, ValRange(start, _)) =>
-          ValBoolean(
-            point < start.value || (point == start.value & !start.isClosed))
-        case List(ValRange(_, end), point: ValNumber) =>
-          ValBoolean(end.value < point || (end.value == point & !end.isClosed))
         case List(ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
             end1.value < start2.value || (!end1.isClosed | !start2.isClosed) & end1.value == start2.value)
+        case List(point: Val, ValRange(start, _)) if isPointValue(point) =>
+          ValBoolean(
+            point < start.value || (point == start.value & !start.isClosed))
+        case List(ValRange(_, end), point: Val) if isPointValue(point) =>
+          ValBoolean(end.value < point || (end.value == point & !end.isClosed))
+        case List(point1, point2)
+            if isPointValue(point1) && isPointValue(point2) =>
+          ValBoolean(point1 < point2)
       }
     )
 

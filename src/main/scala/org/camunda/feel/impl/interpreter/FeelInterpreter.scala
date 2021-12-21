@@ -150,15 +150,14 @@ class FeelInterpreter {
         )
 
       case ConstRange(start, end) =>
-        withNumbers(
-          eval(start.value),
-          eval(end.value),
-          (startValue, endValue) =>
-            ValRange(
-              start = toRangeBoundary(start, ValNumber(startValue)),
-              end = toRangeBoundary(end, ValNumber(endValue))
-          )
-        )
+        withVal(eval(start.value),
+                startValue =>
+                  withVal(eval(end.value),
+                          endValue =>
+                            ValRange(
+                              start = toRangeBoundary(start, startValue),
+                              end = toRangeBoundary(end, endValue)
+                          )))
 
       // simple unary tests
       case InputEqualTo(x) =>

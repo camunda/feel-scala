@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree.ValBoolean
+import org.camunda.feel.syntaxtree.{ValBoolean, ValNull}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -689,4 +689,101 @@ class BuiltinRangeFunctionTest
 
     eval(" coincides([1..5], [2..6]) ") should be(ValBoolean(false))
   }
+
+  "A range function" should "support numbers" in {
+
+    eval(" before(1, 10) ") should be(ValBoolean(true))
+    eval(" before(1, [1..10])") should be(ValBoolean(false))
+  }
+
+  it should "support date values" in {
+
+    eval(""" before(date("2021-12-21"), date("2021-12-24")) """) should be(
+      ValBoolean(true))
+    eval(
+      """ before(date("2021-12-21"), [date("2021-12-01")..date("2021-12-24")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support time values" in {
+
+    eval(""" before(time("12:00:00+01:00"), time("13:00:00+01:00")) """) should be(
+      ValBoolean(true))
+    eval(
+      """ before(time("12:00:00+01:00"), [time("10:00:00+01:00")..time("13:00:00+01:00")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support time values (local)" in {
+
+    eval(""" before(time("12:00:00"), time("13:00:00")) """) should be(
+      ValBoolean(true))
+    eval(""" before(time("12:00:00"), [time("10:00:00")..time("13:00:00")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support date-time values" in {
+
+    eval(
+      """ before(date and time("2021-12-21T12:00:00+01:00"), date and time("2021-12-24T12:00:00+01:00")) """) should be(
+      ValBoolean(true))
+    eval(
+      """ before(date and time("2021-12-21T12:00:00+01:00"), [date and time("2021-12-01T12:00:00+01:00")..date and time("2021-12-24T12:00:00+01:00")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support date-time values (local)" in {
+
+    eval(
+      """ before(date and time("2021-12-21T12:00:00"), date and time("2021-12-24T12:00:00")) """) should be(
+      ValBoolean(true))
+    eval(
+      """ before(date and time("2021-12-21T12:00:00"), [date and time("2021-12-01T12:00:00")..date and time("2021-12-24T12:00:00")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support year-month-duration values" in {
+
+    eval(""" before(duration("P3M"), duration("P6M")) """) should be(
+      ValBoolean(true))
+    eval(""" before(duration("P3M"), [duration("P1M")..duration("P6M")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "support days-times-duration values" in {
+
+    eval(""" before(duration("PT3H"), duration("PT6H")) """) should be(
+      ValBoolean(true))
+    eval(""" before(duration("PT3H"), [duration("PT1H")..duration("PT6H")])""") should be(
+      ValBoolean(false))
+  }
+
+  it should "return null for string values" in {
+    eval(""" before("a", "b") """) should be(ValNull)
+    eval(""" before("a", ["b".."c"]) """) should be(ValNull)
+  }
+
+  it should "return null for boolean values" in {
+    eval(""" before(true, false) """) should be(ValNull)
+    eval(""" before(true, [true..false]) """) should be(ValNull)
+  }
+
+  it should "return null for list values" in {
+    eval(""" before([1,2], [3,4]) """) should be(ValNull)
+    eval(""" before([1,2], [[3,4]..[5,6]]) """) should be(ValNull)
+  }
+
+  it should "return null for context values" in {
+    eval(""" before({}, {x:1}) """) should be(ValNull)
+    eval(""" before({}, [{}..{x:1}]) """) should be(ValNull)
+  }
+
+  it should "return null for null values" in {
+    eval(""" before(null, 5) """) should be(ValNull)
+    eval(""" before(1, null) """) should be(ValNull)
+
+    eval(""" before(null, [1..5]) """) should be(ValNull)
+    eval(""" before(1, null) """) should be(ValNull)
+  }
+
 }
