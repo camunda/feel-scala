@@ -58,7 +58,7 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValNumber(point1), ValNumber(point2)) =>
           ValBoolean(point1 < point2)
-        case List(point: ValNumber, ValRange(start, end)) =>
+        case List(point: ValNumber, ValRange(start, _)) =>
           ValBoolean(
             point < start.value || (point == start.value & !start.isClosed))
         case List(ValRange(_, end), point: ValNumber) =>

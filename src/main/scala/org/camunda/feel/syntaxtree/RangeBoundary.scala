@@ -1,14 +1,14 @@
 package org.camunda.feel.syntaxtree
 
 sealed trait RangeBoundary {
-  def value: ValNumber
+  def value: Val
   def isClosed: Boolean
 }
 
-case class OpenRangeBoundary(value: ValNumber) extends RangeBoundary {
+case class OpenRangeBoundary(value: Val) extends RangeBoundary {
   override def isClosed: Boolean = false
 }
 
-case class ClosedRangeBoundary(value: ValNumber) extends RangeBoundary {
+case class ClosedRangeBoundary(value: Val) extends RangeBoundary {
   override def isClosed: Boolean = true
 }

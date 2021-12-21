@@ -1053,13 +1053,13 @@ class FeelInterpreter {
   }
 
   private def toRangeBoundary(boundary: ConstRangeBoundary)(
-      implicit context: EvalContext): RangeBoundary = boundary match {
-    case OpenConstRangeBoundary(value) =>
-      OpenRangeBoundary(
-        withNumber(eval(value), ValNumber).asInstanceOf[ValNumber])
-    case ClosedConstRangeBoundary(value) =>
-      ClosedRangeBoundary(
-        withNumber(eval(value), ValNumber).asInstanceOf[ValNumber])
+      implicit context: EvalContext): RangeBoundary = {
+    boundary match {
+      case OpenConstRangeBoundary(value) =>
+        OpenRangeBoundary(withNumber(eval(value), ValNumber))
+      case ClosedConstRangeBoundary(value) =>
+        ClosedRangeBoundary(withNumber(eval(value), ValNumber))
+    }
   }
 
 }
