@@ -150,9 +150,14 @@ class FeelInterpreter {
         )
 
       case ConstRange(start, end) =>
-        ValRange(
-          start = toRangeBoundary(start),
-          end = toRangeBoundary(end)
+        withNumbers(
+          eval(start.value),
+          eval(end.value),
+          (startValue, endValue) =>
+            ValRange(
+              start = toRangeBoundary(start, ValNumber(startValue)),
+              end = toRangeBoundary(end, ValNumber(endValue))
+          )
         )
 
       // simple unary tests
@@ -1052,13 +1057,11 @@ class FeelInterpreter {
     }
   }
 
-  private def toRangeBoundary(boundary: ConstRangeBoundary)(
-      implicit context: EvalContext): RangeBoundary = {
+  private def toRangeBoundary(boundary: ConstRangeBoundary,
+                              value: Val): RangeBoundary = {
     boundary match {
-      case OpenConstRangeBoundary(value) =>
-        OpenRangeBoundary(withNumber(eval(value), ValNumber))
-      case ClosedConstRangeBoundary(value) =>
-        ClosedRangeBoundary(withNumber(eval(value), ValNumber))
+      case OpenConstRangeBoundary(_)   => OpenRangeBoundary(value)
+      case ClosedConstRangeBoundary(_) => ClosedRangeBoundary(value)
     }
   }
 
