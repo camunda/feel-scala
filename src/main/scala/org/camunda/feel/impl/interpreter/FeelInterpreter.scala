@@ -24,7 +24,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedRangeBoundary,
+  ClosedConstRangeBoundary,
   Comparison,
   Conjunction,
   ConstBool,
@@ -71,7 +71,7 @@ import org.camunda.feel.syntaxtree.{
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenRangeBoundary,
+  OpenConstRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
@@ -154,8 +154,8 @@ class FeelInterpreter {
               RangeWithBoundaries(
                 startValue,
                 endValue,
-                start.isInstanceOf[ClosedRangeBoundary],
-                end.isInstanceOf[ClosedRangeBoundary]
+                start.isInstanceOf[ClosedConstRangeBoundary],
+                end.isInstanceOf[ClosedConstRangeBoundary]
               )
           )
         )
@@ -523,12 +523,12 @@ class FeelInterpreter {
   private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
       val inStart: Boolean = range.start match {
-        case OpenRangeBoundary(_)   => i > x
-        case ClosedRangeBoundary(_) => i >= x
+        case OpenConstRangeBoundary(_)   => i > x
+        case ClosedConstRangeBoundary(_) => i >= x
       }
       val inEnd = range.end match {
-        case OpenRangeBoundary(_)   => i < y
-        case ClosedRangeBoundary(_) => i <= y
+        case OpenConstRangeBoundary(_)   => i < y
+        case ClosedConstRangeBoundary(_) => i <= y
       }
       inStart && inEnd
     }

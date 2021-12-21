@@ -38,7 +38,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedRangeBoundary,
+  ClosedConstRangeBoundary,
   Conjunction,
   ConstBool,
   ConstContext,
@@ -84,11 +84,11 @@ import org.camunda.feel.syntaxtree.{
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenRangeBoundary,
+  OpenConstRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  RangeBoundary,
+  ConstRangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -578,22 +578,22 @@ object FeelParser {
       case (start, end) => ConstRange(start, end)
     }
 
-  private def rangeStart[_: P]: P[RangeBoundary] =
+  private def rangeStart[_: P]: P[ConstRangeBoundary] =
     P(
       CharIn("(", "]", "[").! ~ expLvl4
     ).map {
-      case ("(", x) => OpenRangeBoundary(x)
-      case ("]", x) => OpenRangeBoundary(x)
-      case ("[", x) => ClosedRangeBoundary(x)
+      case ("(", x) => OpenConstRangeBoundary(x)
+      case ("]", x) => OpenConstRangeBoundary(x)
+      case ("[", x) => ClosedConstRangeBoundary(x)
     }
 
-  private def rangeEnd[_: P]: P[RangeBoundary] =
+  private def rangeEnd[_: P]: P[ConstRangeBoundary] =
     P(
       expLvl4 ~ CharIn(")", "[", "]").!
     ).map {
-      case (y, ")") => OpenRangeBoundary(y)
-      case (y, "[") => OpenRangeBoundary(y)
-      case (y, "]") => ClosedRangeBoundary(y)
+      case (y, ")") => OpenConstRangeBoundary(y)
+      case (y, "[") => OpenConstRangeBoundary(y)
+      case (y, "]") => ClosedConstRangeBoundary(y)
     }
 
   // --------------- temporal parsers ---------------
