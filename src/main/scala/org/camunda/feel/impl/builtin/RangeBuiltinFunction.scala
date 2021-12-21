@@ -18,10 +18,10 @@ import org.camunda.feel.syntaxtree.{
 object RangeBuiltinFunction {
   def functions = Map(
     "before" -> List(
-      beforeFunction(List("point1", "point2")),
-      beforeFunction(List("point", "range")),
-      beforeFunction(List("range", "point")),
-      beforeFunction(List("range1", "range2"))
+      beforeFunction("point1", "point2"),
+      beforeFunction("point", "range"),
+      beforeFunction("range", "point"),
+      beforeFunction("range1", "range2")
     ),
     "after" -> List(
       afterFunction(List("point1", "point2")),
@@ -64,6 +64,12 @@ object RangeBuiltinFunction {
     )
   )
 
+  private def rangeBuiltinFunction(params: (String, String),
+                                   invoke: PartialFunction[(Val, Val), Any]) =
+    builtinFunction(params = List(params._1, params._2), invoke = {
+      case List(x, y) if isComparable(x, y) => invoke(x, y)
+    })
+
   private def isComparable(x: Val, y: Val): Boolean = (x, y) match {
     case (ValRange(start1, _), ValRange(start2, _)) =>
       isComparable(start1.value, start2.value)
@@ -86,23 +92,19 @@ object RangeBuiltinFunction {
     case _                       => false
   }
 
-  private def beforeFunction(params: List[String]) =
-    builtinFunction(
+  private def beforeFunction(params: (String, String)) =
+    rangeBuiltinFunction(
       params = params,
       invoke = {
-        case List(range1 @ ValRange(_, end1), range2 @ ValRange(start2, _))
-            if isComparable(range1, range2) =>
+        case (ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
             end1.value < start2.value || (!end1.isClosed | !start2.isClosed) & end1.value == start2.value)
-        case List(point: Val, range @ ValRange(start, _))
-            if isComparable(point, range) =>
+        case (point: Val, ValRange(start, _)) =>
           ValBoolean(
             point < start.value || (point == start.value & !start.isClosed))
-        case List(range @ ValRange(_, end), point: Val)
-            if isComparable(range, point) =>
+        case (ValRange(_, end), point: Val) =>
           ValBoolean(end.value < point || (end.value == point & !end.isClosed))
-        case List(point1, point2) if isComparable(point1, point2) =>
-          ValBoolean(point1 < point2)
+        case (point1, point2) => ValBoolean(point1 < point2)
       }
     )
 
