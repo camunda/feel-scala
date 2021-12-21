@@ -25,6 +25,7 @@ import org.camunda.feel.syntaxtree.{
   ArithmeticNegation,
   AtLeastOne,
   ClosedConstRangeBoundary,
+  ClosedRangeBoundary,
   Comparison,
   Conjunction,
   ConstBool,
@@ -39,6 +40,7 @@ import org.camunda.feel.syntaxtree.{
   ConstNull,
   ConstNumber,
   ConstRange,
+  ConstRangeBoundary,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -72,10 +74,11 @@ import org.camunda.feel.syntaxtree.{
   NamedFunctionParameters,
   Not,
   OpenConstRangeBoundary,
+  OpenRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  RangeWithBoundaries,
+  RangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -145,19 +148,11 @@ class FeelInterpreter {
           },
           ValContext
         )
+
       case ConstRange(start, end) =>
-        withNumbers(
-          eval(start.value),
-          eval(end.value),
-          (startValue, endValue) =>
-            ValRange(
-              RangeWithBoundaries(
-                startValue,
-                endValue,
-                start.isInstanceOf[ClosedConstRangeBoundary],
-                end.isInstanceOf[ClosedConstRangeBoundary]
-              )
-          )
+        ValRange(
+          start = toRangeBoundary(start),
+          end = toRangeBoundary(end)
         )
 
       // simple unary tests
@@ -1055,6 +1050,16 @@ class FeelInterpreter {
         ValError(
           s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
     }
+  }
+
+  private def toRangeBoundary(boundary: ConstRangeBoundary)(
+      implicit context: EvalContext): RangeBoundary = boundary match {
+    case OpenConstRangeBoundary(value) =>
+      OpenRangeBoundary(
+        withNumber(eval(value), ValNumber).asInstanceOf[ValNumber])
+    case ClosedConstRangeBoundary(value) =>
+      ClosedRangeBoundary(
+        withNumber(eval(value), ValNumber).asInstanceOf[ValNumber])
   }
 
 }

@@ -58,15 +58,14 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValNumber(point1), ValNumber(point2)) =>
           ValBoolean(point1 < point2)
-        case List(ValNumber(point), ValRange(range)) =>
+        case List(point: ValNumber, ValRange(start, end)) =>
           ValBoolean(
-            point.toInt < range.start || (point.toInt == range.start & !range.startIncl))
-        case List(ValRange(range), ValNumber(point)) =>
+            point < start.value || (point == start.value & !start.isClosed))
+        case List(ValRange(_, end), point: ValNumber) =>
+          ValBoolean(end.value < point || (end.value == point & !end.isClosed))
+        case List(ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
-            range.end < point.toInt || (range.end == point.toInt & !range.endIncl))
-        case List(ValRange(range1), ValRange(range2)) =>
-          ValBoolean(
-            range1.end < range2.start || (!range1.endIncl | !range2.startIncl) & range1.end == range2.start)
+            end1.value < start2.value || (!end1.isClosed | !start2.isClosed) & end1.value == start2.value)
       }
     )
 
@@ -76,15 +75,14 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValNumber(point1), ValNumber(point2)) =>
           ValBoolean(point1 > point2)
-        case List(ValNumber(point), ValRange(range)) =>
+        case List(point: ValNumber, ValRange(_, end)) =>
+          ValBoolean(point > end.value || (point == end.value & !end.isClosed))
+        case List(ValRange(start, _), point: ValNumber) =>
           ValBoolean(
-            point.toInt > range.end || (point.toInt == range.end & !range.endIncl))
-        case List(ValRange(range), ValNumber(point)) =>
+            start.value > point || (start.value == point & !start.isClosed))
+        case List(ValRange(start1, _), ValRange(_, end2)) =>
           ValBoolean(
-            range.start > point.toInt || (range.start == point.toInt & !range.startIncl))
-        case List(ValRange(range1), ValRange(range2)) =>
-          ValBoolean(
-            range1.start > range2.end || ((!range1.startIncl | !range2.endIncl) & range1.start == range2.end))
+            start1.value > end2.value || ((!start1.isClosed | !end2.isClosed) & start1.value == end2.value))
       }
     )
 
@@ -92,9 +90,9 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = List("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
-            range1.endIncl && range2.startIncl && range1.end == range2.start)
+            end1.isClosed && start2.isClosed && end1.value == start2.value)
       }
     )
 
@@ -102,9 +100,9 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = List("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, _), ValRange(_, end2)) =>
           ValBoolean(
-            range1.startIncl && range2.endIncl && range1.start == range2.end)
+            start1.isClosed && end2.isClosed && start1.value == end2.value)
       }
     )
 
@@ -112,9 +110,9 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = List("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl))
+            (end1.value > start2.value || (end1.value == start2.value && end1.isClosed && start2.isClosed)) && (start1.value < end2.value || (start1.value == end2.value && start1.isClosed && end2.isClosed))
           )
       }
     )
@@ -123,9 +121,9 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = List("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+            (start1.value < start2.value || (start1.value == start2.value && start1.isClosed && !start2.isClosed)) && (end1.value > start2.value || (end1.value == start2.value && end1.isClosed && start2.isClosed)) && (end1.value < end2.value || (end1.value == end2.value && (!end1.isClosed || end2.isClosed)))
           )
       }
     )
@@ -134,9 +132,9 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = List("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl)))
+            (start2.value < start1.value || (start2.value == start1.value && start2.isClosed && !start1.isClosed)) && (end2.value > start1.value || (end2.value == start1.value && end2.isClosed && start1.isClosed)) && (end2.value < end1.value || (end2.value == end1.value && (!end2.isClosed || end1.isClosed)))
           )
       }
     )
@@ -145,11 +143,11 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point), ValRange(range)) =>
-          ValBoolean(range.endIncl && range.end == point)
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(point: ValNumber, ValRange(_, end)) =>
+          ValBoolean(end.isClosed && end.value == point)
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl)))
+            end1.isClosed == end2.isClosed && end1.value == end2.value && (start1.value > start2.value || (start1.value == start2.value && (!start1.isClosed || start2.isClosed)))
           )
       }
     )
@@ -158,13 +156,13 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValRange(range), ValNumber(point)) =>
+        case List(ValRange(_, end), point: ValNumber) =>
           ValBoolean(
-            range.endIncl && range.end == point
+            end.isClosed && end.value == point
           )
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start < range2.start || (range1.start == range2.start && (range1.startIncl || !range2.startIncl)))
+            end1.isClosed == end2.isClosed && end1.value == end2.value && (start1.value < start2.value || (start1.value == start2.value && (start1.isClosed || !start2.isClosed)))
           )
       }
     )
@@ -173,13 +171,13 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValRange(range), ValNumber(point)) =>
+        case List(ValRange(start, end), point: ValNumber) =>
           ValBoolean(
-            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+            (start.value < point && end.value > point) || (start.value == point && start.isClosed) || (end.value == point && end.isClosed)
           )
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range1.start < range2.start || (range1.start == range2.start && (range1.startIncl || !range2.startIncl))) && (range1.end > range2.end || (range1.end == range2.end && (range1.endIncl || !range2.endIncl)))
+            (start1.value < start2.value || (start1.value == start2.value && (start1.isClosed || !start2.isClosed))) && (end1.value > end2.value || (end1.value == end2.value && (end1.isClosed || !end2.isClosed)))
           )
       }
     )
@@ -188,13 +186,13 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point), ValRange(range)) =>
+        case List(point: ValNumber, ValRange(start, end)) =>
           ValBoolean(
-            (range.start < point && range.end > point) || (range.start == point && range.startIncl) || (range.end == point && range.endIncl)
+            (start.value < point && end.value > point) || (start.value == point && start.isClosed) || (end.value == point && end.isClosed)
           )
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range2.start < range1.start || (range2.start == range1.start && (range2.startIncl || !range1.startIncl))) && (range2.end > range1.end || (range2.end == range1.end && (range2.endIncl || !range1.endIncl)))
+            (start2.value < start1.value || (start2.value == start1.value && (start2.isClosed || !start1.isClosed))) && (end2.value > end1.value || (end2.value == end1.value && (end2.isClosed || !end1.isClosed)))
           )
       }
     )
@@ -203,11 +201,11 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point), ValRange(range)) =>
-          ValBoolean(range.start == point && range.startIncl)
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(point: ValNumber, ValRange(start, _)) =>
+          ValBoolean(start.value == point && start.isClosed)
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.start == range2.start && range1.startIncl == range2.startIncl && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl)))
+            start1.value == start2.value && start1.isClosed == start2.isClosed && (end1.value < end2.value || (end1.value == end2.value && (!end1.isClosed || end2.isClosed)))
           )
       }
     )
@@ -216,11 +214,11 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValRange(range), ValNumber(point)) =>
-          ValBoolean(range.start == point && range.startIncl)
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start, _), point: ValNumber) =>
+          ValBoolean(start.value == point && start.isClosed)
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.start == range2.start && range1.startIncl == range2.startIncl && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl)))
+            start1.value == start2.value && start1.isClosed == start2.isClosed && (end2.value < end1.value || (end2.value == end1.value && (!end2.isClosed || end1.isClosed)))
           )
       }
     )
@@ -231,9 +229,9 @@ object RangeBuiltinFunction {
       invoke = {
         case List(ValNumber(point1), ValNumber(point2)) =>
           ValBoolean(point1 == point2)
-        case List(ValRange(range1), ValRange(range2)) =>
+        case List(ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.start == range2.start && range1.startIncl == range2.startIncl && range1.end == range2.end && range1.endIncl == range2.endIncl
+            start1.value == start2.value && start1.isClosed == start2.isClosed && end1.value == end2.value && end1.isClosed == end2.isClosed
           )
       }
     )
