@@ -786,4 +786,9 @@ class BuiltinRangeFunctionTest
     eval(""" before(1, null) """) should be(ValNull)
   }
 
+  it should "return null if the value types are different" in {
+    eval(""" before(5, date("2021-12-21")) """) should be(ValNull)
+    eval(""" before(date("2021-12-21"), [1..5]) """) should be(ValNull)
+  }
+
 }

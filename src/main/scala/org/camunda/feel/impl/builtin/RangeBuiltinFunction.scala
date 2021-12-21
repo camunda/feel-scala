@@ -64,6 +64,16 @@ object RangeBuiltinFunction {
     )
   )
 
+  private def isComparable(x: Val, y: Val): Boolean = (x, y) match {
+    case (ValRange(start1, _), ValRange(start2, _)) =>
+      isComparable(start1.value, start2.value)
+    case (ValRange(start, _), point: Val) => isComparable(point, start.value)
+    case (point: Val, ValRange(start, _)) => isComparable(point, start.value)
+    case (point1: Val, point2: Val) =>
+      isPointValue(point1) && isPointValue(point2) && point1.getClass == point2.getClass
+    case _ => false
+  }
+
   private def isPointValue(value: Val): Boolean = value match {
     case _: ValNumber            => true
     case _: ValDate              => true
@@ -80,16 +90,18 @@ object RangeBuiltinFunction {
     builtinFunction(
       params = params,
       invoke = {
-        case List(ValRange(_, end1), ValRange(start2, _)) =>
+        case List(range1 @ ValRange(_, end1), range2 @ ValRange(start2, _))
+            if isComparable(range1, range2) =>
           ValBoolean(
             end1.value < start2.value || (!end1.isClosed | !start2.isClosed) & end1.value == start2.value)
-        case List(point: Val, ValRange(start, _)) if isPointValue(point) =>
+        case List(point: Val, range @ ValRange(start, _))
+            if isComparable(point, range) =>
           ValBoolean(
             point < start.value || (point == start.value & !start.isClosed))
-        case List(ValRange(_, end), point: Val) if isPointValue(point) =>
+        case List(range @ ValRange(_, end), point: Val)
+            if isComparable(range, point) =>
           ValBoolean(end.value < point || (end.value == point & !end.isClosed))
-        case List(point1, point2)
-            if isPointValue(point1) && isPointValue(point2) =>
+        case List(point1, point2) if isComparable(point1, point2) =>
           ValBoolean(point1 < point2)
       }
     )
