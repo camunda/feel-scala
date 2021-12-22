@@ -15,6 +15,8 @@ import org.camunda.feel.syntaxtree.{
   ValYearMonthDuration
 }
 
+import scala.annotation.tailrec
+
 object RangeBuiltinFunction {
   def functions = Map(
     "before" -> List(
@@ -70,6 +72,7 @@ object RangeBuiltinFunction {
       case List(x, y) if isComparable(x, y) => invoke(x, y)
     })
 
+  @tailrec
   private def isComparable(x: Val, y: Val): Boolean = (x, y) match {
     case (ValRange(start1, _), ValRange(start2, _)) =>
       isComparable(start1.value, start2.value)

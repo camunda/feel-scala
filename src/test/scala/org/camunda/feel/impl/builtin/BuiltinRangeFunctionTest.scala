@@ -760,22 +760,22 @@ class BuiltinRangeFunctionTest
 
   it should "return null for string values" in {
     eval(""" before("a", "b") """) should be(ValNull)
-    eval(""" before("a", ["b".."c"]) """) should be(ValNull)
+    eval(""" before("a", [1..5]) """) should be(ValNull)
   }
 
   it should "return null for boolean values" in {
     eval(""" before(true, false) """) should be(ValNull)
-    eval(""" before(true, [true..false]) """) should be(ValNull)
+    eval(""" before(true, [1..5]) """) should be(ValNull)
   }
 
   it should "return null for list values" in {
     eval(""" before([1,2], [3,4]) """) should be(ValNull)
-    eval(""" before([1,2], [[3,4]..[5,6]]) """) should be(ValNull)
+    eval(""" before([1,2], [1..5]) """) should be(ValNull)
   }
 
   it should "return null for context values" in {
     eval(""" before({}, {x:1}) """) should be(ValNull)
-    eval(""" before({}, [{}..{x:1}]) """) should be(ValNull)
+    eval(""" before({}, [1..5]) """) should be(ValNull)
   }
 
   it should "return null for null values" in {
