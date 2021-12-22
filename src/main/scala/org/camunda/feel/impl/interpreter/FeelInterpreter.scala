@@ -149,15 +149,7 @@ class FeelInterpreter {
           ValContext
         )
 
-      case ConstRange(start, end) =>
-        withVal(eval(start.value),
-                startValue =>
-                  withVal(eval(end.value),
-                          endValue =>
-                            ValRange(
-                              start = toRangeBoundary(start, startValue),
-                              end = toRangeBoundary(end, endValue)
-                          )))
+      case range: ConstRange => toRange(range)
 
       // simple unary tests
       case InputEqualTo(x) =>
@@ -1055,6 +1047,38 @@ class FeelInterpreter {
           s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
     }
   }
+
+  private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
+    withVal(
+      eval(range.start.value),
+      startValue =>
+        withVal(
+          eval(range.end.value),
+          endValue =>
+            if (isValidRange(startValue, endValue)) {
+              ValRange(
+                start = toRangeBoundary(range.start, startValue),
+                end = toRangeBoundary(range.end, endValue)
+              )
+            } else {
+              ValError(s"invalid range definition '$range'")
+          }
+      )
+    )
+  }
+
+  private def isValidRange(startValue: Val, endValue: Val): Boolean =
+    (startValue, endValue) match {
+      case (ValNumber(_), ValNumber(_))                       => true
+      case (ValDate(_), ValDate(_))                           => true
+      case (ValTime(_), ValTime(_))                           => true
+      case (ValLocalTime(_), ValLocalTime(_))                 => true
+      case (ValDateTime(_), ValDateTime(_))                   => true
+      case (ValLocalDateTime(_), ValLocalDateTime(_))         => true
+      case (ValYearMonthDuration(_), ValYearMonthDuration(_)) => true
+      case (ValDayTimeDuration(_), ValDayTimeDuration(_))     => true
+      case _                                                  => false
+    }
 
   private def toRangeBoundary(boundary: ConstRangeBoundary,
                               value: Val): RangeBoundary = {
