@@ -65,7 +65,8 @@ case class ConstList(items: List[Exp]) extends Exp
 
 case class ConstContext(entries: List[(String, Exp)]) extends Exp
 
-case class ConstRange(start: RangeBoundary, end: RangeBoundary) extends Exp
+case class ConstRange(start: ConstRangeBoundary, end: ConstRangeBoundary)
+    extends Exp
 
 case class InputLessThan(x: Exp) extends Exp
 
@@ -77,7 +78,7 @@ case class InputGreaterOrEqual(x: Exp) extends Exp
 
 case class InputEqualTo(x: Exp) extends Exp
 
-case class Interval(start: IntervalBoundary, end: IntervalBoundary) extends Exp
+case class InputInRange(range: ConstRange) extends Exp
 
 case class AtLeastOne(xs: List[Exp]) extends Exp
 
@@ -146,6 +147,6 @@ case class For(iterators: List[(String, Exp)], exp: Exp) extends Exp
 
 case class Filter(list: Exp, filter: Exp) extends Exp
 
-case class Range(start: Exp, end: Exp) extends Exp
+case class IterationContext(start: Exp, end: Exp) extends Exp
 
 case class UnaryTestExpression(exp: Exp) extends Exp

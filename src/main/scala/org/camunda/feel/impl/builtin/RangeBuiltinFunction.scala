@@ -1,132 +1,279 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{ValBoolean, ValNumber, ValRange}
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNumber,
+  ValRange,
+  ValTime,
+  ValYearMonthDuration
+}
+
+import scala.annotation.tailrec
 
 object RangeBuiltinFunction {
   def functions = Map(
     "before" -> List(
-      beforeFunction(List("point1", "point2")),
-      beforeFunction(List("point", "range")),
-      beforeFunction(List("range", "point")),
-      beforeFunction(List("range1", "range2"))
+      beforeFunction("point1", "point2"),
+      beforeFunction("point", "range"),
+      beforeFunction("range", "point"),
+      beforeFunction("range1", "range2")
     ),
     "after" -> List(
-      afterFunction(List("point1", "point2")),
-      afterFunction(List("point", "range")),
-      afterFunction(List("range", "point")),
-      afterFunction(List("range1", "range2"))
+      afterFunction("point1", "point2"),
+      afterFunction("point", "range"),
+      afterFunction("range", "point"),
+      afterFunction("range1", "range2")
     ),
     "meets" -> List(meetsFunction),
     "met by" -> List(metByFunction),
     "overlaps" -> List(overlapsFunction),
     "overlaps before" -> List(overlapsBeforeFunction),
     "overlaps after" -> List(overlapsAfterFunction),
-    "finishes" -> List(finishesFunction(List("point", "range")),
-                       finishesFunction(List("range1", "range2"))),
-    "finished by" -> List(),
-    "includes" -> List(),
-    "during" -> List(),
-    "starts" -> List(),
-    "started by" -> List(),
-    "coincides" -> List()
+    "finishes" -> List(
+      finishesFunction("point", "range"),
+      finishesFunction("range1", "range2")
+    ),
+    "finished by" -> List(
+      finishedByFunction("point", "range"),
+      finishedByFunction("range1", "range2")
+    ),
+    "includes" -> List(
+      includesFunction("range", "point"),
+      includesFunction("range1", "range2")
+    ),
+    "during" -> List(
+      duringFunction("point", "range"),
+      duringFunction("range1", "range2")
+    ),
+    "starts" -> List(
+      starts("point", "range"),
+      starts("range1", "range2")
+    ),
+    "started by" -> List(
+      startedBy("range", "point"),
+      startedBy("range1", "range2")
+    ),
+    "coincides" -> List(
+      coincides("point1", "point2"),
+      coincides("range1", "range2")
+    )
   )
 
-  private def beforeFunction(params: List[String]) =
-    builtinFunction(
+  private def rangeBuiltinFunction(params: (String, String),
+                                   invoke: PartialFunction[(Val, Val), Any]) =
+    builtinFunction(params = List(params._1, params._2), invoke = {
+      case List(x, y) if isComparable(x, y) => invoke(x, y)
+    })
+
+  @tailrec
+  private def isComparable(x: Val, y: Val): Boolean = (x, y) match {
+    case (ValRange(start1, _), ValRange(start2, _)) =>
+      isComparable(start1.value, start2.value)
+    case (ValRange(start, _), point: Val) => isComparable(point, start.value)
+    case (point: Val, ValRange(start, _)) => isComparable(point, start.value)
+    case (point1: Val, point2: Val) =>
+      isPointValue(point1) && isPointValue(point2) && point1.getClass == point2.getClass
+    case _ => false
+  }
+
+  private def isPointValue(value: Val): Boolean = value match {
+    case _: ValNumber            => true
+    case _: ValDate              => true
+    case _: ValTime              => true
+    case _: ValLocalTime         => true
+    case _: ValDateTime          => true
+    case _: ValLocalDateTime     => true
+    case _: ValYearMonthDuration => true
+    case _: ValDayTimeDuration   => true
+    case _                       => false
+  }
+
+  private def beforeFunction(params: (String, String)) =
+    rangeBuiltinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point1), ValNumber(point2)) =>
-          ValBoolean(point1 < point2)
-        case List(ValNumber(point), ValRange(range)) =>
+        case (ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
-            point.toInt < range.start || (point.toInt == range.start & !range.startIncl))
-        case List(ValRange(range), ValNumber(point)) =>
+            end1.value < start2.value || (!end1.isClosed | !start2.isClosed) & end1.value == start2.value)
+        case (point: Val, ValRange(start, _)) =>
           ValBoolean(
-            range.end < point.toInt || (range.end == point.toInt & !range.endIncl))
-        case List(ValRange(range1), ValRange(range2)) =>
-          ValBoolean(
-            range1.end < range2.start || (!range1.endIncl | !range2.startIncl) & range1.end == range2.start)
+            point < start.value || (point == start.value & !start.isClosed))
+        case (ValRange(_, end), point: Val) =>
+          ValBoolean(end.value < point || (end.value == point & !end.isClosed))
+        case (point1, point2) => ValBoolean(point1 < point2)
       }
     )
 
-  private def afterFunction(params: List[String]) =
-    builtinFunction(
+  private def afterFunction(params: (String, String)) =
+    rangeBuiltinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point1), ValNumber(point2)) =>
-          ValBoolean(point1 > point2)
-        case List(ValNumber(point), ValRange(range)) =>
+        case (ValRange(start1, _), ValRange(_, end2)) =>
           ValBoolean(
-            point.toInt > range.end || (point.toInt == range.end & !range.endIncl))
-        case List(ValRange(range), ValNumber(point)) =>
+            start1.value > end2.value || ((!start1.isClosed | !end2.isClosed) & start1.value == end2.value))
+        case (point: Val, ValRange(_, end)) =>
+          ValBoolean(point > end.value || (point == end.value & !end.isClosed))
+        case (ValRange(start, _), point: Val) =>
           ValBoolean(
-            range.start > point.toInt || (range.start == point.toInt & !range.startIncl))
-        case List(ValRange(range1), ValRange(range2)) =>
-          ValBoolean(
-            range1.start > range2.end || ((!range1.startIncl | !range2.endIncl) & range1.start == range2.end))
+            start.value > point || (start.value == point & !start.isClosed))
+        case (point1, point2) => ValBoolean(point1 > point2)
       }
     )
 
   private def meetsFunction =
-    builtinFunction(
-      params = List("range1", "range2"),
+    rangeBuiltinFunction(
+      params = ("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(_, end1), ValRange(start2, _)) =>
           ValBoolean(
-            range1.endIncl && range2.startIncl && range1.end == range2.start)
+            end1.isClosed && start2.isClosed && end1.value == start2.value)
       }
     )
 
   private def metByFunction =
-    builtinFunction(
-      params = List("range1", "range2"),
+    rangeBuiltinFunction(
+      params = ("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(start1, _), ValRange(_, end2)) =>
           ValBoolean(
-            range1.startIncl && range2.endIncl && range1.start == range2.end)
+            start1.isClosed && end2.isClosed && start1.value == end2.value)
       }
     )
 
   private def overlapsFunction =
-    builtinFunction(
-      params = List("range1", "range2"),
+    rangeBuiltinFunction(
+      params = ("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.start < range2.end || (range1.start == range2.end && range1.startIncl && range2.endIncl)))
+            (end1.value > start2.value || (end1.value == start2.value && end1.isClosed && start2.isClosed)) && (start1.value < end2.value || (start1.value == end2.value && start1.isClosed && end2.isClosed))
+          )
       }
     )
 
   private def overlapsBeforeFunction =
-    builtinFunction(
-      params = List("range1", "range2"),
+    rangeBuiltinFunction(
+      params = ("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range1.start < range2.start || (range1.start == range2.start && range1.startIncl && !range2.startIncl)) && (range1.end > range2.start || (range1.end == range2.start && range1.endIncl && range2.startIncl)) && (range1.end < range2.end || (range1.end == range2.end && (!range1.endIncl || range2.endIncl))))
+            (start1.value < start2.value || (start1.value == start2.value && start1.isClosed && !start2.isClosed)) && (end1.value > start2.value || (end1.value == start2.value && end1.isClosed && start2.isClosed)) && (end1.value < end2.value || (end1.value == end2.value && (!end1.isClosed || end2.isClosed)))
+          )
       }
     )
 
   private def overlapsAfterFunction =
-    builtinFunction(
-      params = List("range1", "range2"),
+    rangeBuiltinFunction(
+      params = ("range1", "range2"),
       invoke = {
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            (range2.start < range1.start || (range2.start == range1.start && range2.startIncl && !range1.startIncl)) && (range2.end > range1.start || (range2.end == range1.start && range2.endIncl && range1.startIncl)) && (range2.end < range1.end || (range2.end == range1.end && (!range2.endIncl || range1.endIncl))))
+            (start2.value < start1.value || (start2.value == start1.value && start2.isClosed && !start1.isClosed)) && (end2.value > start1.value || (end2.value == start1.value && end2.isClosed && start1.isClosed)) && (end2.value < end1.value || (end2.value == end1.value && (!end2.isClosed || end1.isClosed)))
+          )
       }
     )
 
-  private def finishesFunction(params: List[String]) =
-    builtinFunction(
+  private def finishesFunction(params: (String, String)) =
+    rangeBuiltinFunction(
       params = params,
       invoke = {
-        case List(ValNumber(point), ValRange(range)) =>
-          ValBoolean(range.endIncl && range.end == point)
-        case List(ValRange(range1), ValRange(range2)) =>
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
           ValBoolean(
-            range1.endIncl == range2.endIncl && range1.end == range2.end && (range1.start > range2.start || (range1.start == range2.start && (!range1.startIncl || range2.startIncl))))
+            end1.isClosed == end2.isClosed && end1.value == end2.value && (start1.value > start2.value || (start1.value == start2.value && (!start1.isClosed || start2.isClosed)))
+          )
+        case (point: Val, ValRange(_, end)) =>
+          ValBoolean(end.isClosed && end.value == point)
+      }
+    )
+
+  private def finishedByFunction(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            end1.isClosed == end2.isClosed && end1.value == end2.value && (start1.value < start2.value || (start1.value == start2.value && (start1.isClosed || !start2.isClosed)))
+          )
+        case (ValRange(_, end), point: Val) =>
+          ValBoolean(
+            end.isClosed && end.value == point
+          )
+      }
+    )
+
+  private def includesFunction(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            (start1.value < start2.value || (start1.value == start2.value && (start1.isClosed || !start2.isClosed))) && (end1.value > end2.value || (end1.value == end2.value && (end1.isClosed || !end2.isClosed)))
+          )
+        case (ValRange(start, end), point: Val) =>
+          ValBoolean(
+            (start.value < point && end.value > point) || (start.value == point && start.isClosed) || (end.value == point && end.isClosed)
+          )
+      }
+    )
+
+  private def duringFunction(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            (start2.value < start1.value || (start2.value == start1.value && (start2.isClosed || !start1.isClosed))) && (end2.value > end1.value || (end2.value == end1.value && (end2.isClosed || !end1.isClosed)))
+          )
+        case (point: Val, ValRange(start, end)) =>
+          ValBoolean(
+            (start.value < point && end.value > point) || (start.value == point && start.isClosed) || (end.value == point && end.isClosed)
+          )
+      }
+    )
+
+  private def starts(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            start1.value == start2.value && start1.isClosed == start2.isClosed && (end1.value < end2.value || (end1.value == end2.value && (!end1.isClosed || end2.isClosed)))
+          )
+        case (point: Val, ValRange(start, _)) =>
+          ValBoolean(start.value == point && start.isClosed)
+      }
+    )
+
+  private def startedBy(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            start1.value == start2.value && start1.isClosed == start2.isClosed && (end2.value < end1.value || (end2.value == end1.value && (!end2.isClosed || end1.isClosed)))
+          )
+        case (ValRange(start, _), point: Val) =>
+          ValBoolean(start.value == point && start.isClosed)
+      }
+    )
+
+  private def coincides(params: (String, String)) =
+    rangeBuiltinFunction(
+      params = params,
+      invoke = {
+        case (ValRange(start1, end1), ValRange(start2, end2)) =>
+          ValBoolean(
+            start1.value == start2.value && start1.isClosed == start2.isClosed && end1.value == end2.value && end1.isClosed == end2.isClosed
+          )
+        case (point1, point2) =>
+          ValBoolean(point1 == point2)
       }
     )
 }

@@ -260,6 +260,27 @@
               <differenceType>7012</differenceType>
               <method>*</method>
             </ignored>
+            <!-- ignore changes in the abstract syntax tree - only used by the interpreter -->
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/Interval</className>
+              <differenceType>8001</differenceType>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/IntervalBoundary</className>
+              <differenceType>8001</differenceType>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/ClosedIntervalBoundary</className>
+              <differenceType>8001</differenceType>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/OpenIntervalBoundary</className>
+              <differenceType>8001</differenceType>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/Range</className>
+              <differenceType>8001</differenceType>
+            </ignored>
           </ignored>
         </configuration>
       </plugin>

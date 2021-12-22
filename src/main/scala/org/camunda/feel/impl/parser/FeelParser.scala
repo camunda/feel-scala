@@ -38,8 +38,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedIntervalBoundary,
-  ClosedRangeBoundary,
+  ClosedConstRangeBoundary,
   Conjunction,
   ConstBool,
   ConstContext,
@@ -74,24 +73,22 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
-  IntervalBoundary,
+  IterationContext,
   JavaFunctionInvocation,
   LessOrEqual,
   LessThan,
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenIntervalBoundary,
-  OpenRangeBoundary,
+  OpenConstRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
-  RangeBoundary,
+  ConstRangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -245,14 +242,14 @@ object FeelParser {
     }
 
   private def listIterator[_: P]: P[(String, Exp)] = P(
-    name ~ "in" ~ (range | value)
+    name ~ "in" ~ (iterationContext | value)
   )
 
-  private def range[_: P]: P[Exp] =
+  private def iterationContext[_: P]: P[Exp] =
     P(
       expLvl4 ~ ".." ~ expLvl4
     ).map {
-      case (start, end) => Range(start, end)
+      case (start, end) => IterationContext(start, end)
     }
 
   private def quantifiedOp[_: P]: P[Exp] =
@@ -501,12 +498,12 @@ object FeelParser {
 
   private def namedParameters[_: P]: P[NamedFunctionParameters] =
     P(
-      (parameterName ~ ":" ~ (rangeBoundary | expression)).rep(1, sep = ",")
+      (parameterName ~ ":" ~ (range | expression)).rep(1, sep = ",")
     ).map(params => NamedFunctionParameters(params.toMap))
 
   private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
     P(
-      (rangeBoundary | expression).rep(1, sep = ",")
+      (range | expression).rep(1, sep = ",")
     ).map(params => PositionalFunctionParameters(params.toList))
 
   // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
@@ -572,54 +569,31 @@ object FeelParser {
   // allow more expressions compared to the spec to align unary-tests with other expression
   private def endpoint[_: P]: P[Exp] = expLvl4
 
-  private def interval[_: P]: P[Exp] =
-    P(
-      intervalStart ~ ".." ~ intervalEnd
-    ).map {
-      case (start, end) => Interval(start, end)
-    }
+  private def interval[_: P]: P[Exp] = range.map(InputInRange)
 
-  private def intervalStart[_: P]: P[IntervalBoundary] =
-    P(
-      CharIn("(", "]", "[").! ~ endpoint
-    ).map {
-      case ("(", x) => OpenIntervalBoundary(x)
-      case ("]", x) => OpenIntervalBoundary(x)
-      case ("[", x) => ClosedIntervalBoundary(x)
-    }
-
-  private def intervalEnd[_: P]: P[IntervalBoundary] =
-    P(
-      endpoint ~ CharIn(")", "[", "]").!
-    ).map {
-      case (y, ")") => OpenIntervalBoundary(y)
-      case (y, "[") => OpenIntervalBoundary(y)
-      case (y, "]") => ClosedIntervalBoundary(y)
-    }
-
-  private def rangeBoundary[_: P]: P[Exp] =
+  private def range[_: P]: P[ConstRange] =
     P(
       rangeStart ~ ".." ~ rangeEnd
     ).map {
       case (start, end) => ConstRange(start, end)
     }
 
-  private def rangeStart[_: P]: P[RangeBoundary] =
+  private def rangeStart[_: P]: P[ConstRangeBoundary] =
     P(
       CharIn("(", "]", "[").! ~ expLvl4
     ).map {
-      case ("(", x) => OpenRangeBoundary(x)
-      case ("]", x) => OpenRangeBoundary(x)
-      case ("[", x) => ClosedRangeBoundary(x)
+      case ("(", x) => OpenConstRangeBoundary(x)
+      case ("]", x) => OpenConstRangeBoundary(x)
+      case ("[", x) => ClosedConstRangeBoundary(x)
     }
 
-  private def rangeEnd[_: P]: P[RangeBoundary] =
+  private def rangeEnd[_: P]: P[ConstRangeBoundary] =
     P(
       expLvl4 ~ CharIn(")", "[", "]").!
     ).map {
-      case (y, ")") => OpenRangeBoundary(y)
-      case (y, "[") => OpenRangeBoundary(y)
-      case (y, "]") => ClosedRangeBoundary(y)
+      case (y, ")") => OpenConstRangeBoundary(y)
+      case (y, "[") => OpenConstRangeBoundary(y)
+      case (y, "]") => ClosedConstRangeBoundary(y)
     }
 
   // --------------- temporal parsers ---------------

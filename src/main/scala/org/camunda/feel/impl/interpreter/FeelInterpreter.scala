@@ -24,7 +24,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedIntervalBoundary,
+  ClosedConstRangeBoundary,
   ClosedRangeBoundary,
   Comparison,
   Conjunction,
@@ -40,6 +40,7 @@ import org.camunda.feel.syntaxtree.{
   ConstNull,
   ConstNumber,
   ConstRange,
+  ConstRangeBoundary,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -61,22 +62,23 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
+  IterationContext,
   JavaFunctionInvocation,
   LessOrEqual,
   LessThan,
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenIntervalBoundary,
+  OpenConstRangeBoundary,
+  OpenRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
-  RangeWithBoundaries,
+  RangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -98,7 +100,7 @@ import org.camunda.feel.syntaxtree.{
   ValString,
   ValTime,
   ValYearMonthDuration,
-  ZonedTime,
+  ZonedTime
 }
 import org.camunda.feel.{
   Date,
@@ -146,20 +148,8 @@ class FeelInterpreter {
           },
           ValContext
         )
-      case ConstRange(start, end) =>
-        withNumbers(
-          eval(start.value),
-          eval(end.value),
-          (startValue, endValue) =>
-            ValRange(
-              RangeWithBoundaries(
-                startValue,
-                endValue,
-                start.isInstanceOf[ClosedRangeBoundary],
-                end.isInstanceOf[ClosedRangeBoundary]
-              )
-          )
-        )
+
+      case range: ConstRange => toRange(range)
 
       // simple unary tests
       case InputEqualTo(x) =>
@@ -172,10 +162,10 @@ class FeelInterpreter {
         withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
       case InputGreaterOrEqual(x) =>
         withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
-      case interval @ Interval(start, end) =>
+      case InputInRange(range @ ConstRange(start, end)) =>
         unaryOpDual(eval(start.value),
                     eval(end.value),
-                    isInInterval(interval),
+                    isInRange(range),
                     ValBoolean)
 
       case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
@@ -280,7 +270,7 @@ class FeelInterpreter {
                 }
           }
         )
-      case Range(start, end) =>
+      case IterationContext(start, end) =>
         withNumbers(eval(start), eval(end), (x, y) => {
           val range = if (x < y) {
             (x to y).by(1)
@@ -521,15 +511,15 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
-  private def isInInterval(interval: Interval): (Val, Val, Val) => Boolean =
+  private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
-      val inStart: Boolean = interval.start match {
-        case OpenIntervalBoundary(_)   => i > x
-        case ClosedIntervalBoundary(_) => i >= x
+      val inStart: Boolean = range.start match {
+        case OpenConstRangeBoundary(_)   => i > x
+        case ClosedConstRangeBoundary(_) => i >= x
       }
-      val inEnd = interval.end match {
-        case OpenIntervalBoundary(_)   => i < y
-        case ClosedIntervalBoundary(_) => i <= y
+      val inEnd = range.end match {
+        case OpenConstRangeBoundary(_)   => i < y
+        case ClosedConstRangeBoundary(_) => i <= y
       }
       inStart && inEnd
     }
@@ -1055,6 +1045,46 @@ class FeelInterpreter {
       case _: Throwable =>
         ValError(
           s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
+    }
+  }
+
+  private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
+    withVal(
+      eval(range.start.value),
+      startValue =>
+        withVal(
+          eval(range.end.value),
+          endValue =>
+            if (isValidRange(startValue, endValue)) {
+              ValRange(
+                start = toRangeBoundary(range.start, startValue),
+                end = toRangeBoundary(range.end, endValue)
+              )
+            } else {
+              ValError(s"invalid range definition '$range'")
+          }
+      )
+    )
+  }
+
+  private def isValidRange(startValue: Val, endValue: Val): Boolean =
+    (startValue, endValue) match {
+      case (ValNumber(_), ValNumber(_))                       => true
+      case (ValDate(_), ValDate(_))                           => true
+      case (ValTime(_), ValTime(_))                           => true
+      case (ValLocalTime(_), ValLocalTime(_))                 => true
+      case (ValDateTime(_), ValDateTime(_))                   => true
+      case (ValLocalDateTime(_), ValLocalDateTime(_))         => true
+      case (ValYearMonthDuration(_), ValYearMonthDuration(_)) => true
+      case (ValDayTimeDuration(_), ValDayTimeDuration(_))     => true
+      case _                                                  => false
+    }
+
+  private def toRangeBoundary(boundary: ConstRangeBoundary,
+                              value: Val): RangeBoundary = {
+    boundary match {
+      case OpenConstRangeBoundary(_)   => OpenRangeBoundary(value)
+      case ClosedConstRangeBoundary(_) => ClosedRangeBoundary(value)
     }
   }
 
