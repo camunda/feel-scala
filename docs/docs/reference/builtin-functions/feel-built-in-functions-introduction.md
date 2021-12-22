@@ -25,7 +25,7 @@ For a better overview, this section is split into functions based on their prima
 * [List](./feel-built-in-functions-list.md)
 * [Context](./feel-built-in-functions-context.md)
 * [Temporal](./feel-built-in-functions-temporal.md)
+* [Range](./feel-built-in-functions-range.md)
 
 Additionally, there are [conversion](./feel-built-in-functions-conversion.md) functions that allows
 to construct new values of a data type (aka factory functions).
-

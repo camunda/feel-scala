@@ -3,15 +3,27 @@ id: feel-built-in-functions-range
 title: Range Functions
 ---
 
-## before
+A set of functions establish relationships between single scalar values and ranges of such values.
+All functions take two arguments and return `true` if the relationship between the argument holds,
+or `false` otherwise.
+
+A scalar value must be of the following type: 
+* number
+* date
+* time
+* date-time
+* days-time-duration
+* years-months-duration
+
+![range functions overview](../assets/feel-built-in-functions-range-overview.png)
+
+## before()
 
 * parameters:
-  * `range`: range
-  * `point`: number
-  * `range1`: range
-  * `range2`: range
-  * `point1`: number
-  * `point2`: number
+  * `point1`, `point2`: any
+  * or `range`: range, `point`: any
+  * or `point`: any, `range`: range
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -35,15 +47,13 @@ before([1..5),[5..10])
 ```
 
 
-## after
+## after()
 
 * parameters:
-  * `range`: range
-  * `point`: number
-  * `range1`: range
-  * `range2`: range
-  * `point1`: number
-  * `point2`: number
+  * `point1`, `point2`: any
+  * or `range`: range, `point`: any
+  * or `point`: any, `range`: range
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -66,7 +76,7 @@ before([5..10], [1..5))
 // true
 ```
 
-## meets
+## meets()
 
 * parameters:
   * `range1`: range
@@ -88,7 +98,7 @@ meets([1..5], (5..8])
 
 ```
 
-## met by
+## met by()
 
 * parameters:
   * `range1`: range
@@ -113,7 +123,7 @@ met by([5..10], [1..5))
 ```
 
 
-## overlaps
+## overlaps()
 
 * parameters:
   * `range1`: range
@@ -138,7 +148,7 @@ overlaps([4..10], [1..5))
 ```
 
 
-## overlaps before
+## overlaps before()
 
 * parameters:
   * `range1`: range
@@ -163,7 +173,7 @@ overlaps before([1..5), [5..10])
 ```
 
 
-## overlaps after
+## overlaps after()
 
 * parameters:
   * `range1`: range
@@ -188,13 +198,11 @@ overlaps after([4..10], [1..5))
 ```
 
 
-## finishes
+## finishes()
 
 * parameters:
-  * `point`: number
-  * `range`: range
-  * `range1`: range
-  * `range2`: range
+  * `point`: any, `range`: range
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -214,13 +222,11 @@ finishes([5..10], [1..10))
 // false
 ```
 
-## finished by
+## finished by()
 
 * parameters:
-  * `point`: number
-  * `range`: range
-  * `range1`: range
-  * `range2`: range
+  * `range`: range, `point`: any
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -240,13 +246,11 @@ finishes by([5..10], (1..10))
 // true
 ```
 
-## includes
+## includes()
 
 * parameters:
-  * `point`: number
-  * `range`: range
-  * `range1`: range
-  * `range2`: range
+  * `range`: range, `point`: any
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -266,11 +270,11 @@ includes([1..10], [1..5))
 // true
 ```
 
-## during
+## during()
 
 * parameters:
-  * `range1`: range
-  * `range2`: range
+  * `point`: any, `range`: range
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -290,13 +294,11 @@ during((1..5], (1..10])
 // true
 ```
 
-## starts
+## starts()
 
 * parameters:
-  * `point`: number
-  * `range`: range
-  * `range1`: range
-  * `range2`: range
+  * `point`: any, `range`: range
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -316,13 +318,11 @@ starts((1..10), (1..10))
 // true
 ```
 
-## started by
+## started by()
 
 * parameters:
-  * `point`: number
-  * `range`: range
-  * `range1`: range
-  * `range2`: range
+  * `range`: range, `point`: any
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
@@ -342,13 +342,11 @@ started by([1..10], [1..10))
 // true
 ```
 
-## coincides
+## coincides()
 
 * parameters:
-  * `point1`: number
-  * `point2`: number
-  * `range1`: range
-  * `range2`: range
+  * `point1`, `point2`: any
+  * or `range1`, `range2`: range
 * result: boolean
 
 ```js
