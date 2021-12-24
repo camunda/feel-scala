@@ -30,7 +30,8 @@ module.exports = {
             'reference/builtin-functions/feel-built-in-functions-numeric',
             'reference/builtin-functions/feel-built-in-functions-list',
             'reference/builtin-functions/feel-built-in-functions-context',
-            'reference/builtin-functions/feel-built-in-functions-temporal'
+            'reference/builtin-functions/feel-built-in-functions-temporal',
+            'reference/builtin-functions/feel-built-in-functions-range'
           ]
         }]
     },
