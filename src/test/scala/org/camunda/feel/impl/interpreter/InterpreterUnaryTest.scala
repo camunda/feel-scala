@@ -80,6 +80,13 @@ class InterpreterUnaryTest
     evalUnaryTests(4, "[2..4]") should be(ValBoolean(true))
   }
 
+  it should "be in one of two intervals (disjunction)" in {
+
+    evalUnaryTests(3, "[1..5], [6..10]") should be(ValBoolean(true))
+    evalUnaryTests(6, "[1..5], [6..10]") should be(ValBoolean(true))
+    evalUnaryTests(11, "[1..5], [6..10]") should be(ValBoolean(false))
+  }
+
   it should "be in '2,3'" in {
 
     evalUnaryTests(2, "2,3") should be(ValBoolean(true))
