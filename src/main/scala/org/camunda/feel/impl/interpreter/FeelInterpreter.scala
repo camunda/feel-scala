@@ -969,7 +969,7 @@ class FeelInterpreter {
   private def filterContext(x: Val)(
       implicit context: EvalContext): EvalContext =
     x match {
-      case ValContext(ctx: Context) => context + ctx + ("item" -> x)
+      case ValContext(ctx: Context) => context + ("item" -> x) + ctx
       case v                        => context + ("item" -> v)
     }
 

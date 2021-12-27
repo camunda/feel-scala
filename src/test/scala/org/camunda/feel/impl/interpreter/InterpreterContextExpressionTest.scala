@@ -79,6 +79,19 @@ class InterpreterContextExpressionTest
       .getVariables should be(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))
   }
 
+  it should "be filtered by name 'item'" in {
+
+    eval("[ {item:1}, {item:2}, {item:3} ][item >= 2]") match {
+      case ValList(List(ValContext(context1), ValContext(context2))) =>
+        context1.variableProvider.getVariables should be(
+          Map("item" -> ValNumber(2)))
+        context2.variableProvider.getVariables should be(
+          Map("item" -> ValNumber(3)))
+
+      case actual => fail(s"expected a list with two items but found '$actual'")
+    }
+  }
+
   it should "be accessed and filtered in a list" in {
 
     eval("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should be(ValNumber(1))
