@@ -1,7 +1,16 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValError,
+  ValFunction,
+  ValList,
+  ValNull,
+  ValNumber,
+  ValString
+}
 import org.camunda.feel.{Number, logger}
 
 import scala.annotation.tailrec
