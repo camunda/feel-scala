@@ -378,6 +378,10 @@ class BuiltinListFunctionsTest
     eval(""" join(["foo", null, "baz"], null) """) should be(ValString("foobaz"))
   }
 
+  it should "ignore null strings with delimiter" in {
+    eval(""" join(["foo", null, "baz"], "X") """) should be(ValString("fooXbaz"))
+  }
+
   it should "return joined strings with custom separator" in {
     eval(""" join(["foo","bar","baz"], "::") """) should be(
       ValString("foo::bar::baz"))

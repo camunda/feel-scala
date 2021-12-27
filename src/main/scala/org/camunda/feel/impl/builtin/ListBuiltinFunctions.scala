@@ -1,6 +1,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
+import org.camunda.feel.{Number, logger}
 import org.camunda.feel.syntaxtree.{
   Val,
   ValBoolean,
@@ -11,7 +12,6 @@ import org.camunda.feel.syntaxtree.{
   ValNumber,
   ValString
 }
-import org.camunda.feel.{Number, logger}
 
 import scala.annotation.tailrec
 
@@ -428,11 +428,11 @@ object ListBuiltinFunctions {
 
   private def withListOfStrings(list: List[Val],
                                 f: List[String] => Val): Val = {
-    val strings = list
+    val strings =
+      list.filterNot(elem => elem == ValNull)
       .map(elem =>
         elem match {
           case n: ValString => n
-          case ValNull      => ValString("")
           case x            => ValError(s"expected string but found '$x'")
       })
 
