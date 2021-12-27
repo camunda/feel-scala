@@ -63,6 +63,18 @@ class InterpreterBooleanExpressionTest
     eval("1 between 1 and 3 and 2 between 1 and 3") should be(ValBoolean(true))
   }
 
+  it should "be in conjunction with some/every-expression" in {
+    eval(" (10 > 5) and (some y in [1,2,3] satisfies y > 2) ") should be(
+      ValBoolean(true))
+
+    eval(" (some y in [1,2,3] satisfies y > 2) and (10 > 5) ") should be(
+      ValBoolean(true))
+
+    eval(
+      " (some y in [1,2,3] satisfies y > 2) and (every x in [1,2,3] satisfies x < 5) ") should be(
+      ValBoolean(true))
+  }
+
   it should "be in disjunction" in {
 
     eval("false or true") should be(ValBoolean(true))
