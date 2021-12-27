@@ -153,6 +153,14 @@ class InterpreterListExpressionTest
     eval("{x:[[[[1]]]]}.x[1][1][1][1]") should be(ValNumber(1))
   }
 
+  it should "be filtered multiple times (in a context)" in {
+    val listOfLists = List(List(1))
+
+    eval("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should be(ValNumber(1))
+    eval("{z: x.y[1][1][1]}.z", Map("x" -> Map("y" -> List(listOfLists)))) should be(ValNumber(1))
+    eval("{z: x.y[1][1][1][1]}.z", Map("x" -> Map("y" -> List(List(listOfLists))))) should be(ValNumber(1))
+  }
+
   it should "fail if one element fails" in {
 
     eval("[1, {}.x]") should be(
