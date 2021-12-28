@@ -43,9 +43,9 @@ object ListBuiltinFunctions {
     "distinct values" -> List(distinctValuesFunction),
     "flatten" -> List(flattenFunction),
     "sort" -> List(sortFunction),
-    "joining" -> List(joiningFunction,
-                      joiningWithDelimiterFunction,
-                      joiningWithDelimiterAndPrefixAndSuffixFunction)
+    "string join" -> List(joinFunction,
+                          joinWithDelimiterFunction,
+                          joinWithDelimiterAndPrefixAndSuffixFunction)
   )
 
   private def listContainsFunction =
@@ -385,7 +385,7 @@ object ListBuiltinFunctions {
     }
   )
 
-  private def joiningFunction = builtinFunction(
+  private def joinFunction = builtinFunction(
     params = List("list"),
     invoke = {
       case List(ValList(list)) =>
@@ -393,16 +393,19 @@ object ListBuiltinFunctions {
     }
   )
 
-  private def joiningWithDelimiterFunction = builtinFunction(
+  private def joinWithDelimiterFunction = builtinFunction(
     params = List("list", "delimiter"),
     invoke = {
       case List(ValList(list), ValString(delimiter)) =>
         withListOfStrings(list,
                           strings => ValString(strings.mkString(delimiter)))
+
+      case List(ValList(list), ValNull) =>
+        withListOfStrings(list, strings => ValString(strings.mkString))
     }
   )
 
-  private def joiningWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
+  private def joinWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
     params = List("list", "delimiter", "prefix", "suffix"),
     invoke = {
       case List(ValList(list),
@@ -414,19 +417,29 @@ object ListBuiltinFunctions {
           strings =>
             ValString(
               strings.mkString(start = prefix, sep = delimiter, end = suffix)))
+
+      case List(ValList(list), ValNull, ValString(prefix), ValString(suffix)) =>
+        withListOfStrings(
+          list,
+          strings =>
+            ValString(strings.mkString(start = prefix, sep = "", end = suffix)))
     }
   )
 
   private def withListOfStrings(list: List[Val],
                                 f: List[String] => Val): Val = {
-    list
-      .map(_ match {
-        case n: ValString => n
-        case x            => ValError(s"expected string but found '$x'")
-      })
-      .find(_.isInstanceOf[ValError]) match {
+    val strings =
+      list
+        .filterNot(elem => elem == ValNull)
+        .map(elem =>
+          elem match {
+            case n: ValString => n
+            case x            => ValError(s"expected string but found '$x'")
+        })
+
+    strings.find(_.isInstanceOf[ValError]) match {
       case Some(e) => e
-      case None    => f(list.asInstanceOf[List[ValString]].map(_.value))
+      case None    => f(strings.asInstanceOf[List[ValString]].map(_.value))
     }
   }
 }

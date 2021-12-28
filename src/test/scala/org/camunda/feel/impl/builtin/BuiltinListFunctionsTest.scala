@@ -354,21 +354,41 @@ class BuiltinListFunctionsTest
     eval(" product(2,3,4) ") should be(ValNumber(24))
   }
 
-  "A joining function" should "return an empty string if the input list is empty" in {
-    eval(" joining([]) ") should be(ValString(""))
+  "A join function" should "return an empty string if the input list is empty" in {
+    eval(" string join([]) ") should be(ValString(""))
+  }
+
+  it should "return an empty string if the input list is empty and a delimiter is defined" in {
+    eval(""" string join([], "X") """) should be(ValString(""))
   }
 
   it should "return joined strings" in {
-    eval(""" joining(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
+    eval(""" string join(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
+  }
+
+  it should "return joined strings when delimiter is null" in {
+    eval(""" string join(["foo","bar","baz"], null) """) should be(ValString("foobarbaz"))
+  }
+
+  it should "return original string when list contains a single entry" in {
+    eval(""" string join(["a"], "X") """) should be(ValString("a"))
+  }
+
+  it should "ignore null strings" in {
+    eval(""" string join(["foo", null, "baz"], null) """) should be(ValString("foobaz"))
+  }
+
+  it should "ignore null strings with delimiter" in {
+    eval(""" string join(["foo", null, "baz"], "X") """) should be(ValString("fooXbaz"))
   }
 
   it should "return joined strings with custom separator" in {
-    eval(""" joining(["foo","bar","baz"], "::") """) should be(
+    eval(""" string join(["foo","bar","baz"], "::") """) should be(
       ValString("foo::bar::baz"))
   }
 
   it should "return joined strings with custom separator, a prefix and a suffix" in {
-    eval(""" joining(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
+    eval(""" string join(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
       ValString("hello-foo::bar::baz-goodbye"))
   }
 
