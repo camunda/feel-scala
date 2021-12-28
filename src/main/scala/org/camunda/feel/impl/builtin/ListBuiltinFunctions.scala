@@ -43,9 +43,9 @@ object ListBuiltinFunctions {
     "distinct values" -> List(distinctValuesFunction),
     "flatten" -> List(flattenFunction),
     "sort" -> List(sortFunction),
-    "joining" -> List(joiningFunction,
-                      joiningWithDelimiterFunction,
-                      joiningWithDelimiterAndPrefixAndSuffixFunction)
+    "string join" -> List(joinFunction,
+                          joinWithDelimiterFunction,
+                          joinWithDelimiterAndPrefixAndSuffixFunction)
   )
 
   private def listContainsFunction =
@@ -385,48 +385,66 @@ object ListBuiltinFunctions {
     }
   )
 
-  private def joiningFunction = builtinFunction(
+  private def joinFunction = builtinFunction(
     params = List("list"),
     invoke = {
-      case List(ValList(list)) =>
-        withListOfStrings(list, strings => ValString(strings.mkString))
+      case List(ValList(list)) => joinStringList(list = list)
     }
   )
 
-  private def joiningWithDelimiterFunction = builtinFunction(
+  private def joinWithDelimiterFunction = builtinFunction(
     params = List("list", "delimiter"),
     invoke = {
       case List(ValList(list), ValString(delimiter)) =>
-        withListOfStrings(list,
-                          strings => ValString(strings.mkString(delimiter)))
+        joinStringList(list = list, delimiter = delimiter)
+      case List(ValList(list), ValNull) => joinStringList(list = list)
     }
   )
 
-  private def joiningWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
+  private def joinWithDelimiterAndPrefixAndSuffixFunction = builtinFunction(
     params = List("list", "delimiter", "prefix", "suffix"),
     invoke = {
       case List(ValList(list),
                 ValString(delimiter),
                 ValString(prefix),
                 ValString(suffix)) =>
-        withListOfStrings(
-          list,
-          strings =>
-            ValString(
-              strings.mkString(start = prefix, sep = delimiter, end = suffix)))
+        joinStringList(list = list,
+                       delimiter = delimiter,
+                       prefix = prefix,
+                       suffix = suffix)
+
+      case List(ValList(list), ValNull, ValString(prefix), ValString(suffix)) =>
+        joinStringList(list = list, prefix = prefix, suffix = suffix)
+
+      case List(ValList(list), ValString(delimiter), ValNull, ValNull) =>
+        joinStringList(list = list, delimiter = delimiter)
+      case List(ValList(list), ValNull, ValNull, ValNull) =>
+        joinStringList(list = list)
     }
   )
 
-  private def withListOfStrings(list: List[Val],
-                                f: List[String] => Val): Val = {
-    list
-      .map(_ match {
-        case n: ValString => n
-        case x            => ValError(s"expected string but found '$x'")
-      })
-      .find(_.isInstanceOf[ValError]) match {
-      case Some(e) => e
-      case None    => f(list.asInstanceOf[List[ValString]].map(_.value))
+  private def joinStringList(list: List[Val],
+                             delimiter: String = "",
+                             prefix: String = "",
+                             suffix: String = ""): Val = {
+
+    val isStringList = list.forall {
+      case _: ValString => true
+      case ValNull      => true
+      case _            => false
+    }
+
+    if (!isStringList) {
+      ValError(s"expected a list of strings but found '$list'")
+
+    } else {
+      val stringList = list
+        .filterNot(_ == ValNull)
+        .map { case ValString(x) => x }
+
+      ValString(
+        stringList.mkString(start = prefix, sep = delimiter, end = suffix))
     }
   }
+
 }
