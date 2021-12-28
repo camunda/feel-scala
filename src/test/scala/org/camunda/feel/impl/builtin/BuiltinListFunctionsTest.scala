@@ -28,7 +28,7 @@ import scala.math.BigDecimal.int2bigDecimal
   * @author Philipp
   */
 class BuiltinListFunctionsTest
-    extends AnyFlatSpec
+  extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -189,13 +189,13 @@ class BuiltinListFunctionsTest
   it should "return true if all items are true (huge list)" in {
     val hugeList = (1 to 10_000).map(_ => true).toList
 
-    eval("all(xs)", Map("xs" -> hugeList)) should be (ValBoolean(true))
+    eval("all(xs)", Map("xs" -> hugeList)) should be(ValBoolean(true))
   }
 
   it should "return null if items are not boolean values (huge list)" in {
     val hugeList = (1 to 10_000).toList
 
-    eval("all(xs)", Map("xs" -> hugeList)) should be (ValNull)
+    eval("all(xs)", Map("xs" -> hugeList)) should be(ValNull)
   }
 
   "A or() / any() function" should "return false if empty list" in {
@@ -234,13 +234,13 @@ class BuiltinListFunctionsTest
   it should "return false if all items are false (huge list)" in {
     val hugeList = (1 to 10_000).map(_ => false).toList
 
-    eval("any(xs)", Map("xs" -> hugeList)) should be (ValBoolean(false))
+    eval("any(xs)", Map("xs" -> hugeList)) should be(ValBoolean(false))
   }
 
   it should "return null if items are not boolean values (huge list)" in {
     val hugeList = (1 to 10_000).toList
 
-    eval("any(xs)", Map("xs" -> hugeList)) should be (ValNull)
+    eval("any(xs)", Map("xs" -> hugeList)) should be(ValNull)
   }
 
   "A sublist() function" should "return list starting with _" in {
@@ -325,7 +325,7 @@ class BuiltinListFunctionsTest
   it should "flatten a huge list of lists" in {
     val hugeList = (1 to 10_000).map(List(_)).toList
 
-    eval("flatten(xs)", Map("xs" -> hugeList)) should be (
+    eval("flatten(xs)", Map("xs" -> hugeList)) should be(
       ValList(
         hugeList.flatten.map(ValNumber(_))
       )
@@ -337,10 +337,10 @@ class BuiltinListFunctionsTest
     eval(" sort(list: [3,1,4,5,2], precedes: function(x,y) x < y) ") should be(
       ValList(
         List(ValNumber(1),
-             ValNumber(2),
-             ValNumber(3),
-             ValNumber(4),
-             ValNumber(5))))
+          ValNumber(2),
+          ValNumber(3),
+          ValNumber(4),
+          ValNumber(5))))
   }
 
   "A product() function" should "return null if empty list" in {
@@ -390,6 +390,10 @@ class BuiltinListFunctionsTest
   it should "return joined strings with custom separator, a prefix and a suffix" in {
     eval(""" string join(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
       ValString("hello-foo::bar::baz-goodbye"))
+  }
+
+  it should "return null if the list contains other values than strings" in {
+    eval(""" string join(["foo", 123, "bar"]) """) should be(ValNull)
   }
 
 }

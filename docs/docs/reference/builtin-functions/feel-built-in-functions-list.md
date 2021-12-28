@@ -325,7 +325,8 @@ Joins a list of strings into a single string. Similar to
 Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence))
 function.
 
-If an item of the list is `null` then it is ignored and not part of the result string.
+If an item of the list is `null` then the item is ignored for the result string. If an item is
+neither a string nor `null` then the function returns `null` instead of a string.
 
 * parameters:
   * `list`: the list of strings to join
