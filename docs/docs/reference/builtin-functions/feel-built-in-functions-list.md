@@ -320,14 +320,22 @@ sort(list: [3,1,4,5,2], precedes: function(x,y) x < y)
 ```
 
 ## string join()
-Joins a list of strings into a single string. It ignores `null` items in the list.
-Similar to Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)) function.
+
+Joins a list of strings into a single string. Similar to
+Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence))
+function.
+
+If an item of the list is `null` then it is ignored and not part of the result string.
+
 * parameters:
   * `list`: the list of strings to join
-  * `delimiter`: (optional) the string that is used between each element (default: "" empty string)
-  * `prefix`: (optional) the string that is used at the beginning of the joined result (default: "" empty string)
-  * `suffix`: (optional) the string that is used at the end of the joined result (default: "" empty string)
+  * `delimiter`: (optional) the string that is used between each element (default: empty string)
+  * `prefix`: (optional) the string that is used at the beginning of the joined result (default:
+    empty string)
+  * `suffix`: (optional) the string that is used at the end of the joined result (default: empty
+    string)
 * result: the joined list as a string
+
 ```js
 string join(["a","b","c"])
 // "abc"
