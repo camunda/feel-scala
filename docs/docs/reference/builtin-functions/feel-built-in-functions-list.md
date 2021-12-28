@@ -319,7 +319,7 @@ sort(list: [3,1,4,5,2], precedes: function(x,y) x < y)
 // [1,2,3,4,5]
 ```
 
-## join()
+## string join()
 Joins a list of strings into a single string. It ignores `null` items in the list.
 Similar to Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)) function.
 * parameters:
@@ -329,16 +329,16 @@ Similar to Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/j
   * `suffix`: (optional) the string that is used at the end of the joined result (default: "" empty string)
 * result: the joined list as a string
 ```js
-join(["a","b","c"])
+string join(["a","b","c"])
 // "abc"
-join(["a"], "X")
+string join(["a"], "X")
 // "a"
-join(["a","b","c"], ", ")
+string join(["a","b","c"], ", ")
 // "a, b, c"
-join(["a","b","c"], ", ", "[", "]")
+string join(["a","b","c"], ", ", "[", "]")
 // "[a, b, c]"
-join(["a",null,"c"])
+string join(["a",null,"c"])
 // "ac"
-join([])
+string join([])
 // ""
 ```

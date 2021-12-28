@@ -43,9 +43,9 @@ object ListBuiltinFunctions {
     "distinct values" -> List(distinctValuesFunction),
     "flatten" -> List(flattenFunction),
     "sort" -> List(sortFunction),
-    "join" -> List(joinFunction,
-                   joinWithDelimiterFunction,
-                   joinWithDelimiterAndPrefixAndSuffixFunction)
+    "string join" -> List(joinFunction,
+                          joinWithDelimiterFunction,
+                          joinWithDelimiterAndPrefixAndSuffixFunction)
   )
 
   private def listContainsFunction =
@@ -429,12 +429,13 @@ object ListBuiltinFunctions {
   private def withListOfStrings(list: List[Val],
                                 f: List[String] => Val): Val = {
     val strings =
-      list.filterNot(elem => elem == ValNull)
-      .map(elem =>
-        elem match {
-          case n: ValString => n
-          case x            => ValError(s"expected string but found '$x'")
-      })
+      list
+        .filterNot(elem => elem == ValNull)
+        .map(elem =>
+          elem match {
+            case n: ValString => n
+            case x            => ValError(s"expected string but found '$x'")
+        })
 
     strings.find(_.isInstanceOf[ValError]) match {
       case Some(e) => e

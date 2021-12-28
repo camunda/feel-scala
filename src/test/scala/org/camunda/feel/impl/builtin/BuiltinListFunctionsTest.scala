@@ -355,40 +355,40 @@ class BuiltinListFunctionsTest
   }
 
   "A join function" should "return an empty string if the input list is empty" in {
-    eval(" join([]) ") should be(ValString(""))
+    eval(" string join([]) ") should be(ValString(""))
   }
 
   it should "return an empty string if the input list is empty and a delimiter is defined" in {
-    eval(""" join([], "X") """) should be(ValString(""))
+    eval(""" string join([], "X") """) should be(ValString(""))
   }
 
   it should "return joined strings" in {
-    eval(""" join(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
+    eval(""" string join(["foo","bar","baz"]) """) should be(ValString("foobarbaz"))
   }
 
   it should "return joined strings when delimiter is null" in {
-    eval(""" join(["foo","bar","baz"], null) """) should be(ValString("foobarbaz"))
+    eval(""" string join(["foo","bar","baz"], null) """) should be(ValString("foobarbaz"))
   }
 
   it should "return original string when list contains a single entry" in {
-    eval(""" join(["a"], "X") """) should be(ValString("a"))
+    eval(""" string join(["a"], "X") """) should be(ValString("a"))
   }
 
   it should "ignore null strings" in {
-    eval(""" join(["foo", null, "baz"], null) """) should be(ValString("foobaz"))
+    eval(""" string join(["foo", null, "baz"], null) """) should be(ValString("foobaz"))
   }
 
   it should "ignore null strings with delimiter" in {
-    eval(""" join(["foo", null, "baz"], "X") """) should be(ValString("fooXbaz"))
+    eval(""" string join(["foo", null, "baz"], "X") """) should be(ValString("fooXbaz"))
   }
 
   it should "return joined strings with custom separator" in {
-    eval(""" join(["foo","bar","baz"], "::") """) should be(
+    eval(""" string join(["foo","bar","baz"], "::") """) should be(
       ValString("foo::bar::baz"))
   }
 
   it should "return joined strings with custom separator, a prefix and a suffix" in {
-    eval(""" join(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
+    eval(""" string join(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
       ValString("hello-foo::bar::baz-goodbye"))
   }
 
