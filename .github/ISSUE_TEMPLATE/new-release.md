@@ -23,6 +23,6 @@ Release date:
   * update the latest version in `/docs/docusaurus.config.js` under `docs > versions > current > label`
 * [ ] update the version that is used by the FEEL REPL script `/feel-repl.sc` under `import $ivy.org.camunda.feel:feel-engine:1.x.y`
 * [ ] create a release in GitHub for the tag: https://github.com/camunda/feel-scala/releases
-  * attach the artifacts from Nexus: https://app.camunda.com/nexus/#browse/search=keyword%3Dfeel-scala
-  * write the changelog
+  * attach the artifacts from JFrog: https://camunda.jfrog.io/ui/packages/gav:%2F%2Forg.camunda.feel:feel-engine?name=feel-engine&type=packages
+  * generate a changelog using GitHub release notes and format it properly 
 * [ ] inform the maintainers of other teams about the successful release :tada:
