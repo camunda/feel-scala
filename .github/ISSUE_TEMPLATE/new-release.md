@@ -13,8 +13,7 @@ Release version: 1.x.y
 Release date: 
 
 * [ ] inform the maintainers of other teams about the release
-  * Camunda BPM: @koevskinikola / @ThorbenLindhauer
-  * Zeebe: @saig0 / @npepinpe
+  * use the Slack workflow `/new-release` in the channel `#ask-dmn-feel`
 * [ ] schedule a release date
 * [ ] before building the release, inform the maintainers of other teams about the code freeze
 * [ ] build the release using the CI job: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
