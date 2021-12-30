@@ -179,4 +179,8 @@ class InterpreterFunctionTest
     eval("round(3.2)", functions = functions) should be(ValNumber(3))
   }
 
+  it should "be properly evaluated when parameters containing whitespaces" in {
+    eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
+  }
+
 }
