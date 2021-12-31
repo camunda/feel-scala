@@ -64,7 +64,7 @@ object ListBuiltinFunctions {
       case List(l @ ValList(list)) =>
         list match {
           case Nil                   => ValNull
-          case _ if (l.isComparable) => list.min
+          case _ if (l.isComparable) => list.filter { _ != ValNull}.min
           case _                     => logger.warn(s"$l is not comparable"); ValNull
         }
     },
@@ -77,7 +77,7 @@ object ListBuiltinFunctions {
       case List(l @ ValList(list)) =>
         list match {
           case Nil                   => ValNull
-          case _ if (l.isComparable) => list.max
+          case _ if (l.isComparable) => list.filter { _ != ValNull}.max
           case _                     => logger.warn(s"$l is not comparable"); ValNull
         }
     },

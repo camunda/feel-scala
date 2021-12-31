@@ -88,11 +88,13 @@ sealed trait Val extends Ordered[Val] {
     case _: ValDateTime          => true
     case _: ValYearMonthDuration => true
     case _: ValDayTimeDuration   => true
-    case ValList(list) =>
-      list.headOption
+    case ValList(list) => {
+      val filteredList = list filter { _ != ValNull}
+      filteredList.headOption
         .map(head =>
-          head.isComparable && list.forall(_.getClass == head.getClass))
-        .getOrElse(false)
+          head.isComparable && filteredList.forall(_.getClass == head.getClass)
+        ).getOrElse(false)
+    }
     case _ => false
   }
 

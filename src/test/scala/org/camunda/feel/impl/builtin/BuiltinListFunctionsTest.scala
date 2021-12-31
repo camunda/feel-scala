@@ -57,7 +57,8 @@ class BuiltinListFunctionsTest
   }
 
   it should "return the minimum item of numbers" in {
-
+    eval(" min([null,1,2,3]) ") should be(ValNumber(1))
+    eval(" min(null,1,2,3) ") should be(ValNumber(1))
     eval(" min([1,2,3]) ") should be(ValNumber(1))
     eval(" min(1,2,3) ") should be(ValNumber(1))
   }
@@ -80,6 +81,8 @@ class BuiltinListFunctionsTest
   }
 
   it should "return the maximum item of numbers" in {
+    eval(" max([null,1,2,3]) ") should be(ValNumber(3))
+    eval(" max(null,1,2,3) ") should be(ValNumber(3))
 
     eval(" max([1,2,3]) ") should be(ValNumber(3))
     eval(" max(1,2,3) ") should be(ValNumber(3))
