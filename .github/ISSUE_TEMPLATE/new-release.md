@@ -16,7 +16,9 @@ Release date:
   * use the Slack workflow `/new-release` in the channel `#ask-dmn-feel`
 * [ ] schedule a release date
 * [ ] before building the release, inform the maintainers of other teams about the code freeze
-* [ ] build the release using the CI job: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
+* [ ] build the release using the CI job: 
+  * minor release: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
+  * patch release: use the CI job of the maintenance branch (e.g. https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/1.14/)
 * [ ] deploy to Maven Central by releasing the staging repository: https://oss.sonatype.org/#stagingRepositories
 * [ ] if major/minor release, archive the documentation of the previous version
   * use `npm run docusaurus docs:version 1.x` in `/docs` to copy the existing docs under the released version (`1.x` = the released version)
