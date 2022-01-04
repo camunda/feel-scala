@@ -50,10 +50,15 @@ class InterpreterContextExpressionTest
     eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))
   }
 
-  it should "be accessed in a list" in {
+  it should "be accessed in a list (literal)" in {
 
     eval("[ {a:1, b:2}, {a:3, b:4} ].a") should be(
       ValList(List(ValNumber(1), ValNumber(3))))
+  }
+
+  it should "be accessed in a list (variable)" in {
+    eval("a.b", Map("a" -> List(Map("b" -> 1), Map("b" -> 2)))) should be(
+      ValList(List(ValNumber(1), ValNumber(2))))
   }
 
   it should "be accessed in same context" in {

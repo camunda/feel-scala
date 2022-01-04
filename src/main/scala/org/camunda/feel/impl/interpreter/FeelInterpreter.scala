@@ -978,17 +978,9 @@ class FeelInterpreter {
     names match {
       case Nil => x
       case n :: ns =>
-        withContext(
-          x, {
-            case ctx: ValContext =>
-              EvalContext
-                .wrap(ctx.context)(context.valueMapper)
-                .variable(n) match {
-                case e: ValError => e
-                case x: Val      => ref(x, ns)
-              }
-            case e => error(e, s"context contains no entry with key '$n'")
-          }
+        withVal(
+          path(x, n),
+          value => ref(value, ns)
         )
     }
 
