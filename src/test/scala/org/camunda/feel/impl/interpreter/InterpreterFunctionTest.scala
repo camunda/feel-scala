@@ -138,6 +138,18 @@ class InterpreterFunctionTest
     eval(""" index of([1,2,3,2],2)[1]  """) should be(ValNumber(2))
   }
 
+  it should "be properly evaluated when parameters contain whitespaces" in {
+    eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
+  }
+
+  it should "be invoked with one named parameter containing whitespaces" in {
+    val functions =
+      Map("f" -> eval("""function(test name) `test name` + 1""").asInstanceOf[ValFunction])
+
+    eval("f(test name:1)", functions = functions) should be(ValNumber(2))
+    eval("f(test name:2)", functions = functions) should be(ValNumber(3))
+  }
+
   "An external java function definition" should "be invoked with one double parameter" in {
 
     val functions = Map(
@@ -177,10 +189,6 @@ class InterpreterFunctionTest
         .asInstanceOf[ValFunction])
 
     eval("round(3.2)", functions = functions) should be(ValNumber(3))
-  }
-
-  it should "be properly evaluated when parameters contain whitespaces" in {
-    eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
   }
 
 }
