@@ -172,6 +172,8 @@ class InterpreterContextExpressionTest
     eval("{foo+bar:1}.`foo+bar` = 1") should be(ValBoolean(true))
     eval("{foo+bar:1, simple_special++char:4}.`simple_special++char` = 4") should be(ValBoolean(true))
     eval("""{\uD83D\uDC0E:"\uD83D\uDE00"}.`\uD83D\uDC0E`""") should be(ValString("\uD83D\uDE00"))
+
+    eval("{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`") should be(ValNumber(5))
   }
 
   it should "fail when special symbols violate context syntax" in {
