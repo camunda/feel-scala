@@ -169,7 +169,7 @@ object FeelParser {
   // use only if the identifier is followed by a predefined character (e.g. `(` or `:`)
   private def identifierWithWhitespaces[_: P]: P[String] =
     P(
-      identifier ~~ (" " ~~ identifier).repX(1)
+      identifier ~~ (" ".repX(1) ~~ identifier).repX(1)
     ).!
 
   private def name[_: P]: P[String] = P(
@@ -420,11 +420,18 @@ object FeelParser {
   private def context[_: P]: P[Exp] =
     P(
       "{" ~ contextEntry.rep(0, sep = ",") ~ "}"
-    ).map(entries => ConstContext(entries.toList))
+    ).map{
+      entries =>
+        ConstContext(entries.toList)
+    }
 
   private def contextEntry[_: P]: P[(String, Exp)] = P(
-    (name | stringWithQuotes) ~ ":" ~ expression
+    (contextAnySymbol | identifierWithWhitespaces | name | stringWithQuotes) ~ ":" ~ expression
   )
+
+  private def contextAnySymbol[_: P]: P[String] = {
+    P((!"\"" ~ !"{" ~ !"}" ~ !":" ~ !"," ~ AnyChar ~ !"{").rep(1).!)
+  }
 
   private def variableRef[_: P]: P[Exp] =
     P(
