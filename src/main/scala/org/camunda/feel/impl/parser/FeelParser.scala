@@ -420,10 +420,7 @@ object FeelParser {
   private def context[_: P]: P[Exp] =
     P(
       "{" ~ contextEntry.rep(0, sep = ",") ~ "}"
-    ).map{
-      entries =>
-        ConstContext(entries.toList)
-    }
+    ).map(entries => ConstContext(entries.toList))
 
   private def contextEntry[_: P]: P[(String, Exp)] = P(
     (contextAnySymbol | identifierWithWhitespaces | name | stringWithQuotes) ~ ":" ~ expression
