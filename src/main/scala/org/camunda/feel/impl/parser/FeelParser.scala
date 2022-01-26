@@ -423,12 +423,18 @@ object FeelParser {
     ).map(entries => ConstContext(entries.toList))
 
   private def contextEntry[_: P]: P[(String, Exp)] = P(
-    (contextAnySymbol | identifierWithWhitespaces | name | stringWithQuotes) ~ ":" ~ expression
+    (contextKeyAnySymbol | identifierWithWhitespaces | name | stringWithQuotes) ~ ":" ~ expression
   )
 
-  private def contextAnySymbol[_: P]: P[String] = {
-    P((!"\"" ~ !"{" ~ !"}" ~ !":" ~ !"," ~ AnyChar ~ !"{").rep(1).!)
-  }
+  private def contextKeyAnySymbol[_: P]: P[String] =
+    P(
+      (!reservedSymbol ~ AnyChar).rep(1)
+    ).!
+
+  private def reservedSymbol[_: P]: P[String] =
+    P(
+      CharIn("\"", "{", "}", ":", ",", "[", "]", "`")
+    ).!
 
   private def variableRef[_: P]: P[Exp] =
     P(
