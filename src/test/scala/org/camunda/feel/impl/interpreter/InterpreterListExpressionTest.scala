@@ -38,6 +38,8 @@ class InterpreterListExpressionTest
       ValBoolean(true))
     eval("some x in xs satisfies x > 2", Map("xs" -> List(1, 2))) should be(
       ValBoolean(false))
+    eval("some x in xs satisfies count(xs) > 2", Map("xs" -> List(1, 2))) should be(
+      ValBoolean(false))
 
     eval("some x in [1,2], y in [2,3] satisfies x < y") should be(
       ValBoolean(true))
@@ -79,6 +81,10 @@ class InterpreterListExpressionTest
 
     eval("for x in xs return x * 2", Map("xs" -> List(1, 2))) should be(
       ValList(List(ValNumber(2), ValNumber(4))))
+
+    eval("for y in xs return index of([2, 3], y)",  Map("xs" -> List(1, 2))) should be(
+      ValList(List(ValList(List()), ValList(List(ValNumber(1)))))
+    )
   }
 
   it should "be processed in a for-expression (range)" in {
