@@ -143,7 +143,11 @@ object FeelParser {
         "true",
         "false",
         "function",
-        "in"
+        "in",
+        "return",
+        "then",
+        "else",
+        "satisfies"
       )
     ).!
 
