@@ -150,6 +150,14 @@ class InterpreterFunctionTest
     eval("f(test name:2)", functions = functions) should be(ValNumber(3))
   }
 
+  it should "be invoked with one named parameter containing more than one whitespace" in {
+    val functions =
+      Map("f" -> eval("""function(test   name yada) `test   name yada` + 1""").asInstanceOf[ValFunction])
+
+    eval("f(test   name yada:1)", functions = functions) should be(ValNumber(2))
+    eval("f(test   name yada:2)", functions = functions) should be(ValNumber(3))
+  }
+
   "An external java function definition" should "be invoked with one double parameter" in {
 
     val functions = Map(
