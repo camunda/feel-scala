@@ -33,6 +33,12 @@ module.exports = {
           position: "left",
         },
         {
+          to: "docs/changelog/",
+          activeBasePath: "docs/changelog",
+          label: "Changelog",
+          position: "left",
+        },
+        {
           type: 'docsVersionDropdown',
           position: 'right',
           //dropdownActiveClassDisabled: true

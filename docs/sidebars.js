@@ -49,5 +49,8 @@ module.exports = {
     'samples/temporal-samples',
     'samples/list-samples',
     'samples/context-samples'
-  ]
+  ],
+  "Changelog": [
+      'changelog/changelog'
+  ],
 };
