@@ -26,8 +26,11 @@ decimal(2.5, 0, "half_up")
 
 ## floor()
 
+Round the given number at the given scale using the flooring rounding mode.
+
 * parameters:
   * `n`: number
+  *  (optional) `scale`: number (default: `0`)
 * result: number
 
 ```js
@@ -36,23 +39,126 @@ floor(1.5)
 
 floor(-1.5)
 // -2
+
+floor(-1.56, 1)
+// -1.6
 ```
 
 ## ceiling()
 
+Round the given number at the given scale using the ceiling rounding mode.
+
 * parameters:
   * `n`: number
+  *  (optional) `scale`: number (default: `0`)
 * result: number
 
 ```js
 ceiling(1.5)
 // 2
 
-floor(-1.5)
+ceiling(-1.5)
 // -1
+
+ceiling(-1.56, 1)
+// -1.5
+```
+
+## round up()
+
+Round the given number at the given scale using the round-up rounding mode.
+
+* parameters:
+  * `n`: number
+  *  (optional) `scale`: number (default: `0`)
+* result: number
+
+```js
+round up(5.5) 
+// 6
+
+round up(-5.5)
+// -6
+
+round up(1.121, 2)
+// 1.13
+
+round up(-1.126, 2)
+// -1.13
+```
+
+## round down()
+
+Round the given number at the given scale using the round-down rounding mode.
+
+* parameters:
+  * `n`: number
+  *  (optional) `scale`: number (default: `0`)
+* result: number
+
+```js
+round down(5.5)
+// 5
+
+round down (-5.5)
+// -5
+
+round down (1.121, 2)
+// 1.12
+
+round down (-1.126, 2)
+// -1.12
+```
+
+## round half up()
+
+Round the given number at the given scale using the round-half-up rounding mode.
+
+* parameters:
+  * `n`: number
+  *  (optional) `scale`: number (default: `0`)
+* result: number
+
+```js
+round half up(5.5) 
+// 6
+
+round half up(-5.5)
+// -6
+
+round half up(1.121, 2) 
+// 1.12
+
+round half up(-1.126, 2)
+// -1.13
+```
+
+## round half down()
+
+Round the given number at the given scale using the round-half-down rounding mode.
+
+* parameters:
+  * `n`: number
+  *  (optional) `scale`: number (default: `0`)
+* result: number
+
+```js
+round half down (5.5)
+// 5
+
+round half down (-5.5)
+// -5
+
+round half down (1.121, 2)
+// 1.12
+
+round half down (-1.126, 2)
+// -1.13
 ```
 
 ## abs()
+
+Returns the absolute value of the given numeric value.
 
 * parameters:
   * `number`: number
@@ -121,6 +227,8 @@ exp(5)
 
 ## odd()
 
+Returns `true` if the given numeric value is odd. Otherwise, it returns `false`.
+
 * parameters:
   * `number`: number
 * result: boolean
@@ -128,15 +236,23 @@ exp(5)
 ```js
 odd(5)
 // true
+
+odd(2)
+// false
 ```
 
 ## even()
+
+Returns `true` if the given numeric value is even. Otherwise, it returns `false`.
 
 * parameters:
   * `number`: number
 * result: boolean
 
 ```js
-odd(5)
+even(5)
 // false
+
+even(2)
+// true
 ```
