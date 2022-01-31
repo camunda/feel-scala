@@ -158,6 +158,8 @@ round half down (-1.126, 2)
 
 ## abs()
 
+Returns the absolute value of the given numeric value.
+
 * parameters:
   * `number`: number
 * result: number
@@ -225,6 +227,8 @@ exp(5)
 
 ## odd()
 
+Returns `true` if the given numeric value is odd. Otherwise, it returns `false`.
+
 * parameters:
   * `number`: number
 * result: boolean
@@ -232,15 +236,23 @@ exp(5)
 ```js
 odd(5)
 // true
+
+odd(2)
+// false
 ```
 
 ## even()
+
+Returns `true` if the given numeric value is even. Otherwise, it returns `false`.
 
 * parameters:
   * `number`: number
 * result: boolean
 
 ```js
-odd(5)
+even(5)
 // false
+
+even(2)
+// true
 ```
