@@ -29,11 +29,11 @@ versions, can be found on the [GitHub release page](https://github.com/camunda/f
 * New [range functions](../reference/builtin-functions/feel-built-in-functions-range.md) to compare
   ranges and scalar values
 * New functions to round numeric values:
-  * `round up()`
-  * `round down()`
-  * `round half up()`
-  * `round half down()`
-* Extend function [abs()](../reference/builtin-functions/feel-built-in-functions-numeric.md#abs) for
+  * [round up()](../reference/builtin-functions/feel-built-in-functions-numeric.md#round-up)
+  * [round down()](../reference/builtin-functions/feel-built-in-functions-numeric.md#round-down)
+  * [round half up()](../reference/builtin-functions/feel-built-in-functions-numeric.md#round-half-up)
+  * [round half down()](../reference/builtin-functions/feel-built-in-functions-numeric.md#round-half-down)
+* Extend function [abs()](../reference/builtin-functions/feel-built-in-functions-temporal.md#abs) for
   duration values
 
 See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.14.0).
