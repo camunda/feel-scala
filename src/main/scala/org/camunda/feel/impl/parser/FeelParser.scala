@@ -147,7 +147,9 @@ object FeelParser {
         "return",
         "then",
         "else",
-        "satisfies"
+        "satisfies",
+        "and",
+        "or"
       )
     ).!
 
@@ -490,7 +492,7 @@ object FeelParser {
 
   private def functionInvocation[_: P]: P[Exp] =
     P(
-      (identifierWithWhitespaces
+      ((identifierWithWhitespaces | functionNameWithReservedWord)
         .map(List(_)) | qualifiedName) ~ "(" ~ functionParameters.? ~ ")"
     ).map {
       case (name :: Nil, None) =>
@@ -506,6 +508,13 @@ object FeelParser {
                                     names.last,
                                     parameters)
     }
+
+  // List all built-in function names that contains a reserved word. These names are not allowed as
+  // regular function names.
+  private def functionNameWithReservedWord[_: P]: P[String] =
+    P(
+      "and" | "or" | "date and time" | "years and months duration"
+    ).!
 
   private def functionParameters[_: P]: P[FunctionParameters] =
     namedParameters | positionalParameters
