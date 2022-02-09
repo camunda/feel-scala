@@ -75,6 +75,14 @@ class InterpreterBooleanExpressionTest
       ValBoolean(true))
   }
 
+  it should "be in conjunction (with parentheses)" in {
+    eval("x and (y)", Map("x" -> true, "y" -> false)) should be(
+      ValBoolean(false))
+
+    eval("(x) and y", Map("x" -> true, "y" -> false)) should be(
+      ValBoolean(false))
+  }
+
   it should "be in disjunction" in {
 
     eval("false or true") should be(ValBoolean(true))
@@ -89,6 +97,12 @@ class InterpreterBooleanExpressionTest
     eval("2 or false") should be(ValNull)
 
     eval("2 or 4") should be(ValNull)
+  }
+
+  it should "be in disjunction (with parentheses)" in {
+    eval("x or (y)", Map("x" -> false, "y" -> true)) should be(ValBoolean(true))
+
+    eval("(x) or y", Map("x" -> false, "y" -> true)) should be(ValBoolean(true))
   }
 
   it should "be in disjunction with comparison" in {
