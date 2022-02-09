@@ -15,5 +15,5 @@ A clear and concise description of what you want to happen.
 
 **Related issues**
 
-* Camunda BPM: <!-- link the issue: https://jira.camunda.com/browse/CAM- -->
+* Camunda Autormation Platform 7: <!-- link the issue: https://jira.camunda.com/browse/CAM- -->
 * Zeebe broker: <!-- link the issue: https://github.com/zeebe-io/zeebe/issues# -->
