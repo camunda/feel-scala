@@ -63,6 +63,8 @@ A date value without a time component.
 
 ```js
 date("2017-03-10")
+
+@"2017-03-10"
 ```
 
 ### Time 
@@ -75,10 +77,13 @@ A local or zoned time. The time can have an offset or time zone id.
 ```js
 time("11:45:30") 
 time("13:30")
-
 time("11:45:30+02:00")
-
 time("10:31:10@Europe/Paris")
+
+@"11:45:30"
+@"13:30"
+@"11:45:30+02:00"
+@"10:31:10@Europe/Paris"
 ```
 
 ### Date-Time 
@@ -90,10 +95,12 @@ A date with a local or zoned time component. The time can have an offset or time
 
 ```js
 date and time("2015-09-18T10:31:10")
-
 date and time("2015-09-18T10:31:10+01:00")
-
 date and time("2015-09-18T10:31:10@Europe/Paris")
+
+@"2015-09-18T10:31:10"
+@"2015-09-18T10:31:10+01:00"
+@"2015-09-18T10:31:10@Europe/Paris"
 ```
 
 ### Days-Time-Duration
@@ -108,6 +115,11 @@ duration("P4D")
 duration("PT2H")
 duration("PT30M")
 duration("P1DT6H")
+
+@"P4D"
+@"PT2H"
+@"PT30M"
+@"P1DT6H"
 ```
 
 ### Years-Months-Duration
@@ -121,6 +133,10 @@ A duration based on the calendar. It can contain years and months.
 duration("P2Y")
 duration("P6M")
 duration("P1Y6M")
+
+@"P2Y"
+@"P6M"
+@"P1Y6M"
 ```
 
 ### List
