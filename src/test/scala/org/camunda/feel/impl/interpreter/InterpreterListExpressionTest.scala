@@ -21,6 +21,8 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
+import scala.collection.mutable.ListBuffer
+
 /**
   * @author Philipp Ossler
   */
@@ -97,7 +99,7 @@ class InterpreterListExpressionTest
         )))
   }
 
-  it should "be filtered via boolean expression" in {
+  it should "be filtered via comparison" in {
 
     eval("[1,2,3,4][item > 2]") should be(
       ValList(List(ValNumber(3), ValNumber(4))))
@@ -119,6 +121,39 @@ class InterpreterListExpressionTest
 
     eval("[1,2,3,4][i]", Map("i" -> 2)) should be(ValNumber(2))
     eval("[1,2,3,4][i]", Map("i" -> -2)) should be(ValNumber(3))
+  }
+
+  it should "be filtered via boolean expression" in {
+    eval("[1,2,3,4][odd(item)]") should be(
+      ValList(List(ValNumber(1), ValNumber(3))))
+
+    eval("[1,2,3,4][even(item)]") should be(
+      ValList(List(ValNumber(2), ValNumber(4))))
+  }
+
+  it should "be filtered via custom function" in {
+    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
+
+    val result = eval(
+      expression = "[1,2,3,4][f(item)]",
+      variables = Map(),
+      functions = Map("f" -> ValFunction(
+        params = List("x"),
+        invoke = {
+          case List(x) =>
+            functionInvocations += x
+            ValBoolean(x == ValNumber(3))
+        }
+      )))
+
+    result should be(ValList(List(ValNumber(3))))
+
+    functionInvocations should be(List(
+      ValNumber(1),
+      ValNumber(2),
+      ValNumber(3),
+      ValNumber(4))
+    )
   }
 
   it should "be filtered multiple times (from literal)" in {
