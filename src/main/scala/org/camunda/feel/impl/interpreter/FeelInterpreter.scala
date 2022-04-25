@@ -253,21 +253,23 @@ class FeelInterpreter {
       case Filter(list, filter) =>
         withList(
           eval(list),
-          l =>
+          l => {
+            val evalFilterWithItem =
+              (item: Val) => eval(filter)(filterContext(item))
+
             filter match {
               case ConstNumber(index) => filterList(l.items, index)
               case ArithmeticNegation(ConstNumber(index)) =>
                 filterList(l.items, -index)
-              case comparison: Comparison =>
-                filterList(l.items,
-                           item => eval(comparison)(filterContext(item)))
+              case _: Comparison | _: FunctionInvocation |
+                  _: QualifiedFunctionInvocation =>
+                filterList(l.items, evalFilterWithItem)
               case _ =>
                 eval(filter) match {
                   case ValNumber(index) => filterList(l.items, index)
-                  case _ =>
-                    filterList(l.items,
-                               item => eval(filter)(filterContext(item)))
+                  case _                => filterList(l.items, evalFilterWithItem)
                 }
+            }
           }
         )
       case IterationContext(start, end) =>
