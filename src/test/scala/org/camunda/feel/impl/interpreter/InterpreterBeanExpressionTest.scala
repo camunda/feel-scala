@@ -45,6 +45,28 @@ class InterpreterBeanExpressionTest
 
   }
 
+  it should "ignore getter method with arguments as field" in {
+
+    class A(x: Int) {
+      def getResult(y: Int): Int = x + y
+    }
+
+    eval("a.result", Map("a" -> new A(2))) should be(
+      ValError("context contains no entry with key 'result'")
+    )
+  }
+
+  it should "ignore method with arguments as field (builder-style)" in {
+
+    class A(x: Int) {
+      def plus(y: Int): A = new A(x + y)
+    }
+
+    eval("a.plus", Map("a" -> new A(2))) should be(
+      ValError("context contains no entry with key 'plus'")
+    )
+  }
+
   it should "invoke a method without arguments" in {
 
     class A { def foo() = "foo" }

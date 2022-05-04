@@ -36,11 +36,13 @@ case class ObjectContext(obj: Any) extends Context {
         val methods = objClass.getMethods find (method => {
           val methodName = method.getName
           val returnType = method.getReturnType
-          methodName == name ||
+          val hasParameters = method.getParameterCount > 0
+
+          !hasParameters && (methodName == name ||
           methodName == getGetterName(name) ||
           ((returnType == java.lang.Boolean.TYPE ||
           returnType == classOf[java.lang.Boolean]) &&
-          methodName == getBooleanGetterName(name))
+          methodName == getBooleanGetterName(name)))
         })
 
         methods.map(_.invoke(obj))
