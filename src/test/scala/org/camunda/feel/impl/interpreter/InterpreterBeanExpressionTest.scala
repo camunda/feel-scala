@@ -18,8 +18,8 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * @author Philipp Ossler
@@ -39,7 +39,9 @@ class InterpreterBeanExpressionTest
 
   it should "access a getter method as field" in {
 
-    class A(b: Int) { def getFoo() = b + 1 }
+    class A(b: Int) {
+      def getFoo() = b + 1
+    }
 
     eval("a.foo", Map("a" -> new A(2))) should be(ValNumber(3))
 
@@ -67,9 +69,29 @@ class InterpreterBeanExpressionTest
     )
   }
 
+  it should "not access a private field" in {
+    class A(private val x: Int)
+
+    eval("a.x", Map("a" -> new A(2))) should be(
+      ValError("context contains no entry with key 'x'")
+    )
+  }
+
+  it should "not access a private method" in {
+    class A(val x: Int) {
+      private def getResult(): Int = x
+    }
+
+    eval("a.result", Map("a" -> new A(2))) should be(
+      ValError("context contains no entry with key 'result'")
+    )
+  }
+
   it should "invoke a method without arguments" in {
 
-    class A { def foo() = "foo" }
+    class A {
+      def foo() = "foo"
+    }
 
     eval("a.foo()", Map("a" -> new A())) should be(ValString("foo"))
 
@@ -77,7 +99,9 @@ class InterpreterBeanExpressionTest
 
   it should "invoke a method with one argument" in {
 
-    class A { def incr(x: Int) = x + 1 }
+    class A {
+      def incr(x: Int) = x + 1
+    }
 
     eval("a.incr(1)", Map("a" -> new A())) should be(ValNumber(2))
 
