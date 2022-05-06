@@ -39,17 +39,34 @@ case class ObjectContext(obj: Any) extends Context {
           val hasParameters = method.getParameterCount > 0
 
           !hasParameters && (methodName == name ||
-          methodName == getGetterName(name) ||
-          ((returnType == java.lang.Boolean.TYPE ||
-          returnType == classOf[java.lang.Boolean]) &&
-          methodName == getBooleanGetterName(name)))
+            methodName == getGetterName(name) ||
+            ((returnType == java.lang.Boolean.TYPE ||
+              returnType == classOf[java.lang.Boolean]) &&
+              methodName == getBooleanGetterName(name)))
         })
 
         methods.map(_.invoke(obj))
       }
     }
 
-    override def keys: Iterable[String] = obj.getClass.getFields.map(_.getName)
+    override def keys: Iterable[String] = {
+      val objClass = obj.getClass
+
+      val publicFields = objClass.getFields.map(_.getName)
+      val fieldMethods = objClass.getDeclaredFields.map(_.getName)
+
+      val publicMethods = objClass
+        .getMethods
+        .filter(method => method.getParameterCount == 0)
+        .map(_.getName)
+
+      val publicGetters = publicMethods.flatMap(method => fieldMethods.find(_ == method)
+        .orElse(fieldMethods.find(getGetterName(_) == method))
+        .orElse(fieldMethods.find(getBooleanGetterName(_) == method))
+      )
+
+      publicFields ++ publicGetters
+    }
   }
 
   override val functionProvider = new FunctionProvider {
