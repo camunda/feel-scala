@@ -19,6 +19,8 @@ package org.camunda.feel.impl.interpreter
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
 import org.camunda.feel.syntaxtree.ValFunction
 
+import java.lang.reflect.Method
+
 /**
   * A context that wraps the fields and methods of a given JVM object
   *
@@ -26,46 +28,35 @@ import org.camunda.feel.syntaxtree.ValFunction
   */
 case class ObjectContext(obj: Any) extends Context {
 
+  private lazy val publicFields = obj.getClass.getFields
+  private lazy val allFields = obj.getClass.getDeclaredFields
+
+  private lazy val publicMethodsWithoutArguments = obj.getClass.getMethods
+    .filter(method => method.getParameterCount == 0)
+
   override val variableProvider = new VariableProvider {
     override def getVariable(name: String): Option[Any] = {
 
-      val objClass = obj.getClass
-      val fields = objClass.getFields find (field => field.getName == name)
+      val fieldForName = publicFields find (field => field.getName == name)
 
-      fields.map(_.get(obj)) orElse {
-        val methods = objClass.getMethods find (method => {
-          val methodName = method.getName
-          val returnType = method.getReturnType
-          val hasParameters = method.getParameterCount > 0
-
-          !hasParameters && (methodName == name ||
-            methodName == getGetterName(name) ||
-            ((returnType == java.lang.Boolean.TYPE ||
-              returnType == classOf[java.lang.Boolean]) &&
-              methodName == getBooleanGetterName(name)))
-        })
+      fieldForName.map(_.get(obj)) orElse {
+        val methods = publicMethodsWithoutArguments find (method =>
+          isGetterOf(method, name) || isBooleanGetterOf(method, name))
 
         methods.map(_.invoke(obj))
       }
     }
 
     override def keys: Iterable[String] = {
-      val objClass = obj.getClass
+      val fieldsWithPublicGetter = allFields.filter(
+        field =>
+          publicMethodsWithoutArguments.exists(
+            method =>
+              isGetterOf(method, field.getName) || isBooleanGetterOf(
+                method,
+                field.getName)))
 
-      val publicFields = objClass.getFields.map(_.getName)
-      val fieldMethods = objClass.getDeclaredFields.map(_.getName)
-
-      val publicMethods = objClass
-        .getMethods
-        .filter(method => method.getParameterCount == 0)
-        .map(_.getName)
-
-      val publicGetters = publicMethods.flatMap(method => fieldMethods.find(_ == method)
-        .orElse(fieldMethods.find(getGetterName(_) == method))
-        .orElse(fieldMethods.find(getBooleanGetterName(_) == method))
-      )
-
-      publicFields ++ publicGetters
+      publicFields.map(_.getName) ++ fieldsWithPublicGetter.map(_.getName)
     }
   }
 
@@ -102,5 +93,18 @@ case class ObjectContext(obj: Any) extends Context {
 
   private def getBooleanGetterName(fieldName: String) =
     "is" + fieldName.capitalize
+
+  private def isGetterOf(method: Method, fieldName: String): Boolean = {
+    val methodName = method.getName
+
+    methodName == fieldName || methodName == getGetterName(fieldName)
+  }
+
+  private def isBooleanGetterOf(method: Method, fieldName: String): Boolean = {
+    val returnType = method.getReturnType
+
+    method.getName == getBooleanGetterName(fieldName) && (returnType == java.lang.Boolean.TYPE || returnType == classOf[
+      java.lang.Boolean])
+  }
 
 }
