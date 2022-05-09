@@ -2,7 +2,7 @@
 name: New Release
 about: Building a new release
 title: "[Release] 1.x.y"
-labels: 'type: release'
+labels: ['type: release', 'team/process-automation']
 assignees: koevskinikola, saig0
 
 ---
