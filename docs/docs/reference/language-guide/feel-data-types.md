@@ -153,6 +153,10 @@ A list of elements. The elements can be of any type. The list can be empty.
 [["list"], "of", [["lists"]]]
 ```
 
+:::caution be careful!
+The index of a list starts at `1`. In other languages, the index often starts at `0`.
+:::
+
 ### Context
 
 A list of entries. Each entry has a key and a value. The key is either a name or a string. The value
