@@ -156,9 +156,13 @@ class InterpreterListExpressionTest
   it should "be filtered multiple times (in a context)" in {
     val listOfLists = List(List(1))
 
-    eval("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should be(ValNumber(1))
-    eval("{z: x.y[1][1][1]}.z", Map("x" -> Map("y" -> List(listOfLists)))) should be(ValNumber(1))
-    eval("{z: x.y[1][1][1][1]}.z", Map("x" -> Map("y" -> List(List(listOfLists))))) should be(ValNumber(1))
+    eval("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should be(
+      ValNumber(1))
+    eval("{z: x.y[1][1][1]}.z", Map("x" -> Map("y" -> List(listOfLists)))) should be(
+      ValNumber(1))
+    eval("{z: x.y[1][1][1][1]}.z",
+         Map("x" -> Map("y" -> List(List(listOfLists))))) should be(
+      ValNumber(1))
   }
 
   it should "fail if one element fails" in {
@@ -251,7 +255,7 @@ class InterpreterListExpressionTest
              ValNumber(21))))
   }
 
-  private val hugeList: List[Int] = (1 to 10_000).toList
+  private val hugeList: List[Int] = (1 to 10000).toList
 
   "A huge list" should "be defined as range" in {
     eval("for x in 1..10000 return x") should be(
@@ -293,12 +297,12 @@ class InterpreterListExpressionTest
   it should "be filtered" in {
     eval("xs[item <= 5000]", Map("xs" -> hugeList)) should be(
       ValList(
-        hugeList.take(5_000).map(ValNumber(_))
+        hugeList.take(5000).map(ValNumber(_))
       ))
   }
 
   it should "be accessed by index" in {
-    eval("xs[-1]", Map("xs"->hugeList)) should be (
+    eval("xs[-1]", Map("xs" -> hugeList)) should be(
       ValNumber(hugeList.last)
     )
   }
