@@ -182,6 +182,17 @@ class InterpreterUnaryTest
     evalUnaryTests(true, """ "a" = "b" """) should be(ValBoolean(false))
   }
 
+  it should "compare to a conjunction (and)" in {
+    evalUnaryTests(true, "true and true") shouldBe ValBoolean(true)
+    evalUnaryTests(true, "false and true") shouldBe ValBoolean(false)
+  }
+
+  it should "compare to a disjunction (or)" in {
+    evalUnaryTests(true, "true or true") shouldBe ValBoolean(true)
+    evalUnaryTests(true, "false or true") shouldBe ValBoolean(true)
+    evalUnaryTests(true, "false or false") shouldBe ValBoolean(false)
+  }
+
   "A date" should "compare with '<'" in {
 
     evalUnaryTests(date("2015-09-17"), """< date("2015-09-18")""") should be(
