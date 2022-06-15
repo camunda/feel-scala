@@ -206,7 +206,7 @@ object FeelParser {
   private def expLvl2[_: P]: P[Exp] = conjunction
 
   private def expLvl3[_: P]: P[Exp] =
-    expLvl4.flatMap(optional(comparison)) | simplePositiveUnaryTest
+    expLvl4.flatMap(optional(comparison(_))) | simplePositiveUnaryTest
 
   private def expLvl4[_: P]: P[Exp] = mathOperator
 
@@ -356,7 +356,7 @@ object FeelParser {
   // --------------- value/terminal parsers ---------------
 
   private def value[_: P]: P[Exp] =
-    terminalValue.flatMap(optional(chainedValueOp))
+    terminalValue.flatMap(optional(chainedValueOp(_)))
 
   private def terminalValue[_: P]: P[Exp] =
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
@@ -508,7 +508,7 @@ object FeelParser {
 
   // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
   private def chainedValueOp[_: P](value: Exp): P[Exp] =
-    (path(value) | filter(value)).flatMap(optional(chainedValueOp))
+    (path(value) | filter(value)).flatMap(optional(chainedValueOp(_)))
 
   private def path[_: P](value: Exp): P[Exp] =
     P(
