@@ -153,7 +153,7 @@ class DefaultValueMapper extends CustomValueMapper {
       case ValString(string)              => Some(string)
       case ValDate(date)                  => Some(date)
       case ValLocalTime(time)             => Some(time)
-      case ValTime(time)                  => Some(time)
+      case ValTime(time)                  => Some(time.toOffsetTime)
       case ValLocalDateTime(dateTime)     => Some(dateTime)
       case ValDateTime(dateTime)          => Some(dateTime)
       case ValYearMonthDuration(duration) => Some(duration)
