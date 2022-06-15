@@ -60,7 +60,7 @@ class BuiltinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
     engine
       .evalExpression("date and time(\"2019-08-12T22:22:22\")",
-                      context = Context.EmptyContext)
+        context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.time.LocalDateTime]
   }
 
@@ -68,8 +68,13 @@ class BuiltinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
     engine
       .evalExpression("date and time(\"2019-08-12T22:22:22@Europe/Berlin\")",
-                      context = Context.EmptyContext)
+        context = Context.EmptyContext)
       .getOrElse() shouldBe a[java.time.ZonedDateTime]
+  }
+
+  it should "return java.time.OffsetTime" in {
+    engine.evalExpression(""" time("22:22:22@Europe/Berlin") """)
+      .getOrElse() shouldBe a[java.time.OffsetTime]
   }
 
   it should "return null" in {
@@ -85,7 +90,7 @@ class BuiltinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
     val map = engine
       .evalExpression("{\"foo\": 42, \"bar\": 5.5, \"baz\": [1, 2]}",
-                      context = Context.EmptyContext)
+        context = Context.EmptyContext)
       .getOrElse()
       .asInstanceOf[java.util.Map[_, _]]
 
@@ -106,7 +111,7 @@ class BuiltinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
     val list = engine
       .evalExpression("[6, 5.5, {\"foo\": \"bar\"}]",
-                      context = Context.EmptyContext)
+        context = Context.EmptyContext)
       .getOrElse()
       .asInstanceOf[java.util.List[_]]
 
