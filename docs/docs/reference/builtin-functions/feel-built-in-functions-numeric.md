@@ -1,17 +1,18 @@
 ---
 id: feel-built-in-functions-numeric
-title: Numeric Functions
+title: Numeric functions
+description: "This document outlines built-in numeric functions and examples."
 ---
 
 ## decimal()
 
-Round the given number at the given scale using the given rounding mode. If no rounding mode is passed in then it uses `HALF_EVEN` as default. 
+Round the given number at the given scale using the given rounding mode. If no rounding mode is passed in, it uses `HALF_EVEN` as default.
 
-* parameters:
-  * `n`: number
-  * `scale`: number
-  * (optional) `mode`: string - one of `UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY` (default: `HALF_EVEN`)
-* result: number
+- parameters:
+  - `n`: number
+  - `scale`: number
+  - (optional) `mode`: string - one of `UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY` (default: `HALF_EVEN`)
+- result: number
 
 ```js
 decimal(1/3, 2)
@@ -26,12 +27,9 @@ decimal(2.5, 0, "half_up")
 
 ## floor()
 
-Round the given number at the given scale using the flooring rounding mode.
-
-* parameters:
-  * `n`: number
-  *  (optional) `scale`: number (default: `0`)
-* result: number
+- parameters:
+  - `n`: number
+- result: number
 
 ```js
 floor(1.5)
@@ -48,10 +46,10 @@ floor(-1.56, 1)
 
 Round the given number at the given scale using the ceiling rounding mode.
 
-* parameters:
-  * `n`: number
-  *  (optional) `scale`: number (default: `0`)
-* result: number
+- parameters:
+  - `n`: number
+  -(optional) `scale`: number (default: `0`)
+- result: number
 
 ```js
 ceiling(1.5)
@@ -137,10 +135,10 @@ round half up(-1.126, 2)
 
 Round the given number at the given scale using the round-half-down rounding mode.
 
-* parameters:
-  * `n`: number
-  *  (optional) `scale`: number (default: `0`)
-* result: number
+-parameters:
+  - `n`: number
+  -(optional) `scale`: number (default: `0`)
+- result: number
 
 ```js
 round half down (5.5)
@@ -160,9 +158,9 @@ round half down (-1.126, 2)
 
 Returns the absolute value of the given numeric value.
 
-* parameters:
-  * `number`: number
-* result: number
+- parameters:
+  - `number`: number
+- result: number
 
 ```js
 abs(10)
@@ -176,10 +174,10 @@ abs(-10)
 
 Returns the remainder of the division of dividend by divisor.
 
-* parameters:
-  * `dividend`: number
-  * `divisor`: number
-* result: number
+- parameters:
+  - `dividend`: number
+  - `divisor`: number
+- result: number
 
 ```js
 modulo(12, 5)
@@ -190,9 +188,9 @@ modulo(12, 5)
 
 Returns the square root.
 
-* parameters:
-  * `number`: number
-* result: number
+- parameters:
+  - `number`: number
+- result: number
 
 ```js
 sqrt(16)
@@ -203,9 +201,9 @@ sqrt(16)
 
 Returns the natural logarithm (base e) of the number.
 
-* parameters:
-  * `number`: number
-* result: number
+- parameters:
+  - `number`: number
+- result: number
 
 ```js
 log(10)
@@ -216,9 +214,9 @@ log(10)
 
 Returns the Euler’s number e raised to the power of number .
 
-* parameters:
-  * `number`: number
-* result: number
+- parameters:
+  - `number`: number
+- result: number
 
 ```js
 exp(5)
@@ -229,9 +227,9 @@ exp(5)
 
 Returns `true` if the given numeric value is odd. Otherwise, it returns `false`.
 
-* parameters:
-  * `number`: number
-* result: boolean
+- parameters:
+  - `number`: number
+- result: boolean
 
 ```js
 odd(5)
@@ -245,9 +243,9 @@ odd(2)
 
 Returns `true` if the given numeric value is even. Otherwise, it returns `false`.
 
-* parameters:
-  * `number`: number
-* result: boolean
+- parameters:
+  - `number`: number
+- result: boolean
 
 ```js
 even(5)

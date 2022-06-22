@@ -1,6 +1,7 @@
 ---
-id: feel-boolean-expressions 
-title: Boolean Expressions
+id: feel-boolean-expressions
+title: Boolean expressions
+description: "This document outlines boolean expressions and examples."
 ---
 
 ### Literal
@@ -15,7 +16,7 @@ false
 
 ### Comparison
 
-Two values of the same type can be compared using the following operators.
+Two values of the same type can be compared using the following operators:
 
 <table>
   <tr>
@@ -94,11 +95,11 @@ date("2020-04-06") between date("2020-04-05") and date("2020-04-09")
 // true
 ```
 
-:::caution be careful!
-The equal operator has only **one** equal sign (e.g. `x = y`). In other languages, the operator has two equal signs (e.g. `x == y`).
+:::caution Be Careful!
+The equals operator has only **one** equals sign (e.g. `x = y`). In other languages, the operator has two equals signs (e.g. `x == y`).
 :::
 
-### Null Check
+### Null check
 
 Any value or variable can be compared with `null` to check if it is equal to `null`, or if it exists.
 
@@ -106,7 +107,7 @@ Comparing `null` to a value different from `null` results in `false`. It returns
 value is `null` or the variable doesn't exist.
 
 Comparing a context entry with `null` results in `true` if the value of the entry is `null` or if
-the context doesn't contain an entry with this key. 
+the context doesn't contain an entry with this key.
 
 ```js
 null = null
@@ -120,13 +121,13 @@ null = null
 
 {}.y = null
 // true
-```  
+```
 
-:::tip Tip
+:::tip
 
 The built-in
 function [is defined()](../builtin-functions/feel-built-in-functions-boolean.md#is-defined) can be
-used to differentiate between a value that is `null`, and a variable or context entry that doesn't
+used to differentiate between a value that is `null` and a variable or context entry that doesn't
 exist.
 
 ```js
@@ -142,14 +143,14 @@ is defined({}.y)
 
 :::
 
-### Conjunction / And
- 
+### Conjunction/and
+
 Combines multiple boolean values following the ternary logic.
 
-* the result is `true` if all values are `true`
-* the result is `false` if one value is `false`
-* otherwise, the result is `null` (i.e. if a value is not a boolean)  
- 
+- The result is `true` if all values are `true`.
+- The result is `false` if one value is `false`.
+- Otherwise, the result is `null` (i.e. if a value is not a boolean.)
+
 ```js
 true and true
 // true
@@ -170,28 +171,28 @@ false and "otherwise"
 // false
 ```
 
-### Disjunction / Or
+### Disjunction/or
 
 Combines multiple boolean values following the ternary logic.
 
-* the result is `true` if at least one value is `true`
-* the result is `false` if all values are `false`
-* otherwise, the result is `null` (i.e. if a value is not a boolean)
+- The result is `true` if at least one value is `true`.
+- The result is `false` if all values are `false`.
+- Otherwise, the result is `null` (i.e. if a value is not a boolean.)
 
 ```js
-true or false   
+true or false
 // true
 
-false or false  
+false or false
 // false
 
-true or null   
+true or null
 // true
 
 true or "otherwise"
 // true
 
-false or null  
+false or null
 // null
 
 false or "otherwise"
@@ -201,18 +202,19 @@ false or "otherwise"
 ### Instance of
 
 Checks if the value is of the given type. Available type names:
-* `boolean`
-* `number`
-* `string`
-* `date`
-* `time`
-* `date time`
-* `day-time-duration`
-* `year-month-duration`
-* `list`
-* `context`
-* `function`
-* `Any`
+
+- `boolean`
+- `number`
+- `string`
+- `date`
+- `time`
+- `date time`
+- `day-time-duration`
+- `year-month-duration`
+- `list`
+- `context`
+- `function`
+- `Any`
 
 Use the type `Any` to check if the value is not `null`.
 
@@ -230,7 +232,7 @@ null instance of Any
 // false
 ```
 
-### Unary-Tests / In
+### Unary-tests/in
 
 Evaluates a [unary-tests](feel-unary-tests) with the given value. The keyword `in` separates the value from the unary-tests.
 

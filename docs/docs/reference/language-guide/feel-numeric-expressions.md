@@ -1,6 +1,7 @@
 ---
 id: feel-numeric-expressions
-title: Numeric Expressions
+title: Numeric expressions
+description: "This document outlines numeric expressions and examples."
 ---
 
 ### Literal
@@ -27,7 +28,7 @@ Creates a new numeric value. Leading zeros are valid.
 // 5
 ```
 
-### Subtraction 
+### Subtraction
 
 ```js
 5 - 3
@@ -41,17 +42,16 @@ Creates a new numeric value. Leading zeros are valid.
 // 15
 ```
 
-### Division 
+### Division
 
 ```js
 6 / 2  
 // 3
 ```
 
-### Exponentiation 
+### Exponentiation
 
 ```js
 2 ** 3   
 // 8
 ```
-

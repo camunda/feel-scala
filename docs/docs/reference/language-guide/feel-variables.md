@@ -1,9 +1,10 @@
 ---
-id: feel-variables 
+id: feel-variables
 title: Variables
+description: "This document outlines variables and examples."
 ---
 
-### Access Variables
+### Access variables
 
 Access the value of a variable by its variable name.
 
@@ -11,15 +12,15 @@ Access the value of a variable by its variable name.
 a + b
 ```
 
-If the value of the variable is a context then a [context entry can be accessed](feel-context-expressions#get-entry--path) by its key. 
+If the value of the variable is a context, a [context entry can be accessed](feel-context-expressions#get-entrypath) by its key. 
 
 ```js
 a.b
 ```
 
-:::tip Tip
+:::tip
 
-Use a [null-check](feel-boolean-expressions#null-check) if the variable can be `null` or is optional.  
+Use a [null-check](feel-boolean-expressions#null-check) if the variable can be `null` or is optional.
 
 ```js
 a != null and a.b > 10 
@@ -27,7 +28,7 @@ a != null and a.b > 10
 
 :::
 
-### Escape Variable Names
+### Escape variable names
 
 The name of a variable can be any alphanumeric string including `_` (an underscore). For a
 combination of words, it is recommended to use the `camelCase` or the `snake_case` format.
@@ -42,5 +43,3 @@ the name can be wrapped into single backquotes/backticks (e.g. ``` `foo bar` ```
 
 order.`total price`
 ```
-
-
