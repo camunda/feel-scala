@@ -1,9 +1,10 @@
 ---
-id: feel-control-flow 
-title: Control Flow
+id: feel-control-flow
+title: Control flow
+description: "This document outlines control flow and examples."
 ---
 
-### If Conditions
+### If conditions
 
 ```js
 if c then a else b
@@ -20,8 +21,8 @@ if 12 < 10 then "low" else "high"
 // "high"
 ```
 
-:::info good to know 
-If the condition `c` doesn't evaluate to a boolean value (e.g. `null`) then it
+:::info good to know
+If the condition `c` doesn't evaluate to a boolean value (e.g. `null`), it
 executes the expression `b`.
 
 ```js
@@ -31,7 +32,7 @@ if null then "low" else "high"
 
 :::
 
-### For Loops
+### For loops
 
 ```js
 for a in b return c
@@ -58,7 +59,7 @@ for i in 1..10 return if (i <= 2) then 1 else partial[-1] + partial[-2]
 // [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 ```
 
-Instead of a list, the `for` loop can also iterate over a given range. 
+Instead of a list, the `for` loop can also iterate over a given range.
 
 ```js
 for x in 0..8 return 2 ** x

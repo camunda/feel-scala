@@ -1,14 +1,15 @@
 ---
 id: feel-built-in-functions-list
-title: List Functions
+title: List functions
+description: "This document outlines built-in list functions and examples."
 ---
 
 ## list contains()
 
-* parameters:
-  * `list`: list
-  * `element`: any
-* result: boolean
+- parameters:
+  - `list`: list
+  - `element`: any
+- result: boolean
 
 ```js
 list contains([1,2,3], 2) 
@@ -17,9 +18,9 @@ list contains([1,2,3], 2)
 
 ## count()
 
-* parameters:
-  * `list`: list
-* result: number
+- parameters:
+  - `list`: list
+- result: number
 
 ```js
 count([1,2,3]) 
@@ -28,10 +29,10 @@ count([1,2,3])
 
 ## min()
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 min([1,2,3]) 
@@ -43,10 +44,10 @@ min(1,2,3)
 
 ## max()
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 min([1,2,3]) 
@@ -58,10 +59,10 @@ min(1,2,3)
 
 ## sum()
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 min([1,2,3]) 
@@ -73,10 +74,10 @@ min(1,2,3)
 
 ## product()
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 product([2, 3, 4])
@@ -90,10 +91,10 @@ product(2, 3, 4)
 
 Returns the arithmetic mean (i.e. average).
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 mean([1,2,3])
@@ -107,10 +108,10 @@ mean(1,2,3)
 
 Returns the median element of the list of numbers.
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 median(8, 2, 5, 3, 4)
@@ -124,10 +125,10 @@ median([6, 1, 2, 3])
 
 Returns the standard deviation.
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: number
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: number
 
 ```js
 stddev(2, 4, 7, 5)
@@ -141,10 +142,10 @@ stddev([2, 4, 7, 5])
 
 Returns the mode of the list of numbers.
 
-* parameters:
-  * `list`: list of numbers
-  * or numbers as varargs
-* result: list of numbers
+- parameters:
+  - `list`: list of numbers
+  - or numbers as varargs
+- result: list of numbers
 
 ```js
 mode(6, 3, 9, 6, 6) 
@@ -156,10 +157,10 @@ mode([6, 1, 9, 6, 1])
 
 ## and() / all()
 
-* parameters:
-  * `list`: list of booleans
-  * or booleans as varargs
-* result: boolean
+- parameters:
+  - `list`: list of booleans
+  - or booleans as varargs
+- result: boolean
 
 ```js
 and([true,false])
@@ -171,10 +172,10 @@ and(false,null,true)
 
 ## or() / any()
 
-* parameters:
-  * `list`: list of booleans
-  * or booleans as varargs
-* result: boolean
+- parameters:
+  - `list`: list of booleans
+  - or booleans as varargs
+- result: boolean
 
 ```js
 or([false,true])
@@ -186,11 +187,11 @@ or(false,null,true)
 
 ## sublist()
 
-* parameters:
-  * `list`: list
-  * `start position`: number
-  * (optional) `length`: number
-* result: list
+- parameters:
+  - `list`: list
+  - `start position`: number
+  - (optional) `length`: number
+- result: list
 
 ```js
 sublist([1,2,3], 2)
@@ -202,10 +203,10 @@ sublist([1,2,3], 1, 2)
 
 ## append()
 
-* parameters:
-  * `list`: list
-  * `items`: elements as varargs
-* result: list
+- parameters:
+  - `list`: list
+  - `items`: elements as varargs
+- result: list
 
 ```js
 append([1], 2, 3)
@@ -214,9 +215,9 @@ append([1], 2, 3)
 
 ## concatenate()
 
-* parameters:
-  * `lists`: lists as varargs
-* result: list
+- parameters:
+  - `lists`: lists as varargs
+- result: list
 
 ```js
 concatenate([1,2],[3]) 
@@ -228,11 +229,11 @@ concatenate([1],[2],[3])
 
 ## insert before()
 
-* parameters:
-  * `list`: list
-  * `position`: number
-  * `newItem`: any
-* result: list
+- parameters:
+  - `list`: list
+  - `position`: number
+  - `newItem`: any
+- result: list
 
 ```js
 insert before([1,3],1,2) 
@@ -241,10 +242,10 @@ insert before([1,3],1,2)
 
 ## remove()
 
-* parameters:
-  * `list`: list
-  * `position`: number
-* result: list
+- parameters:
+  - `list`: list
+  - `position`: number
+- result: list
 
 ```js
 remove([1,2,3], 2) 
@@ -253,9 +254,9 @@ remove([1,2,3], 2)
 
 ## reverse()
 
-* parameters:
-  * `list`: list
-* result: list
+- parameters:
+  - `list`: list
+- result: list
 
 ```js
 reverse([1,2,3]) 
@@ -264,10 +265,10 @@ reverse([1,2,3])
 
 ## index of()
 
-* parameters:
-  * `list`: list
-  * `match`: any
-* result: list of numbers
+- parameters:
+  - `list`: list
+  - `match`: any
+- result: list of numbers
 
 ```js
 index of([1,2,3,2],2) 
@@ -276,9 +277,9 @@ index of([1,2,3,2],2)
 
 ## union()
 
-* parameters:
-  * `lists`: lists as varargs
-* result: list
+- parameters:
+  - `lists`: lists as varargs
+- result: list
 
 ```js
 union([1,2],[2,3])
@@ -287,9 +288,9 @@ union([1,2],[2,3])
 
 ## distinct values()
 
-* parameters:
-  * `list`: list
-* result: list
+- parameters:
+  - `list`: list
+- result: list
 
 ```js
 distinct values([1,2,3,2,1])
@@ -298,9 +299,9 @@ distinct values([1,2,3,2,1])
 
 ## flatten()
 
-* parameters:
-  * `list`: list
-* result: list
+- parameters:
+  - `list`: list
+- result: list
 
 ```js
 flatten([[1,2],[[3]], 4])
@@ -309,10 +310,10 @@ flatten([[1,2],[[3]], 4])
 
 ## sort()
 
-* parameters:
-  * `list`: list 
-  * `precedes`: function with two arguments and boolean result
-* result: list
+- parameters:
+  - `list`: list
+  - `precedes`: function with two arguments and boolean result
+- result: list
 
 ```js
 sort(list: [3,1,4,5,2], precedes: function(x,y) x < y) 
@@ -321,21 +322,21 @@ sort(list: [3,1,4,5,2], precedes: function(x,y) x < y)
 
 ## string join()
 
-Joins a list of strings into a single string. Similar to
-Java's [joining](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence))
+This joins a list of strings into a single string. This is similar to
+Java's [joining](<https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)>)
 function.
 
-If an item of the list is `null` then the item is ignored for the result string. If an item is
-neither a string nor `null` then the function returns `null` instead of a string.
+If an item of the list is `null`, the item is ignored for the result string. If an item is
+neither a string nor `null`, the function returns `null` instead of a string.
 
-* parameters:
-  * `list`: the list of strings to join
-  * `delimiter`: (optional) the string that is used between each element (default: empty string)
-  * `prefix`: (optional) the string that is used at the beginning of the joined result (default:
+- Parameters:
+  - `list`: The list of strings to join
+  - `delimiter`: (Optional) The string used between each element (default: empty string)
+  - `prefix`: (Optional) The string used at the beginning of the joined result (default:
     empty string)
-  * `suffix`: (optional) the string that is used at the end of the joined result (default: empty
+  - `suffix`: (Optional) The string used at the end of the joined result (default: empty
     string)
-* result: the joined list as a string
+- Result: The joined list as a string
 
 ```js
 string join(["a","b","c"])

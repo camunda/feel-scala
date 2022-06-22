@@ -1,6 +1,7 @@
 ---
-id: feel-temporal-expressions 
-title: Temporal Expressions
+id: feel-temporal-expressions
+title: Temporal expressions
+description: "This document outlines temporal expressions and examples."
 ---
 
 ### Literal
@@ -92,7 +93,6 @@ duration("P3M")
 
 </table>
 
-
 ```js
 date("2020-04-06") + duration("P1D")
 // date("2020-04-07")
@@ -105,7 +105,7 @@ date and time("2020-04-06T08:00:00") + duration("P7D")
 
 duration("P2D") + duration("P5D")
 // duration("P7D")
-```  
+```
 
 ### Subtraction
 
@@ -393,10 +393,10 @@ date("2020-04-06").weekday
 // 1
 
 time("08:00:00").hour
-// 8 
+// 8
 
 date and time("2020-04-06T08:00:00+02:00").time offset
-// duration("PT2H") 
+// duration("PT2H")
 
 date and time("2020-04-06T08:00:00@Europe/Berlin").timezone
 // "Europe/Berlin"

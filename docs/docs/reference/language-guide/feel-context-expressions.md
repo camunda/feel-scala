@@ -1,6 +1,7 @@
 ---
-id: feel-context-expressions 
-title: Context Expressions
+id: feel-context-expressions
+title: Context expressions
+description: "This document outlines context expressions and examples."
 ---
 
 ### Literal
@@ -44,15 +45,15 @@ A context value can embed other context values.
 // {a:1, b:{c:2}}
 ```
 
-### Get Entry / Path
+### Get entry/path
 
 ```js
 a.b
 ```
 
-Accesses the entry with the key `b` of the context `a`. The path is separated by `.` (a dot).
+Accesses the entry with the key `b` of the context `a`. The path is separated by `.`.
 
-If the value of the entry `b` is also a context then the path can be chained (i.e. `a.b.c`).
+If the value of the entry `b` is also a context, the path can be chained (i.e. `a.b.c`).
 
 ```js
 {
@@ -98,7 +99,7 @@ While filtering, the entries of the current context element can be accessed by t
 ### Projection
 
 Extracts the entries of a list of context elements by a given key (i.e. a projection). It returns a
-list that contains the values of the context elements for the given key. 
+list containing the values of the context elements for the given key.
 
 ```js
 [

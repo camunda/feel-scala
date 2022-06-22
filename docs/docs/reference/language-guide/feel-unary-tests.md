@@ -1,18 +1,19 @@
 ---
 id: feel-unary-tests
-title: Unary-Tests
+title: Unary-tests
+description: "This document outlines unary-tests and examples."
 ---
 
-A unary-tests expression is a special kind of boolean expression. It should be used for the input
+A unary-tests expression is a special kind of boolean expression. Unary-tests expressions should be used for the input
 entries of a decision table (i.e. the conditions of a rule).
 
 A unary-tests expression returns `true` if one of the following conditions is fulfilled:
 
-* the expression evaluates to `true` when the input value is applied to it
-* the expression evaluates to a list, and the input value is equal to at least one of the values in
-  that list
-* the expression evaluates to a value, and the input value is equal to that value
-* the expression is equal to `-` (a dash)
+- The expression evaluates to `true` when the input value is applied to it.
+- The expression evaluates to a list, and the input value is equal to at least one of the values in
+  that list.
+- The expression evaluates to a value, and the input value is equal to that value.
+- The expression is equal to `-` (a dash).
 
 ### Comparison
 
@@ -75,8 +76,8 @@ The input value is passed implicitly as the first argument of the operator.
 
 Checks if the input value is within a given interval between `x` and `y`.
 
-An interval have two boundaries that can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If a
-boundary is closed then it includes the given value (i.e. less/greater than or equal). Otherwise, it
+An interval has two boundaries that can be open `(x..y)` / `]x..y[` or closed `[x..y]`. If a
+boundary is closed, it includes the given value (i.e. less/greater than or equal). Otherwise, it
 excludes the value (i.e. less/greater than).
 
 The input value is passed implicitly to the operator.
@@ -95,12 +96,12 @@ The input value is passed implicitly to the operator.
 // input > 2 and input <= 5
 ```
 
-### Disjunction / Or
+### Disjunction/or
 
 Combines multiple unary-test expressions following the ternary logic.
 
-* returns `true` if at least one unary-test evaluates to `true`
-* otherwise, it returns `false` 
+- Returns `true` if at least one unary-test evaluates to `true`.
+- Otherwise, it returns `false`.
 
 ```js
 2, 3, 4
@@ -110,7 +111,7 @@ Combines multiple unary-test expressions following the ternary logic.
 // input < 10 or input > 50
 ```
 
-### Negation / Not
+### Negation/not
 
 Negates a given unary-test expression. The expression can be a comparison, an interval, or a
 disjunction.

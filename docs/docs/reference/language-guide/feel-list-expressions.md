@@ -1,6 +1,7 @@
 ---
-id: feel-list-expressions 
-title: List Expressions
+id: feel-list-expressions
+title: List expressions
+description: "This document outlines list expressions and examples."
 ---
 
 ### Literal
@@ -17,7 +18,7 @@ A list value can embed other list values.
 [[1,2], [3,4], [5,6]]
 ```
 
-### Get Element
+### Get element
 
 ```js
 a[i]
@@ -25,7 +26,7 @@ a[i]
 
 Accesses an element of the list `a` at index `i`. The index starts at `1`.
 
-If the index is out of the range of the list then it returns `null`.
+If the index is out of the range of the list, it returns `null`.
 
 ```js
 [1,2,3,4][1]           
@@ -44,7 +45,7 @@ If the index is out of the range of the list then it returns `null`.
 // null
 ```
 
-If the index is negative then it starts counting the elements from the end of the list. The last
+If the index is negative, it starts counting the elements from the end of the list. The last
 element of the list is at index `-1`.
 
 ```js
@@ -90,7 +91,7 @@ some a in b satisfies c
 ```
 
 Iterates over the list `b` and evaluate the condition `c` for each element in the list. The current
-element is assigned to the variable `a`. 
+element is assigned to the variable `a`.
 
 It returns `true` if `c` evaluates to `true` for **one or more** elements of `b`. Otherwise, it
 returns `false`.
@@ -109,7 +110,7 @@ some x in [1,2], y in [2,3] satisfies x < y
 // true
 ```
 
-### Every 
+### Every
 
 Iterates over the list `b` and evaluate the condition `c` for each element in the list. The current
 element is assigned to the variable `a`.
