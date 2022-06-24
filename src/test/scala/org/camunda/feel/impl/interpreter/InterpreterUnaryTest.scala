@@ -185,12 +185,27 @@ class InterpreterUnaryTest
   it should "compare to a conjunction (and)" in {
     evalUnaryTests(true, "true and true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false and true") shouldBe ValBoolean(false)
+
+    evalUnaryTests(true, "true and null") shouldBe ValBoolean(false)
+    evalUnaryTests(true, "false and null") shouldBe ValBoolean(false)
+
+    evalUnaryTests(true, """true and "otherwise" """) shouldBe ValBoolean(
+      false)
+    evalUnaryTests(true, """false and "otherwise" """) shouldBe ValBoolean(
+      false)
   }
 
   it should "compare to a disjunction (or)" in {
     evalUnaryTests(true, "true or true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false or true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false or false") shouldBe ValBoolean(false)
+
+    evalUnaryTests(true, "true or null") shouldBe ValBoolean(true)
+    evalUnaryTests(true, "false or null") shouldBe ValBoolean(false)
+
+    evalUnaryTests(true, """true or "otherwise" """) shouldBe ValBoolean(true)
+    evalUnaryTests(true, """false or "otherwise" """) shouldBe ValBoolean(
+      false)
   }
 
   "A date" should "compare with '<'" in {
