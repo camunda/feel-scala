@@ -183,6 +183,7 @@ class InterpreterUnaryTest
   }
 
   it should "compare to a conjunction (and)" in {
+    // it is uncommon to use a conjunction in a unary-tests but the engine should be able to parse
     evalUnaryTests(true, "true and true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false and true") shouldBe ValBoolean(false)
 
@@ -196,6 +197,7 @@ class InterpreterUnaryTest
   }
 
   it should "compare to a disjunction (or)" in {
+    // it is uncommon to use a disjunction in a unary-tests but the engine should be able to parse
     evalUnaryTests(true, "true or true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false or true") shouldBe ValBoolean(true)
     evalUnaryTests(true, "false or false") shouldBe ValBoolean(false)
