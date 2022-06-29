@@ -574,7 +574,7 @@ object FeelParser {
 
   // boolean literals are ambiguous for unary-tests. give precedence to comparison with input.
   private def positiveUnaryTest[_: P]: P[Exp] =
-    boolean.map(InputEqualTo) | expression.map(UnaryTestExpression)
+    (boolean.map(InputEqualTo) ~ End) | expression.map(UnaryTestExpression)
 
   private def anyInput[_: P]: P[Exp] =
     P(
