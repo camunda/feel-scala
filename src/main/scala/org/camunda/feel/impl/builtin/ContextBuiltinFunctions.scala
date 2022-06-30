@@ -70,7 +70,6 @@ object ContextBuiltinFunctions {
               .toMap
           )
         )
-      case _ => ValNull
     },
     hasVarArgs = true
   )
@@ -89,7 +88,6 @@ object ContextBuiltinFunctions {
               .map { case ValString(key) => key }
               .flatMap(key => getValue("value").map(value => key -> value))
         }.toMap))
-      case _ => ValNull
     }
   )
 

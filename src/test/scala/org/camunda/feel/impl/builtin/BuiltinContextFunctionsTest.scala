@@ -197,6 +197,10 @@ class BuiltinContextFunctionsTest
     eval(""" put all({}, 1) """) should be(ValNull)
   }
 
+  it should "return an error if an error is passed in" in {
+    eval(""" put all({a: 1}, unknownVariable) """) should be(ValError("no variable found for name 'unknownVariable'"))
+  }
+
   "A context function" should "return an empty context" in {
 
     eval(""" context([]) """) should be(ValContext(StaticContext(Map.empty)))

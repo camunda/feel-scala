@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.logger
-import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction, ValNull}
+import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction, ValList, ValNull}
 
 object BuiltinFunction {
 
@@ -16,6 +16,8 @@ object BuiltinFunction {
   }
 
   private def error: PartialFunction[List[Val], Any] = {
+    case List(ValList(vars)) if (vars.exists(_.isInstanceOf[ValError])) =>
+      vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
     case vars if (vars.exists(_.isInstanceOf[ValError])) =>
       vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
     case e => {

@@ -870,7 +870,7 @@ class FeelInterpreter {
       case ValError(failure) => {
         // TODO (saig0): customize error handling (#260)
         logger.warn(s"Failed to invoke function: $failure")
-        ValNull
+        ValError(failure)
       }
       case result => context.valueMapper.toVal(result)
     }
