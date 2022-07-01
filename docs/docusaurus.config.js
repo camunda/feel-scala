@@ -85,7 +85,7 @@ module.exports = {
           // onlyIncludeVersions: ['current', '1.12', '1.11'],
           versions: {
             current: {
-              label: `1.15 (unreleased)`,
+              label: `1.16 (unreleased)`,
             },
           },
         },
