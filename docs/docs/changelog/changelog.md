@@ -15,9 +15,19 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+## 1.15
+
+<SinceVersion versionCloud="8.1.0" versionPlatform="not yet" />
+
+**Expressions:**
+
+* New `@` notation for [temporal literals](../reference/language-guide/feel-temporal-expressions.md#literal)
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.15.0).
+
 ## 1.14
 
-<SinceVersion versionCloud="1.3.1" versionPlatform="not yet" />
+<SinceVersion versionCloud="1.3.1" versionPlatform="7.18.0" />
 
 **Built-in functions:**
 
