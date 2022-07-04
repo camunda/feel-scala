@@ -51,6 +51,10 @@ npm run start
 
 The documentation is published using GitHub actions.
 
+## Building a new Release
+
+As a Camunda developer, create a [new issue](https://github.com/camunda/feel-scala/issues/new/choose) of the type `New Release`. Follow all steps in the issue to build and publish a new release 🏗️
+
 ## Styleguides
 
 ### Source Code
