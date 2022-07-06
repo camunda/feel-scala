@@ -298,7 +298,8 @@
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>scala-shaded</shadedClassifierName>
-              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <!-- avoid creating a reduced pom - see https://github.com/camunda/feel-scala/issues/450 -->
+              <createDependencyReducedPom>false</createDependencyReducedPom>
               <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
               <createSourcesJar>true</createSourcesJar>
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
