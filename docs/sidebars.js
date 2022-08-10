@@ -52,7 +52,11 @@ module.exports = {
   ],
   "Tutorial": [
     'tutorial/tutorial',
-    'tutorial/tutorial-1',
+    'tutorial/tutorial-1': [
+      'tutorial/tutorial-1-1'
+      'tutorial/tutorial-1-2'
+      'tutorial/tutorial-1-3'
+    ],
     'tutorial/tutorial-2',
   ],
   "Changelog": [
