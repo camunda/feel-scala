@@ -50,7 +50,6 @@ module.exports = {
     'samples/list-samples',
     'samples/context-samples'
   ],
-  {
   "Tutorial": [
     'tutorial/tutorial',
     "tutorial/tutorial-1": [
@@ -59,7 +58,7 @@ module.exports = {
       'tutorial/tutorial-1-3'
     ],
     'tutorial/tutorial-2',
-  ]},
+  ],
   "Changelog": [
       'changelog/changelog'
   ],
