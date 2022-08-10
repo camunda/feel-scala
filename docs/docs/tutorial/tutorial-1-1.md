@@ -1,6 +1,6 @@
 ---
-id: tutorial-1.1
-title: "Tutorial 1.1: Math functions"
+id: tutorial-2
+title: "Tutorial 2: Math functions"
 ---
 
 Lets start our journey. FEEL allows you to use basic calculations like addition, substaction and multiplication to name a few. Camundonaut is starting the trip  
