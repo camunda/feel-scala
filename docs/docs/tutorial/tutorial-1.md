@@ -9,6 +9,8 @@ We are enlisting you to help us guide our friend Camundonaut to a trip from Spai
 ![the-camundonaut](/assets/astronaut.png)
 
 
+
+
 With the use of FEEL we'll be able to guide him through the journey. Let's start with some basic examples using math.
 
 
