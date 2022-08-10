@@ -50,15 +50,16 @@ module.exports = {
     'samples/list-samples',
     'samples/context-samples'
   ],
+  {
   "Tutorial": [
     'tutorial/tutorial',
-    'tutorial/tutorial-1': [
-      'tutorial/tutorial-1-1'
-      'tutorial/tutorial-1-2'
+    "tutorial/tutorial-1": [
+      'tutorial/tutorial-1-1',
+      'tutorial/tutorial-1-2',
       'tutorial/tutorial-1-3'
     ],
     'tutorial/tutorial-2',
-  ],
+  ]},
   "Changelog": [
       'changelog/changelog'
   ],
