@@ -1,13 +1,17 @@
 ---
-id: tutorial-3
-title: "Tutorial 3: Second stop: More Math!"
+id: tutorial-2
+title: "Tutorial 2: Math functions"
 ---
 
-Lets continue our journey and help Camundonaut reach the final destination. 
+Lets start our journey. FEEL allows you to use basic calculations like addition, substaction and multiplication to name a few. Camundonaut is starting the trip  
+in Spain, specifically Madrid. Our friend wants to get to Pamplona (which is around 395.7 kms) and he will take a train that makes 3 hours and 7 minutes to get there.  
+Using math, what is the average speed of the train? We want to be able to also round up the result.
 
 
 
 
 ```
-"((5+4)/3)-2"
+// Speed = distance / time
+
+"round up(400/3,0)"
 ```
