@@ -72,7 +72,11 @@ module.exports = {
       searchParameters: {}, // Optional (if provided by Algolia)
       contextualSearch: true,
     },
-    hideableSidebar: true,
+    docs: {
+      sidebar: {
+        hideable: true
+      }
+    },
     // syntax highlighter
     prism: {
       additionalLanguages: ['java', 'scala'],
