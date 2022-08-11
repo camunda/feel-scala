@@ -2,10 +2,10 @@ import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
 
-const LiveFeel = ({children, feelContext}) => {
+const LiveFeel = ({ children, feelContext }) => {
   const [expression, setExpression] = React.useState(children);
   const [context, setContext] = React.useState(
-      JSON.stringify(JSON.parse(feelContext), null, 2)
+    JSON.stringify(JSON.parse(feelContext), null, 2)
   );
   const [result, setResult] = React.useState("");
 
@@ -40,7 +40,12 @@ const LiveFeel = ({children, feelContext}) => {
       <h2>Context</h2>
       <Editor onChange={setContext}>{context}</Editor>
 
-      <button onClick={evaluate}>Evaluate</button>
+      <button
+        onClick={evaluate}
+        class="button button--primary button--lg"
+      >
+        Evaluate
+      </button>
 
       <h2>{result}</h2>
     </div>
