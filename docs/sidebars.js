@@ -58,6 +58,7 @@ module.exports = {
         'tutorial/tutorial-1-1',
         'tutorial/tutorial-1-2'
     ]},
+    'tutorial/tutorial-playground',
    ],
   "Changelog": [
       'changelog/changelog'
