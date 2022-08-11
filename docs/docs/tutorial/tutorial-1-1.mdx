@@ -4,6 +4,7 @@ title: "1.1 First stop: Numeric functions"
 ---
 
 import LiveFeel from '@site/src/components/LiveFeel'
+import dedent from 'dedent';
 
 Let's start our quest. FEEL allows you to use basic calculations like addition, subtraction and multiplication to name a few. Our friend arrived in Spain by boat, specifically Cadiz. The goal is to reach Pamplona (which is 1,030.8 kms away). 
 
@@ -20,7 +21,10 @@ round up(.5*(1030.8/48.2)/5,0) + 1030.8/48.2
 ```
 
 <LiveFeel
+    defaultExpression={dedent`
+      // Formula considering resting time plus total time
+      round up(.5*(distance/speed)/5,0) + distance/speed`
+    }
     feelContext='{"distance": 1030.8, "speed": 48.2}'
-    metadata={{"page": "tutorial-1-1"}}>
-round up(.5*(distance/speed)/5,0) + distance/speed
-</LiveFeel>
+    metadata={{"page": "tutorial-1-1"}}
+/>

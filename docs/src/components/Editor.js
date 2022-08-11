@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, Fragment } from "react";
 import { useEditable } from "use-editable";
 import Highlight, { defaultProps } from "prism-react-renderer";
 
@@ -20,14 +20,14 @@ const Editor = ({ children, onChange, language }) => {
       {({ className, style, tokens, getTokenProps }) => (
         <pre className={className} style={style} ref={editorRef}>
           {tokens.map((line, i) => (
-            <React.Fragment key={i}>
+            <Fragment key={i}>
               {line
                 .filter((token) => !token.empty)
                 .map((token, key) => (
                   <span {...getTokenProps({ token, key })} />
                 ))}
               {"\n"}
-            </React.Fragment>
+            </Fragment>
           ))}
         </pre>
       )}

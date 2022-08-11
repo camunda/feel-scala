@@ -3,7 +3,12 @@ import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from '@theme/CodeBlock';
 
-const LiveFeel = ({ children, feelContext, metadata }) => {
+const LiveFeel = ({ children, defaultExpression, feelContext, metadata }) => {
+
+  if (defaultExpression) {
+    children = defaultExpression;
+  }
+
   if (feelContext) {
     // format the context
     feelContext = JSON.stringify(JSON.parse(feelContext), null, 2);
