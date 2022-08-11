@@ -1,6 +1,6 @@
 ---
 id: tutorial-2
-title: "Tutorial 2: Strings"
+title: "Introduction"
 ---
 
 Welcome to our tutorial. We'll do our best to guide you through the different capabilities of FEEL and hopefully make the process fun!

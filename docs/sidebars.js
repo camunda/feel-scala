@@ -55,10 +55,13 @@ module.exports = {
     'tutorial/introduction',
     {
       "Tutorial-1": [
+        'tutorial/tutorial-1',
         'tutorial/tutorial-1-1',
-        'tutorial/tutorial-1-2'
+        'tutorial/tutorial-1-2',
+        'tutorial/tutorial-1-3'
       ],
       "Tutorial-2": [
+        'tutorial/tutorial-2',
         'tutorial/tutorial-2-1'
       ]
     },
