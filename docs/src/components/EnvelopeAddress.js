@@ -63,8 +63,18 @@ class EnvelopeAddress extends React.Component {
       )
       .then((response) => {
         let result = this.state.result;
-        result[resultVarName] = JSON.stringify(response.data);
-        this.setResult(result);
+
+        if (!response.data) {
+          return;
+        }
+        if (response.data.result) {
+          result[resultVarName] = JSON.stringify(response.data.result);
+          this.setResult(result);
+        } else if (response.data.error) {
+          // the error could be displayed nicer
+          result[resultVarName] = JSON.stringify(response.data.error);
+          this.setResult(result);
+        }
       });
   }
 
