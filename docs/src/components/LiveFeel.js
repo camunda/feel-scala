@@ -37,7 +37,14 @@ const LiveFeel = ({ children, defaultExpression, feelContext, metadata }) => {
         }
       )
       .then((response) => {
-        setResult(JSON.stringify(response.data));
+        if (!response.data) {
+          return;
+        }
+        if (response.data.result) {
+          setResult(JSON.stringify(response.data.result));
+        } else if (response.data.error) {
+          setResult(JSON.stringify(response.data.error))
+        }
       });
   }
 
