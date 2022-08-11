@@ -1,28 +1,23 @@
 ---
 id: tutorial-1-2
-title: "1.2 Second stop: More numeric functions"
+title: "1.2 Second stop: More numeric expressions"
 ---
 
 import LiveFeel from "@site/src/components/LiveFeel";
 import dedent from "dedent";
 
-As our friend reached Pamplona, a creature appeared before him: Lerna's Hydra. The Hydra was a one-headed monster that when it's head was cut off, 2 more heads grew in its place.
+Once Zee arrived to Pamplona, a mystical creature appeared: Lerna's Hydra. The Hydra was a one-headed monster that when it's head was cut off, 2 more heads would grew in its place.
 
-Camundonaut reached for a sword and cut off the head of the beast. As a result 2 more appeared. He cut both heads off, which doubled to 4. How many heads would the beast have after cutting them for 5 times?
+Zee reached for a sword and cut off the head of the beast. As a result 2 more appeared. Zee cut both heads off again, which doubled to 4. How many heads would the beast have after cutting them for 5 times?
 
-```
-// We could try to represent this in a multiplication like this:
-2 * 2 * 2 * 2 * 2
-
-//But we can leverage exponentiation and represent it like this:
-2 ** 5
-```
-
-By the 5th time, there were 32 heads and Camundonaut had no way out, thankfully the heads started fighting with each other and he was able to escape.
+We could try to represent this in a multiplication like this: 2\*2\*2\*2\*2, but we can leverage exponentiation and represent it like this:
 
 <LiveFeel
   defaultExpression={dedent`
-    // leverage exponentiation to represent the multiplications
-    2 ** 5`}
+    // exponentiation to represent the multiplications
+    base ** exponent`}
+  feelContext='{"base": 2, "exponent": 5}'
   metadata={{ page: "tutorial-1-2" }}
 />
+
+By the 5th time, there were 32 heads and no apparent way out, thankfully the heads started fighting with each other and Zee was able to escape.
