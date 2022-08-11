@@ -54,10 +54,14 @@ module.exports = {
     'tutorial/tutorial',
     'tutorial/introduction',
     {
-    "Tutorial-1": [
+      "Tutorial-1": [
         'tutorial/tutorial-1-1',
         'tutorial/tutorial-1-2'
-    ]},
+      ],
+      "Tutorial-2": [
+        'tutorial/tutorial-2-1'
+      ]
+    },
     'tutorial/tutorial-playground',
    ],
   "Changelog": [
