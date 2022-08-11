@@ -36,10 +36,10 @@ const LiveFeel = ({ children, feelContext }) => {
   return (
     <div>
       <h2>Expression</h2>
-      <Editor onChange={setExpression}>{expression}</Editor>
+      <Editor onChange={setExpression} language="js">{expression}</Editor>
 
       <h2>Context</h2>
-      <Editor onChange={setContext}>{context}</Editor>
+      <Editor onChange={setContext} language="json">{context}</Editor>
 
       <button
         onClick={evaluate}
