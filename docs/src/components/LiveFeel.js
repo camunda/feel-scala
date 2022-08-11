@@ -41,8 +41,16 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
           setError(null);
           setResult(JSON.stringify(response.data.result));
         } else if (response.data.error) {
+          const errorMessage = JSON.stringify(response.data.error);
+          const match = /^.+(?<line>\d+):(?<position>\d+).+$/gm.exec(
+            errorMessage
+          );
           setResult(null);
-          setError(JSON.stringify(response.data.error));
+          setError({
+            message: errorMessage,
+            line: match?.groups?.line,
+            position: match?.groups?.position,
+          });
         }
       });
   }
@@ -71,8 +79,13 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       <br />
       <br />
       <h2>Result</h2>
-      <CodeBlock title={error != null && "Error"} language="json">
-        {result || error}
+      <CodeBlock
+        title={
+          error && `Error on line ${error.line} at position ${error.position}`
+        }
+        language="json"
+      >
+        {result || error?.message}
       </CodeBlock>
     </div>
   );
