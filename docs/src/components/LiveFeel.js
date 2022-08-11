@@ -4,19 +4,23 @@ import Editor from "@site/src/components/Editor";
 import CodeBlock from '@theme/CodeBlock';
 
 const LiveFeel = ({ children, feelContext }) => {
+  if (feelContext) {
+    // format the context
+    feelContext = JSON.stringify(JSON.parse(feelContext), null, 2);
+  }
+
   const [expression, setExpression] = React.useState(children);
-  const [context, setContext] = React.useState(
-    JSON.stringify(JSON.parse(feelContext), null, 2)
-  );
+  const [context, setContext] = React.useState(feelContext);
   const [result, setResult] = React.useState("");
 
   function evaluate() {
+    const parsedContext = feelContext ? JSON.parse(context) : {};
     axios
       .post(
         "http://34.138.73.115/process/start",
         {
           expression: expression,
-          context: JSON.parse(context),
+          context: parsedContext,
           metadata: {
             user: "foo",
           },
@@ -38,8 +42,12 @@ const LiveFeel = ({ children, feelContext }) => {
       <h2>Expression</h2>
       <Editor onChange={setExpression} language="js">{expression}</Editor>
 
-      <h2>Context</h2>
-      <Editor onChange={setContext} language="json">{context}</Editor>
+      {feelContext &&
+        <div>
+          <h2>Context</h2>
+          <Editor onChange={setContext} language="json">{context}</Editor>
+        </div>
+      }
 
       <button
         onClick={evaluate}
