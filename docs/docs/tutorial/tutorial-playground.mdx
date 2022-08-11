@@ -4,7 +4,13 @@ title: Tutorial Playground
 ---
 
 import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
 
 This is an example of the SimpleFeel React component.
 
-<LiveFeel feelContext='{"x": 5}'>3 + x</LiveFeel>
+<LiveFeel
+  defaultExpression={dedent`
+      3 + x`}
+  feelContext='{"x": 5}'
+  metadata={{ page: "tutorial-playground" }}
+/>
