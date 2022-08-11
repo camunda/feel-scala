@@ -11,7 +11,7 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
 
   const [expression, setExpression] = React.useState(defaultExpression);
   const [context, setContext] = React.useState(feelContext);
-  const [result, setResult] = React.useState("");
+  const [result, setResult] = React.useState("<click 'Evaluate' to see the result of the expression>");
   const [error, setError] = React.useState(null);
 
   function evaluate() {
@@ -57,6 +57,7 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       {feelContext && (
         <div>
           <h2>Context</h2>
+          <i>A JSON document that is used to resolve <strong>variables</strong> in the expression.</i>
           <Editor onChange={setContext} language="json">
             {context}
           </Editor>
