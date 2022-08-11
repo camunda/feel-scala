@@ -12,6 +12,7 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
   const [expression, setExpression] = React.useState(defaultExpression);
   const [context, setContext] = React.useState(feelContext);
   const [result, setResult] = React.useState("");
+  const [error, setError] = React.useState(null);
 
   function evaluate() {
     const parsedContext = feelContext ? JSON.parse(context) : {};
@@ -37,9 +38,11 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
           return;
         }
         if (response.data.result) {
+          setError(null);
           setResult(JSON.stringify(response.data.result));
         } else if (response.data.error) {
-          setResult(JSON.stringify(response.data.error))
+          setResult(null);
+          setError(JSON.stringify(response.data.error));
         }
       });
   }
@@ -67,7 +70,9 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       <br />
       <br />
       <h2>Result</h2>
-      <CodeBlock language="json">{result}</CodeBlock>
+      <CodeBlock title={error != null && "Error"} language="json">
+        {result || error}
+      </CodeBlock>
     </div>
   );
 };
