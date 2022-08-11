@@ -51,7 +51,7 @@ const LiveFeel = ({ children, feelContext }) => {
 
       <button
         onClick={evaluate}
-        class="button button--primary button--lg"
+        className="button button--primary button--lg"
       >
         Evaluate
       </button>
