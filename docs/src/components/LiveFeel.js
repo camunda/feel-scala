@@ -2,10 +2,10 @@ import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
 
-const LiveFeel = () => {
-  const [expression, setExpression] = React.useState("3 + x");
+const LiveFeel = ({children, feelContext}) => {
+  const [expression, setExpression] = React.useState(children);
   const [context, setContext] = React.useState(
-    JSON.stringify({ x: 5 }, null, 2)
+      JSON.stringify(JSON.parse(feelContext), null, 2)
   );
   const [result, setResult] = React.useState("");
 
