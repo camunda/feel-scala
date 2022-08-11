@@ -11,8 +11,13 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
 
   const [expression, setExpression] = React.useState(defaultExpression);
   const [context, setContext] = React.useState(feelContext);
-  const [result, setResult] = React.useState("<click 'Evaluate' to see the result of the expression>");
+  const [result, setResult] = React.useState(
+    "<click 'Evaluate' to see the result of the expression>"
+  );
   const [error, setError] = React.useState(null);
+
+  // https://regex101.com/r/WnWTtz/1
+  const errorPattern = /^.+(?<line>\d+):(?<position>\d+).+$/gm;
 
   function evaluate() {
     const parsedContext = feelContext ? JSON.parse(context) : {};
@@ -34,17 +39,12 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
         }
       )
       .then((response) => {
-        if (!response.data) {
-          return;
-        }
-        if (response.data.result) {
+        if (response?.data?.result) {
           setError(null);
           setResult(JSON.stringify(response.data.result));
-        } else if (response.data.error) {
-          const errorMessage = JSON.stringify(response.data.error);
-          const match = /^.+(?<line>\d+):(?<position>\d+).+$/gm.exec(
-            errorMessage
-          );
+        } else if (response?.data?.error) {
+          const errorMessage = response.data.error;
+          const match = errorPattern.exec(errorMessage);
           setResult(null);
           setError({
             message: errorMessage,
@@ -54,6 +54,10 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
         }
       });
   }
+
+  const resultTitle = () => {
+    return error && `Error on line ${error.line} at position ${error.position}`;
+  };
 
   return (
     <div>
@@ -65,7 +69,10 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       {feelContext && (
         <div>
           <h2>Context</h2>
-          <i>A JSON document that is used to resolve <strong>variables</strong> in the expression.</i>
+          <i>
+            A JSON document that is used to resolve <strong>variables</strong>{" "}
+            in the expression.
+          </i>
           <Editor onChange={setContext} language="json">
             {context}
           </Editor>
@@ -79,12 +86,7 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       <br />
       <br />
       <h2>Result</h2>
-      <CodeBlock
-        title={
-          error && `Error on line ${error.line} at position ${error.position}`
-        }
-        language="json"
-      >
+      <CodeBlock title={resultTitle()} language="json">
         {result || error?.message}
       </CodeBlock>
     </div>
