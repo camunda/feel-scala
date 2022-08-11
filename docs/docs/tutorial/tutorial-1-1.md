@@ -13,6 +13,6 @@ Using numeric functions, how long would it take him to get there? Consider resti
 ```
 // Formula considering resting time plus total time
 
-round up(.5*(1030.8/48.2)/5,0) + 1030.8/48.2
+ round up(.5*(1030.8/48.2)/5,0) + 1030.8/48.2
 
 ```

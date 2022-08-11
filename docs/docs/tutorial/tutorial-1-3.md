@@ -9,12 +9,12 @@ Considering average walking speed is 5 km/h how many days would he need to walk?
 
 ```
 // First determine the number of days using time = distance / speed
-(729.1/5) = 145 hrs
+ (729.1/5) = 145 hrs
 
-// To determine his arrival time, we can leverage modular arithmetics with the funciton modulo
-(145+7)mod24 = 8:00 AM
+// To determine his arrival time, we can leverage modular (clock) arithmetics with the FEEL function modulo
+ modulo((145+7),24)
 
-//24 representing a 24 hour clock
+//Result is 8:00 representing a 24 hour clock
 ```
 
 Now, let's look at some functions you could do with strings

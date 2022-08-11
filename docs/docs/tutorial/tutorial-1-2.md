@@ -9,10 +9,10 @@ Camundonaut reached for a sword and cut off the head of the beast. As a result 2
 
 ```
 // We could try to represent this in a multiplication like this:
-2*2*2*2*2
+ 2*2*2*2*2
 
 //But we can leverage exponentiation and represent it like this:
-2**5
+ 2**5
 ```
 
 By the 5th time, there were 32 heads and Camundonaut had no way out, thankfully the heads started fighting with each other and he was able to escape.

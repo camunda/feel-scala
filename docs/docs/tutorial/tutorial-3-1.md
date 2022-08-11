@@ -8,7 +8,7 @@ title: "3.1 Fifth Stop: Booleans"
 Here we will have some witty way of explaining usage of booleans in FEEL
 
 :::
-Fifth stop arriving at Cologne
+ Fifth stop arriving at Cologne
 
 ```
 TBD
