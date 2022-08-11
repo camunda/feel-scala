@@ -1,10 +1,9 @@
 import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
-import CodeBlock from '@theme/CodeBlock';
+import CodeBlock from "@theme/CodeBlock";
 
 const LiveFeel = ({ children, defaultExpression, feelContext, metadata }) => {
-
   if (defaultExpression) {
     children = defaultExpression;
   }
@@ -45,27 +44,27 @@ const LiveFeel = ({ children, defaultExpression, feelContext, metadata }) => {
   return (
     <div>
       <h2>Expression</h2>
-      <Editor onChange={setExpression} language="js">{expression}</Editor>
+      <Editor onChange={setExpression} language="js">
+        {expression}
+      </Editor>
 
-      {feelContext &&
+      {feelContext && (
         <div>
           <h2>Context</h2>
-          <Editor onChange={setContext} language="json">{context}</Editor>
+          <Editor onChange={setContext} language="json">
+            {context}
+          </Editor>
         </div>
-      }
+      )}
 
-      <button
-        onClick={evaluate}
-        className="button button--primary button--lg"
-      >
+      <button onClick={evaluate} className="button button--primary button--lg">
         Evaluate
       </button>
 
-      <br/><br/>
+      <br />
+      <br />
       <h2>Result</h2>
-      <CodeBlock language="json">
-        {result}
-      </CodeBlock>
+      <CodeBlock language="json">{result}</CodeBlock>
     </div>
   );
 };
