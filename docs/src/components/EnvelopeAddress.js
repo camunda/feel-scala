@@ -102,11 +102,11 @@ class EnvelopeAddress extends React.Component {
         <div className={"row"}>
           <div className={"col col--6"}>
             <h5 style={{textAlign: "left"}}>Help Camundonaut to send a letter by entering the first and last name of someone you know:</h5>
-            <Editor onChange={this.setContext()}>{this.state.context}</Editor>
+            <Editor onChange={this.setContext()} language="json">{this.state.context}</Editor>
           </div>
           <div className="col col--6">
             <h5>In FEEL, you can concatenate strings easily. Feel free to experiment:</h5>
-            <Editor onChange={this.setExpression()}>{this.state.expression}</Editor>
+            <Editor onChange={this.setExpression()} language="js">{this.state.expression}</Editor>
           </div>
         </div>
         <div className={"row"}>
