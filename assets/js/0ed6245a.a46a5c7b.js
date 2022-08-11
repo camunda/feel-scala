@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfeel_scala=self.webpackChunkfeel_scala||[]).push([[4471],{5745:e=>{e.exports=JSON.parse('{"name":"docusaurus-plugin-content-pages","id":"default"}')}}]);

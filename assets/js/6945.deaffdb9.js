@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfeel_scala=self.webpackChunkfeel_scala||[]).push([[6945],{6945:(e,s,a)=>{a.r(s)}}]);

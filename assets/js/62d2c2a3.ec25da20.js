@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfeel_scala=self.webpackChunkfeel_scala||[]).push([[3281],{7085:e=>{e.exports=JSON.parse('{"name":"docusaurus-theme-search-algolia","id":"default"}')}}]);
