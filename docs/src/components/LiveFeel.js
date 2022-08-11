@@ -3,17 +3,13 @@ import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from "@theme/CodeBlock";
 
-const LiveFeel = ({ children, defaultExpression, feelContext, metadata }) => {
-  if (defaultExpression) {
-    children = defaultExpression;
-  }
-
+const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
   if (feelContext) {
     // format the context
     feelContext = JSON.stringify(JSON.parse(feelContext), null, 2);
   }
 
-  const [expression, setExpression] = React.useState(children);
+  const [expression, setExpression] = React.useState(defaultExpression);
   const [context, setContext] = React.useState(feelContext);
   const [result, setResult] = React.useState("");
 
