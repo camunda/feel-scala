@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
+import CodeBlock from '@theme/CodeBlock';
 
 const LiveFeel = ({ children, feelContext }) => {
   const [expression, setExpression] = React.useState(children);
@@ -47,7 +48,11 @@ const LiveFeel = ({ children, feelContext }) => {
         Evaluate
       </button>
 
-      <h2>{result}</h2>
+      <br/><br/>
+      <h2>Result</h2>
+      <CodeBlock language="json">
+        {result}
+      </CodeBlock>
     </div>
   );
 };
