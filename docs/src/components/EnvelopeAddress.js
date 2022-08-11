@@ -105,13 +105,13 @@ class EnvelopeAddress extends React.Component {
       <div className={"container"}>
         <div className={"row"}>
           <p>
-            Before he left on on his quest, Camundonaut promised to keep in touch with his friends. He wants to send them each a letter.
-            Luckily, he can use FEEL String functions to save time.
+            Before he left on on his quest, Zee promised to keep in touch with friends back home and send them each a letter.
+            Luckily, FEEL String functions are here to Help and save time.
           </p>
         </div>
         <div className={"row"}>
           <div className={"col col--6"}>
-            <h5 style={{textAlign: "left"}}>Help Camundonaut to send a letter by entering the first and last name of someone you know:</h5>
+            <h5 style={{textAlign: "left"}}>Help Zee to send a letter by entering the first and last name of someone you know:</h5>
             <Editor onChange={this.setContext()} language="json">{this.state.context}</Editor>
           </div>
           <div className="col col--6">
