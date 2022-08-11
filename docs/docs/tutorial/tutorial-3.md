@@ -1,6 +1,6 @@
 ---
-id: introduction
-title: "The Quest Begins"
+id: tutorial-3
+title: "Introduction"
 ---
 
 Welcome to our tutorial. We'll do our best to guide you through the different capabilities of FEEL and hopefully make the process fun!
