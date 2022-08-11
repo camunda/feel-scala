@@ -56,7 +56,9 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
   }
 
   const resultTitle = () => {
-    return error && `Error on line ${error.line} at position ${error.position}`;
+    const onLine = error?.line ? ` on line ${error.line}` : "";
+    const atPosition = error?.position ? ` at position ${error.position}` : "";
+    return error && `Error${onLine}${atPosition}`;
   };
 
   return (
