@@ -1,7 +1,9 @@
 import React from "react";
 import axios from "axios";
+import dedent from "dedent";
 import Editor from "@site/src/components/Editor";
 import Envelope from "@site/src/components/Envelope";
+import LiveFeel from "@site/src/components/LiveFeel";
 
 const friend = {
   firstName: '?',
@@ -16,7 +18,29 @@ const friend = {
   }
 };
 
-class EnvelopeAddress extends React.Component {
+const EnvelopeAddress = (props) => {
+  
+  const [result, setResult] = React.useState("");
+
+  return (
+    <div className={"container"}>
+      <div className={"row"}>
+        <LiveFeel
+            defaultExpression={dedent`
+              // concatenate the first and the last name
+              firstName`}
+            feelContext='{"firstName":"?", "lastName":"?"}'
+            metadata={{ page: "tutorial-2-1" }}
+        />
+      </div>
+      <div className={"row"}>
+        <Envelope addressName={result}/>
+      </div>
+    </div>
+  );
+}
+
+class EnvelopeAddressOld extends React.Component {
 
   constructor(props) {
     super(props);
