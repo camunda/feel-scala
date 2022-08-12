@@ -52,25 +52,26 @@ module.exports = {
   ],
   "Tutorial": [
     'tutorial/tutorial',
-    'tutorial/introduction',
     {
-      "Tutorial-1": [
+      "Tutorial 1: Numbers": [
         'tutorial/tutorial-1-1',
         'tutorial/tutorial-1-2',
         'tutorial/tutorial-1-3'
       ],
-      "Tutorial-2": [
+      "Tutorial 2: Strings": [
         'tutorial/tutorial-2-1'
       ],
-      "Tutorial-3": [
+      "Tutorial 3: Temporal": [
          'tutorial/tutorial-3-1'
       ],
-      "Tutorial-4": [
+      "Tutorial 4: Lists": [
          'tutorial/tutorial-4-1'
       ],
     },
-    'tutorial/tutorial-playground',
    ],
+  "Playground": [
+    'playground/playground',
+  ],
   "Changelog": [
       'changelog/changelog'
   ],
