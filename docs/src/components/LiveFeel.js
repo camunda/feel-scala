@@ -19,8 +19,31 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
   // https://regex101.com/r/WnWTtz/1
   const errorPattern = /^.+(?<line>\d+):(?<position>\d+).+$/gm;
 
-  function evaluate() {
-    const parsedContext = feelContext ? JSON.parse(context) : {};
+  // https://regex101.com/r/jus80g/1
+  const contextErrorPattern = /^.+at position (?<position>\d+)$/gm;
+
+  const parseContext = () => {
+    if (!feelContext) {
+      return {};
+    }
+    return JSON.parse(context);
+  };
+
+  function tryEvaluate() {
+    try {
+      const parsedContext = parseContext();
+      evaluate(parsedContext);
+    } catch (err) {
+      setResult(null);
+      const match = contextErrorPattern.exec(err.message);
+      setError({
+        message: `failed to parse context: ${err.message}`,
+        position: match?.groups?.position,
+      });
+    }
+  }
+
+  function evaluate(parsedContext) {
     axios
       .post(
         "https://feel.upgradingdave.com/process/start",
@@ -81,7 +104,10 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
         </div>
       )}
 
-      <button onClick={evaluate} className="button button--primary button--lg">
+      <button
+        onClick={tryEvaluate}
+        className="button button--primary button--lg"
+      >
         Evaluate
       </button>
 
