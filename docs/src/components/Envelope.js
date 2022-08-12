@@ -32,7 +32,7 @@ class Envelope extends React.Component {
         <div style={containerStyle}>
           <img src={EnvelopeImg}></img>
           <div style={topLeftStyle}>
-            Camundonaut<br/>
+            Zee<br/>
             Camunda Services GmbH<br/>
             Zossener Str. 55<br/>
             10961 Berlin<br/>
