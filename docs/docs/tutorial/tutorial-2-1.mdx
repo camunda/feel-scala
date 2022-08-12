@@ -3,8 +3,8 @@ id: tutorial-2-1
 title: "2.1 String expressions"
 ---
 
-import LiveFeel from "@site/src/components/LiveFeel";
 import dedent from "dedent";
+import LiveFeel from "@site/src/components/LiveFeel";
 import EnvelopeAddress from "@site/src/components/EnvelopeAddress";
 
 Before he continues on his quest, Zee promised to keep in touch with friends back home and send them
@@ -12,17 +12,19 @@ each a letter. :incoming_envelope:
 
 Luckily, FEEL [string expressions](/docs/reference/language-guide/feel-string-expressions.md) are here to Help and save time.
 
-<EnvelopeAddress />
+<EnvelopeAddress
+  defaultExpression={dedent`
+      // concatenate the first and the last name
+      firstName`}
+  feelContext='{"firstName":"?", "lastName":"?"}'
+  metadata={{ page: "tutorial-2-1" }}
+/>
 
 <details>
   <summary>Solution</summary>
   <div>
-    <div>
-      It would take Zee 24 hours to complete the trip.
-    </div>
+    <div>It would take Zee 24 hours to complete the trip.</div>
     <br />
-    <pre title={'Expression'}>
-      firstName + " " + lastName
-    </pre>
+    <pre title={"Expression"}>firstName + " " + lastName</pre>
   </div>
 </details>
