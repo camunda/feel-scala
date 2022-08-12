@@ -13,7 +13,7 @@ const EnvelopeAddress = ({ defaultExpression, feelContext, metadata }) => {
         defaultExpression={defaultExpression}
         feelContext={feelContext}
         metadata={metadata}
-        onResultCallback={result => setResult(result.replaceAll('"', ''))}
+        onResultCallback={(result) => setResult(result.replaceAll('"', ""))}
         onErrorCallback={(_error) => setResult(defaultName)}
       />
 
