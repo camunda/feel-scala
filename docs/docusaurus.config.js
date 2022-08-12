@@ -39,6 +39,12 @@ module.exports = {
           position: "left",
         },
         {
+          to: "docs/playground/",
+          activeBasePath: "docs/playground",
+          label: "Playground",
+          position: "left",
+        },
+        {
           to: "docs/changelog/",
           activeBasePath: "docs/changelog",
           label: "Changelog",

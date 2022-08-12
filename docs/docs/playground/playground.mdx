@@ -1,0 +1,23 @@
+---
+id: playground
+title: Playground for FEEL expressions
+---
+
+import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
+
+Use the interactive editor below to evaluate
+[FEEL expressions](/docs/reference/language-guide/feel-expressions-introduction.md).
+
+<LiveFeel
+  defaultExpression={dedent`
+      3 + x`}
+  feelContext='{"x": 5}'
+  metadata={{ page: "tutorial-playground" }}
+/>
+
+:::danger Work in progress
+The playground is created as part of our Camunda Summer Hack Days project 2022.
+
+It may be broken. But stay tuned for updates!
+:::

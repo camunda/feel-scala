@@ -52,7 +52,6 @@ module.exports = {
   ],
   "Tutorial": [
     'tutorial/tutorial',
-    'tutorial/the-quest-begins',
     {
       "Tutorial-1": [
         'tutorial/tutorial-1-1',
@@ -69,8 +68,10 @@ module.exports = {
          'tutorial/tutorial-4-1'
       ],
     },
-    'tutorial/tutorial-playground',
    ],
+  "Playground": [
+    'playground/playground',
+  ],
   "Changelog": [
       'changelog/changelog'
   ],
