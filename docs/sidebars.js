@@ -52,7 +52,7 @@ module.exports = {
   ],
   "Tutorial": [
     'tutorial/tutorial',
-    'tutorial/introduction',
+    'tutorial/the-quest-begins',
     {
       "Tutorial-1": [
         'tutorial/tutorial-1-1',
