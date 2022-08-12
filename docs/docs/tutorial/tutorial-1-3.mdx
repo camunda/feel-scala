@@ -19,8 +19,8 @@ In this case: `729.1 / 5 = 145 hrs`. To determine arrival time, we can leverage 
 
 <LiveFeel
   defaultExpression={dedent`
-    // using a 24 hour clock
-    modulo((hours + startingHour), modulus)`}
+    // use a 24 hour clock
+    hours + startingHour`}
   feelContext='{"startingHour": 7, "hours": 145, "modulus": 24}'
   metadata={{ page: "tutorial-1-2" }}
 />
@@ -31,5 +31,9 @@ In this case: `729.1 / 5 = 145 hrs`. To determine arrival time, we can leverage 
     <div>
       Zee would take 6 days to arrive and would be there at 8:00 AM.
     </div>
+    <br />
+    <pre title={'Expression'}>
+      modulo((hours + startingHour), modulus)
+    </pre>
   </div>
 </details>
