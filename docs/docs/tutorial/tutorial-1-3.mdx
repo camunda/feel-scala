@@ -1,16 +1,21 @@
 ---
 id: tutorial-1-3
-title: "1.3 Third Stop: Even more numeric expressions"
+title: "1.3 Even more numeric expressions"
 ---
 
 import LiveFeel from "@site/src/components/LiveFeel";
 import dedent from "dedent";
 
-Zee is now entering France and during the battle with Hydra lost the Boots of Hermes. It is 7:00 AM and our friend has to continue by foot. The goal is to walk to Lyon which is 729.1 kms distance.
+Zee is now entering France :fr: and during the battle with Hydra lost the Boots of Hermes. It is
+7:00 AM and our friend has to continue by foot :walking: The goal is to walk to Lyon which is
+729.1 kms distance.
 
-Considering average walking speed is 5 km/h how many days would Zee need to walk without taking many rest?, and at what time would Zee reach Lyon?
+Considering average walking speed is 5 km/h how many days would Zee need to walk without taking many
+rest?, and at what time would Zee reach Lyon?
 
-First determine the number of days using expressions were already used = distance / speed. In this case: (729.1/5) = 145 hrs / 24 hours. To determine arrival time, we can leverage modular (clock) arithmetics with the function modulo
+First determine the number of days using expressions were already used `distance / speed`.
+In this case: `729.1 / 5 = 145 hrs`. To determine arrival time, we can leverage modular clock
+(24 hours) arithmetics using the function [modulo()](/docs/reference/builtin-functions/feel-built-in-functions-numeric.md#modulo).
 
 <LiveFeel
   defaultExpression={dedent`
@@ -19,4 +24,12 @@ First determine the number of days using expressions were already used = distanc
   feelContext='{"startingHour": 7, "hours": 145, "modulus": 24}'
   metadata={{ page: "tutorial-1-2" }}
 />
-This means Zee would take 6 days to arrive and would be there at 8:00 AM
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>
+      Zee would take 6 days to arrive and would be there at 8:00 AM.
+    </div>
+  </div>
+</details>
