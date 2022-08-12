@@ -3,7 +3,13 @@ import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from "@theme/CodeBlock";
 
-const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
+const LiveFeel = ({
+  defaultExpression,
+  feelContext,
+  metadata,
+  onResultCallback,
+  onErrorCallback,
+}) => {
   if (feelContext) {
     // format the context
     feelContext = JSON.stringify(JSON.parse(feelContext), null, 2);
@@ -34,9 +40,8 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       const parsedContext = parseContext();
       evaluate(parsedContext);
     } catch (err) {
-      setResult(null);
       const match = contextErrorPattern.exec(err.message);
-      setError({
+      onError({
         message: `failed to parse context: ${err.message}`,
         position: match?.groups?.position,
       });
@@ -63,19 +68,33 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
       )
       .then((response) => {
         if (response?.data?.result) {
-          setError(null);
-          setResult(JSON.stringify(response.data.result));
+          onResult(JSON.stringify(response.data.result));
         } else if (response?.data?.error) {
           const errorMessage = response.data.error;
           const match = errorPattern.exec(errorMessage);
-          setResult(null);
-          setError({
+          onError({
             message: errorMessage,
             line: match?.groups?.line,
             position: match?.groups?.position,
           });
         }
       });
+  }
+
+  function onResult(result) {
+    setError(null);
+    setResult(result);
+    if (onResultCallback) {
+      onResultCallback(result);
+    }
+  }
+
+  function onError(error) {
+    setResult(null);
+    setError(error);
+    if (onErrorCallback) {
+      onErrorCallback(error);
+    }
   }
 
   const resultTitle = () => {
