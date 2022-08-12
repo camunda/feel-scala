@@ -1,5 +1,4 @@
 import React from "react";
-import dedent from "dedent";
 import Envelope from "@site/src/components/Envelope";
 import LiveFeel from "@site/src/components/LiveFeel";
 
@@ -14,7 +13,7 @@ const EnvelopeAddress = ({ defaultExpression, feelContext, metadata }) => {
         defaultExpression={defaultExpression}
         feelContext={feelContext}
         metadata={metadata}
-        onResultCallback={setResult}
+        onResultCallback={result => setResult(result.replaceAll('"', ''))}
         onErrorCallback={(_error) => setResult(defaultName)}
       />
 
