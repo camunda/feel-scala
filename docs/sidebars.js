@@ -62,7 +62,8 @@ module.exports = {
         'tutorial/tutorial-2-1'
       ],
       "Tutorial 3: Temporal": [
-         'tutorial/tutorial-3-1'
+        'tutorial/tutorial-3-1',
+        'tutorial/tutorial-3-2'
       ],
       "Tutorial 4: Lists": [
          'tutorial/tutorial-4-1'
