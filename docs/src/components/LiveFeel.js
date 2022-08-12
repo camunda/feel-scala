@@ -18,7 +18,7 @@ const LiveFeel = ({ defaultExpression, feelContext, metadata }) => {
     const parsedContext = feelContext ? JSON.parse(context) : {};
     axios
       .post(
-        "http://34.138.73.115/process/start",
+        "https://feel.upgradingdave.com/process/start",
         {
           expression: expression,
           context: parsedContext,
