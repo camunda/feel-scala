@@ -67,9 +67,7 @@ const LiveFeel = ({
         }
       )
       .then((response) => {
-        if (response?.data?.result) {
-          onResult(JSON.stringify(response.data.result));
-        } else if (response?.data?.error) {
+        if (response?.data?.error) {
           const errorMessage = response.data.error;
           const match = errorPattern.exec(errorMessage);
           onError({
@@ -77,6 +75,8 @@ const LiveFeel = ({
             line: match?.groups?.line,
             position: match?.groups?.position,
           });
+        } else {
+          onResult(JSON.stringify(response.data.result));
         }
       });
   }
