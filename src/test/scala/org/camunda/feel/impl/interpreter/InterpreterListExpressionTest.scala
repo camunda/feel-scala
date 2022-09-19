@@ -131,6 +131,12 @@ class InterpreterListExpressionTest
       ValList(List(ValNumber(2), ValNumber(4))))
   }
 
+  it should "be filtered via numeric function" in {
+    eval("[1,2,3,4][abs(1)]") should be(ValNumber(1))
+
+    eval("[1,2,3,4][modulo(2,4)]") should be(ValNumber(2))
+  }
+
   it should "be filtered via custom function" in {
     val functionInvocations: ListBuffer[Val] = ListBuffer.empty
 
