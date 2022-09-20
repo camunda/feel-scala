@@ -234,6 +234,18 @@ class InterpreterListExpressionTest
       ValNumber(1))
   }
 
+  it should "fail if the filter doesn't return a boolean or a number" in {
+    eval(""" [1,2,3,4]["not a valid filter"] """) should be (
+      ValError("Expected boolean filter or number but found 'ValString(not a valid filter)'")
+    )
+  }
+
+  it should "fail if the filter doesn't return always a boolean" in {
+    eval("[1,2,3,4][if item < 3 then true else null]") should be (
+      ValError("expected Boolean but found 'ValNull'")
+    )
+  }
+
   it should "fail if one element fails" in {
 
     eval("[1, {}.x]") should be(
