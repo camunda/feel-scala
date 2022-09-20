@@ -137,7 +137,7 @@ class InterpreterListExpressionTest
     eval("[1,2,3,4][modulo(2,4)]") should be(ValNumber(2))
   }
 
-  it should "be filtered via custom function" in {
+  it should "be filtered via custom boolean function" in {
     val functionInvocations: ListBuffer[Val] = ListBuffer.empty
 
     val result = eval(
@@ -159,6 +159,28 @@ class InterpreterListExpressionTest
       ValNumber(2),
       ValNumber(3),
       ValNumber(4))
+    )
+  }
+
+  it should "be filtered via custom numeric function" in {
+    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
+
+    val result = eval(
+      expression = "[1,2,3,4][f(item)]",
+      variables = Map(),
+      functions = Map("f" -> ValFunction(
+        params = List("x"),
+        invoke = {
+          case List(x) =>
+            functionInvocations += x
+            ValNumber(3)
+        }
+      )))
+
+    result should be(ValNumber(3))
+
+    functionInvocations should be(List(
+      ValNumber(1))
     )
   }
 
