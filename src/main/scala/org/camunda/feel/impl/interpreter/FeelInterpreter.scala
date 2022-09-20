@@ -935,14 +935,36 @@ class FeelInterpreter {
   private def filterList(list: List[Val], filter: Val => Val): Val = {
     val conditionNotFulfilled = ValString("_")
 
-    mapEither[Val, Val](
+    val withBooleanFilter = (list: List[Val]) => mapEither[Val, Val](
       list,
       item =>
         withBoolean(filter(item), {
-          case true  => item
+          case true => item
           case false => conditionNotFulfilled
         }).toEither,
       items => ValList(items.filterNot(_ == conditionNotFulfilled))
+    )
+
+    // The filter function could return a boolean or a number. If it returns a number then we use
+    // the number as the index for the list. Otherwise, the boolean function determine if the
+    // condition is fulfilled for the given item.
+    // Note that the code could look more elegant but we want to avoid unintended invocations of
+    // the function because the invocations could be observed by the function provider (see #359).
+    list.headOption.map(head =>
+      withVal(filter(head), {
+        case ValNumber(index) => filterList(list, index)
+        case ValBoolean(isFulFilled) => withBooleanFilter(list.tail) match {
+          case ValList(fulFilledItems) if isFulFilled => ValList(head :: fulFilledItems)
+          case fulFilledItems: ValList => fulFilledItems
+          case error => error
+        }
+        case other => ValError(s"Expected boolean filter or number but found '$other'")
+      })
+    ).getOrElse(
+      // Return always an empty list if the given list is empty. Note that we would return `null`
+      // instead, if the filter is a number. But if it is a function, we would need to evaluate the
+      // function first to see that it returns a number.
+      ValList(List.empty)
     )
   }
 

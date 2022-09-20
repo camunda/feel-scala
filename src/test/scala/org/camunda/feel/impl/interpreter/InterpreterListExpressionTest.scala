@@ -131,7 +131,13 @@ class InterpreterListExpressionTest
       ValList(List(ValNumber(2), ValNumber(4))))
   }
 
-  it should "be filtered via custom function" in {
+  it should "be filtered via numeric function" in {
+    eval("[1,2,3,4][abs(1)]") should be(ValNumber(1))
+
+    eval("[1,2,3,4][modulo(2,4)]") should be(ValNumber(2))
+  }
+
+  it should "be filtered via custom boolean function" in {
     val functionInvocations: ListBuffer[Val] = ListBuffer.empty
 
     val result = eval(
@@ -153,6 +159,28 @@ class InterpreterListExpressionTest
       ValNumber(2),
       ValNumber(3),
       ValNumber(4))
+    )
+  }
+
+  it should "be filtered via custom numeric function" in {
+    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
+
+    val result = eval(
+      expression = "[1,2,3,4][f(item)]",
+      variables = Map(),
+      functions = Map("f" -> ValFunction(
+        params = List("x"),
+        invoke = {
+          case List(x) =>
+            functionInvocations += x
+            ValNumber(3)
+        }
+      )))
+
+    result should be(ValNumber(3))
+
+    functionInvocations should be(List(
+      ValNumber(1))
     )
   }
 
@@ -200,6 +228,18 @@ class InterpreterListExpressionTest
     eval("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should be(ValNumber(1))
     eval("{z: x.y[1][1][1]}.z", Map("x" -> Map("y" -> List(listOfLists)))) should be(ValNumber(1))
     eval("{z: x.y[1][1][1][1]}.z", Map("x" -> Map("y" -> List(List(listOfLists))))) should be(ValNumber(1))
+  }
+
+  it should "fail if the filter doesn't return a boolean or a number" in {
+    eval(""" [1,2,3,4]["not a valid filter"] """) should be (
+      ValError("Expected boolean filter or number but found 'ValString(not a valid filter)'")
+    )
+  }
+
+  it should "fail if the filter doesn't return always a boolean" in {
+    eval("[1,2,3,4][if item < 3 then true else null]") should be (
+      ValError("expected Boolean but found 'ValNull'")
+    )
   }
 
   it should "fail if one element fails" in {
