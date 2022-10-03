@@ -141,6 +141,11 @@ object ZonedTime {
     ZonedTime(time, offset, None)
   }
 
+  def of(time: LocalTime, zoneId: ZoneId): ZonedTime = {
+    val offset = zoneId.getRules.getStandardOffset(Instant.now)
+    ZonedTime(time, offset, Some(zoneId))
+  }
+
   def of(offsetTime: OffsetTime): ZonedTime = {
     val localTime = offsetTime.toLocalTime()
     val offset = offsetTime.getOffset

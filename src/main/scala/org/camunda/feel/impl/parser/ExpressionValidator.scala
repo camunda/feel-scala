@@ -25,6 +25,7 @@ import org.camunda.feel.syntaxtree.{
   Conjunction,
   ConstContext,
   ConstList,
+  ConstRange,
   Disjunction,
   Division,
   EveryItem,
@@ -38,16 +39,16 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
+  IterationContext,
   JavaFunctionInvocation,
   Multiplication,
   Not,
   PathExpression,
   QualifiedFunctionInvocation,
-  Range,
   SomeItem,
   Subtraction,
   UnaryTestExpression
@@ -68,6 +69,7 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
     case ConstList(items) => items.flatMap(validate)
     case ConstContext(entries) =>
       entries.flatMap { case (_, value) => validate(value) }
+    case ConstRange(start, end) => validate(start.value) ++ validate(end.value)
 
     case QualifiedFunctionInvocation(path, _, _) => validate(path)
     case FunctionDefinition(_, body)             => validate(body)
@@ -77,10 +79,10 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
     case InputGreaterThan(x)    => validate(x)
     case InputGreaterOrEqual(x) => validate(x)
     case InputEqualTo(x)        => validate(x)
+    case InputInRange(x)        => validate(x)
 
-    case c: Comparison        => validate(c.x) ++ validate(c.y)
-    case Interval(start, end) => validate(start.value) ++ validate(end.value)
-    case Range(start, end)    => validate(start) ++ validate(end)
+    case c: Comparison                => validate(c.x) ++ validate(c.y)
+    case IterationContext(start, end) => validate(start) ++ validate(end)
 
     case Addition(x, y)        => validate(x) ++ validate(y)
     case Subtraction(x, y)     => validate(x) ++ validate(y)

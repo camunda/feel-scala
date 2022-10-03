@@ -58,6 +58,12 @@ class DateTimeDurationPropertiesTest
       "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:")
   }
 
+  it should "has properties with @-notation" in {
+    eval(""" @"2017-03-10".year """) should be(ValNumber(2017))
+    eval(""" @"2017-03-10".month """) should be(ValNumber(3))
+    eval(""" @"2017-03-10".day """) should be(ValNumber(10))
+  }
+
   ///// -----
 
   "A time" should "has a hour property" in {
@@ -94,6 +100,12 @@ class DateTimeDurationPropertiesTest
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
       "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:")
+  }
+
+  it should "has properties with @-notation" in {
+    eval(""" @"11:45:30+02:00".hour """) should be(ValNumber(11))
+    eval(""" @"11:45:30+02:00".minute """) should be(ValNumber(45))
+    eval(""" @"11:45:30+02:00".second """) should be(ValNumber(30))
   }
 
   ///// -----
@@ -197,6 +209,12 @@ class DateTimeDurationPropertiesTest
       "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:")
   }
 
+  it should "has properties with @-notation" in {
+    eval(""" @"2017-03-10T11:45:30+02:00".year """) should be(ValNumber(2017))
+    eval(""" @"2017-03-10T11:45:30+02:00".month """) should be(ValNumber(3))
+    eval(""" @"2017-03-10T11:45:30+02:00".day """) should be(ValNumber(10))
+  }
+
   ///// -----
 
   "A local date-time" should "has a year property" in {
@@ -280,6 +298,11 @@ class DateTimeDurationPropertiesTest
       "No property found with name 'x' of value 'ValYearMonthDuration(P2Y3M)'. Available properties:")
   }
 
+  it should "has properties with @-notation" in {
+    eval(""" @"P2Y3M".years """) should be(ValNumber(2))
+    eval(""" @"P2Y3M".months """) should be(ValNumber(3))
+  }
+
   ///// -----
 
   "A day-time-duration" should "has a days property" in {
@@ -308,6 +331,13 @@ class DateTimeDurationPropertiesTest
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
       "No property found with name 'x' of value 'ValDayTimeDuration(PT26H10M30S)'. Available properties:")
+  }
+
+  it should "has properties with @-notation" in {
+    eval(""" @"P1DT2H10M30S".days """) should be(ValNumber(1))
+    eval(""" @"P1DT2H10M30S".hours """) should be(ValNumber(2))
+    eval(""" @"P1DT2H10M30S".minutes """) should be(ValNumber(10))
+    eval(""" @"P1DT2H10M30S".seconds """) should be(ValNumber(30))
   }
 
 }

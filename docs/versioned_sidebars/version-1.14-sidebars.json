@@ -1,21 +1,22 @@
 {
   "version-1.14/Reference": [
     {
-      "collapsed": true,
-      "type": "category",
-      "label": "Introduction",
-      "items": [
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/what-is-feel"
-        }
-      ]
+      "type": "doc",
+      "id": "version-1.14/reference/get-started"
+    },
+    {
+      "type": "doc",
+      "id": "version-1.14/reference/what-is-feel"
     },
     {
       "collapsed": true,
       "type": "category",
       "label": "Language Guide",
       "items": [
+        {
+          "type": "doc",
+          "id": "version-1.14/reference/language-guide/language-guide-introduction"
+        },
         {
           "type": "doc",
           "id": "version-1.14/reference/language-guide/feel-data-types"
@@ -25,43 +26,94 @@
           "id": "version-1.14/reference/language-guide/feel-unary-tests"
         },
         {
-          "type": "doc",
-          "id": "version-1.14/reference/language-guide/feel-expression"
-        }
-      ]
-    },
-    {
-      "collapsed": true,
-      "type": "category",
-      "label": "Built-in Functions",
-      "items": [
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-conversion"
+          "collapsed": true,
+          "type": "category",
+          "label": "Expressions",
+          "items": [
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-expressions-introduction"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-boolean-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-string-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-numeric-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-list-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-context-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-temporal-expressions"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-variables"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-control-flow"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/language-guide/feel-functions"
+            }
+          ]
         },
         {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-boolean"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-string"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-numeric"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-list"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-context"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-temporal"
+          "collapsed": true,
+          "type": "category",
+          "label": "Built-in Functions",
+          "items": [
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-introduction"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-conversion"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-boolean"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-string"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-numeric"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-list"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-context"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-temporal"
+            },
+            {
+              "type": "doc",
+              "id": "version-1.14/reference/builtin-functions/feel-built-in-functions-range"
+            }
+          ]
         }
       ]
     },
@@ -70,6 +122,14 @@
       "type": "category",
       "label": "Developer Guide",
       "items": [
+        {
+          "type": "doc",
+          "id": "version-1.14/reference/developer-guide/developer-guide-introduction"
+        },
+        {
+          "type": "doc",
+          "id": "version-1.14/reference/developer-guide/bootstrapping"
+        },
         {
           "type": "doc",
           "id": "version-1.14/reference/developer-guide/function-provider-spi"

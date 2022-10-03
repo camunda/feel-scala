@@ -38,8 +38,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedIntervalBoundary,
-  ClosedRangeBoundary,
+  ClosedConstRangeBoundary,
   Conjunction,
   ConstBool,
   ConstContext,
@@ -74,24 +73,22 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
-  IntervalBoundary,
+  IterationContext,
   JavaFunctionInvocation,
   LessOrEqual,
   LessThan,
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenIntervalBoundary,
-  OpenRangeBoundary,
+  OpenConstRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
-  RangeBoundary,
+  ConstRangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -103,6 +100,8 @@ import org.camunda.feel.{
   isOffsetTime,
   isValidDate,
   isYearMonthDuration,
+  isLocalDateTime,
+  isDayTimeDuration,
   stringToDate,
   stringToDateTime,
   stringToDayTimeDuration,
@@ -146,7 +145,13 @@ object FeelParser {
         "true",
         "false",
         "function",
-        "in"
+        "in",
+        "return",
+        "then",
+        "else",
+        "satisfies",
+        "and",
+        "or"
       )
     ).!
 
@@ -172,7 +177,7 @@ object FeelParser {
   // use only if the identifier is followed by a predefined character (e.g. `(` or `:`)
   private def identifierWithWhitespaces[_: P]: P[String] =
     P(
-      identifier ~~ (" " ~~ identifier).repX(1)
+      identifier ~~ (" ".repX(1) ~~ identifier).repX(1)
     ).!
 
   private def name[_: P]: P[String] = P(
@@ -209,7 +214,7 @@ object FeelParser {
   private def expLvl2[_: P]: P[Exp] = conjunction
 
   private def expLvl3[_: P]: P[Exp] =
-    expLvl4.flatMap(optional(comparison)) | simplePositiveUnaryTest
+    expLvl4.flatMap(optional(comparison(_))) | simplePositiveUnaryTest
 
   private def expLvl4[_: P]: P[Exp] = mathOperator
 
@@ -245,14 +250,14 @@ object FeelParser {
     }
 
   private def listIterator[_: P]: P[(String, Exp)] = P(
-    name ~ "in" ~ (range | value)
+    name ~ "in" ~ (iterationContext | value)
   )
 
-  private def range[_: P]: P[Exp] =
+  private def iterationContext[_: P]: P[Exp] =
     P(
       expLvl4 ~ ".." ~ expLvl4
     ).map {
-      case (start, end) => Range(start, end)
+      case (start, end) => IterationContext(start, end)
     }
 
   private def quantifiedOp[_: P]: P[Exp] =
@@ -359,7 +364,7 @@ object FeelParser {
   // --------------- value/terminal parsers ---------------
 
   private def value[_: P]: P[Exp] =
-    terminalValue.flatMap(optional(chainedValueOp))
+    terminalValue.flatMap(optional(chainedValueOp(_)))
 
   private def terminalValue[_: P]: P[Exp] =
     temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
@@ -407,12 +412,14 @@ object FeelParser {
 
   private def temporal[_: P]: P[Exp] =
     P(
-      ("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")"
+      (("duration" | "date and time" | "date" | "time").! ~ "(" ~ stringWithQuotes ~ ")") |
+        ("@".! ~ stringWithQuotes)
     ).map {
       case ("duration", value)      => parseDuration(value)
       case ("date and time", value) => parseDateTime(value)
       case ("date", value)          => parseDate(value)
       case ("time", value)          => parseTime(value)
+      case ("@", value)             => parseTemporalValue(value)
     }
 
   private def list[_: P]: P[Exp] =
@@ -426,8 +433,18 @@ object FeelParser {
     ).map(entries => ConstContext(entries.toList))
 
   private def contextEntry[_: P]: P[(String, Exp)] = P(
-    (name | stringWithQuotes) ~ ":" ~ expression
+    (contextKeyAnySymbol | identifierWithWhitespaces | name | stringWithQuotes) ~ ":" ~ expression
   )
+
+  private def contextKeyAnySymbol[_: P]: P[String] =
+    P(
+      (!reservedSymbol ~ AnyChar).rep(1)
+    ).!
+
+  private def reservedSymbol[_: P]: P[String] =
+    P(
+      CharIn("\"", "{", "}", ":", ",", "[", "]", "`")
+    ).!
 
   private def variableRef[_: P]: P[Exp] =
     P(
@@ -479,7 +496,7 @@ object FeelParser {
 
   private def functionInvocation[_: P]: P[Exp] =
     P(
-      (identifierWithWhitespaces
+      ((identifierWithWhitespaces | functionNameWithReservedWord)
         .map(List(_)) | qualifiedName) ~ "(" ~ functionParameters.? ~ ")"
     ).map {
       case (name :: Nil, None) =>
@@ -496,22 +513,29 @@ object FeelParser {
                                     parameters)
     }
 
+  // List all built-in function names that contains a reserved word. These names are not allowed as
+  // regular function names.
+  private def functionNameWithReservedWord[_: P]: P[String] =
+    P(
+      "and" | "or" | "date and time" | "years and months duration"
+    ).!
+
   private def functionParameters[_: P]: P[FunctionParameters] =
     namedParameters | positionalParameters
 
   private def namedParameters[_: P]: P[NamedFunctionParameters] =
     P(
-      (parameterName ~ ":" ~ (rangeBoundary | expression)).rep(1, sep = ",")
+      (parameterName ~ ":" ~ (range | expression)).rep(1, sep = ",")
     ).map(params => NamedFunctionParameters(params.toMap))
 
   private def positionalParameters[_: P]: P[PositionalFunctionParameters] =
     P(
-      (rangeBoundary | expression).rep(1, sep = ",")
+      (range | expression).rep(1, sep = ",")
     ).map(params => PositionalFunctionParameters(params.toList))
 
   // operators of values that can be chained multiple times (e.g. `a.b.c`, `a[1][2]`, `a.b[1].c`)
   private def chainedValueOp[_: P](value: Exp): P[Exp] =
-    (path(value) | filter(value)).flatMap(optional(chainedValueOp))
+    (path(value) | filter(value)).flatMap(optional(chainedValueOp(_)))
 
   private def path[_: P](value: Exp): P[Exp] =
     P(
@@ -550,7 +574,7 @@ object FeelParser {
 
   // boolean literals are ambiguous for unary-tests. give precedence to comparison with input.
   private def positiveUnaryTest[_: P]: P[Exp] =
-    boolean.map(InputEqualTo) | expression.map(UnaryTestExpression)
+    (boolean.map(InputEqualTo) ~ End) | expression.map(UnaryTestExpression)
 
   private def anyInput[_: P]: P[Exp] =
     P(
@@ -572,54 +596,31 @@ object FeelParser {
   // allow more expressions compared to the spec to align unary-tests with other expression
   private def endpoint[_: P]: P[Exp] = expLvl4
 
-  private def interval[_: P]: P[Exp] =
-    P(
-      intervalStart ~ ".." ~ intervalEnd
-    ).map {
-      case (start, end) => Interval(start, end)
-    }
+  private def interval[_: P]: P[Exp] = range.map(InputInRange)
 
-  private def intervalStart[_: P]: P[IntervalBoundary] =
-    P(
-      CharIn("(", "]", "[").! ~ endpoint
-    ).map {
-      case ("(", x) => OpenIntervalBoundary(x)
-      case ("]", x) => OpenIntervalBoundary(x)
-      case ("[", x) => ClosedIntervalBoundary(x)
-    }
-
-  private def intervalEnd[_: P]: P[IntervalBoundary] =
-    P(
-      endpoint ~ CharIn(")", "[", "]").!
-    ).map {
-      case (y, ")") => OpenIntervalBoundary(y)
-      case (y, "[") => OpenIntervalBoundary(y)
-      case (y, "]") => ClosedIntervalBoundary(y)
-    }
-
-  private def rangeBoundary[_: P]: P[Exp] =
+  private def range[_: P]: P[ConstRange] =
     P(
       rangeStart ~ ".." ~ rangeEnd
     ).map {
       case (start, end) => ConstRange(start, end)
     }
 
-  private def rangeStart[_: P]: P[RangeBoundary] =
+  private def rangeStart[_: P]: P[ConstRangeBoundary] =
     P(
       CharIn("(", "]", "[").! ~ expLvl4
     ).map {
-      case ("(", x) => OpenRangeBoundary(x)
-      case ("]", x) => OpenRangeBoundary(x)
-      case ("[", x) => ClosedRangeBoundary(x)
+      case ("(", x) => OpenConstRangeBoundary(x)
+      case ("]", x) => OpenConstRangeBoundary(x)
+      case ("[", x) => ClosedConstRangeBoundary(x)
     }
 
-  private def rangeEnd[_: P]: P[RangeBoundary] =
+  private def rangeEnd[_: P]: P[ConstRangeBoundary] =
     P(
       expLvl4 ~ CharIn(")", "[", "]").!
     ).map {
-      case (y, ")") => OpenRangeBoundary(y)
-      case (y, "[") => OpenRangeBoundary(y)
-      case (y, "]") => ClosedRangeBoundary(y)
+      case (y, ")") => OpenConstRangeBoundary(y)
+      case (y, "[") => OpenConstRangeBoundary(y)
+      case (y, "]") => ClosedConstRangeBoundary(y)
     }
 
   // --------------- temporal parsers ---------------
@@ -656,6 +657,26 @@ object FeelParser {
         ConstYearMonthDuration(d)
       } else {
         ConstDayTimeDuration(d)
+      }
+    }.getOrElse(ConstNull)
+  }
+
+  private def parseTemporalValue(value: String): Exp = {
+    Try {
+      if (isValidDate(value)) {
+        ConstDate(value)
+      } else if (isOffsetTime(value)) {
+        ConstTime(value)
+      } else if (isOffsetDateTime(value)) {
+        ConstDateTime(value)
+      } else if (isLocalDateTime(value)) {
+        ConstLocalDateTime(value)
+      } else if (isYearMonthDuration(value)) {
+        ConstYearMonthDuration(value)
+      } else if (isDayTimeDuration(value)) {
+        ConstDayTimeDuration(value)
+      } else {
+        ConstLocalTime(value)
       }
     }.getOrElse(ConstNull)
   }

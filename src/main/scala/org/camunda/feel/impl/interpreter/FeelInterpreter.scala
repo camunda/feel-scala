@@ -24,7 +24,7 @@ import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
   AtLeastOne,
-  ClosedIntervalBoundary,
+  ClosedConstRangeBoundary,
   ClosedRangeBoundary,
   Comparison,
   Conjunction,
@@ -40,6 +40,7 @@ import org.camunda.feel.syntaxtree.{
   ConstNull,
   ConstNumber,
   ConstRange,
+  ConstRangeBoundary,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -61,22 +62,23 @@ import org.camunda.feel.syntaxtree.{
   InputEqualTo,
   InputGreaterOrEqual,
   InputGreaterThan,
+  InputInRange,
   InputLessOrEqual,
   InputLessThan,
   InstanceOf,
-  Interval,
+  IterationContext,
   JavaFunctionInvocation,
   LessOrEqual,
   LessThan,
   Multiplication,
   NamedFunctionParameters,
   Not,
-  OpenIntervalBoundary,
+  OpenConstRangeBoundary,
+  OpenRangeBoundary,
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  Range,
-  RangeWithBoundaries,
+  RangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
@@ -98,7 +100,7 @@ import org.camunda.feel.syntaxtree.{
   ValString,
   ValTime,
   ValYearMonthDuration,
-  ZonedTime,
+  ZonedTime
 }
 import org.camunda.feel.{
   Date,
@@ -146,20 +148,8 @@ class FeelInterpreter {
           },
           ValContext
         )
-      case ConstRange(start, end) =>
-        withNumbers(
-          eval(start.value),
-          eval(end.value),
-          (startValue, endValue) =>
-            ValRange(
-              RangeWithBoundaries(
-                startValue,
-                endValue,
-                start.isInstanceOf[ClosedRangeBoundary],
-                end.isInstanceOf[ClosedRangeBoundary]
-              )
-          )
-        )
+
+      case range: ConstRange => toRange(range)
 
       // simple unary tests
       case InputEqualTo(x) =>
@@ -172,10 +162,10 @@ class FeelInterpreter {
         withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
       case InputGreaterOrEqual(x) =>
         withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
-      case interval @ Interval(start, end) =>
+      case InputInRange(range @ ConstRange(start, end)) =>
         unaryOpDual(eval(start.value),
                     eval(end.value),
-                    isInInterval(interval),
+                    isInRange(range),
                     ValBoolean)
 
       case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
@@ -263,24 +253,26 @@ class FeelInterpreter {
       case Filter(list, filter) =>
         withList(
           eval(list),
-          l =>
+          l => {
+            val evalFilterWithItem =
+              (item: Val) => eval(filter)(filterContext(item))
+
             filter match {
               case ConstNumber(index) => filterList(l.items, index)
               case ArithmeticNegation(ConstNumber(index)) =>
                 filterList(l.items, -index)
-              case comparison: Comparison =>
-                filterList(l.items,
-                           item => eval(comparison)(filterContext(item)))
+              case _: Comparison | _: FunctionInvocation |
+                  _: QualifiedFunctionInvocation =>
+                filterList(l.items, evalFilterWithItem)
               case _ =>
                 eval(filter) match {
                   case ValNumber(index) => filterList(l.items, index)
-                  case _ =>
-                    filterList(l.items,
-                               item => eval(filter)(filterContext(item)))
+                  case _                => filterList(l.items, evalFilterWithItem)
                 }
+            }
           }
         )
-      case Range(start, end) =>
+      case IterationContext(start, end) =>
         withNumbers(eval(start), eval(end), (x, y) => {
           val range = if (x < y) {
             (x to y).by(1)
@@ -521,15 +513,15 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
-  private def isInInterval(interval: Interval): (Val, Val, Val) => Boolean =
+  private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
-      val inStart: Boolean = interval.start match {
-        case OpenIntervalBoundary(_)   => i > x
-        case ClosedIntervalBoundary(_) => i >= x
+      val inStart: Boolean = range.start match {
+        case OpenConstRangeBoundary(_)   => i > x
+        case ClosedConstRangeBoundary(_) => i >= x
       }
-      val inEnd = interval.end match {
-        case OpenIntervalBoundary(_)   => i < y
-        case ClosedIntervalBoundary(_) => i <= y
+      val inEnd = range.end match {
+        case OpenConstRangeBoundary(_)   => i < y
+        case ClosedConstRangeBoundary(_) => i <= y
       }
       inStart && inEnd
     }
@@ -943,14 +935,36 @@ class FeelInterpreter {
   private def filterList(list: List[Val], filter: Val => Val): Val = {
     val conditionNotFulfilled = ValString("_")
 
-    mapEither[Val, Val](
+    val withBooleanFilter = (list: List[Val]) => mapEither[Val, Val](
       list,
       item =>
         withBoolean(filter(item), {
-          case true  => item
+          case true => item
           case false => conditionNotFulfilled
         }).toEither,
       items => ValList(items.filterNot(_ == conditionNotFulfilled))
+    )
+
+    // The filter function could return a boolean or a number. If it returns a number then we use
+    // the number as the index for the list. Otherwise, the boolean function determine if the
+    // condition is fulfilled for the given item.
+    // Note that the code could look more elegant but we want to avoid unintended invocations of
+    // the function because the invocations could be observed by the function provider (see #359).
+    list.headOption.map(head =>
+      withVal(filter(head), {
+        case ValNumber(index) => filterList(list, index)
+        case ValBoolean(isFulFilled) => withBooleanFilter(list.tail) match {
+          case ValList(fulFilledItems) if isFulFilled => ValList(head :: fulFilledItems)
+          case fulFilledItems: ValList => fulFilledItems
+          case error => error
+        }
+        case other => ValError(s"Expected boolean filter or number but found '$other'")
+      })
+    ).getOrElse(
+      // Return always an empty list if the given list is empty. Note that we would return `null`
+      // instead, if the filter is a number. But if it is a function, we would need to evaluate the
+      // function first to see that it returns a number.
+      ValList(List.empty)
     )
   }
 
@@ -979,7 +993,7 @@ class FeelInterpreter {
   private def filterContext(x: Val)(
       implicit context: EvalContext): EvalContext =
     x match {
-      case ValContext(ctx: Context) => context + ctx + ("item" -> x)
+      case ValContext(ctx: Context) => context + ("item" -> x) + ctx
       case v                        => context + ("item" -> v)
     }
 
@@ -988,17 +1002,9 @@ class FeelInterpreter {
     names match {
       case Nil => x
       case n :: ns =>
-        withContext(
-          x, {
-            case ctx: ValContext =>
-              EvalContext
-                .wrap(ctx.context)(context.valueMapper)
-                .variable(n) match {
-                case e: ValError => e
-                case x: Val      => ref(x, ns)
-              }
-            case e => error(e, s"context contains no entry with key '$n'")
-          }
+        withVal(
+          path(x, n),
+          value => ref(value, ns)
         )
     }
 
@@ -1055,6 +1061,46 @@ class FeelInterpreter {
       case _: Throwable =>
         ValError(
           s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
+    }
+  }
+
+  private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
+    withVal(
+      eval(range.start.value),
+      startValue =>
+        withVal(
+          eval(range.end.value),
+          endValue =>
+            if (isValidRange(startValue, endValue)) {
+              ValRange(
+                start = toRangeBoundary(range.start, startValue),
+                end = toRangeBoundary(range.end, endValue)
+              )
+            } else {
+              ValError(s"invalid range definition '$range'")
+          }
+      )
+    )
+  }
+
+  private def isValidRange(startValue: Val, endValue: Val): Boolean =
+    (startValue, endValue) match {
+      case (ValNumber(_), ValNumber(_))                       => true
+      case (ValDate(_), ValDate(_))                           => true
+      case (ValTime(_), ValTime(_))                           => true
+      case (ValLocalTime(_), ValLocalTime(_))                 => true
+      case (ValDateTime(_), ValDateTime(_))                   => true
+      case (ValLocalDateTime(_), ValLocalDateTime(_))         => true
+      case (ValYearMonthDuration(_), ValYearMonthDuration(_)) => true
+      case (ValDayTimeDuration(_), ValDayTimeDuration(_))     => true
+      case _                                                  => false
+    }
+
+  private def toRangeBoundary(boundary: ConstRangeBoundary,
+                              value: Val): RangeBoundary = {
+    boundary match {
+      case OpenConstRangeBoundary(_)   => OpenRangeBoundary(value)
+      case ClosedConstRangeBoundary(_) => ClosedRangeBoundary(value)
     }
   }
 

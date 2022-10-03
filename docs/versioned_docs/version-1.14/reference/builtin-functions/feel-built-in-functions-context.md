@@ -8,12 +8,12 @@ title: Context Functions
 Returns the value of the context entry with the given key.
 
 * parameters:
-  * `m`: context
+  * `context`: context
   * `key`: string
 * result: any
 
 ```js
-get value(m:{foo: 123}, key:"foo") 
+get value({foo: 123}, "foo") 
 // 123
 ```
 
@@ -22,11 +22,11 @@ get value(m:{foo: 123}, key:"foo")
 Returns the entries of the context as list of key-value-pairs.
 
 * parameters:
-  * `m`: context
+  * `context`: context
 * result: list of context which contains two entries for "key" and "value"
 
 ```js
-get entries(m:{foo: 123})
+get entries({foo: 123})
 // [{key: "foo", value: 123}]
 ```
 

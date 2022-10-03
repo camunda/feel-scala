@@ -33,6 +33,24 @@ module.exports = {
           position: "left",
         },
         {
+          to: "docs/tutorial/",
+          activeBasePath: "docs/tutorial",
+          label: "Tutorial",
+          position: "left",
+        },
+        {
+          to: "docs/playground/",
+          activeBasePath: "docs/playground",
+          label: "Playground",
+          position: "left",
+        },
+        {
+          to: "docs/changelog/",
+          activeBasePath: "docs/changelog",
+          label: "Changelog",
+          position: "left",
+        },
+        {
           type: 'docsVersionDropdown',
           position: 'right',
           //dropdownActiveClassDisabled: true
@@ -55,12 +73,17 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} Camunda`,
     },
     algolia: {
-      apiKey: "bd44884f520f7b356b5a48dbdd6ed797",
+      appId: "3CFTU9C6BV",
+      apiKey: "d99776b3dfcf4aa34670df2c65f266a3",
       indexName: "feel-scala",
       searchParameters: {}, // Optional (if provided by Algolia)
       contextualSearch: true,
     },
-    hideableSidebar: true,
+    docs: {
+      sidebar: {
+        hideable: true
+      }
+    },
     // syntax highlighter
     prism: {
       additionalLanguages: ['java', 'scala'],
@@ -79,7 +102,7 @@ module.exports = {
           // onlyIncludeVersions: ['current', '1.12', '1.11'],
           versions: {
             current: {
-              label: `1.14 (unreleased)`,
+              label: `1.16 (unreleased)`,
             },
           },
         },

@@ -71,6 +71,20 @@ class InterpreterExpressionTest
     eval("if 1 instance of number then 1 else 2") should be(ValNumber(1))
   }
 
+  it should "be an if-then-else (with variable and function call -> then)" in {
+    eval("if 7 > var then flatten(xs) else []",
+         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+      ValList(List(ValNumber(1), ValNumber(2)))
+    )
+  }
+
+  it should "be an if-then-else (with variable and function call -> else)" in {
+    eval("if false then var else flatten(xs)",
+         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+      ValList(List(ValNumber(1), ValNumber(2)))
+    )
+  }
+
   it should "be a simple positive unary test" in {
 
     eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(

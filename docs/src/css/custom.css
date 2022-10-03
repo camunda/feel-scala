@@ -33,7 +33,7 @@
   width: 24px;
   height: 24px;
   display: flex;
-  background: url(/feel-scala/img/camunda-github.png) no-repeat;
+  background: url(/img/camunda-github.png) no-repeat;
   background-size: 100% 100%;
 }
 
@@ -46,12 +46,12 @@
   width: 24px;
   height: 24px;
   display: flex;
-  background: url(/feel-scala/img/camunda-forum.png) no-repeat;
+  background: url(/img/camunda-forum.png) no-repeat;
   background-size: 100% 100%;
 }
 
 .hero--primary {
-  background-image: url(/feel-scala/img/camunda-gradient.png);
+  background-image: url(/img/camunda-gradient.png);
   background-color: transparent;
   background-repeat: no-repeat;
   background-size: 100%;

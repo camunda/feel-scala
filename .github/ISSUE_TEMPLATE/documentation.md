@@ -2,7 +2,7 @@
 name: Documentation
 about: 'Missing or incorrect documentation '
 title: ''
-labels: 'type: documentation'
+labels: ['type: documentation', 'team/process-automation']
 assignees: ''
 
 ---

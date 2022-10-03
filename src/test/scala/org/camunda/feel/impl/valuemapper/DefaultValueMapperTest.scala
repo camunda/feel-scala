@@ -205,10 +205,57 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
   }
 
   it should "convert from object" in {
+    case class Obj(val a: Int, val b: String)
 
-    case class Obj(a: Int, b: String)
+    val result = valueMapper.toVal(Obj(a = 2, b = "foo"))
+    result shouldBe a[ValContext]
+  }
 
-    valueMapper.toVal(Obj(2, "foo")) shouldBe a[ValContext]
+  it should "convert from object with public fields" in {
+    case class Obj(val a: Int, val b: String)
+
+    valueMapper.toVal(Obj(a = 2, b = "foo")) match {
+      case ValContext(context) =>
+        val variables = context.variableProvider.getVariables
+        variables should be(Map("a" -> 2, "b" -> "foo"))
+    }
+  }
+
+  it should "convert from object with public getters" in {
+    case class Obj(private val a: Int, private val b: String) {
+      def getA(): Int = a
+      def getB(): String = b
+    }
+
+    valueMapper.toVal(Obj(a = 2, b = "foo")) match {
+      case ValContext(context) =>
+        val variables = context.variableProvider.getVariables
+        variables should be(Map("a" -> 2, "b" -> "foo"))
+    }
+  }
+
+  it should "convert from object with public boolean getter" in {
+    case class Obj(private val a: Boolean) {
+      def isA(): Boolean = a
+    }
+
+    valueMapper.toVal(Obj(a = true)) match {
+      case ValContext(context) =>
+        val variables = context.variableProvider.getVariables
+        variables should be(Map("a" -> true))
+    }
+  }
+
+  it should "convert from object ignore private fields and methods" in {
+    case class Obj(val a: Int, private val b: String) {
+      def getC(): String = "c"
+    }
+
+    valueMapper.toVal(Obj(a = 2, b = "foo")) match {
+      case ValContext(context) =>
+        val variables = context.variableProvider.getVariables
+        variables should be(Map("a" -> 2))
+    }
   }
 
   it should "convert from Some" in {

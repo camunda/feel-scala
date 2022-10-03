@@ -30,7 +30,8 @@ module.exports = {
             'reference/builtin-functions/feel-built-in-functions-numeric',
             'reference/builtin-functions/feel-built-in-functions-list',
             'reference/builtin-functions/feel-built-in-functions-context',
-            'reference/builtin-functions/feel-built-in-functions-temporal'
+            'reference/builtin-functions/feel-built-in-functions-temporal',
+            'reference/builtin-functions/feel-built-in-functions-range'
           ]
         }]
     },
@@ -48,5 +49,31 @@ module.exports = {
     'samples/temporal-samples',
     'samples/list-samples',
     'samples/context-samples'
-  ]
+  ],
+  "Tutorial": [
+    'tutorial/tutorial',
+    {
+      "Tutorial 1: Numbers": [
+        'tutorial/tutorial-1-1',
+        'tutorial/tutorial-1-2',
+        'tutorial/tutorial-1-3'
+      ],
+      "Tutorial 2: Strings": [
+        'tutorial/tutorial-2-1'
+      ],
+      "Tutorial 3: Temporal": [
+        'tutorial/tutorial-3-1',
+        'tutorial/tutorial-3-2'
+      ],
+      "Tutorial 4: Lists": [
+         'tutorial/tutorial-4-1'
+      ],
+    },
+   ],
+  "Playground": [
+    'playground/playground',
+  ],
+  "Changelog": [
+      'changelog/changelog'
+  ],
 };

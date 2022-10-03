@@ -12,12 +12,15 @@
     "clear": "docusaurus clear"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.70",
-    "@docusaurus/preset-classic": "2.0.0-alpha.70",
+    "@docusaurus/core": "2.0.1",
+    "@docusaurus/preset-classic": "2.0.1",
     "@mdx-js/react": "^1.6.21",
+    "axios": "^0.27.2",
     "clsx": "^1.1.1",
+    "dedent": "^0.7.0",
     "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "react-dom": "^16.8.4",
+    "use-editable": "^2.3.3"
   },
   "browserslist": {
     "production": [

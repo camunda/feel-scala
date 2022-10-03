@@ -63,6 +63,26 @@ class InterpreterBooleanExpressionTest
     eval("1 between 1 and 3 and 2 between 1 and 3") should be(ValBoolean(true))
   }
 
+  it should "be in conjunction with some/every-expression" in {
+    eval(" (10 > 5) and (some y in [1,2,3] satisfies y > 2) ") should be(
+      ValBoolean(true))
+
+    eval(" (some y in [1,2,3] satisfies y > 2) and (10 > 5) ") should be(
+      ValBoolean(true))
+
+    eval(
+      " (some y in [1,2,3] satisfies y > 2) and (every x in [1,2,3] satisfies x < 5) ") should be(
+      ValBoolean(true))
+  }
+
+  it should "be in conjunction (with parentheses)" in {
+    eval("x and (y)", Map("x" -> true, "y" -> false)) should be(
+      ValBoolean(false))
+
+    eval("(x) and y", Map("x" -> true, "y" -> false)) should be(
+      ValBoolean(false))
+  }
+
   it should "be in disjunction" in {
 
     eval("false or true") should be(ValBoolean(true))
@@ -77,6 +97,12 @@ class InterpreterBooleanExpressionTest
     eval("2 or false") should be(ValNull)
 
     eval("2 or 4") should be(ValNull)
+  }
+
+  it should "be in disjunction (with parentheses)" in {
+    eval("x or (y)", Map("x" -> false, "y" -> true)) should be(ValBoolean(true))
+
+    eval("(x) or y", Map("x" -> false, "y" -> true)) should be(ValBoolean(true))
   }
 
   it should "be in disjunction with comparison" in {
