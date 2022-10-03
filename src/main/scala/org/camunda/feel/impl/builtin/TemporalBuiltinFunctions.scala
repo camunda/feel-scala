@@ -81,7 +81,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
   }
 
   private def getLastDayOfTheMonth(date: Date): ValDate = {
-    print(date.toString())
     ValDate(date.`with`(TemporalAdjusters.lastDayOfMonth()))
   }
 
