@@ -108,4 +108,9 @@ class BuiltinTemporalFunctionsTest
     eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
   }
 
+
+  it should "return the the last day of the month" in {
+    eval(""" last day of the month(date(2022,10,17)) """) should be(ValDate(LocalDate.parse("2022-10-31")))
+  }
+
 }

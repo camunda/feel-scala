@@ -98,3 +98,16 @@ abs(duration("PT5H"))
 abs(duration("-P2M"))
 // duration("P2M")
 ```
+
+## abs()
+
+Returns the last day of the month value of a date.
+
+- parameters:
+  - `n`: date
+- result: date
+
+```js
+getLastDayOfTheMonth(date("2022-10-1"))
+// date("2022-10-31"))
+```
