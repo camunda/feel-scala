@@ -26,7 +26,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "day of week" -> List(dateTimeFunction(getDayOfWeek)),
     "month of year" -> List(dateTimeFunction(getMonthOfYear)),
     "week of year" -> List(dateTimeFunction(getWeekOfYear)),
-    "last day of the month" -> List(dateTimeFunction(getLastDayOfTheMonth))
+    "last day of month" -> List(dateTimeFunction(getLastDayOfMonth))
   )
 
   private def nowFunction = builtinFunction(
@@ -80,7 +80,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     ValNumber(weekOfYear)
   }
 
-  private def getLastDayOfTheMonth(date: Date): ValDate = {
+  private def getLastDayOfMonth(date: Date): ValDate = {
     ValDate(date.`with`(TemporalAdjusters.lastDayOfMonth()))
   }
 

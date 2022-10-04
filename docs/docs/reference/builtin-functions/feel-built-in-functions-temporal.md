@@ -99,12 +99,12 @@ abs(duration("-P2M"))
 // duration("P2M")
 ```
 
-## abs()
+## getLastDayOfMonth()
 
 Returns the last day of the month value of a date.
 
 - parameters:
-  - `n`: date
+  - `date`: date
 - result: date
 
 ```js
