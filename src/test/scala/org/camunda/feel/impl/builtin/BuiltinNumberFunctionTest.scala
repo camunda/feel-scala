@@ -261,7 +261,7 @@ class BuiltinNumberFunctionsTest
   }
 
   it should "return a number between 0.0 and 1.0 " in {
-    eval(" random number() ") should be
+    eval(" random number() ") should be //(be >= ValNumber(0.0) and be <= ValNumber(1.0))
   }
 
   "A random number() function" should "return a number" in {
