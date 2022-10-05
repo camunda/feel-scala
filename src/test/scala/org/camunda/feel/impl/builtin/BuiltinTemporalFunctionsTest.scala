@@ -108,4 +108,9 @@ class BuiltinTemporalFunctionsTest
     eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
   }
 
+  "A date and time() function" should "return the date time in the zone" in {
+    eval(s""" date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z") """) should be(
+      ValDayTimeDuration("2020-07-31T12:27:30Z"))
+  }
+
 }
