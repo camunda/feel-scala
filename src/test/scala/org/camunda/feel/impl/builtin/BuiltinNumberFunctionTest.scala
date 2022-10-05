@@ -261,11 +261,15 @@ class BuiltinNumberFunctionsTest
   }
 
   it should "return a number between 0.0 and 1.0 " in {
-    eval(" random number() ") should be //(be >= ValNumber(0.0) and be <= ValNumber(1.0))
+
+    eval(" random number() ") match {
+      case ValNumber(x) => x should (be >= BigDecimal(0) and be <= BigDecimal(1))
+      case other => fail()
+    }
   }
 
   "A random number() function" should "return a number" in {
+
     eval(" random number() ") shouldBe a [ValNumber]
   }
-
 }
