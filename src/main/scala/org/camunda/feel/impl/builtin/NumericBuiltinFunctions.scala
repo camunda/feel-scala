@@ -170,6 +170,6 @@ object NumericBuiltinFunctions {
   private def randomNumberFunction =
     builtinFunction(params = List(), invoke = {
       case List() =>
-        ValNumber(Random.nextFloat())
+        ValNumber(Random.nextDouble())
     })
 }
