@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.syntaxtree
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -259,4 +260,17 @@ class BuiltinNumberFunctionsTest
     eval(" round half down(-1.126, 2) ") should be(ValNumber(-1.13))
   }
 
+
+  "A random number() function" should "return a number" in {
+
+    eval(" random number() ") shouldBe a [ValNumber]
+  }
+
+  it should "return a number between 0.0 and 1.0 " in {
+
+    eval(" random number() ") match {
+      case ValNumber(x) => x should (be >= BigDecimal(0) and be <= BigDecimal(1))
+      case other => fail()
+    }
+  }
 }
