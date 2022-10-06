@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
-import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree.{
@@ -108,9 +108,9 @@ class BuiltinTemporalFunctionsTest
     eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
   }
 
-  "A date and time() function" should "return the date time in the zone" in {
-    eval(s""" date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z") """) should be(
-      ValDayTimeDuration("2020-07-31T12:27:30Z"))
+  "A datetime and zone() function" should "return the date time in the zone" in {
+    eval(s""" datetime and zone(@"2020-07-31T14:27:30@Europe/Berlin", "Z") """) should be(
+      ValDateTime(ZonedDateTime.parse("2020-07-31T12:27:30Z")))
   }
 
 }

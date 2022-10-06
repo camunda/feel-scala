@@ -28,7 +28,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "day of week" -> List(dateTimeFunction(getDayOfWeek)),
     "month of year" -> List(dateTimeFunction(getMonthOfYear)),
     "week of year" -> List(dateTimeFunction(getWeekOfYear)),
-    "date and time" -> List(dateTimeFunctionWithZone(getDateTimeInZone))
+    "datetime and zone" -> List(dateTimeFunctionWithZone(getDateTimeInZone))
   )
 
   private def nowFunction = builtinFunction(
@@ -60,15 +60,15 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     )
 
   private def dateTimeFunctionWithZone(
-      function: (Date, String) => Val): ValFunction =
+      function: (String, String) => Val): ValFunction =
     builtinFunction(
       params = List("date", "zone"),
       invoke = {
-        case List(ValDate(date), ValString(zone)) => function(date, zone)
-        case List(ValDateTime(date), ValString(zone)) =>
-          function(date.toLocalDate, zone)
-        case List(ValLocalDateTime(date), ValString(zone)) =>
-          function(date.toLocalDate, zone)
+        case List(ValString(date), ValString(zone)) => function(date, zone)
+        case List(ValString(date), ValString(zone)) =>
+          function(date, zone)
+        case List(ValString(date), ValString(zone)) =>
+          function(date, zone)
       }
     )
 
@@ -95,8 +95,11 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     ValNumber(weekOfYear)
   }
 
-  private def getDateTimeInZone(date: Date, zone: String): ValDateTime = {
-    ValDate(ZonedDateTime.of(date, ZoneId.of(zone)))
+  private def getDateTimeInZone(date: String, zone: String): ValDateTime = {
+    ValDateTime(
+      ZonedDateTime
+        .of(LocalDateTime.parse(date), ZoneId.of(zone))
+    )
   }
 
 }
