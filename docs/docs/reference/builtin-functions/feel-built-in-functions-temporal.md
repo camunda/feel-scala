@@ -99,15 +99,18 @@ abs(duration("-P2M"))
 // duration("P2M")
 ```
 
-## getLastDayOfMonth()
+## last day of month()
 
-Returns the last day of the month value of a date.
+Takes the month of the given date or date-time value and returns the last day of this month.
 
 - parameters:
-  - `date`: date
+  - `date`: date/date-time
 - result: date
 
 ```js
-getLastDayOfMonth(date("2022-10-1"))
+last day of month(date("2022-10-01"))
+// date("2022-10-31"))
+
+last day of month(date and time("2022-10-16T12:00:00"))
 // date("2022-10-31"))
 ```
