@@ -108,6 +108,6 @@ Returns the last day of the month value of a date.
 - result: date
 
 ```js
-getLastDayOfTheMonth(date("2022-10-1"))
+getLastDayOfMonth(date("2022-10-1"))
 // date("2022-10-31"))
 ```
