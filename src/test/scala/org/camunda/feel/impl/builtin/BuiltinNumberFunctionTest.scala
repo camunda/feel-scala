@@ -260,16 +260,17 @@ class BuiltinNumberFunctionsTest
     eval(" round half down(-1.126, 2) ") should be(ValNumber(-1.13))
   }
 
+
+  "A random number() function" should "return a number" in {
+
+    eval(" random number() ") shouldBe a [ValNumber]
+  }
+
   it should "return a number between 0.0 and 1.0 " in {
 
     eval(" random number() ") match {
       case ValNumber(x) => x should (be >= BigDecimal(0) and be <= BigDecimal(1))
       case other => fail()
     }
-  }
-
-  "A random number() function" should "return a number" in {
-
-    eval(" random number() ") shouldBe a [ValNumber]
   }
 }
