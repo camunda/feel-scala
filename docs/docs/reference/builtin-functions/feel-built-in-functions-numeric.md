@@ -257,10 +257,9 @@ even(2)
 
 ## random number()
 
-Returns number between 0 and 1
+Returns a random number between `0` and `1`. 
 
-- parameters: 
-  - NaN
+- parameters: none
 - result: number
 
 ```js
