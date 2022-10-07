@@ -1,6 +1,6 @@
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.{Date, FeelEngineClock}
+import org.camunda.feel.{Date, DateTime, FeelEngineClock}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{
   Val,
@@ -11,6 +11,8 @@ import org.camunda.feel.syntaxtree.{
   ValNumber,
   ValString
 }
+
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
@@ -28,7 +30,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "day of week" -> List(dateTimeFunction(getDayOfWeek)),
     "month of year" -> List(dateTimeFunction(getMonthOfYear)),
     "week of year" -> List(dateTimeFunction(getWeekOfYear)),
-    "datetime and zone" -> List(dateTimeFunctionWithZone(getDateTimeInZone))
   )
 
   private def nowFunction = builtinFunction(
@@ -59,19 +60,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
       }
     )
 
-  private def dateTimeFunctionWithZone(
-      function: (String, String) => Val): ValFunction =
-    builtinFunction(
-      params = List("date", "zone"),
-      invoke = {
-        case List(ValString(date), ValString(zone)) => function(date, zone)
-        case List(ValString(date), ValString(zone)) =>
-          function(date, zone)
-        case List(ValString(date), ValString(zone)) =>
-          function(date, zone)
-      }
-    )
-
   private def getDayOfYear(date: Date): ValNumber = {
     val dayOfYear = date.getDayOfYear
     ValNumber(dayOfYear)
@@ -93,13 +81,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     val temporalField = WeekFields.ISO.weekOfWeekBasedYear()
     val weekOfYear = date.get(temporalField)
     ValNumber(weekOfYear)
-  }
-
-  private def getDateTimeInZone(date: String, zone: String): ValDateTime = {
-    ValDateTime(
-      ZonedDateTime
-        .of(LocalDateTime.parse(date), ZoneId.of(zone))
-    )
   }
 
 }
