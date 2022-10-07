@@ -109,7 +109,7 @@ class BuiltinTemporalFunctionsTest
   }
 
   "A datetime and zone() function" should "return the date time in the zone" in {
-    eval(s""" datetime and zone(@"2020-07-31T14:27:30@Europe/Berlin", "Z") """) should be(
+    eval(s""" datetime and zone("2020-07-31T12:27:30Z", "Z") """) should be(
       ValDateTime(ZonedDateTime.parse("2020-07-31T12:27:30Z")))
   }
 
