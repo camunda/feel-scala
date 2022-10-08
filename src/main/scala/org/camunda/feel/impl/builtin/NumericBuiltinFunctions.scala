@@ -14,6 +14,7 @@ import org.camunda.feel.syntaxtree.{
 }
 
 import scala.math.BigDecimal.RoundingMode
+import scala.util.Random
 
 object NumericBuiltinFunctions {
 
@@ -32,7 +33,8 @@ object NumericBuiltinFunctions {
     "round up" -> List(roundUpFunction),
     "round down" -> List(roundDownFunction),
     "round half up" -> List(roundHalfUpFunction),
-    "round half down" -> List(roundHalfDownFunction)
+    "round half down" -> List(roundHalfDownFunction),
+    "random number" -> List(randomNumberFunction)
   )
 
   private def decimalFunction = builtinFunction(
@@ -163,5 +165,11 @@ object NumericBuiltinFunctions {
     builtinFunction(params = List("n", "scala"), invoke = {
       case List(ValNumber(n), ValNumber(scale)) =>
         round(n, scale, RoundingMode.HALF_DOWN)
+    })
+
+  private def randomNumberFunction =
+    builtinFunction(params = List(), invoke = {
+      case List() =>
+        ValNumber(Random.nextDouble())
     })
 }

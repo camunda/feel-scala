@@ -254,3 +254,15 @@ even(5)
 even(2)
 // true
 ```
+
+## random number()
+
+Returns a random number between `0` and `1`. 
+
+- parameters: none
+- result: number
+
+```js
+random number()
+// 0.9701618132579795
+```

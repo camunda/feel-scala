@@ -11,10 +11,7 @@ import org.camunda.feel.syntaxtree.{
   ValNumber,
   ValString
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 508
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.TextStyle
@@ -63,19 +60,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
       }
     )
 
-<<<<<<< HEAD
-=======
-  private def dateTimeFunctionWithZone(
-      function: (Date, String) => Val): ValFunction =
-    builtinFunction(
-      params = List("date", "zone"),
-      invoke = {
-        case List(ValDate(date), ValString(zone)) =>
-          function(date, zone)
-      }
-    )
-
->>>>>>> 508
   private def getDayOfYear(date: Date): ValNumber = {
     val dayOfYear = date.getDayOfYear
     ValNumber(dayOfYear)
@@ -99,11 +83,4 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     ValNumber(weekOfYear)
   }
 
-<<<<<<< HEAD
-=======
-  private def getDateTimeInZone(date: Date, zone: String): ValDateTime = {
-    ValDateTime(date.toInstant().atZone(ZoneId.of(zone)))
-  }
-
->>>>>>> 508
 }

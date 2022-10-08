@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
-import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
+import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
 
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.camunda.feel.syntaxtree.{
@@ -108,12 +108,24 @@ class BuiltinTemporalFunctionsTest
     eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
   }
 
-<<<<<<< HEAD
-=======
-  "A datetime and zone() function" should "return the date time in the zone" in {
-    eval(s""" datetime and zone("2020-07-31T12:27:30Z", "Z") """) should be(
-      ValDateTime(ZonedDateTime.parse("2020-07-31T12:27:30Z")))
+  "A last day of month() function" should "return the the last day of the month" in {
+    eval(""" last day of month(date(2022,10,17)) """) should be(
+      ValDate(LocalDate.parse("2022-10-31")))
+
+    eval(s"last day of month($date)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($localDateTime)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($dateTime)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
   }
 
->>>>>>> 508
+  it should "take the leap years into account" in {
+    eval(""" last day of month(date("2022-02-01")) """) should be(
+      ValDate(LocalDate.parse("2022-02-28")))
+
+    eval(""" last day of month(date("2024-02-01")) """) should be(
+      ValDate(LocalDate.parse("2024-02-29")))
+  }
+
 }
