@@ -66,7 +66,7 @@ object ConversionBuiltinFunctions {
       case List(ValDateTime(dateTime), ValTime(time)) =>
         ValDateTime(time.withDate(dateTime.toLocalDate()))
       case List(ValLocalDateTime(date), ValString(timezone)) =>
-        ValDateTime(date.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of(timezone)))
+        ValDateTime(date.atZone(ZoneId.of(timezone)))
       case List(ValDateTime(date), ValString(timezone)) =>
         ValDateTime(date.withZoneSameInstant(ZoneId.of(timezone)))
     }

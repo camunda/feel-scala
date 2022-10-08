@@ -75,7 +75,7 @@ class BuiltinConversionFunctionsTest
     eval(
       """date and time(@"2020-07-31T14:27:30", "Z")""") should be(
       ValDateTime(
-        ZonedDateTime.parse("2020-07-31T21:27:30Z")))
+        ZonedDateTime.parse("2020-07-31T14:27:30Z")))
   }
 
   it should "convert (Date,Time)" in {
