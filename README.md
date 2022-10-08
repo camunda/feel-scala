@@ -4,15 +4,15 @@
 
 A parser and interpreter for FEEL that is written in Scala (see [What is FEEL?](https://camunda.github.io/feel-scala/docs/reference/what-is-feel)).
 
-The FEEL engine started as a slack time project, grown to a community-driven project and is now officially maintained by [Camunda](https://camunda.org/) :rocket: 
+The FEEL engine started as a slack time project, grown to a community-driven project, and is now officially maintained by [Camunda](https://camunda.org/) :rocket: 
 
-It is integrated in the following projects:
+It is integrated into the following projects:
 * [Camunda Platform](https://docs.camunda.org/manual/user-guide/dmn-engine/feel/) as part of the DMN engine
 * [Zeebe](https://docs.camunda.io/docs/product-manuals/concepts/expressions#the-expression-language) as expression language
 
 **Features:** :sparkles:
 
-* full support for unary-tests and expressions (DMN 1.2)
+* Full support for unary tests and expressions (DMN 1.2)
 * including built-in functions
 * extensible by own functions and custom object mappers
 
@@ -22,7 +22,7 @@ Please have a look at the [documentation](https://camunda.github.io/feel-scala/d
 
 ## Install
 
-Please have a look at the [documentation](https://camunda.github.io/feel-scala/docs/reference/developer-guide/developer-guide-introduction). It describes how to intregrate the engine into your application, and how to extend/customize it.
+Please have a look at the [documentation](https://camunda.github.io/feel-scala/docs/reference/developer-guide/developer-guide-introduction). It describes how to integrate the engine into your application, and how to extend/customize it.
 
 ## Contribution
 
@@ -36,3 +36,6 @@ The following resources can help to understand some general concepts behind the 
 ## License
 
 [Apache License, Version 2.0](./LICENSE)
+
+
+
