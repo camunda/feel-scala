@@ -63,13 +63,19 @@ class BuiltinConversionFunctionsTest
       ValDateTime("2012-12-24T23:59:00+01:00"))
   }
 
-  it should "date and time()  with timezone function" in {
-    eval(s"""date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z")""") should be(
+  it should "convert (DateTime, Timezone)" in {
+    eval("""date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z")""") should be(
       ValDateTime(ZonedDateTime.parse("2020-07-31T12:27:30Z")))
+
     eval(
-      s"""date and time(@"2020-07-31T14:27:30@Europe/Berlin", "America/Los_Angeles")""") should be(
+      """date and time(@"2020-07-31T14:27:30@Europe/Berlin", "America/Los_Angeles")""") should be(
       ValDateTime(
         ZonedDateTime.parse("2020-07-31T05:27:30-07:00[America/Los_Angeles]")))
+
+    eval(
+      """date and time(@"2020-07-31T14:27:30", "Z")""") should be(
+      ValDateTime(
+        ZonedDateTime.parse("2020-07-31T21:27:30Z")))
   }
 
   it should "convert (Date,Time)" in {

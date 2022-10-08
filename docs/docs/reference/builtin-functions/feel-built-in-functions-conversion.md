@@ -66,7 +66,7 @@ date and time(birthday)
 // date and time("2018-04-29T009:30:00")
 
 date and time("2020-07-31T14:27:30@Europe/Berlin", "America/Los_Angeles"))
-// date and time("2020-07-31T14:27:30@America/Los_Angeles")
+// date and time("2020-07-31T05:27:30@America/Los_Angeles")
 ```
 
 ## duration()
