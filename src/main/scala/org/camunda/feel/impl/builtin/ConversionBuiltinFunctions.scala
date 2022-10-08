@@ -41,7 +41,7 @@ import org.camunda.feel.{
 }
 
 import java.math.BigDecimal
-import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
+import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
 import java.util.regex.Pattern
 import scala.util.Try
 
@@ -101,6 +101,8 @@ object ConversionBuiltinFunctions {
         ValLocalDateTime(dateTime.toLocalDate().atTime(time))
       case List(ValDateTime(dateTime), ValTime(time)) =>
         ValDateTime(time.withDate(dateTime.toLocalDate()))
+      case List(ValDateTime(date), ValString(timezone)) =>
+        ValDateTime(date.withZoneSameInstant(ZoneId.of(timezone)))
     }
   )
 

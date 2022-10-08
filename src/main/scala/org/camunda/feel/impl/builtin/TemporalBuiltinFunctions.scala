@@ -1,6 +1,6 @@
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.{Date, FeelEngineClock}
+import org.camunda.feel.{Date, DateTime, FeelEngineClock}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{
   Val,
@@ -12,10 +12,14 @@ import org.camunda.feel.syntaxtree.{
   ValString
 }
 
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 import java.util.Locale
+import java.time.ZonedDateTime
+import java.time.LocalDateTime
 
 class TemporalBuiltinFunctions(clock: FeelEngineClock) {
 
@@ -26,7 +30,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "day of week" -> List(dateTimeFunction(getDayOfWeek)),
     "month of year" -> List(dateTimeFunction(getMonthOfYear)),
     "week of year" -> List(dateTimeFunction(getWeekOfYear)),
-    "last day of month" -> List(dateTimeFunction(getLastDayOfMonth))
   )
 
   private def nowFunction = builtinFunction(
@@ -78,10 +81,6 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     val temporalField = WeekFields.ISO.weekOfWeekBasedYear()
     val weekOfYear = date.get(temporalField)
     ValNumber(weekOfYear)
-  }
-
-  private def getLastDayOfMonth(date: Date): ValDate = {
-    ValDate(date.`with`(TemporalAdjusters.lastDayOfMonth()))
   }
 
 }
