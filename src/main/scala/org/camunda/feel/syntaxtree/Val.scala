@@ -17,18 +17,11 @@
 package org.camunda.feel.syntaxtree
 
 import org.camunda.feel.context.Context
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  LocalDateTime,
-  LocalTime,
-  Number,
-  Time,
-  YearMonthDuration
-}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration}
 
+import java.math.BigInteger
 import java.time.Duration
+import javax.xml.datatype.DatatypeFactory
 
 /**
   * FEEL supports the following datatypes:
@@ -186,6 +179,31 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 }
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
+  override def toString: String = {
+    val millis = value.toMillis
+    val positive = millis > 0
+    val timeDuration = if (! positive) {
+      java.time.Duration.ofMillis(millis).negated()
+    } else {
+      java.time.Duration.ofMillis(millis)
+    }
+    val hour = if(timeDuration.toHours % 24 != 0){
+      BigInteger.valueOf(timeDuration.toHours % 24)
+    } else { null }
+    val minute = if(timeDuration.toMinutes % 60 != 0){
+      BigInteger.valueOf(timeDuration.toMinutes % 60)
+    } else { null }
+    val seconds = if(timeDuration.getSeconds % 60 != 0){
+      BigInteger.valueOf(timeDuration.getSeconds % 60)
+    } else { null }
+    val dur = DatatypeFactory.newInstance().newDurationDayTime(
+      positive,
+      BigInteger.valueOf(timeDuration.toDays),
+      hour,
+      minute,
+      seconds)
+    dur.toString
+  }
   override val properties: Map[String, Val] = Map(
     "days" -> ValNumber(value.toDays),
     "hours" -> ValNumber(value.toHours % 24),

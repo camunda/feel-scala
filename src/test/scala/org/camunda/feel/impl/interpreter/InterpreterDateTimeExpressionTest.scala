@@ -401,6 +401,20 @@ class InterpreterDateTimeExpressionTest
       ValDate("2015-12-10"))
   }
 
+  it should "subtract date from date" in {
+
+    eval(""" date("2020-04-06") - date("2020-04-01") """) should be(
+      ValDayTimeDuration("P5D"))
+    eval(""" date("2020-04-06") - date("2020-04-01") """) should be(
+      ValDayTimeDuration("PT120H"))
+  }
+
+  it should "subtract date from date as string" in {
+
+    eval(""" date("2020-04-06") - date("2020-04-01") """) should be(
+      ValString("P5D"))
+  }
+
   it should "multiply by '3'" in {
 
     eval(""" duration("P1M") * 3 """) should be(ValYearMonthDuration("P3M"))
