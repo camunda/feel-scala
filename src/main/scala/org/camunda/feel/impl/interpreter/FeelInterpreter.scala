@@ -217,6 +217,8 @@ class FeelInterpreter {
         withVal(eval(x), x => {
           typeName match {
             case "Any" if x != ValNull => ValBoolean(true)
+            case "years and months duration" => withType(x, t => ValBoolean(t == "year-month-duration"))
+            case "days and time duration" => withType(x, t => ValBoolean(t == "day-time-duration"))
             case _                     => withType(x, t => ValBoolean(t == typeName))
           }
         })

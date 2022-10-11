@@ -107,10 +107,10 @@ class InterpreterExpressionTest
   }
 
   it should "be an instance of (duration)" in {
-    eval("duration(P3M) instance of years and months duration") should be(ValBoolean(true))
-    eval("duration(PT4H) instance of days and time duration") should be(ValBoolean(true))
-    eval("null instance of ears and months duration") should be(ValBoolean(false))
-    eval("null instance of days and time duration") should be(ValBoolean(false))
+    eval("""duration("P3M") instance of years and months duration""") should be(ValBoolean(true))
+    eval("""duration("PT4H") instance of days and time duration""") should be(ValBoolean(true))
+    eval("""null instance of years and months duration""") should be(ValBoolean(false))
+    eval("""null instance of days and time duration""") should be(ValBoolean(false))
   }
 
   it should "be an instance of (multiplication)" in {
