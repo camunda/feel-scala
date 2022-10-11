@@ -187,6 +187,9 @@ case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
     } else {
       java.time.Duration.ofMillis(millis)
     }
+    val day = if(timeDuration.toDays != 0){
+      BigInteger.valueOf(timeDuration.toDays)
+    } else { null }
     val hour = if(timeDuration.toHours % 24 != 0){
       BigInteger.valueOf(timeDuration.toHours % 24)
     } else { null }
@@ -198,7 +201,7 @@ case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
     } else { null }
     val dur = DatatypeFactory.newInstance().newDurationDayTime(
       positive,
-      BigInteger.valueOf(timeDuration.toDays),
+      day,
       hour,
       minute,
       seconds)
