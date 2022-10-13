@@ -126,7 +126,7 @@ package object feel {
     yearMonthDurationPattern.matcher(duration).matches
 
   private lazy val dayTimeDurationPattern =
-    Pattern.compile("""-?P((\d+D)?(T(\d+H)?(\d+M)?(\d+(.\d*)?S)?)?)""")
+    Pattern.compile("""-?P((\d+D)?(T(\d+H)?-?(\d+M)?(\d+(.\d*)?S)?)?)""")
 
   def isDayTimeDuration(duration: String): Boolean =
     dayTimeDurationPattern.matcher(duration).matches
