@@ -120,7 +120,7 @@ package object feel {
     localDateTimePatter.matcher(dateTime).matches
 
   private lazy val yearMonthDurationPattern =
-    Pattern.compile("""-?P(\d+Y)?(\d+M)?""")
+    Pattern.compile("""-?P(\d+Y)?-?(\d+M)?""")
 
   def isYearMonthDuration(duration: String): Boolean =
     yearMonthDurationPattern.matcher(duration).matches

@@ -207,6 +207,12 @@ class BuiltinConversionFunctionsTest
       ValDayTimeDuration("P2DT20H14M"))
   }
 
+  "A duration() function" should "parse string variables with -" in {
+
+    eval(""" duration(x) """, Map("x" -> "PT-5M")) should be(
+      ValDayTimeDuration("PT-5M"))
+  }
+
   it should "convert year-month-String" in {
 
     eval(""" duration(x) """, Map("x" -> "P2Y4M")) should be(
