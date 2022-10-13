@@ -108,4 +108,24 @@ class BuiltinTemporalFunctionsTest
     eval(""" abs(duration("-P2M")) """) should be(ValYearMonthDuration("P2M"))
   }
 
+  "A last day of month() function" should "return the the last day of the month" in {
+    eval(""" last day of month(date(2022,10,17)) """) should be(
+      ValDate(LocalDate.parse("2022-10-31")))
+
+    eval(s"last day of month($date)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($localDateTime)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($dateTime)") should be(
+      ValDate(LocalDate.parse("2019-09-30")))
+  }
+
+  it should "take the leap years into account" in {
+    eval(""" last day of month(date("2022-02-01")) """) should be(
+      ValDate(LocalDate.parse("2022-02-28")))
+
+    eval(""" last day of month(date("2024-02-01")) """) should be(
+      ValDate(LocalDate.parse("2024-02-29")))
+  }
+
 }
