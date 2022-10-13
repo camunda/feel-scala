@@ -1,47 +1,11 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValBoolean,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
-import org.camunda.feel.{
-  Date,
-  YearMonthDuration,
-  dateFormatter,
-  dateTimeFormatter,
-  isDayTimeDuration,
-  isLocalDateTime,
-  isOffsetDateTime,
-  isOffsetTime,
-  isValidDate,
-  isYearMonthDuration,
-  localDateTimeFormatter,
-  localTimeFormatter,
-  logger,
-  stringToDate,
-  stringToDateTime,
-  stringToDayTimeDuration,
-  stringToLocalDateTime,
-  stringToLocalTime,
-  stringToNumber,
-  stringToYearMonthDuration
-}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValString, ValTime, ValYearMonthDuration, ZonedTime}
+import org.camunda.feel.{Date, YearMonthDuration, dateFormatter, dateTimeFormatter, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, localDateTimeFormatter, localTimeFormatter, logger, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
 
 import java.math.BigDecimal
-import java.time.{LocalDate, LocalTime, Period, ZoneOffset}
+import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
 import java.util.regex.Pattern
 import scala.util.Try
 
@@ -101,6 +65,10 @@ object ConversionBuiltinFunctions {
         ValLocalDateTime(dateTime.toLocalDate().atTime(time))
       case List(ValDateTime(dateTime), ValTime(time)) =>
         ValDateTime(time.withDate(dateTime.toLocalDate()))
+      case List(ValLocalDateTime(date), ValString(timezone)) =>
+        ValDateTime(date.atZone(ZoneId.of(timezone)))
+      case List(ValDateTime(date), ValString(timezone)) =>
+        ValDateTime(date.withZoneSameInstant(ZoneId.of(timezone)))
     }
   )
 
