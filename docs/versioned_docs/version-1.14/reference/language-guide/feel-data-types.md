@@ -141,6 +141,7 @@ A list of elements. The elements can be of any type. The list can be empty.
 
 A list of entries. Each entry has a key and a value. The key is either a name or a string. The value
 can be any type. The context can be empty.
+Please reference [FEEL Variables](./feel-variables.md#escape-variable-names) for naming convention for key name.
 
 * Java Type: `java.util.Map`
 
