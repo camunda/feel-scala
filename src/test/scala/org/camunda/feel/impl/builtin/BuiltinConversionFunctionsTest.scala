@@ -207,10 +207,22 @@ class BuiltinConversionFunctionsTest
       ValDayTimeDuration("P2DT20H14M"))
   }
 
-  "A duration() function" should "parse string variables with -" in {
+  it should "convert day-time-String with negative duration" in {
 
     eval(""" duration(x) """, Map("x" -> "PT-5M")) should be(
       ValDayTimeDuration("PT-5M"))
+
+    eval(""" duration(x) """, Map("x" -> "P-1D")) should be(
+      ValDayTimeDuration("P-1D"))
+
+    eval(""" duration(x) """, Map("x" -> "PT-2H")) should be(
+      ValDayTimeDuration("PT-2H"))
+
+    eval(""" duration(x) """, Map("x" -> "PT-3M-4S")) should be(
+      ValDayTimeDuration("PT-3M-4S"))
+
+    eval(""" duration(x) """, Map("x" -> "P-1Y")) should be(
+      ValYearMonthDuration("P-1Y"))
   }
 
   it should "convert year-month-String" in {
