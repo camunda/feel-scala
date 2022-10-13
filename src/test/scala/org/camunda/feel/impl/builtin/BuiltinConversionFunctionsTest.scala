@@ -22,6 +22,7 @@ import org.camunda.feel.syntaxtree._
 import org.camunda.feel._
 import org.camunda.feel.impl.FeelIntegrationTest
 
+import java.time.ZonedDateTime
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 
@@ -60,6 +61,21 @@ class BuiltinConversionFunctionsTest
 
     eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00+01:00")) should be(
       ValDateTime("2012-12-24T23:59:00+01:00"))
+  }
+
+  it should "convert (DateTime, Timezone)" in {
+    eval("""date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z")""") should be(
+      ValDateTime(ZonedDateTime.parse("2020-07-31T12:27:30Z")))
+
+    eval(
+      """date and time(@"2020-07-31T14:27:30@Europe/Berlin", "America/Los_Angeles")""") should be(
+      ValDateTime(
+        ZonedDateTime.parse("2020-07-31T05:27:30-07:00[America/Los_Angeles]")))
+
+    eval(
+      """date and time(@"2020-07-31T14:27:30", "Z")""") should be(
+      ValDateTime(
+        ZonedDateTime.parse("2020-07-31T14:27:30Z")))
   }
 
   it should "convert (Date,Time)" in {
