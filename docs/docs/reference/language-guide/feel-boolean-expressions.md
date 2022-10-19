@@ -209,8 +209,8 @@ Checks if the value is of the given type. Available type names:
 - `date`
 - `time`
 - `date time`
-- `day-time-duration`
-- `year-month-duration`
+- `days and time duration`
+- `years and months duration`
 - `list`
 - `context`
 - `function`
@@ -230,6 +230,12 @@ Use the type `Any` to check if the value is not `null`.
 
 null instance of Any
 // false
+
+duration("P3M") instance of years and months duration
+// true
+
+duration("PT4H") instance of days and time duration
+// true
 ```
 
 ### Unary-tests/in
