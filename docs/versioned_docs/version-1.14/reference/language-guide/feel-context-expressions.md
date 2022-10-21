@@ -7,7 +7,7 @@ title: Context Expressions
 
 Creates a new context with the given entries. Each entry has a key and a value. The key is either a
 name or a string. The value can be any type.
-Please reference [FEEL Variables](./feel-variables.md#escape-variable-names) for naming convention for key name.
+Please reference [FEEL Variables](./feel-variables.md#variable-names) for naming convention for key name.
 
 ```js
 {
