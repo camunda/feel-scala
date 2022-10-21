@@ -147,6 +147,13 @@ class InterpreterDateTimeExpressionTest
 
     eval(""" date("2013-02-25") - date("2012-12-24") """) should be(
       ValDayTimeDuration("P63D"))
+
+  }
+
+  it should "subtract date from date as string" in {
+
+    eval(""" date("2020-04-07") - date("2020-04-01") """) should be(
+      ValString("P6D"))
   }
 
   it should "compare with '='" in {
@@ -399,20 +406,6 @@ class InterpreterDateTimeExpressionTest
 
     eval(""" date("2017-01-10") - duration("P1Y1M") """) should be(
       ValDate("2015-12-10"))
-  }
-
-  it should "subtract date from date" in {
-
-    eval(""" date("2020-04-06") - date("2020-04-01") """) should be(
-      ValDayTimeDuration("P5D"))
-    eval(""" date("2020-04-06") - date("2020-04-01") """) should be(
-      ValDayTimeDuration("PT120H"))
-  }
-
-  it should "subtract date from date as string" in {
-
-    eval(""" date("2020-04-07") - date("2020-04-01") """) should be(
-      ValDayTimeDuration("PT144H"))
   }
 
   it should "multiply by '3'" in {
