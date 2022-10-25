@@ -17,17 +17,9 @@
 package org.camunda.feel.syntaxtree
 
 import org.camunda.feel.context.Context
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  LocalDateTime,
-  LocalTime,
-  Number,
-  Time,
-  YearMonthDuration
-}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration}
 
+import java.math.BigInteger
 import java.time.Duration
 
 /**
@@ -186,6 +178,24 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 }
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
+  override def toString: String = {
+    val day = Option(value.toDays).filterNot(_ == 0)
+    val hour = Option(value.toHours % 24).filterNot(_ == 0)
+    val minute = Option(value.toMinutes % 60).filterNot(_ == 0)
+    val second = Option(value.toSeconds % 60).filterNot(_ == 0)
+
+    val stringBuilder = new StringBuilder("")
+    if (value.isNegative) {
+      stringBuilder.append("-")
+    }
+    stringBuilder.append("P")
+    day.foreach(d => stringBuilder.append(s"${d}D"))
+    hour.orElse(minute).orElse(second).foreach(_ => stringBuilder.append("T"))
+    hour.foreach(h => stringBuilder.append(s"${h}H"))
+    minute.foreach(m => stringBuilder.append(s"${m}M"))
+    second.foreach(s => stringBuilder.append(s"${s}S"))
+    stringBuilder.toString()
+  }
   override val properties: Map[String, Val] = Map(
     "days" -> ValNumber(value.toDays),
     "hours" -> ValNumber(value.toHours % 24),
