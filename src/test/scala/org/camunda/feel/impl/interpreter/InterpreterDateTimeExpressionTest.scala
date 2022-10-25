@@ -152,7 +152,7 @@ class InterpreterDateTimeExpressionTest
 
   it should "subtract date from date as string" in {
 
-    eval(""" date("2020-04-07") - date("2020-04-01") """) should be(
+    eval(""" string(date("2020-04-07") - date("2020-04-01")) """) should be(
       ValString("P6D"))
   }
 
