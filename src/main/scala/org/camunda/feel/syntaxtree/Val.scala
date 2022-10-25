@@ -179,34 +179,22 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
   override def toString: String = {
-    val millis = value.toMillis
-    val positive = millis > 0
-    val timeDuration = if (! positive) {
-      java.time.Duration.ofMillis(millis).negated()
-    } else {
-      java.time.Duration.ofMillis(millis)
+    val day = Option(value.toDays).filterNot(_ == 0)
+    val hour = Option(value.toHours % 24).filterNot(_ == 0)
+    val minute = Option(value.toMinutes % 60).filterNot(_ == 0)
+    val second = Option(value.toSeconds % 60).filterNot(_ == 0)
+
+    val stringBuilder = new StringBuilder("")
+    if (value.isNegative) {
+      stringBuilder.append("-")
     }
-    val day = if(timeDuration.toDays != 0){
-      BigInteger.valueOf(timeDuration.toDays)
-    } else { null }
-    val hour = if(timeDuration.toHours % 24 != 0){
-      BigInteger.valueOf(timeDuration.toHours % 24)
-    } else { null }
-    val minute = if(timeDuration.toMinutes % 60 != 0){
-      BigInteger.valueOf(timeDuration.toMinutes % 60)
-    } else { null }
-    val seconds = if(timeDuration.getSeconds % 60 != 0){
-      BigInteger.valueOf(timeDuration.getSeconds % 60)
-    } else { null }
-    val sb: StringBuilder = new StringBuilder("")
-    if (! positive) sb.append("-")
-    sb.append("P")
-    if (day != null) sb.append(s"${day}D")
-    if (hour != null || minute != null || seconds != null) sb.append("T")
-    if (hour != null) sb.append(s"${hour}H")
-    if (minute != null) sb.append(s"${minute}M")
-    if (seconds != null) sb.append(s"${seconds}S")
-    sb.toString()
+    stringBuilder.append("P")
+    day.foreach(d => stringBuilder.append(s"${d}D"))
+    hour.orElse(minute).orElse(second).foreach(_ => stringBuilder.append("T"))
+    hour.foreach(h => stringBuilder.append(s"${h}H"))
+    minute.foreach(m => stringBuilder.append(s"${m}M"))
+    second.foreach(s => stringBuilder.append(s"${s}S"))
+    stringBuilder.toString()
   }
   override val properties: Map[String, Val] = Map(
     "days" -> ValNumber(value.toDays),
