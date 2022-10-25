@@ -206,7 +206,7 @@ object ConversionBuiltinFunctions {
         ValString(dateTimeWithOffsetOrZoneId)
       }
       case List(ValYearMonthDuration(from)) => ValString(from.toString)
-      case List(ValDayTimeDuration(from))   => ValString(ValDayTimeDuration(from).toString)
+      case List(duration: ValDayTimeDuration)   => ValString(duration.toString)
     }
   )
 
