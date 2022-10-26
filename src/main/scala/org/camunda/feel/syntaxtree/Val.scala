@@ -179,21 +179,20 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
   override def toString: String = {
-    val day = Option(value.toDays).filterNot(_ == 0)
-    val hour = Option(value.toHours % 24).filterNot(_ == 0)
-    val minute = Option(value.toMinutes % 60).filterNot(_ == 0)
-    val second = Option(value.toSeconds % 60).filterNot(_ == 0)
+    val day = Option(value.toDays).filterNot(_ == 0).map(_ + "D").getOrElse("")
+    val hour = Option(value.toHours % 24).filterNot(_ == 0).map(_ + "H").getOrElse("")
+    val minute = Option(value.toMinutes % 60).filterNot(_ == 0).map(_ + "M").getOrElse("")
+    val second = Option(value.getSeconds % 60).filterNot(_ == 0).map(_ + "S").getOrElse("")
 
     val stringBuilder = new StringBuilder("")
     if (value.isNegative) {
       stringBuilder.append("-")
     }
-    stringBuilder.append("P")
-    day.foreach(d => stringBuilder.append(s"${d}D"))
-    hour.orElse(minute).orElse(second).foreach(_ => stringBuilder.append("T"))
-    hour.foreach(h => stringBuilder.append(s"${h}H"))
-    minute.foreach(m => stringBuilder.append(s"${m}M"))
-    second.foreach(s => stringBuilder.append(s"${s}S"))
+    stringBuilder.append("P").append(day)
+    if (hour.nonEmpty || minute.nonEmpty || hour.nonEmpty) {
+      stringBuilder.append("T")
+    }
+    stringBuilder.append(hour).append(minute).append(second)
     stringBuilder.toString()
   }
   override val properties: Map[String, Val] = Map(
