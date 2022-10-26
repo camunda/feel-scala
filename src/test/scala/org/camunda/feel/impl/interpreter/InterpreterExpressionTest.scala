@@ -238,6 +238,10 @@ class InterpreterExpressionTest
     eval("of = true") shouldBe a[ValError]
     eval("not = true") shouldBe a[ValError]
     eval("in = true") shouldBe a[ValError]
+    eval("satisfies = true") shouldBe a[ValError]
+    eval("and = true") shouldBe a[ValError]
+    eval("or = true") shouldBe a[ValError]
+    eval("return = true") shouldBe a[ValError]
   }
 
   List(
