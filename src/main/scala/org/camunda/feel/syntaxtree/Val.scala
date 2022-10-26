@@ -182,7 +182,7 @@ case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
     val day = Option(value.toDays).filterNot(_ == 0)
     val hour = Option(value.toHours % 24).filterNot(_ == 0)
     val minute = Option(value.toMinutes % 60).filterNot(_ == 0)
-    val second = Option(value.toSeconds % 60).filterNot(_ == 0)
+    val second = Option(value.getSeconds % 60).filterNot(_ == 0)
 
     val stringBuilder = new StringBuilder("")
     if (value.isNegative) {
