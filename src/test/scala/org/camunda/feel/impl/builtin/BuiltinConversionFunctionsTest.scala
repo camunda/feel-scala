@@ -198,16 +198,16 @@ class BuiltinConversionFunctionsTest
 
   it should "convert days-time-duration" in {
 
-    eval(""" string(@"PT1H") """) should be(ValString("PT1H"))
-    eval(""" string(@"PT2M30S") """) should be(ValString("PT2M30S"))
-    eval(""" string(@"P1DT2H3M4S") """) should be(ValString("P1DT2H3M4S"))
+    eval(""" string(duration("PT1H")) """) should be(ValString("PT1H"))
+    eval(""" string(duration("PT2M30S")) """) should be(ValString("PT2M30S"))
+    eval(""" string(duration("P1DT2H3M4S")) """) should be(ValString("P1DT2H3M4S"))
   }
 
   it should "convert years-months-duration" in {
 
-    eval(""" string(@"P1Y") """) should be(ValString("P1Y"))
-    eval(""" string(@"P2M") """) should be(ValString("P2M"))
-    eval(""" string(@"P1Y2M") """) should be(ValString("P1Y2M"))
+    eval(""" string(duration("P1Y")) """) should be(ValString("P1Y"))
+    eval(""" string(duration("P2M")) """) should be(ValString("P2M"))
+    eval(""" string(duration("P1Y2M")) """) should be(ValString("P1Y2M"))
   }
 
   "A duration() function" should "convert day-time-String" in {
