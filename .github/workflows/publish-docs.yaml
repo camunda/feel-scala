@@ -2,7 +2,7 @@ name: publish-docs
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 env:
   # Used by docusaurus publish-site command
