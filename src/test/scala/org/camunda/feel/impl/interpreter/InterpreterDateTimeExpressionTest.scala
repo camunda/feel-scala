@@ -147,6 +147,13 @@ class InterpreterDateTimeExpressionTest
 
     eval(""" date("2013-02-25") - date("2012-12-24") """) should be(
       ValDayTimeDuration("P63D"))
+
+  }
+
+  it should "subtract date from date as string" in {
+
+    eval(""" string(date("2020-04-07") - date("2020-04-01")) """) should be(
+      ValString("P6D"))
   }
 
   it should "compare with '='" in {
