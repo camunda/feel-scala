@@ -307,7 +307,7 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDayTimeDuration(PT26H10M30S)'. Available properties:")
+      "No property found with name 'x' of value 'P1DT2H10M30S'. Available properties:")
   }
 
 }

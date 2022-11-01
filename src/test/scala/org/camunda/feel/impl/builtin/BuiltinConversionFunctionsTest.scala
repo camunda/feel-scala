@@ -196,9 +196,18 @@ class BuiltinConversionFunctionsTest
       ValString("2012-12-25T11:00:00+02:00"))
   }
 
-  it should "convert Duration" in {
+  it should "convert days-time-duration" in {
 
     eval(""" string(duration("PT1H")) """) should be(ValString("PT1H"))
+    eval(""" string(duration("PT2M30S")) """) should be(ValString("PT2M30S"))
+    eval(""" string(duration("P1DT2H3M4S")) """) should be(ValString("P1DT2H3M4S"))
+  }
+
+  it should "convert years-months-duration" in {
+
+    eval(""" string(duration("P1Y")) """) should be(ValString("P1Y"))
+    eval(""" string(duration("P2M")) """) should be(ValString("P2M"))
+    eval(""" string(duration("P1Y2M")) """) should be(ValString("P1Y2M"))
   }
 
   "A duration() function" should "convert day-time-String" in {
@@ -207,10 +216,41 @@ class BuiltinConversionFunctionsTest
       ValDayTimeDuration("P2DT20H14M"))
   }
 
+  it should "convert day-time-String with negative duration" in {
+    eval(""" duration(x) """, Map("x" -> "-PT5M")) should be(
+      ValDayTimeDuration("-PT5M"))
+
+    eval(""" duration(x) """, Map("x" -> "PT-5M")) should be(
+      ValDayTimeDuration("PT-5M"))
+
+    eval(""" duration(x) """, Map("x" -> "P-1D")) should be(
+      ValDayTimeDuration("P-1D"))
+
+    eval(""" duration(x) """, Map("x" -> "PT-2H")) should be(
+      ValDayTimeDuration("PT-2H"))
+
+    eval(""" duration(x) """, Map("x" -> "PT-3M-4S")) should be(
+      ValDayTimeDuration("PT-3M-4S"))
+  }
+
   it should "convert year-month-String" in {
 
     eval(""" duration(x) """, Map("x" -> "P2Y4M")) should be(
       ValYearMonthDuration("P2Y4M"))
+  }
+
+  it should "convert year-month-String with negative duration" in {
+    eval(""" duration(x) """, Map("x" -> "-P1Y2M")) should be(
+      ValYearMonthDuration("-P1Y2M"))
+
+    eval(""" duration(x) """, Map("x" -> "P-1Y")) should be(
+      ValYearMonthDuration("P-1Y"))
+
+    eval(""" duration(x) """, Map("x" -> "P-2M")) should be(
+      ValYearMonthDuration("P-2M"))
+
+    eval(""" duration(x) """, Map("x" -> "P-1Y-2M")) should be(
+      ValYearMonthDuration("P-1Y-2M"))
   }
 
   "A years and months duration(from,to) function" should "convert (Date,Date)" in {
