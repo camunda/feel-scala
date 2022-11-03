@@ -1,6 +1,6 @@
 module.exports = {
   title: 'FEEL-Scala',
-  tagline: 'A FEEL parser and interpreter written in Scala.',
+  tagline: 'A FEEL engine written in Scala.',
   url: 'https://camunda.github.io',
   baseUrl: '/feel-scala/',
   onBrokenLinks: 'throw',
@@ -61,7 +61,7 @@ module.exports = {
           className: 'header-github-link'
         },
         {
-          href: "https://forum.camunda.org/",
+          href: "https://forum.camunda.io/",
           position: 'right',
           className: 'header-forum-link'
         },
@@ -97,7 +97,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/camunda/feel-scala/edit/master/docs/',
+            'https://github.com/camunda/feel-scala/edit/main/docs/',
           lastVersion: 'current',
           // onlyIncludeVersions: ['current', '1.12', '1.11'],
           versions: {
@@ -110,7 +110,7 @@ module.exports = {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/camunda/feel-scala/edit/master/docs/',
+            'https://github.com/camunda/feel-scala/edit/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
