@@ -4,6 +4,8 @@ title: String functions
 description: "This document outlines built-in string functions and examples."
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## substring()
 
 - parameters:
@@ -158,6 +160,8 @@ split("a;b;c;;", ";")
 ```
 
 ## extract()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Returns all matches of the pattern in the given string. Returns an empty list if the pattern doesn't
 match.
