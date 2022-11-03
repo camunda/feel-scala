@@ -12,7 +12,7 @@ const features = [
     imageUrl: 'img/camunda-rocket.png',
     description: (
       <>
-        Full support of DMN 1.2, including unary-tests, expressions, and built-in functions.
+        Support FEEL expressions, unary-tests, and built-in functions from the latest DMN standard.
       </>
     ),
   },
