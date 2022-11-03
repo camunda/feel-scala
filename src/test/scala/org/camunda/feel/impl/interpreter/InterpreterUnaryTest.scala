@@ -551,10 +551,15 @@ class InterpreterUnaryTest
                    Map("now" -> "2019-08-13")) should be(ValBoolean(false))
   }
 
-  it should "be compared with a list" in {
+  it should "be compared with a list value" in {
 
     evalUnaryTests(2, """[1,2,3]""") should be(ValBoolean(true))
     evalUnaryTests(4, """[1,2,3]""") should be(ValBoolean(false))
+  }
+
+  it should "be compared with a list variable" in {
+    evalUnaryTests(2, "x", Map("x" -> List(1,2,3))) should be (ValBoolean(true))
+    evalUnaryTests(4, "x", Map("x" -> List(1,2,3))) should be (ValBoolean(false))
   }
 
 }
