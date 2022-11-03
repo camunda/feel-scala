@@ -4,12 +4,7 @@ title: Changelog
 slug: /changelog/
 ---
 
-export const SinceVersion = ({versionCloud, versionPlatform}) => (
-<p>
-<span style={{backgroundColor: '#25c2a0',borderRadius: '7px',color: '#fff',padding: '0.2rem',marginRight: '0.5rem'}}>Camunda Cloud: {versionCloud}</span>
-<span style={{backgroundColor: '#1877F2',borderRadius: '7px',color: '#fff',padding: '0.2rem',}}>Camunda Platform: {versionPlatform}</span>
-</p>
-);
+import MarkerChangelogVersion from "@site/src/components/MarkerChangelogVersion";
 
 This page contains an overview of the released versions and highlights the major changes from a user
 point of view (i.e. focus on features). The complete changelog, including the patch
@@ -17,7 +12,7 @@ versions, can be found on the [GitHub release page](https://github.com/camunda/f
 
 ## 1.15
 
-<SinceVersion versionCloud="8.1.0" versionPlatform="not yet" />
+<MarkerChangelogVersion versionZeebe="8.1.0" versionC7="not yet" />
 
 **Expressions:**
 
@@ -27,7 +22,7 @@ See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag
 
 ## 1.14
 
-<SinceVersion versionCloud="1.3.1" versionPlatform="7.18.0" />
+<MarkerChangelogVersion versionZeebe="1.3.1" versionC7="7.18.0" />
 
 **Built-in functions:**
 
@@ -50,7 +45,7 @@ See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag
 
 ## 1.13
 
-<SinceVersion versionCloud="1.0.0" versionPlatform="7.15.0" />
+<MarkerChangelogVersion versionZeebe="1.0.0" versionC7="7.15.0" />
 
 **Expressions:**
 
@@ -73,7 +68,7 @@ See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag
 
 ## 1.12
 
-<SinceVersion versionCloud="0.25.0" versionPlatform="7.14.0" />
+<MarkerChangelogVersion versionZeebe="0.25.0" versionC7="7.14.0" />
 
 **Built-in functions:**
 
@@ -99,7 +94,7 @@ See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag
 
 ## 1.11
 
-<SinceVersion versionCloud="0.23.0" versionPlatform="7.13.0" />
+<MarkerChangelogVersion versionZeebe="0.23.0" versionC7="7.13.0" />
 
 **Expressions:**
 
