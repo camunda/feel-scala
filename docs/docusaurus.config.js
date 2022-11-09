@@ -1,11 +1,11 @@
 module.exports = {
   title: 'FEEL-Scala',
-  tagline: 'A FEEL engine written in Scala.',
+  tagline: 'A FEEL engine written in Scala, by Camunda.',
   url: 'https://camunda.github.io',
   baseUrl: '/feel-scala/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
   organizationName: 'camunda',
   projectName: 'feel-scala',
   themeConfig: {

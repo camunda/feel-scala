@@ -27,7 +27,7 @@ const features = [
   },
   {
     title: 'Flexible',
-    imageUrl: 'img/camunda-integrity.png',
+    imageUrl: 'img/camunda-embed.png',
     description: (
       <>
         Embed it in an DMN engine, or use it as an script/expression language.
