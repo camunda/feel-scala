@@ -4,6 +4,8 @@ title: Temporal functions
 description: "This document outlines built-in temporal functions and examples."
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## now()
 
 Returns the current date and time including the timezone.
@@ -100,6 +102,8 @@ abs(duration("-P2M"))
 ```
 
 ## last day of month()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Takes the month of the given date or date-time value and returns the last day of this month.
 

@@ -4,6 +4,8 @@ title: Numeric functions
 description: "This document outlines built-in numeric functions and examples."
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## decimal()
 
 Round the given number at the given scale using the given rounding mode. If no rounding mode is passed in, it uses `HALF_EVEN` as default.
@@ -256,6 +258,8 @@ even(2)
 ```
 
 ## random number()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Returns a random number between `0` and `1`. 
 
