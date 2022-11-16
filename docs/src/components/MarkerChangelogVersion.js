@@ -4,7 +4,7 @@ export const MarkerChangelogVersion = ({versionZeebe, versionC7}) => {
   return (
       <p>
         <span style={{
-          backgroundColor: '#25c2a0',
+          backgroundColor: '#26D07C',
           borderRadius: '7px',
           color: '#fff',
           padding: '0.2rem',
@@ -12,7 +12,7 @@ export const MarkerChangelogVersion = ({versionZeebe, versionC7}) => {
         }}
               title={"Available since the given Camunda Platform 8 (Zeebe) version."}>Zeebe: {versionZeebe}</span>
         <span style={{
-          backgroundColor: '#1877F2',
+          backgroundColor: '#0072CE',
           borderRadius: '7px',
           color: '#fff',
           padding: '0.2rem',

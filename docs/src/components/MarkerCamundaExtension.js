@@ -4,7 +4,7 @@ export const MarkerCamundaExtension = () => {
   return (
       <p>
         <span style={{
-          backgroundColor: '#25c2a0',
+          backgroundColor: '#FC5D0D',
           borderRadius: '7px',
           color: '#fff',
           padding: '0.2rem',
