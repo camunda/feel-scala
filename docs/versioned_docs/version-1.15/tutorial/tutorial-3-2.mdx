@@ -1,0 +1,38 @@
+---
+id: tutorial-3-2
+title: "3.2 Temporal functions"
+---
+
+import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
+
+Since Zee has 11 days to reach the CamundaCon, Zee decides to stay a bit longer in Cologne. :de: For
+the last trip, Zee wants to take a train :bullettrain_front: to Berlin.
+
+On the train schedule, there is a special train that leaves Cologne on each Monday morning. Zee
+looks at the calendar but is unsure about the current weekday.
+
+Can you help him? Use
+[temporal functions](/docs/reference/builtin-functions/feel-built-in-functions-temporal.md) to resolve the
+current weekday.
+
+<LiveFeel
+  defaultExpression={dedent`
+    // use a function to get the weekday of the current date
+    date(targetDate)`}
+    feelContext='{"targetDate": "2022-10-05", "remainingTime": "P11D"}'
+  metadata={{ page: "tutorial-3-2" }}
+/>
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>
+      It is Saturday. Zee can stay the weekend in Cologne.
+    </div>
+    <br />
+    <pre title={'Expression'}>
+      day of week(date(targetDate) - duration(remainingTime))
+    </pre>
+  </div>
+</details>
