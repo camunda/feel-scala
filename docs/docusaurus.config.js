@@ -95,14 +95,23 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
           editUrl:
             'https://github.com/camunda/feel-scala/edit/main/docs/',
-          lastVersion: 'current',
-          // onlyIncludeVersions: ['current', '1.12', '1.11'],
+          // includes the unreleased version
+          includeCurrentVersion: true,
+          // the last released (stable) version
+          lastVersion: '1.15',
+          // override the config for specific versions
           versions: {
+            // for the unreleased version
             current: {
-              label: `1.16 (unreleased)`,
+              // add the postfix "unreleased"
+              label: '1.16 (unreleased)'
+            },
+            // for all supported versions
+            '1.14': {
+              // disable the "unmaintained version" banner
+              banner: 'none',
             },
           },
         },
