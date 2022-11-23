@@ -26,6 +26,9 @@ Release date:
 * [ ] if major/minor release, append the [changelog in the documentation](https://camunda.github.io/feel-scala/docs/changelog/) for the released version and mention the new features
 * [ ] if major/minor release, archive the documentation of the previous version
   * use `npm run docusaurus docs:version 1.x` in `/docs` to copy the existing docs under the released version (`1.x` = the released version)
-  * update the latest version in `/docs/docusaurus.config.js` under `docs > versions > current > label`
+  * update the versions in the configuration `/docs/docusaurus.config.js`
+    * set the latest version in `docs > lastVersion`
+    * set the current version in `docs > versions > current > label`
+    * set the supported versions in `docs > versions` (enable/disable the "unmaintained version" banner)
 * [ ] update the version that is used by the FEEL REPL script `/feel-repl.sc` under `import $ivy.org.camunda.feel:feel-engine:1.x.y`
 * [ ] inform the maintainers of other teams about the successful release :tada:
