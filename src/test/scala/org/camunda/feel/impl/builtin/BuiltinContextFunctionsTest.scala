@@ -76,9 +76,9 @@ class BuiltinContextFunctionsTest
     eval(""" get value({}, "foo") """) should be(ValNull)
   }
 
-  "A put function" should "add an entry to an empty context" in {
+  "A context put function" should "add an entry to an empty context" in {
 
-    eval(""" put({}, "x", 1) """) should be(
+    eval(""" context put({}, "x", 1) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
       ))
@@ -86,7 +86,7 @@ class BuiltinContextFunctionsTest
 
   it should "add an entry to an existing context" in {
 
-    eval(""" put({x:1}, "y", 2) """) should be(
+    eval(""" context put({x:1}, "y", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
       ))
@@ -94,21 +94,47 @@ class BuiltinContextFunctionsTest
 
   it should "override an entry of an existing context" in {
 
-    eval(""" put({x:1}, "x", 2) """) should be(
+    eval(""" context put({x:1}, "x", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(2)))
       ))
   }
 
+  it should "override an entry and keep the original order" in {
+    eval(""" context put({x:1, y:0, z:0}, "y", 2) = {x:1, y:2, z:0} """) should be (
+      ValBoolean(true)
+    )
+  }
+
   it should "add a context entry to an existing context" in {
 
-    eval(""" put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
+    eval(""" context put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
       ValBoolean(true))
   }
 
   it should "return null if the value is not present" in {
 
-    eval(""" put({}, "x", notExisting) """) should be(ValNull)
+    eval(""" context put({}, "x", notExisting) """) should be(ValNull)
+  }
+
+  it should "be invoked with named parameters" in {
+    eval(""" context put(context: {x:1}, key: "y", value: 2) = {x:1, y:2} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  "A put function (deprecated)" should "behave as the context put function" in {
+    eval(""" put({}, "x", 1) = context put({}, "x", 1) """) should be (
+      ValBoolean(true)
+    )
+
+    eval(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should be (
+      ValBoolean(true)
+    )
+
+    eval(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should be (
+      ValBoolean(true)
+    )
   }
 
   "A context merge function" should "return a single empty context" in {

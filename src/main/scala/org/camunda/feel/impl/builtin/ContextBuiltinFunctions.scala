@@ -19,7 +19,8 @@ object ContextBuiltinFunctions {
                           getEntriesFunction("m")),
     "get value" -> List(getValueFunction(List("m", "key")),
                         getValueFunction(List("context", "key"))),
-    "put" -> List(putFunction),
+    "context put" -> List(contextPutFunction),
+    "put" -> List(contextPutFunction), // deprecated function name
     "context merge" -> List(contextMergeFunction),
     "put all" -> List(contextMergeFunction), // deprecated function name
     "context" -> List(contextFunction)
@@ -46,7 +47,7 @@ object ContextBuiltinFunctions {
     }
   )
 
-  private def putFunction = builtinFunction(
+  private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),
     invoke = {
       case List(ValContext(_), ValString(_), ValError(_)) => ValNull
