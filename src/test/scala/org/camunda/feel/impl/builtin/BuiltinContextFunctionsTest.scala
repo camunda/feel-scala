@@ -117,10 +117,58 @@ class BuiltinContextFunctionsTest
     eval(""" context put({}, "x", notExisting) """) should be(ValNull)
   }
 
-  it should "be invoked with named parameters" in {
+  it should "be invoked with named parameters (key)" in {
     eval(""" context put(context: {x:1}, key: "y", value: 2) = {x:1, y:2} """) should be (
       ValBoolean(true)
     )
+  }
+
+  it should "add an a context entry with list argument" in {
+    eval(""" context put({x:1}, ["y"], 2) = {x:1, y:2} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "add nested context entry" in {
+    eval(""" context put({x:1, y:{a:1}}, ["y", "b"], 2) = {x:1, y:{a:1, b:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "override nested context entry" in {
+    eval(""" context put({x:1, y:{a:1}}, ["y", "a"], 2) = {x:1, y:{a:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "add nested context entry if key doesn't exist" in {
+    eval(""" context put({x:1}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "override nested context entry if existing value is not a context" in {
+    eval(""" context put({x:1, y:2}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "be invoked with named parameters (keys)" in {
+    eval(""" context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) = {x:{y:2}} """) should be(
+      ValBoolean(true)
+    )
+  }
+
+  it should "return null if keys are empty" in {
+    eval(""" context put({x:1}, [], 2) """) should be (ValNull)
+  }
+
+  it should "return null if keys are null" in {
+    eval(""" context put({x:1}, null, 2) """) should be (ValNull)
+  }
+
+  it should "return null if keys are not a list of strings" in {
+    eval(""" context put({x:1}, [1,2,3], 2) """) should be(ValNull)
   }
 
   "A put function (deprecated)" should "behave as the context put function" in {
