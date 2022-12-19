@@ -33,38 +33,82 @@ get entries({foo: 123})
 // [{key: "foo", value: 123}]
 ```
 
-## put()
+## context put(context, key, value)
 
-<MarkerCamundaExtension></MarkerCamundaExtension>
+Adds a new entry with the given key and value to the context. Returns a new context that includes the entry.
 
-Add the given key and value to a context. Returns a new context that includes the entry. It might override an existing entry of the context.
+If an entry for the same key already exists in the context, it overrides the value.
 
-Returns `null` if the value is not defined.
-
-- parameters:
-  - `context`: context
-  - `key`: string
-  - `value`: any
-- result: context
+**Function signature**
 
 ```js
-put({x:1}, "y", 2)
+context put(context: context, key: string, value: Any): context
+```
+
+**Examples**
+
+```js
+context put({x:1}, "y", 2)
 // {x:1, y:2}
 ```
 
-## put all()
+:::info
+The function `context put()` replaced the previous function `put()` (Camunda Extension). The
+previous function is deprecated and should not be used anymore.
+:::
 
-<MarkerCamundaExtension></MarkerCamundaExtension>
+## context put(context, keys, value)
 
-Union the given contexts (two or more). Returns a new context that includes all entries of the given contexts. It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts are passed in the method.
+Adds a new entry with the given value to the context. The path of the entry is defined by the keys. Returns a new context that includes the entry. 
 
-Returns `null` if one of the values is not a context.
+If `keys` contains the keys `[k1, k2]` then it adds the nested entry `k1.k2 = value` to the context.
 
-- parameters:
-  - `contexts`: contexts as varargs
-- result: context
+If an entry for the same keys already exists in the context, it overrides the value.
+
+If `keys` are empty, it returns `null`.
+
+**Function signature**
 
 ```js
-put all({x:1}, {y:2})
+context put(context: context, keys: list<string>, value: Any): context
+```
+
+**Examples**
+
+```js
+context put({x:1}, ["y"], 2)
+// {x:1, y:2}
+
+context put({x:1, y: {z:0}}, ["y", "z"], 2)
+// {x:1, y: {z:2}}
+
+context put({x:1}, ["y", "z"], 2)
+// {x:1, y: {z:2}}
+```
+
+## context merge(contexts)
+
+Union the given contexts. Returns a new context that includes all entries of the given contexts. 
+
+If an entry for the same key already exists in a context, it overrides the value. The entries are overridden in the same order as in the list of contexts.
+
+**Function signature**
+
+```js
+context merge(contexts: list<context>): context
+```
+
+**Examples**
+
+```js
+context merge([{x:1}, {y:2}])
+// {x:1, y:2}
+
+context merge([{x:1, y: 0}, {y:2}])
 // {x:1, y:2}
 ```
+
+:::info
+The function `context merge()` replaced the previous function `put all()` (Camunda Extension). The
+previous function is deprecated and should not be used anymore.
+:::
