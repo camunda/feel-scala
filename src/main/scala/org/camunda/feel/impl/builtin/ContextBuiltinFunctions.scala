@@ -75,25 +75,35 @@ object ContextBuiltinFunctions {
     }
   )
 
-  // TODO (saig0): Add @tailrec to ensure that it is a tail-recursion
-  private def contextPutWithKeys(contextValue: ValContext, keys: List[String], value: Val): Val = {
+  @tailrec
+  private def contextPutWithKeys(
+                                  contextValue: ValContext,
+                                  keys: List[String], value: Val,
+                                  parentContextUpdater: ValContext => ValContext = identity): ValContext = {
     keys match {
       case Nil => contextValue
-      case key :: Nil => contextPut(contextValue = contextValue, key = key, value = value)
+      case key :: Nil =>
+        val modifiedContext = contextPut(contextValue = contextValue, key = key, value = value)
+        parentContextUpdater(modifiedContext)
       case key :: tail =>
         val contextOfKey = contextValue.context.variableProvider.getVariable(key).map {
           case contextOfKey: ValContext => contextOfKey
           case _ => ValContext(EmptyContext)
         }.getOrElse(ValContext(EmptyContext))
 
-        contextPut(
-          contextValue = contextValue,
-          key = key,
-          value =
-            contextPutWithKeys(
-              contextValue = contextOfKey,
-              keys = tail,
-              value = value))
+        // recursive call for the next key with its nested context
+        contextPutWithKeys(
+          contextValue = contextOfKey,
+          keys = tail,
+          value = value,
+          parentContextUpdater =
+            // pass a lambda to update this context with the modified nested context
+            nestedContext => contextPut(
+              contextValue = contextValue,
+              key = key,
+              value = nestedContext
+            )
+        )
     }
   }
 
