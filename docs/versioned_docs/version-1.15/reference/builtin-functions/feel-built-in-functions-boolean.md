@@ -4,6 +4,8 @@ title: Boolean functions
 description: "This document outlines current boolean functions and a few examples."
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## not()
 
 - parameters:
@@ -16,6 +18,8 @@ not(true)
 ```
 
 ## is defined()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Checks if a given value is defined. A value is defined if it exists, and it is an instance of one of the FEEL data types including `null`.
 

@@ -3,6 +3,8 @@ id: feel-built-in-functions-boolean
 title: Boolean Functions
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## not()
 
 * parameters:
@@ -15,6 +17,8 @@ not(true)
 ```
 
 ## is defined()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Checks if a given value is defined or not. A value is defined if it exists, and it is an instance of one of the FEEL data types including `null`.
 
