@@ -3,6 +3,8 @@ id: feel-variables
 title: Variables
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ### Access Variables
 
 Access the value of a variable by its variable name.
@@ -47,6 +49,8 @@ Restrictions of a variable name:
   `every`, `satisfies`).
 
 ### Escape variable names
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 If a variable name or a context key contains any special character (e.g. whitespace, dash, etc.)
 then the name can be wrapped into single backquotes/backticks (e.g. ``` `foo bar` ```).

@@ -3,6 +3,8 @@ id: feel-built-in-functions-context
 title: Context Functions
 ---
 
+import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
+
 ## get value()
 
 Returns the value of the context entry with the given key.
@@ -32,6 +34,8 @@ get entries({foo: 123})
 
 ## put()
 
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
 Add the given key and value to a context. Returns a new context that includes the entry. It might override an existing entry of the context.  
 
 Returns `null` if the value is not defined.
@@ -48,6 +52,8 @@ put({x:1}, "y", 2)
 ```
 
 ## put all()
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
 
 Union the given contexts (two or more). Returns a new context that includes all entries of the given contexts. It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts are passed in the method.    
 
