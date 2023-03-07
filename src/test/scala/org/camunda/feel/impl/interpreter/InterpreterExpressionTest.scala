@@ -113,12 +113,43 @@ class InterpreterExpressionTest
     eval("""null instance of days and time duration""") should be(ValBoolean(false))
   }
 
+  it should "be an instance of (date)" in {
+    eval("""date("2023-03-07") instance of date""") should be(ValBoolean(true))
+    eval(""" @"2023-03-07" instance of date""") should be(ValBoolean(true))
+    eval("1 instance of date") should be(ValBoolean(false))
+  }
+
+  it should "be an instance of (time)" in {
+    eval("""time("11:27:00") instance of time""") should be(ValBoolean(true))
+    eval(""" @"11:27:00" instance of time""") should be(ValBoolean(true))
+    eval("1 instance of time") should be(ValBoolean(false))
+  }
+
+  it should "be an instance of (date and time)" in {
+    eval("""date and time("2023-03-07T11:27:00") instance of date and time""") should be(ValBoolean(true))
+    eval(""" @"2023-03-07T11:27:00" instance of date and time""") should be(ValBoolean(true))
+    eval("1 instance of date and time") should be(ValBoolean(false))
+  }
+
+  it should "be an instance of (list)" in {
+    eval("[1,2,3] instance of list") should be(ValBoolean(true))
+    eval("[] instance of list") should be(ValBoolean(true))
+    eval("1 instance of list") should be(ValBoolean(false))
+  }
+
+  it should "be an instance of (context)" in {
+    eval("{x:1} instance of context") should be(ValBoolean(true))
+    eval("{} instance of context") should be(ValBoolean(true))
+    eval("1 instance of context") should be(ValBoolean(false))
+  }
+
   it should "be an instance of (multiplication)" in {
     eval("2 * 3 instance of number") should be(ValBoolean(true))
   }
 
   it should "be an instance of (function definition)" in {
-    eval(""" (function() "foo") instance of Any """) should be(ValBoolean(true))
+    eval(""" (function() "foo") instance of function """) should be(ValBoolean(true))
+    eval("""1 instance of function""") should be(ValBoolean(false))
   }
 
   it should "be a instance of Any should always pass" in {
