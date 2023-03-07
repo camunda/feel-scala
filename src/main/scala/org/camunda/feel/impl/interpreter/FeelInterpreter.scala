@@ -219,6 +219,7 @@ class FeelInterpreter {
             case "Any" if x != ValNull => ValBoolean(true)
             case "years and months duration" => withType(x, t => ValBoolean(t == "year-month-duration"))
             case "days and time duration" => withType(x, t => ValBoolean(t == "day-time-duration"))
+            case "date and time" => withType(x, t => ValBoolean(t == "date time"))
             case _                     => withType(x, t => ValBoolean(t == typeName))
           }
         })
