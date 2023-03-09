@@ -76,9 +76,9 @@ class BuiltinContextFunctionsTest
     eval(""" get value({}, "foo") """) should be(ValNull)
   }
 
-  "A put function" should "add an entry to an empty context" in {
+  "A context put function" should "add an entry to an empty context" in {
 
-    eval(""" put({}, "x", 1) """) should be(
+    eval(""" context put({}, "x", 1) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
       ))
@@ -86,7 +86,7 @@ class BuiltinContextFunctionsTest
 
   it should "add an entry to an existing context" in {
 
-    eval(""" put({x:1}, "y", 2) """) should be(
+    eval(""" context put({x:1}, "y", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
       ))
@@ -94,26 +94,100 @@ class BuiltinContextFunctionsTest
 
   it should "override an entry of an existing context" in {
 
-    eval(""" put({x:1}, "x", 2) """) should be(
+    eval(""" context put({x:1}, "x", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(2)))
       ))
   }
 
+  it should "override an entry and keep the original order" in {
+    eval(""" context put({x:1, y:0, z:0}, "y", 2) = {x:1, y:2, z:0} """) should be (
+      ValBoolean(true)
+    )
+  }
+
   it should "add a context entry to an existing context" in {
 
-    eval(""" put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
+    eval(""" context put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
       ValBoolean(true))
   }
 
   it should "return null if the value is not present" in {
 
-    eval(""" put({}, "x", notExisting) """) should be(ValNull)
+    eval(""" context put({}, "x", notExisting) """) should be(ValNull)
   }
 
-  "A put all function" should "return a single empty context" in {
+  it should "be invoked with named parameters (key)" in {
+    eval(""" context put(context: {x:1}, key: "y", value: 2) = {x:1, y:2} """) should be (
+      ValBoolean(true)
+    )
+  }
 
-    eval(""" put all({}) """) should be(
+  it should "add an a context entry with list argument" in {
+    eval(""" context put({x:1}, ["y"], 2) = {x:1, y:2} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "add nested context entry" in {
+    eval(""" context put({x:1, y:{a:1}}, ["y", "b"], 2) = {x:1, y:{a:1, b:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "override nested context entry" in {
+    eval(""" context put({x:1, y:{a:1}}, ["y", "a"], 2) = {x:1, y:{a:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "add nested context entry if key doesn't exist" in {
+    eval(""" context put({x:1}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "override nested context entry if existing value is not a context" in {
+    eval(""" context put({x:1, y:2}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  it should "be invoked with named parameters (keys)" in {
+    eval(""" context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) = {x:{y:2}} """) should be(
+      ValBoolean(true)
+    )
+  }
+
+  it should "return null if keys are empty" in {
+    eval(""" context put({x:1}, [], 2) """) should be (ValNull)
+  }
+
+  it should "return null if keys are null" in {
+    eval(""" context put({x:1}, null, 2) """) should be (ValNull)
+  }
+
+  it should "return null if keys are not a list of strings" in {
+    eval(""" context put({x:1}, [1,2,3], 2) """) should be(ValNull)
+  }
+
+  "A put function (deprecated)" should "behave as the context put function" in {
+    eval(""" put({}, "x", 1) = context put({}, "x", 1) """) should be (
+      ValBoolean(true)
+    )
+
+    eval(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should be (
+      ValBoolean(true)
+    )
+
+    eval(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should be (
+      ValBoolean(true)
+    )
+  }
+
+  "A context merge function" should "return a single empty context" in {
+
+    eval(""" context merge({}) """) should be(
       ValContext(
         StaticContext(variables = Map.empty)
       ))
@@ -121,7 +195,7 @@ class BuiltinContextFunctionsTest
 
   it should "return a single context" in {
 
-    eval(""" put all({x:1}) """) should be(
+    eval(""" context merge({x:1}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
       ))
@@ -129,7 +203,7 @@ class BuiltinContextFunctionsTest
 
   it should "combine empty contexts" in {
 
-    eval(""" put all({}, {}) """) should be(
+    eval(""" context merge({}, {}) """) should be(
       ValContext(
         StaticContext(variables = Map.empty)
       ))
@@ -137,7 +211,7 @@ class BuiltinContextFunctionsTest
 
   it should "add all entries to an empty context" in {
 
-    eval(""" put all({}, {x:1}) """) should be(
+    eval(""" context merge({}, {x:1}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
       ))
@@ -145,7 +219,7 @@ class BuiltinContextFunctionsTest
 
   it should "add an entry to an context" in {
 
-    eval(""" put all({x:1}, {y:2}) """) should be(
+    eval(""" context merge({x:1}, {y:2}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
       ))
@@ -153,7 +227,7 @@ class BuiltinContextFunctionsTest
 
   it should "add all entries to an context" in {
 
-    eval(""" put all({x:1}, {y:2, z:3}) """) should be(
+    eval(""" context merge({x:1}, {y:2, z:3}) """) should be(
       ValContext(
         StaticContext(variables =
           Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
@@ -162,7 +236,7 @@ class BuiltinContextFunctionsTest
 
   it should "override an entry of the existing context" in {
 
-    eval(""" put all({x:1}, {x:2}) """) should be(
+    eval(""" context merge({x:1}, {x:2}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(2)))
       ))
@@ -170,7 +244,7 @@ class BuiltinContextFunctionsTest
 
   it should "override entries in order" in {
 
-    eval(""" put all({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
+    eval(""" context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
       ValContext(
         StaticContext(variables =
           Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2)))
@@ -179,7 +253,7 @@ class BuiltinContextFunctionsTest
 
   it should "combine three contexts" in {
 
-    eval(""" put all({x:1}, {y:2}, {z:3}) """) should be(
+    eval(""" context merge({x:1}, {y:2}, {z:3}) """) should be(
       ValContext(
         StaticContext(variables =
           Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
@@ -188,13 +262,42 @@ class BuiltinContextFunctionsTest
 
   it should "add a nested context" in {
 
-    eval(""" put all({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(
+    eval(""" context merge({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(
       ValBoolean(true))
   }
 
   it should "return null if one entry is not a context" in {
 
-    eval(""" put all({}, 1) """) should be(ValNull)
+    eval(""" context merge({}, 1) """) should be(ValNull)
+  }
+
+  it should "be invoked with a list of contexts" in {
+    eval(""" context merge([{x:1}, {y:2}]) = {x:1, y: 2} """) should be(
+      ValBoolean(true)
+    )
+  }
+
+  it should "be invoked with named parameters" in {
+    eval(""" context merge(contexts: [{x:1}, {y:2}]) = {x:1, y:2} """) should be(
+      ValBoolean(true)
+    )
+  }
+
+  "A put all function (deprecated)" should "behave as the context merge function" in {
+    eval(""" put all({}) = context merge({}) """) should be(ValBoolean(true))
+
+    eval(""" put all({x:1}) = context merge({x:1}) """) should be(ValBoolean(true))
+
+    eval(""" put all({x:1}, {y:2}) = context merge({x:1}, {y:2}) """) should be(ValBoolean(true))
+
+    eval(
+      """ put all({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) = context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
+      ValBoolean(true)
+    )
+
+    eval(""" put all({x:1}, {y:{z:2}}) = context merge({x:1}, {y:{z:2}}) """) should be(
+      ValBoolean(true)
+    )
   }
 
   "A context function" should "return an empty context" in {
