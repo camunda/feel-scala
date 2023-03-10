@@ -208,7 +208,7 @@ Checks if the value is of the given type. Available type names:
 - `string`
 - `date`
 - `time`
-- `date time`
+- `date and time`
 - `days and time duration`
 - `years and months duration`
 - `list`

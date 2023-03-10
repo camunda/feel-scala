@@ -314,14 +314,16 @@ object FeelParser {
 
   private def typeName[_: P]: P[String] =
     P(
-      durationTypeName |
+      specialTypeName |
         qualifiedName.map(_.mkString("."))
     )
 
-  private def durationTypeName[_: P]: P[String] =
+  private def specialTypeName[_: P]: P[String] =
     P(
       "years and months duration" |
-        "days and time duration"
+        "days and time duration" |
+        "date and time" |
+        "function"
     ).!
 
   private def in[_: P](value: Exp): P[Exp] =
