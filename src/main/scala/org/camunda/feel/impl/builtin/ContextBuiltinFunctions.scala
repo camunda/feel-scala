@@ -14,7 +14,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     "get entries" -> List(getEntriesFunction("context"),
       getEntriesFunction("m")),
     "get value" -> List(getValueFunction(List("m", "key")),
-      getValueFunction(List("context", "key"))),
+      getValueFunction(List("context", "key")), getValueFunction2),
     "context put" -> List(contextPutFunction, contextPutFunction2),
     "put" -> List(contextPutFunction), // deprecated function name
     "context merge" -> List(contextMergeFunction),
@@ -36,6 +36,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
   private def getValueFunction(parameters: List[String]) = builtinFunction(
     params = parameters,
     invoke = {
+      case List(context: ValContext, keys: ValList) => getValueFunction2.invoke(List(context, keys))
       case List(ValContext(c), ValString(key)) =>
         c.variableProvider
           .getVariable(key)
@@ -43,6 +44,13 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     }
   )
 
+  private def getValueFunction2 = builtinFunction(
+    params = List("context", "keys"),
+    invoke = {
+      case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) => ???
+      case List(ValContext(_), ValList(_)) => ValNull
+    }
+  )
   private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),
     invoke = {
