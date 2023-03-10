@@ -186,7 +186,7 @@ object FeelParser {
 
   private def qualifiedName[_: P]: P[List[String]] =
     P(
-      name.rep(1, sep = ".")
+      (valueProperty | name).rep(1, sep = ".")
     ).map(_.toList)
 
   // a string wrapped in double quotes. it can contain an escape sequences (e.g. \', \", \\, \n, \r, \t, \u269D, \U101EF).

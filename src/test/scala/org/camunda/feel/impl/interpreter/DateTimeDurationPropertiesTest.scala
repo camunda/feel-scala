@@ -22,6 +22,8 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
+import java.time.ZonedDateTime
+
 /**
   * @author Philipp Ossler
   */
@@ -190,6 +192,15 @@ class DateTimeDurationPropertiesTest
   it should "has a time offset property" in {
 
     eval(""" date and time("2017-03-10T11:45:30+02:00").time offset """) should be(
+      ValDayTimeDuration("PT2H"))
+  }
+
+  it should "has a variable with a time offset property" in {
+
+    eval(""" dateTime.time offset """,
+         Map(
+           "dateTime" -> ValDateTime(
+             ZonedDateTime.parse("2017-03-10T11:45:30+02:00")))) should be(
       ValDayTimeDuration("PT2H"))
   }
 
