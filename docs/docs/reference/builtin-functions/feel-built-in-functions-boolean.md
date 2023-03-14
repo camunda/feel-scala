@@ -6,18 +6,27 @@ description: "This document outlines current boolean functions and a few example
 
 import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
 
-## not()
+## not(negand)
 
-- parameters:
-  - `negand`: boolean
-- result: boolean
+Returns the logical negation of the given value.
+
+**Function signature**
+
+```js
+not(negand: boolean): boolean
+```
+
+**Examples**
 
 ```js
 not(true)
 // false
+
+not(null) 
+// null
 ```
 
-## is defined()
+## is defined(value)
 
 <MarkerCamundaExtension></MarkerCamundaExtension>
 
@@ -25,9 +34,13 @@ Checks if a given value is defined. A value is defined if it exists, and it is a
 
 The function can be used to check if a variable or a context entry (e.g. a property of a variable) exists. It allows differentiating between a `null` variable and a value that doesn't exist.
 
-- parameters:
-  - `value`: any
-- result: boolean
+**Function signature**
+
+```js
+is defined(value: Any): boolean
+```
+
+**Examples**
 
 ```js
 is defined(1)
