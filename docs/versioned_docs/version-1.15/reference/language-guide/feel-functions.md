@@ -21,6 +21,13 @@ contains(string: "me@camunda.com", match: ".de")
 // false
 ```
 
+:::info GOOD TO KNOW
+
+If an expression invokes a built-in function but the argument types don't match the function 
+signature, the invocation returns `null`. 
+
+:::
+
 ### User-defined
 
 ```js
