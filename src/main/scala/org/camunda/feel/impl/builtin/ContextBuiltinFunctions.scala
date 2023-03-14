@@ -47,10 +47,28 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
   private def getValueFunction2 = builtinFunction(
     params = List("context", "keys"),
     invoke = {
-      case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) => ???
+      case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) =>
+        val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
+        getValueRecursive(context, listOfKeys)
       case List(ValContext(_), ValList(_)) => ValNull
     }
   )
+
+  @tailrec
+  private def getValueRecursive(context: Context, keys: List[String]): Val = {
+    keys match {
+      case Nil => ValNull
+      case head :: tail =>
+        val result = context.variableProvider.getVariable(head).map(valueMapper.toVal)
+        result match {
+          case None => ValNull
+          case Some(value: Val) if tail.isEmpty => value
+          case Some(ValContext(nestedContext)) => getValueRecursive(nestedContext, tail)
+          case Some(_) => ValNull
+        }
+    }
+  }
+
   private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),
     invoke = {
