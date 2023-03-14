@@ -12,6 +12,8 @@ The value mapper is used while evaluating expressions and unary tests to
 
 Using the SPI, the transformation can be customized to support more/custom data types, or changing the data type of the result.
 
+## Implement a Value Mapper
+
 <Tabs
   defaultValue="scala"
   values={[
@@ -81,12 +83,18 @@ public class CustomJavaValueMapper extends JavaCustomValueMapper {
 </TabItem>
 </Tabs>
 
-## Register the Value Mapper
+## Register a Value Mapper
 
-Depending how the FEEL engine is used, the value mapper can be passed directly on creation, or is loaded via Java ServiceLoader mechanism. 
+Depending on how the FEEL engine is used, the value mapper can be passed directly on creation, or is loaded via Java ServiceLoader mechanism. 
 
 In the second case, create a new file `org.camunda.feel.valuemapper.CustomValueMapper` in the folder `META-INF/services/`. It must contain the full qualified name of the value mapper.
 
 ```
 org.camunda.feel.example.valuemapper.MyValueMapper
 ```
+
+:::tip
+
+The FEEL engine contains a built-in value mapper `org.camunda.feel.impl.JavaValueMapper` to transform the result of an expression into a Java type, for example, to a `java.util.List` or a `java.util.Map`. This is useful if the FEEL engine is called from Java code.
+
+:::
