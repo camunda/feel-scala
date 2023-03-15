@@ -10,8 +10,13 @@ import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension"
 
 Returns the current date and time including the timezone.
 
-- parameters: no
-- result: date-time with timezone
+**Function signature**
+
+```js
+now(): date and time
+```
+
+**Examples**
 
 ```js
 now()
@@ -22,73 +27,118 @@ now()
 
 Returns the current date.
 
-- parameters: no
-- result: date
+**Function signature**
+
+```js
+today(): date
+```
+
+**Examples**
 
 ```js
 today()
 // date("2020-07-31")
 ```
 
-## day of week()
+## day of week(date)
 
 Returns the day of the week according to the Gregorian calendar. Note that it always returns the English name of the day.
 
-- parameters:
-  - `date`: date/date-time
-- result: string
+**Function signature**
+
+```js
+day of week(date: date): string
+```
+
+```js
+day of week(date: date and time): string
+```
+
+**Examples**
 
 ```js
 day of week(date("2019-09-17"))
 // "Tuesday"
 ```
 
-## day of year()
+## day of year(date)
 
 Returns the Gregorian number of the day within the year.
 
-- parameters:
-  - `date`: date/date-time
-- result: number
+**Function signature**
+
+```js
+day of year(date: date): number
+```
+
+```js
+day of year(date: date and time): number
+```
+
+**Examples**
 
 ```js
 day of year(date("2019-09-17"))
 // 260
 ```
 
-## week of year()
+## week of year(date)
 
 Returns the Gregorian number of the week within the year, according to ISO 8601.
 
-- parameters:
-  - `date`: date/date-time
-- result: number
+**Function signature**
+
+```js
+week of year(date: date): number
+```
+
+```js
+week of year(date: date and time): number
+```
+
+**Examples**
 
 ```js
 week of year(date("2019-09-17"))
 // 38
 ```
 
-## month of year()
+## month of year(date)
 
 Returns the month of the week according to the Gregorian calendar. Note that it always returns the English name of the month.
 
-- parameters:
-  - `date`: date/date-time
-- result: string
+**Function signature**
+
+```js
+month of year(date: date): string
+```
+
+```js
+month of year(date: date and time): string
+```
+
+**Examples**
 
 ```js
 month of year(date("2019-09-17"))
 // "September"
 ```
 
-## abs()
+## abs(n)
 
 Returns the absolute value of a given duration.
 
-- parameters:
-  - `n`: days-time-duration/years-months-duration
-- result: duration
+**Function signature**
+
+```js
+abs(n: days and time duration): days and time duration
+```
+
+```js
+abs(n: years and months duration): years and months duration
+```
+
+**Examples**
 
 ```js
 abs(duration("-PT5H"))
@@ -101,15 +151,23 @@ abs(duration("-P2M"))
 // duration("P2M")
 ```
 
-## last day of month()
+## last day of month(date)
 
 <MarkerCamundaExtension></MarkerCamundaExtension>
 
 Takes the month of the given date or date-time value and returns the last day of this month.
 
-- parameters:
-  - `date`: date/date-time
-- result: date
+**Function signature**
+
+```js
+last day of month(date: date): date
+```
+
+```js
+last day of month(date: date and time): date
+```
+
+**Examples**
 
 ```js
 last day of month(date("2022-10-01"))

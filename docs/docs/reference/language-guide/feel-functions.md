@@ -7,7 +7,7 @@ description: "This document outlines various functions and examples."
 ### Invocation
 
 Invokes a built-in function (
-e.g. [contains()](../builtin-functions/feel-built-in-functions-string#contains)) or user-defined
+e.g. [contains()](../builtin-functions/feel-built-in-functions-string#containsstring-match)) or user-defined
 function by its name. The arguments of the function can be passed positional or named.
 
 - Positional: Only the values, in the same order as defined by the function (e.g. `f(1,2)`).

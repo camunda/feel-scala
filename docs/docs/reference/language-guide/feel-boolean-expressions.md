@@ -126,7 +126,7 @@ null = null
 :::tip
 
 The built-in
-function [is defined()](../builtin-functions/feel-built-in-functions-boolean.md#is-defined) can be
+function [is defined()](../builtin-functions/feel-built-in-functions-boolean.md#is-definedvalue) can be
 used to differentiate between a value that is `null` and a variable or context entry that doesn't
 exist.
 

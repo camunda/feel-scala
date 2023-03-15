@@ -19,14 +19,15 @@ A scalar value must be of the following type:
 
 ![range functions overview](../assets/feel-built-in-functions-range-overview.png)
 
-## before()
+## before(point1, point2)
 
-- parameters:
-  - `point1`, `point2`: any
-  - or `range`: range, `point`: any
-  - or `point`: any, `range`: range
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+before(point1: Any, point2: Any): boolean
+```
+
+**Examples**
 
 ```js
 before(1, 10)
@@ -34,13 +35,49 @@ before(1, 10)
 
 before(10, 1)
 // false
+```
 
-before(1, [2..5])
-// true
+## before(range, point)
 
+**Function signature**
+
+```js
+before(range: range, point: Any): boolean
+```
+
+**Examples**
+
+```js
 before([1..5], 10)
 // true
+```
 
+## before(point, range)
+
+**Function signature**
+
+```js
+before(point: Any, range: range): boolean
+```
+
+**Examples**
+
+```js
+before(1, [2..5])
+// true
+```
+
+## before(range1, range2)
+
+**Function signature**
+
+```js
+before(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 before([1..5], [6..10])
 // true
 
@@ -48,14 +85,15 @@ before([1..5),[5..10])
 // true
 ```
 
-## after()
+## after(point1, point2)
 
-- parameters:
-  - `point1`, `point2`: any
-  - or `range`: range, `point`: any
-  - or `point`: any, `range`: range
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+after(point1: Any, point2: Any): boolean
+```
+
+**Examples**
 
 ```js
 after(10, 1)
@@ -63,26 +101,65 @@ after(10, 1)
 
 after(1, 10)
 // false
+```
 
-after(12, [2..5])
-// true
+## after(range, point)
 
-([1..5], 10)
+**Function signature**
+
+```js
+after(range: range, point: Any): boolean
+```
+
+**Examples**
+
+```js
+after([1..5], 10)
 // false
+```
 
-before([6..10], [1..5])
-// true
+## after(point, range)
 
-before([5..10], [1..5))
+**Function signature**
+
+```js
+after(point: Any, range: range): boolean
+```
+
+**Examples**
+
+```js
+after(12, [2..5])
 // true
 ```
 
-## meets()
+## after(range1, range2)
 
-- parameters:
-  - `range1`: range
-  - `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+after(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
+after([6..10], [1..5])
+// true
+
+after([5..10], [1..5))
+// true
+```
+
+## meets(range1, range2)
+
+**Function signature**
+
+```js
+meets(range1: range, range2: range): boolean
+```
+
+**Examples**
 
 ```js
 meets([1..5], [5..10])
@@ -99,12 +176,15 @@ meets([1..5], (5..8])
 
 ```
 
-## met by()
+## met by(range1, range2)
 
-- parameters:
-  - `range1`: range
-  - `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+met by(range1: range, range2: range): boolean
+```
+
+**Examples**
 
 ```js
 met by([5..10], [1..5])
@@ -123,12 +203,15 @@ met by([5..10], [1..5))
 // false
 ```
 
-## overlaps()
+## overlaps(range1, range2)
 
-- parameters:
-  - `range1`: range
-  - `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+overlaps(range1: range, range2: range): boolean
+```
+
+**Examples**
 
 ```js
 overlaps([5..10], [1..6])
@@ -147,12 +230,15 @@ overlaps([4..10], [1..5))
 // treu
 ```
 
-## overlaps before()
+## overlaps before(range1, range2)
 
-- parameters:
-  - `range1`: range
-  - `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+overlaps before(range1: range, range2: range): boolean
+```
+
+**Examples**
 
 ```js
 overlaps before([1..5], [4..10])
@@ -171,12 +257,15 @@ overlaps before([1..5), [5..10])
 // false
 ```
 
-## overlaps after()
+## overlaps after(range1, range2)
 
-- parameters:
-  - `range1`: range
-  - `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+overlaps after(range1: range, range2: range): boolean
+```
+
+**Examples**
 
 ```js
 overlaps after([4..10], [1..5])
@@ -195,12 +284,16 @@ overlaps after([4..10], [1..5))
 // true
 ```
 
-## finishes()
+## finishes(point, range)
 
-- parameters:
-  - `point`: any, `range`: range
-  - or `range1`, `range2`: range
-- result: boolean
+
+**Function signature**
+
+```js
+finishes(point: Any, range: range): boolean
+```
+
+**Examples**
 
 ```js
 finishes(5, [1..5])
@@ -208,7 +301,19 @@ finishes(5, [1..5])
 
 finishes(10, [1..7])
 // false
+```
 
+## finishes(range1, range2)
+
+**Function signature**
+
+```js
+finishes(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 finishes([3..5], [1..5])
 // true
 
@@ -219,12 +324,15 @@ finishes([5..10], [1..10))
 // false
 ```
 
-## finished by()
+## finished by(range, point)
 
-- parameters:
-  - `range`: range, `point`: any
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+finished by(range: range, point: Any): boolean
+```
+
+**Examples**
 
 ```js
 finishes by([5..10], 10)
@@ -232,7 +340,19 @@ finishes by([5..10], 10)
 
 finishes by([3..4], 2)
 // false
+```
 
+## finished by(range1, range2)
+
+**Function signature**
+
+```js
+finished by(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 finishes by([3..5], [1..5])
 // true
 
@@ -243,12 +363,15 @@ finishes by([5..10], (1..10))
 // true
 ```
 
-## includes()
+## includes(range, point)
 
-- parameters:
-  - `range`: range, `point`: any
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+includes(range: range, point: Any): boolean
+```
+
+**Examples**
 
 ```js
 includes([5..10], 6)
@@ -256,7 +379,19 @@ includes([5..10], 6)
 
 includes([3..4], 5)
 // false
+```
 
+## includes(range1, range2)
+
+**Function signature**
+
+```js
+includes(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 includes([1..10], [4..6])
 // true
 
@@ -267,12 +402,15 @@ includes([1..10], [1..5))
 // true
 ```
 
-## during()
+## during(point, range)
 
-- parameters:
-  - `point`: any, `range`: range
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+during(point: Any, range: range): boolean
+```
+
+**Examples**
 
 ```js
 during(5, [1..10])
@@ -283,7 +421,19 @@ during(12, [1..10])
 
 during(1, (1..10])
 // false
+```
 
+## during(range1, range2)
+
+**Function signature**
+
+```js
+during(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 during([4..6], [1..10))
 // true
 
@@ -291,12 +441,15 @@ during((1..5], (1..10])
 // true
 ```
 
-## starts()
+## starts(point, range)
 
-- parameters:
-  - `point`: any, `range`: range
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+starts(point: Any, range: range): boolean
+```
+
+**Examples**
 
 ```js
 starts(1, [1..5])
@@ -304,7 +457,19 @@ starts(1, [1..5])
 
 starts(1, (1..8])
 // false
+```
 
+## starts(range1, range2)
+
+**Function signature**
+
+```js
+starts(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 starts((1..5], [1..5])
 // false
 
@@ -315,12 +480,15 @@ starts((1..10), (1..10))
 // true
 ```
 
-## started by()
+## started by(range, point)
 
-- parameters:
-  - `range`: range, `point`: any
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+started by(range: range, point: Any): boolean
+```
+
+**Examples**
 
 ```js
 started by([1..10], 1)
@@ -328,7 +496,19 @@ started by([1..10], 1)
 
 started by((1..10], 1)
 // false
+```
 
+## started by(range1, range2)
+
+**Function signature**
+
+```js
+started by(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 started by([1..10], [1..5])
 // true
 
@@ -339,12 +519,15 @@ started by([1..10], [1..10))
 // true
 ```
 
-## coincides()
+## coincides(point1, point2)
 
-- parameters:
-  - `point1`, `point2`: any
-  - or `range1`, `range2`: range
-- result: boolean
+**Function signature**
+
+```js
+coincides(point1: Any, point2: Any): boolean
+```
+
+**Examples**
 
 ```js
 coincides(5, 5)
@@ -352,7 +535,19 @@ coincides(5, 5)
 
 coincides(3, 4)
 // false
+```
 
+## coincides(range1, range2)
+
+**Function signature**
+
+```js
+coincides(range1: range, range2: range): boolean
+```
+
+**Examples**
+
+```js
 coincides([1..5], [1..5])
 // true
 

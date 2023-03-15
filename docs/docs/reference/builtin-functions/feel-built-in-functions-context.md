@@ -6,27 +6,39 @@ description: "This document outlines context functions and a few examples."
 
 import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension";
 
-## get value()
+## get value(context, key)
 
 Returns the value of the context entry with the given key.
 
-- parameters:
-  - `context`: context
-  - `key`: string
-- result: any
+**Function signature**
+
+```js
+get value(context: context, key: string): Any
+```
+
+**Examples**
 
 ```js
 get value({foo: 123}, "foo") 
 // 123
+
+get value({a: 1}, "b")
+// null
 ```
 
-## get entries()
+## get entries(context)
 
 Returns the entries of the context as a list of key-value-pairs.
 
-- parameters:
-  - `context`: context
-- result: list of context which contains two entries for "key" and "value"
+**Function signature**
+
+```js
+get entries(context: context): list<context>
+```
+
+The return value is a list of contexts. Each context contains two entries for "key" and "value".
+
+**Examples**
 
 ```js
 get entries({foo: 123})
