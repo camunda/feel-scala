@@ -8,6 +8,67 @@ import MarkerCamundaExtension from "@site/src/components/MarkerCamundaExtension"
 
 Convert a value into a different type.
 
+## string(from)
+
+Returns the given value as a string representation.
+
+**Function signature**
+
+```js
+string(from: Any): string
+```
+
+**Examples**
+
+```js
+string(1.1) 
+// "1.1"
+
+string(date("2012-12-25"))
+// "2012-12-25"
+```
+
+## number(from)
+
+Parses the given string to a number.
+
+**Function signature**
+
+```js
+number(from: string): number
+```
+
+**Examples**
+
+```js
+number("1500.5") 
+// 1500.5
+```
+
+## context(entries)
+
+Constructs a context of the given list of key-value pairs. It is the reverse function to [get entries()](feel-built-in-functions-context.md#get-entries).
+
+Each key-value pair must be a context with two entries: `key` and `value`. The entry with name `key` must have a value of the type `string`.
+
+It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts in the given list.
+
+Returns `null` if one of the entries is not a context or if a context doesn't contain the required entries.
+
+**Function signature**
+
+```js
+context(entries: list<context>): context
+```
+
+**Examples**
+
+```js
+context([{"key":"a", "value":1}, {"key":"b", "value":2}])
+// {a:1, b:2}
+```
+
+
 ## date(from)
 
 Returns a date from the given value.
@@ -221,64 +282,4 @@ years and months duration(from: date, to: date): years and months duration
 ```js
 years and months duration(date("2011-12-22"), date("2013-08-24"))
 // duration("P1Y8M")
-```
-
-## number(from)
-
-Parses the given string to a number.
-
-**Function signature**
-
-```js
-number(from: string): number
-```
-
-**Examples**
-
-```js
-number("1500.5") 
-// 1500.5
-```
-
-## string(from)
-
-Returns the given value as a string representation.
-
-**Function signature**
-
-```js
-string(from: Any): string
-```
-
-**Examples**
-
-```js
-string(1.1) 
-// "1.1"
-
-string(date("2012-12-25"))
-// "2012-12-25"
-```
-
-## context(entries)
-
-Constructs a context of the given list of key-value pairs. It is the reverse function to [get entries()](feel-built-in-functions-context.md#get-entries).
-
-Each key-value pair must be a context with two entries: `key` and `value`. The entry with name `key` must have a value of the type `string`.
-
-It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts in the given list.
-
-Returns `null` if one of the entries is not a context or if a context doesn't contain the required entries.
-
-**Function signature**
-
-```js
-context(entries: list<context>): context
-```
-
-**Examples**
-
-```js
-context([{"key":"a", "value":1}, {"key":"b", "value":2}])
-// {a:1, b:2}
 ```
