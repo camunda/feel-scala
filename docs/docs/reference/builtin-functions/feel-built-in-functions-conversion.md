@@ -47,7 +47,7 @@ number("1500.5")
 
 ## context(entries)
 
-Constructs a context of the given list of key-value pairs. It is the reverse function to [get entries()](feel-built-in-functions-context.md#get-entries).
+Constructs a context of the given list of key-value pairs. It is the reverse function to [get entries()](feel-built-in-functions-context.md#get-entriescontext).
 
 Each key-value pair must be a context with two entries: `key` and `value`. The entry with name `key` must have a value of the type `string`.
 

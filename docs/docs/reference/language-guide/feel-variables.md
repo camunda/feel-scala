@@ -65,7 +65,7 @@ order.`total price`
 ```
 
 :::tip
-Use the [`get value()`](../builtin-functions/feel-built-in-functions-context.md#get-value) function 
+Use the [`get value()`](../builtin-functions/feel-built-in-functions-context.md#get-valuecontext-key) function 
 to retrieve the context value of an arbitrary key.
 
 ```js
