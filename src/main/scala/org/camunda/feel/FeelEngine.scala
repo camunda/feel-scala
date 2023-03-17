@@ -128,7 +128,7 @@ class FeelEngine(
     valueMapper = valueMapper,
     variableProvider = VariableProvider.EmptyVariableProvider,
     functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(new BuiltinFunctions(clock), functionProvider))
+      List(new BuiltinFunctions(clock, valueMapper), functionProvider))
   )
 
   def evalExpression(

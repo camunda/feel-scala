@@ -4,10 +4,11 @@ import org.camunda.feel.context.Context
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{Val, ValContext, ValError, ValList, ValNull, ValString}
+import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.annotation.tailrec
 
-object ContextBuiltinFunctions {
+class ContextBuiltinFunctions(valueMapper: ValueMapper) {
 
   def functions = Map(
     "get entries" -> List(getEntriesFunction("context"),
