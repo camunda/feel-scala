@@ -17,8 +17,8 @@ Release date:
 * [ ] schedule a release date
 * [ ] before building the release, inform the maintainers of other teams about the code freeze
 * [ ] build the release using the CI job: 
-  * minor release: https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/master
-  * patch release: use the CI job of the maintenance branch (e.g. https://ci.cambpm.camunda.cloud/view/Sideprojects/job/camunda-github-org/job/feel-scala/job/1.14/)
+  * minor release: https://ci.cambpm.camunda.cloud/job/camunda-github-org/job/feel-scala/job/main/
+  * patch release: use the CI job of the maintenance branch (e.g. https://ci.cambpm.camunda.cloud/job/camunda-github-org/job/feel-scala/job/1.15/)
 * [ ] deploy to Maven Central by releasing the staging repository: https://oss.sonatype.org/#stagingRepositories
 * [ ] create a release in GitHub for the tag: https://github.com/camunda/feel-scala/releases
   * attach the artifacts from JFrog: https://camunda.jfrog.io/ui/packages/gav:%2F%2Forg.camunda.feel:feel-engine?name=feel-engine&type=packages
