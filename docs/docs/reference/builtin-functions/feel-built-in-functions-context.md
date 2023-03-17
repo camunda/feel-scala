@@ -26,6 +26,33 @@ get value({a: 1}, "b")
 // null
 ```
 
+## get value(context, keys)
+
+Returns the value of the context entry for a context path defined by the given keys.
+
+If `keys` contains the keys `[k1, k2]` then it returns the value at the nested entry `k1.k2` of the context.
+
+If `keys` are empty or the nested entry defined by the keys doesn't exist in the context, it returns `null`.
+
+**Function signature**
+
+```js
+get value(context: context, keys: list<string>): Any
+```
+
+**Examples**
+
+```js
+get value({x:1, y: {z:0}}, ["y", "z"]) 
+// 0
+
+get value({x: {y: {z:0}}}, ["x", "y"])
+// {z:0}
+
+get value({a: {b: 3}}, ["b"])
+// null
+```
+
 ## get entries(context)
 
 Returns the entries of the context as a list of key-value-pairs.
