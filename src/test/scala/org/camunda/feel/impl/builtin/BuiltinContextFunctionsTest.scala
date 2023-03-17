@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.context.Context.StaticContext
+import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.FeelIntegrationTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -74,6 +75,57 @@ class BuiltinContextFunctionsTest
 
   it should "return null if not contains" in {
     eval(""" get value({}, "foo") """) should be(ValNull)
+  }
+
+  "A get value with path function" should "return the value when a path is provided" in {
+    eval("""get value({x: {y: {z:1}}}, ["x", "y", "z"])""") should be(ValNumber(1))
+  }
+
+  it should "return a context when a path is provided" in {
+    eval("""get value({x: {y: {z:1}}}, ["x", "y"]) = {z:1}""") should be(ValBoolean(true))
+  }
+
+  it should "return null if non-existing path is provided" in {
+    eval("""get value({x: {y: {z:1}}}, ["z"])""") should be(ValNull)
+  }
+
+  it should "return null if non-existing nested path is provided" in {
+    eval("""get value({x: {y: {z:1}}}, ["x", "z"])""") should be(ValNull)
+  }
+
+  it should "return null if non-String list of keys is provided" in {
+    eval("""get value({x: {y: {z:1}}}, ["1", 2])""") should be(ValNull)
+  }
+
+  it should "return null if an empty context is provided" in {
+    eval("""get value({}, ["z"])""") should be(ValNull)
+  }
+
+  it should "return null if an empty list is provided as a path" in {
+    eval("""get value({x: {y: {z:1}}}, [])""") should be(ValNull)
+  }
+
+  it should "return a value if named arguments are used" in {
+    eval("""get value(context: {x: {y: {z:1}}}, keys: ["x"]) = {y: {z:1}}""") should be(ValBoolean(true))
+  }
+
+  it should "return a value from a custom context" in {
+
+    class MyCustomContext extends CustomContext {
+      class MyVariableProvider extends VariableProvider {
+        private val entries = Map(
+          "x" -> Map("y" -> 1)
+        )
+
+        override def getVariable(name: String): Option[Any] = entries.get(name)
+
+        override def keys: Iterable[String] = entries.keys
+      }
+
+      override def variableProvider: VariableProvider = new MyVariableProvider
+    }
+
+    eval("""get value(context, ["x", "y"])""", Map("context" -> ValContext(new MyCustomContext))) should be(ValNumber(1))
   }
 
   "A context put function" should "add an entry to an empty context" in {

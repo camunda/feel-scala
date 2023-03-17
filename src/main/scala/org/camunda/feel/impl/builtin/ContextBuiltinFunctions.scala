@@ -4,16 +4,17 @@ import org.camunda.feel.context.Context
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{Val, ValContext, ValError, ValList, ValNull, ValString}
+import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.annotation.tailrec
 
-object ContextBuiltinFunctions {
+class ContextBuiltinFunctions(valueMapper: ValueMapper) {
 
   def functions = Map(
     "get entries" -> List(getEntriesFunction("context"),
       getEntriesFunction("m")),
     "get value" -> List(getValueFunction(List("m", "key")),
-      getValueFunction(List("context", "key"))),
+      getValueFunction(List("context", "key")), getValueFunction2),
     "context put" -> List(contextPutFunction, contextPutFunction2),
     "put" -> List(contextPutFunction), // deprecated function name
     "context merge" -> List(contextMergeFunction),
@@ -35,12 +36,38 @@ object ContextBuiltinFunctions {
   private def getValueFunction(parameters: List[String]) = builtinFunction(
     params = parameters,
     invoke = {
+      case List(context: ValContext, keys: ValList) => getValueFunction2.invoke(List(context, keys))
       case List(ValContext(c), ValString(key)) =>
         c.variableProvider
           .getVariable(key)
           .getOrElse(ValNull)
     }
   )
+
+  private def getValueFunction2 = builtinFunction(
+    params = List("context", "keys"),
+    invoke = {
+      case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) =>
+        val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
+        getValueRecursive(context, listOfKeys)
+      case List(ValContext(_), ValList(_)) => ValNull
+    }
+  )
+
+  @tailrec
+  private def getValueRecursive(context: Context, keys: List[String]): Val = {
+    keys match {
+      case Nil => ValNull
+      case head :: tail =>
+        val result = context.variableProvider.getVariable(head).map(valueMapper.toVal)
+        result match {
+          case None => ValNull
+          case Some(value: Val) if tail.isEmpty => value
+          case Some(ValContext(nestedContext)) => getValueRecursive(nestedContext, tail)
+          case Some(_) => ValNull
+        }
+    }
+  }
 
   private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),

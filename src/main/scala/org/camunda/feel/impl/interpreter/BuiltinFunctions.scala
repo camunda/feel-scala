@@ -18,19 +18,11 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.FeelEngineClock
 import org.camunda.feel.context.FunctionProvider
-import org.camunda.feel.impl.builtin.{
-  BooleanBuiltinFunctions,
-  ContextBuiltinFunctions,
-  ConversionBuiltinFunctions,
-  ListBuiltinFunctions,
-  NumericBuiltinFunctions,
-  StringBuiltinFunctions,
-  TemporalBuiltinFunctions,
-  RangeBuiltinFunction
-}
+import org.camunda.feel.impl.builtin.{BooleanBuiltinFunctions, ContextBuiltinFunctions, ConversionBuiltinFunctions, ListBuiltinFunctions, NumericBuiltinFunctions, RangeBuiltinFunction, StringBuiltinFunctions, TemporalBuiltinFunctions}
 import org.camunda.feel.syntaxtree.ValFunction
+import org.camunda.feel.valuemapper.ValueMapper
 
-class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
+class BuiltinFunctions(clock: FeelEngineClock, valueMapper: ValueMapper) extends FunctionProvider {
 
   override def getFunctions(name: String): List[ValFunction] =
     functions.getOrElse(name, List.empty)
@@ -43,7 +35,7 @@ class BuiltinFunctions(clock: FeelEngineClock) extends FunctionProvider {
       StringBuiltinFunctions.functions ++
       ListBuiltinFunctions.functions ++
       NumericBuiltinFunctions.functions ++
-      ContextBuiltinFunctions.functions ++
+      new ContextBuiltinFunctions(valueMapper).functions ++
       RangeBuiltinFunction.functions ++
       new TemporalBuiltinFunctions(clock).functions
 
