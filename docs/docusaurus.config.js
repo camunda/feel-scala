@@ -100,16 +100,16 @@ module.exports = {
           // includes the unreleased version
           includeCurrentVersion: true,
           // the last released (stable) version
-          lastVersion: '1.15',
+          lastVersion: '1.16',
           // override the config for specific versions
           versions: {
             // for the unreleased version
             current: {
               // add the postfix "unreleased"
-              label: '1.16 (unreleased)'
+              label: '1.17 (unreleased)'
             },
             // for all supported versions
-            '1.14': {
+            '1.15': {
               // disable the "unmaintained version" banner
               banner: 'none',
             },
