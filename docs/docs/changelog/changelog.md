@@ -10,9 +10,24 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+# 1.16
+
+<MarkerChangelogVersion versionZeebe="8.2.0" versionC7="not yet" />
+
+
+**Built-in functions:**
+
+* New built-in function [get value()](../reference/builtin-functions/feel-built-in-functions-context#get-valuecontext-keys) to access a context with a dynamic path
+* New built-in function [context put()](../reference/builtin-functions/feel-built-in-functions-context#context-putcontext-keys-value) to insert a nested value in a context
+* New built-in function [last day of month()](../reference/builtin-functions/feel-built-in-functions-temporal#last-day-of-monthdate) to get the last day of a month
+* New built-in function [date and time()](../reference/builtin-functions/feel-built-in-functions-conversion#date-and-timedate-timezone) to get a date-time for a timezone
+* New built-in function [random number()](../reference/builtin-functions/feel-built-in-functions-numeric#random-number) to get a random number
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.16.0).
+
 ## 1.15
 
-<MarkerChangelogVersion versionZeebe="8.1.0" versionC7="not yet" />
+<MarkerChangelogVersion versionZeebe="8.1.0" versionC7="7.19.0" />
 
 **Expressions:**
 

@@ -17,7 +17,7 @@ versions, can be found on the [GitHub release page](https://github.com/camunda/f
 
 ## 1.15
 
-<SinceVersion versionCloud="8.1.0" versionPlatform="not yet" />
+<SinceVersion versionCloud="8.1.0" versionPlatform="7.19.0" />
 
 **Expressions:**
 
