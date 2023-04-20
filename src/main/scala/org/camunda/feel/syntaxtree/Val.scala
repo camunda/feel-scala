@@ -185,14 +185,11 @@ case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
     val second = Option(value.getSeconds % 60).filterNot(_ == 0).map(_ + "S").getOrElse("")
 
     val stringBuilder = new StringBuilder("")
-    if (value.isNegative) {
-      stringBuilder.append("-")
-    }
     stringBuilder.append("P").append(day)
-    if (hour.nonEmpty || minute.nonEmpty || hour.nonEmpty) {
+    if (hour.nonEmpty || minute.nonEmpty || second.nonEmpty) {
       stringBuilder.append("T")
+      stringBuilder.append(hour).append(minute).append(second)
     }
-    stringBuilder.append(hour).append(minute).append(second)
     stringBuilder.toString()
   }
   override val properties: Map[String, Val] = Map(

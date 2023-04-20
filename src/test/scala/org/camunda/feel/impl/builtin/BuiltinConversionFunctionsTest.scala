@@ -211,7 +211,13 @@ class BuiltinConversionFunctionsTest
     eval(""" string(date and time("2012-12-25T11:00:00+02:00")) """) should be(
       ValString("2012-12-25T11:00:00+02:00"))
   }
+  it should "convert negative days-time-duration" in {
 
+    eval(""" string(@"-PT1S") """) should be(ValString("PT-1S"))
+    eval(""" string(@"-PT1H") """) should be(ValString("PT-1H"))
+    eval(""" string(@"-PT2M30S") """) should be(ValString("PT-2M-30S"))
+    eval(""" string(@"-P1DT2H3M4S") """) should be(ValString("P-1DT-2H-3M-4S"))
+  }
   it should "convert days-time-duration" in {
 
     eval(""" string(@"PT1H") """) should be(ValString("PT1H"))
