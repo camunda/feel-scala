@@ -179,18 +179,34 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
   override def toString: String = {
-    val day = Option(value.toDays).filterNot(_ == 0).map(_ + "D").getOrElse("")
-    val hour = Option(value.toHours % 24).filterNot(_ == 0).map(_ + "H").getOrElse("")
-    val minute = Option(value.toMinutes % 60).filterNot(_ == 0).map(_ + "M").getOrElse("")
-    val second = Option(value.getSeconds % 60).filterNot(_ == 0).map(_ + "S").getOrElse("")
+    def appendIfNotZero(l: Long, append: String): String =
+      if (l == 0) ""
+      else l + append
 
-    val stringBuilder = new StringBuilder("")
-    stringBuilder.append("P").append(day)
-    if (hour.nonEmpty || minute.nonEmpty || second.nonEmpty) {
-      stringBuilder.append("T")
-      stringBuilder.append(hour).append(minute).append(second)
+    val day = value.toDays
+    val hour = value.toHours % 24
+    val minute = value.toMinutes % 60
+    val second = value.getSeconds % 60
+
+    val signedNonZero = {
+      val components = List(day, hour, minute, second)
+      val t = if (components.tail.exists(_ != 0)) "T" else ""
+
+      if (components.forall(_ == 0)) None
+      else if (components.forall(_ <= 0)) Option("-P", -day, t, -hour, -minute, -second)
+      else Option("P", day, t, hour, minute, second)
     }
-    stringBuilder.toString()
+
+    signedNonZero
+      .map(a => (
+        a._1,
+        appendIfNotZero(a._2, "D"),
+        a._3,
+        appendIfNotZero(a._4, "H"),
+        appendIfNotZero(a._5, "M"),
+        appendIfNotZero(a._6, "S")
+      ).productIterator.mkString)
+      .getOrElse("PT0S")
   }
   override val properties: Map[String, Val] = Map(
     "days" -> ValNumber(value.toDays),
