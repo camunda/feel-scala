@@ -196,12 +196,12 @@ class BuiltinConversionFunctionsTest
       ValString("2012-12-25T11:00:00+02:00"))
   }
   it should "convert zero-length days-time-duration" in {
-    eval(""" string(@"-PT0S") """) should be(ValString("PT0S"))
-    eval(""" string(@"P0D") """) should be(ValString("PT0S"))
-    eval(""" string(@"PT0H") """) should be(ValString("PT0S"))
-    eval(""" string(@"PT0H0M") """) should be(ValString("PT0S"))
-    eval(""" string(@"PT0H0M0S") """) should be(ValString("PT0S"))
-    eval(""" string(@"P0DT0H0M0S") """) should be(ValString("PT0S"))
+    eval(""" string(@"-PT0S") """) should be(ValString("P0D"))
+    eval(""" string(@"P0D") """) should be(ValString("P0D"))
+    eval(""" string(@"PT0H") """) should be(ValString("P0D"))
+    eval(""" string(@"PT0H0M") """) should be(ValString("P0D"))
+    eval(""" string(@"PT0H0M0S") """) should be(ValString("P0D"))
+    eval(""" string(@"P0DT0H0M0S") """) should be(ValString("P0D"))
   }
   it should "convert negative days-time-duration" in {
 
