@@ -33,9 +33,9 @@ module.exports = {
           position: "left",
         },
         {
-          to: "docs/tutorial/",
-          activeBasePath: "docs/tutorial",
-          label: "Tutorial",
+          to: "docs/challenge/",
+          activeBasePath: "docs/challenge",
+          label: "Challenge",
           position: "left",
         },
         {
