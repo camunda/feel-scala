@@ -44,26 +44,32 @@ module.exports = {
         'reference/developer-guide/clock-spi'
       ],
     }],
-  "Samples": [
-    'samples/samples',
-    'samples/temporal-samples',
-    'samples/list-samples',
-    'samples/context-samples'
+  "Learn": [
+    'learn/learn',
+    {
+      "Samples": [
+        'learn/samples/temporal-samples',
+        'learn/samples/list-samples',
+        'learn/samples/context-samples'
+      ]
+    },
+    {
+      "Challenge": [
+        'learn/challenge/challenge',
+        'learn/challenge/chapter-1',
+        'learn/challenge/chapter-2',
+        'learn/challenge/chapter-3',
+        'learn/challenge/chapter-4',
+        'learn/challenge/chapter-5',
+        'learn/challenge/chapter-6',
+      ]
+    },
   ],
-  "Challenge": [
-    'challenge/challenge',
-    'challenge/chapter-1',
-    'challenge/chapter-2',
-    'challenge/chapter-3',
-    'challenge/chapter-4',
-    'challenge/chapter-5',
-    'challenge/chapter-6',
-   ],
   "Playground": [
     'playground/playground',
     'playground/repl',
   ],
   "Changelog": [
-      'changelog/changelog'
+    'changelog/changelog'
   ],
 };
