@@ -1,6 +1,6 @@
 ---
 id: temporal-samples
-title: Temporal Samples
+title: Temporal expressions
 ---
 
 ## Compare a Date with Offset
