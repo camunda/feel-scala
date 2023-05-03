@@ -37,6 +37,9 @@ const LiveFeel = ({
 
   function tryEvaluate() {
     try {
+      // to indicate the progress
+      setResult("<evaluating the expression...>");
+
       const parsedContext = parseContext();
       evaluate(parsedContext);
     } catch (err) {
