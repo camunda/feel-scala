@@ -73,7 +73,8 @@
     }
   ],
   "Playground": [
-    "playground/playground"
+    "playground/playground",
+    "playground/repl"
   ],
   "Changelog": [
     "changelog/changelog"
