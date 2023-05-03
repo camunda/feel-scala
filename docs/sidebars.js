@@ -50,25 +50,14 @@ module.exports = {
     'samples/list-samples',
     'samples/context-samples'
   ],
-  "Tutorial": [
-    'tutorial/tutorial',
-    {
-      "Tutorial 1: Numbers": [
-        'tutorial/tutorial-1-1',
-        'tutorial/tutorial-1-2',
-        'tutorial/tutorial-1-3'
-      ],
-      "Tutorial 2: Strings": [
-        'tutorial/tutorial-2-1'
-      ],
-      "Tutorial 3: Temporal": [
-        'tutorial/tutorial-3-1',
-        'tutorial/tutorial-3-2'
-      ],
-      "Tutorial 4: Lists": [
-         'tutorial/tutorial-4-1'
-      ],
-    },
+  "Challenge": [
+    'challenge/challenge',
+    'challenge/chapter-1',
+    'challenge/chapter-2',
+    'challenge/chapter-3',
+    'challenge/chapter-4',
+    'challenge/chapter-5',
+    'challenge/chapter-6',
    ],
   "Playground": [
     'playground/playground',
