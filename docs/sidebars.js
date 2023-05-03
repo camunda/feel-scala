@@ -72,6 +72,7 @@ module.exports = {
    ],
   "Playground": [
     'playground/playground',
+    'playground/repl',
   ],
   "Changelog": [
       'changelog/changelog'
