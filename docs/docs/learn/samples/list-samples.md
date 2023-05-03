@@ -1,6 +1,6 @@
 ---
 id: list-samples
-title: List Samples
+title: List expressions
 ---
 
 ## Filter a List and Return the First Element
