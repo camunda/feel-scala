@@ -67,7 +67,7 @@ const LiveFeelUnaryTests = ({
     axios
       .post(
         // "https://feel-service.camunda.com/process/start",
-          "http://34.160.251.253/api/v1/feel-unary-tests/evaluate",
+          "https://34.160.251.253/api/v1/feel-unary-tests/evaluate",
         {
           expression: expression,
           inputValue: parsedInputValue,

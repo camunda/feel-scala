@@ -55,7 +55,7 @@ const LiveFeel = ({
     axios
       .post(
         // "https://feel-service.camunda.com/process/start",
-          "http://34.160.251.253/api/v1/feel/evaluate",
+          "https://34.160.251.253/api/v1/feel/evaluate",
         {
           expression: expression,
           context: parsedContext,
