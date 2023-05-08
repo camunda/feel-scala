@@ -179,21 +179,32 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 
 case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
   override def toString: String = {
-    val day = Option(value.toDays).filterNot(_ == 0).map(_ + "D").getOrElse("")
-    val hour = Option(value.toHours % 24).filterNot(_ == 0).map(_ + "H").getOrElse("")
-    val minute = Option(value.toMinutes % 60).filterNot(_ == 0).map(_ + "M").getOrElse("")
-    val second = Option(value.getSeconds % 60).filterNot(_ == 0).map(_ + "S").getOrElse("")
+    def makeString(sign: String, day: Long, hour: Long, minute: Long, second: Long): String = {
+      val d = Option(day).filterNot(_ == 0).map(_ + "D").getOrElse("")
+      val h = Option(hour).filterNot(_ == 0).map(_ + "H").getOrElse("")
+      val m = Option(minute).filterNot(_ == 0).map(_ + "M").getOrElse("")
+      val s = Option(second).filterNot(_ == 0).map(_ + "S").getOrElse("")
 
-    val stringBuilder = new StringBuilder("")
-    if (value.isNegative) {
-      stringBuilder.append("-")
+      val stringBuilder = new StringBuilder("")
+      stringBuilder.append(sign).append("P").append(d)
+      if (h.nonEmpty || m.nonEmpty || s.nonEmpty) {
+        stringBuilder.append("T")
+        stringBuilder.append(h).append(m).append(s)
+      }
+      stringBuilder.toString()
     }
-    stringBuilder.append("P").append(day)
-    if (hour.nonEmpty || minute.nonEmpty || hour.nonEmpty) {
-      stringBuilder.append("T")
-    }
-    stringBuilder.append(hour).append(minute).append(second)
-    stringBuilder.toString()
+
+    val day = value.toDays
+    val hour = value.toHours % 24
+    val minute = value.toMinutes % 60
+    val second = value.getSeconds % 60
+
+    if (day == 0 && hour == 0 && minute == 0 && second == 0)
+      "P0D"
+    else if (day <= 0 && hour <= 0 && minute <= 0 && second <= 0)
+      makeString("-", -day, -hour, -minute, -second)
+    else
+      makeString("", day, hour, minute, second)
   }
   override val properties: Map[String, Val] = Map(
     "days" -> ValNumber(value.toDays),
