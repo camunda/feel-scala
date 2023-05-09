@@ -46,34 +46,30 @@
       ]
     }
   ],
-  "Samples": [
-    "samples/samples",
-    "samples/temporal-samples",
-    "samples/list-samples",
-    "samples/context-samples"
-  ],
-  "Tutorial": [
-    "tutorial/tutorial",
+  "Learn": [
+    "learn/learn",
     {
-      "Tutorial 1: Numbers": [
-        "tutorial/tutorial-1-1",
-        "tutorial/tutorial-1-2",
-        "tutorial/tutorial-1-3"
-      ],
-      "Tutorial 2: Strings": [
-        "tutorial/tutorial-2-1"
-      ],
-      "Tutorial 3: Temporal": [
-        "tutorial/tutorial-3-1",
-        "tutorial/tutorial-3-2"
-      ],
-      "Tutorial 4: Lists": [
-        "tutorial/tutorial-4-1"
+      "Samples": [
+        "learn/samples/temporal-samples",
+        "learn/samples/list-samples",
+        "learn/samples/context-samples"
+      ]
+    },
+    {
+      "Challenge": [
+        "learn/challenge/challenge",
+        "learn/challenge/chapter-1",
+        "learn/challenge/chapter-2",
+        "learn/challenge/chapter-3",
+        "learn/challenge/chapter-4",
+        "learn/challenge/chapter-5",
+        "learn/challenge/chapter-6"
       ]
     }
   ],
   "Playground": [
-    "playground/playground"
+    "playground/playground",
+    "playground/repl"
   ],
   "Changelog": [
     "changelog/changelog"

@@ -27,15 +27,9 @@ module.exports = {
         {
           // type: 'doc',
           // docId: 'samples/samples',
-          to: "docs/samples/",
-          activeBasePath: "docs/samples",
-          label: "Samples",
-          position: "left",
-        },
-        {
-          to: "docs/tutorial/",
-          activeBasePath: "docs/tutorial",
-          label: "Tutorial",
+          to: "docs/learn/",
+          activeBasePath: "docs/learn",
+          label: "Learn",
           position: "left",
         },
         {

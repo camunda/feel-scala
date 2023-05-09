@@ -1,23 +1,54 @@
 ---
 id: playground
-title: Playground for FEEL expressions
+title: FEEL Playground (online)
 ---
 
 import LiveFeel from "@site/src/components/LiveFeel";
+import LiveFeelUnaryTests from "@site/src/components/LiveFeelUnaryTests";
+import FeelPlaygroundVersion from "@site/src/components/FeelPlaygroundVersion";
 import dedent from "dedent";
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-:::danger Work in progress
-The playground is created as part of our Camunda Summer Hack Days project 2022.
-
-It may be broken. But stay tuned for updates!
-:::
+# FEEL Playground
 
 Use the interactive editor below to evaluate
 [FEEL expressions](/docs/reference/language-guide/feel-expressions-introduction.md).
 
-<LiveFeel
-  defaultExpression={dedent`
+<Tabs>
+  <TabItem value="expression" label="Expression" default>
+    <LiveFeel
+        defaultExpression={dedent`
       3 + x`}
-  feelContext='{"x": 5}'
-  metadata={{ page: "tutorial-playground" }}
-/>
+        feelContext='{"x": 5}'
+        metadata={{ page: "tutorial-playground" }}
+    />
+  </TabItem>
+
+  <TabItem value="unary-tests" label="Unary-tests">
+    <LiveFeelUnaryTests
+        defaultExpression={dedent`
+      < x`}
+        feelInputValue='3'
+        feelContext='{"x": 5}'
+        metadata={{ page: "tutorial-playground" }}
+    />
+  </TabItem>
+</Tabs>
+
+
+
+
+## About
+
+:::info Work in progress
+
+The playground is under construction. :construction: Stay tuned for updates!
+
+:::
+
+The playground uses the FEEL engine in the version <FeelPlaygroundVersion />.
+
+If the playground is broken, please report the failure
+[here](https://github.com/camunda-community-hub/feel-scala-playground/issues).
+
