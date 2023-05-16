@@ -171,6 +171,28 @@ case class ValDateTime(value: DateTime) extends Val {
 }
 
 case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
+
+  override def toString: String = {
+    def makeString(sign: String, year: Long, month: Long): String = {
+      val y = Option(year).filterNot(_ == 0).map(_ + "Y").getOrElse("")
+      val m = Option(month).filterNot(_ == 0).map(_ + "M").getOrElse("")
+
+      val stringBuilder = new StringBuilder("")
+      stringBuilder.append(sign).append("P").append(y).append(m)
+      stringBuilder.toString()
+    }
+
+    val year = value.getYears
+    val month = value.getMonths % 12
+
+    if (year == 0 && month == 0)
+      "P0Y"
+    else if (year <= 0 && month <= 0)
+      makeString("-", -year, -month)
+    else
+      makeString("", year, month)
+  }
+
   override val properties: Map[String, Val] = Map(
     "years" -> ValNumber(value.getYears),
     "months" -> ValNumber(value.getMonths)

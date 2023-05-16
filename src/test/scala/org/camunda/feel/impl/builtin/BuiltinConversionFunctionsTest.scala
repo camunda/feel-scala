@@ -233,6 +233,18 @@ class BuiltinConversionFunctionsTest
     eval(""" string(@"P1DT2H3M4S") """) should be(ValString("P1DT2H3M4S"))
   }
 
+  it should "convert zero-length years-months-duration" in {
+
+    eval(""" string(@"P0Y") """) should be(ValString("P0Y"))
+    eval(""" string(@"-P0M") """) should be(ValString("P0Y"))
+    eval(""" string(@"P0Y0M") """) should be(ValString("P0Y"))
+  }
+  it should "convert negative years-months-duration" in {
+
+    eval(""" string(@"-P1Y") """) should be(ValString("-P1Y"))
+    eval(""" string(@"-P5M") """) should be(ValString("-P5M"))
+    eval(""" string(@"-P3Y1M") """) should be(ValString("-P3Y1M"))
+  }
   it should "convert years-months-duration" in {
 
     eval(""" string(@"P1Y") """) should be(ValString("P1Y"))
