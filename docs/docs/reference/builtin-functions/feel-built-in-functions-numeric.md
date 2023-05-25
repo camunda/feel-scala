@@ -100,26 +100,6 @@ ceiling(-1.56, 1)
 // -1.5
 ```
 
-## round up(n)
-
-Rounds the given value with the rounding mode round-up.
-
-**Function signature**
-
-```js
-round up(n: number): number
-```
-
-**Examples**
-
-```js
-round up(5.5) 
-// 6
-
-round up(-5.5)
-// -6
-```
-
 ## round up(n, scale)
 
 Rounds the given value with the rounding mode round-up at the given scale.
@@ -133,10 +113,10 @@ round up(n: number, scale: number): number
 **Examples**
 
 ```js
-round up(5.5) 
+round up(5.5, 0) 
 // 6
 
-round up(-5.5)
+round up(-5.5, 0)
 // -6
 
 round up(1.121, 2)
@@ -144,25 +124,6 @@ round up(1.121, 2)
 
 round up(-1.126, 2)
 // -1.13
-```
-## round down(n)
-
-Rounds the given value with the rounding mode round-down.
-
-**Function signature**
-
-```js
-round down(n: number): number
-```
-
-**Examples**
-
-```js
-round down(5.5)
-// 5
-
-round down (-5.5)
-// -5
 ```
 
 ## round down(n, scale)
@@ -178,31 +139,17 @@ round down(n: number, scale: number): number
 **Examples**
 
 ```js
+round down(5.5, 0)
+// 5
+
+round down (-5.5, 0)
+// -5
+
 round down (1.121, 2)
 // 1.12
 
 round down (-1.126, 2)
 // -1.12
-```
-
-## round half up(n)
-
-Rounds the given value with the rounding mode round-half-up.
-
-**Function signature**
-
-```js
-round half up(n: number): number
-```
-
-**Examples**
-
-```js
-round half up(5.5) 
-// 6
-
-round half up(-5.5)
-// -6
 ```
 
 ## round half up(n, scale)
@@ -218,31 +165,17 @@ round half up(n: number, scale: number): number
 **Examples**
 
 ```js
+round half up(5.5, 0)
+// 6
+
+round half up(-5.5, 0)
+// -6
+
 round half up(1.121, 2) 
 // 1.12
 
 round half up(-1.126, 2)
 // -1.13
-```
-
-## round half down(n)
-
-Rounds the given value with the rounding mode round-half-down.
-
-**Function signature**
-
-```js
-round half down(n: number): number
-```
-
-**Examples**
-
-```js
-round half down (5.5)
-// 5
-
-round half down (-5.5)
-// -5
 ```
 
 ## round half down(n, scale)
@@ -258,6 +191,12 @@ round half down(n: number, scale: number): number
 **Examples**
 
 ```js
+round half down (5.5, 0)
+// 5
+
+round half down (-5.5, 0)
+// -5
+
 round half down (1.121, 2)
 // 1.12
 

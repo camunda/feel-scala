@@ -68,14 +68,14 @@ Round the given number at the given scale using the round-up rounding mode.
 
 * parameters:
   * `n`: number
-  *  (optional) `scale`: number (default: `0`)
+  * `scale`: number 
 * result: number
 
 ```js
-round up(5.5) 
+round up(5.5, 0) 
 // 6
 
-round up(-5.5)
+round up(-5.5, 0)
 // -6
 
 round up(1.121, 2)
@@ -91,14 +91,14 @@ Round the given number at the given scale using the round-down rounding mode.
 
 * parameters:
   * `n`: number
-  *  (optional) `scale`: number (default: `0`)
+  * `scale`: number
 * result: number
 
 ```js
-round down(5.5)
+round down(5.5, 0)
 // 5
 
-round down (-5.5)
+round down (-5.5, 0)
 // -5
 
 round down (1.121, 2)
@@ -114,14 +114,14 @@ Round the given number at the given scale using the round-half-up rounding mode.
 
 * parameters:
   * `n`: number
-  *  (optional) `scale`: number (default: `0`)
+  * `scale`: number 
 * result: number
 
 ```js
-round half up(5.5) 
+round half up(5.5, 0) 
 // 6
 
-round half up(-5.5)
+round half up(-5.5, 0)
 // -6
 
 round half up(1.121, 2) 
@@ -137,14 +137,14 @@ Round the given number at the given scale using the round-half-down rounding mod
 
 -parameters:
   - `n`: number
-  -(optional) `scale`: number (default: `0`)
+  - `scale`: number
 - result: number
 
 ```js
-round half down (5.5)
+round half down (5.5, 0)
 // 5
 
-round half down (-5.5)
+round half down (-5.5, 0)
 // -5
 
 round half down (1.121, 2)
