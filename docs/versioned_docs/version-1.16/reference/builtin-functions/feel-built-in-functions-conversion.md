@@ -65,7 +65,7 @@ context(entries: list<context>): context
 
 ```js
 context([{"key":"a", "value":1}, {"key":"b", "value":2}])
-// {a:1, b:2}
+// {"a":1, "b":2}
 ```
 
 

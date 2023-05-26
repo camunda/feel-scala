@@ -132,5 +132,5 @@ Returns `null` if one of the entries is not a context or if a context doesn't co
 
 ```js
 context([{"key":"a", "value":1}, {"key":"b", "value":2}])
-// {a:1, b:2}
+// {"a":1, "b":2}
 ```

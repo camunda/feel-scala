@@ -227,20 +227,20 @@ finishes([5..10], [1..10))
 - result: boolean
 
 ```js
-finishes by([5..10], 10)
+finished by([5..10], 10)
 // true
 
-finishes by([3..4], 2)
+finished by([3..4], 2)
 // false
 
-finishes by([3..5], [1..5])
+finished by([1..5], [3..5])
 // true
 
-finishes by((5..8], [1..5))
+finished by((5..8], [1..5))
 // false
 
-finishes by([5..10], (1..10))
-// true
+finished by([5..10], (1..10))
+// false
 ```
 
 ## includes()
@@ -308,10 +308,10 @@ starts(1, (1..8])
 starts((1..5], [1..5])
 // false
 
-starts([1..10], [1..10])
-// true
+starts([1..10], [1..5])
+// false
 
-starts((1..10), (1..10))
+starts((1..5), (1..10))
 // true
 ```
 

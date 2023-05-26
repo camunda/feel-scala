@@ -236,10 +236,10 @@ The parameter `list` can be passed as a list or as a sequence of elements.
 **Examples**
 
 ```js
-and([true,false])
+all([true,false])
 // false
 
-and(false,null,true)
+all(false,null,true)
 // false
 ```
 
@@ -265,10 +265,10 @@ The parameter `list` can be passed as a list or as a sequence of elements.
 **Examples**
 
 ```js
-or([false,true])
+any([false,true])
 // true
 
-or(false,null,true)
+any(false,null,true)
 // true
 ```
 
@@ -372,7 +372,7 @@ The `position` starts at the index `1`. The last position is `-1`.
 
 ```js
 insert before([1,3],1,2) 
-// [1,2,3]
+// [2,1,3]
 ```
 
 ## remove(list, position)
