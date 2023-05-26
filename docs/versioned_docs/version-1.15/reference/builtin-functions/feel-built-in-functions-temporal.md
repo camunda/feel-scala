@@ -69,7 +69,7 @@ week of year(date("2019-09-17"))
 
 ## month of year()
 
-Returns the month of the week according to the Gregorian calendar. Note that it always returns the English name of the month.
+Returns the month of the year according to the Gregorian calendar. Note that it always returns the English name of the month.
 
 - parameters:
   - `date`: date/date-time

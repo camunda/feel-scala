@@ -277,7 +277,7 @@ log(10)
 
 ## exp(number)
 
-Returns the Euler’s number e raised to the power of the given number .
+Returns the Euler’s number e raised to the power of the given number.
 
 **Function signature**
 
