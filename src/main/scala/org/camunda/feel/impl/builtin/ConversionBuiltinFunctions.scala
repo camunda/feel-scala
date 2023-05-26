@@ -237,7 +237,7 @@ object ConversionBuiltinFunctions {
           .replaceAll("$1$3")
         ValString(dateTimeWithOffsetOrZoneId)
       }
-      case List(ValYearMonthDuration(from)) => ValString(from.toString)
+      case List(duration: ValYearMonthDuration) => ValString(duration.toString)
       case List(duration: ValDayTimeDuration)   => ValString(duration.toString)
     }
   )
