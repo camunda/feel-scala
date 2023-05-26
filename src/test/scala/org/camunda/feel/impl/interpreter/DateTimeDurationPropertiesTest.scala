@@ -306,7 +306,7 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValYearMonthDuration(P2Y3M)'. Available properties:")
+      "No property found with name 'x' of value 'P2Y3M'. Available properties:")
   }
 
   it should "has properties with @-notation" in {
