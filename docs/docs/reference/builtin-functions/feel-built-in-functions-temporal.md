@@ -59,6 +59,9 @@ day of week(date: date and time): string
 ```js
 day of week(date("2019-09-17"))
 // "Tuesday"
+
+day of week(date and time("2019-09-17T12:00:00"))
+// "Tuesday"
 ```
 
 ## day of year(date)
@@ -79,6 +82,9 @@ day of year(date: date and time): number
 
 ```js
 day of year(date("2019-09-17"))
+// 260
+
+day of year(date and time("2019-09-17T12:00:00"))
 // 260
 ```
 
@@ -101,11 +107,14 @@ week of year(date: date and time): number
 ```js
 week of year(date("2019-09-17"))
 // 38
+
+week of year(date and time("2019-09-17T12:00:00"))
+// 38
 ```
 
 ## month of year(date)
 
-Returns the month of the week according to the Gregorian calendar. Note that it always returns the English name of the month.
+Returns the month of the year according to the Gregorian calendar. Note that it always returns the English name of the month.
 
 **Function signature**
 
@@ -121,6 +130,9 @@ month of year(date: date and time): string
 
 ```js
 month of year(date("2019-09-17"))
+// "September"
+
+month of year(date and time("2019-09-17T12:00:00"))
 // "September"
 ```
 
