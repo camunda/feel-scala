@@ -28,6 +28,8 @@ get value({a: 1}, "b")
 
 ## get value(context, keys)
 
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
 Returns the value of the context entry for a context path defined by the given keys.
 
 If `keys` contains the keys `[k1, k2]` then it returns the value at the nested entry `k1.k2` of the context.
