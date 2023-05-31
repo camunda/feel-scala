@@ -60,6 +60,16 @@ class BuiltinContextFunctionsTest
     eval(""" get entries({}) """) should be(ValList(List()))
   }
 
+  it should "return all entries in the same order as in the context" in {
+    eval("get entries({a: 1, b: 2, c: 3}).key") should be(ValList(
+      List(ValString("a"), ValString("b"), ValString("c"))
+    ))
+
+    eval("""get entries({a: "foo", b: "bar"}).key""") should be(ValList(
+      List(ValString("a"), ValString("b"))
+    ))
+  }
+
   "A get value function" should "return the value" in {
     eval(""" get value({foo: 123}, "foo") """) should be(ValNumber(123))
   }
@@ -144,6 +154,14 @@ class BuiltinContextFunctionsTest
       ))
   }
 
+  it should "add a new entry at the end of the context" in {
+    eval(""" get entries(context put({a: 1, b: 2, c: 3}, "d", 4)).key """) should be(
+      ValList(
+        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
+      )
+    )
+  }
+
   it should "override an entry of an existing context" in {
 
     eval(""" context put({x:1}, "x", 2) """) should be(
@@ -153,8 +171,10 @@ class BuiltinContextFunctionsTest
   }
 
   it should "override an entry and keep the original order" in {
-    eval(""" context put({x:1, y:0, z:0}, "y", 2) = {x:1, y:2, z:0} """) should be (
-      ValBoolean(true)
+    eval(""" get entries(context put({a: 1, b: 2, c: 3}, "b", 20)).key """) should be(
+      ValList(
+        List(ValString("a"), ValString("b"), ValString("c"))
+      )
     )
   }
 
@@ -175,7 +195,7 @@ class BuiltinContextFunctionsTest
     )
   }
 
-  it should "add an a context entry with list argument" in {
+  it should "add a context entry with list argument" in {
     eval(""" context put({x:1}, ["y"], 2) = {x:1, y:2} """) should be (
       ValBoolean(true)
     )
@@ -286,6 +306,14 @@ class BuiltinContextFunctionsTest
       ))
   }
 
+  it should "add all entries at the end of the context" in {
+    eval(" get entries(context merge({a: 1, b: 2}, {c: 3, d: 4})).key ") should be(
+      ValList(
+        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
+      )
+    )
+  }
+
   it should "override an entry of the existing context" in {
 
     eval(""" context merge({x:1}, {x:2}) """) should be(
@@ -301,6 +329,14 @@ class BuiltinContextFunctionsTest
         StaticContext(variables =
           Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2)))
       ))
+  }
+
+  it should "override entries and keep the original order" in {
+    eval(" get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key ") should be(
+      ValList(
+        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
+      )
+    )
   }
 
   it should "combine three contexts" in {
@@ -392,6 +428,17 @@ class BuiltinContextFunctionsTest
 
     eval(""" context([{"key":"a", "value": {x:1} }]) = {a: {x:1}} """) should be(
       ValBoolean(true))
+  }
+
+  it should "return a context with the same order as the given entries" in {
+    eval(
+      """get entries(context([
+         {"key":"a","value":1},
+         {"key":"b","value":2},
+         {"key":"c","value":3}
+         ])).key""") should be(
+      ValList(List(ValString("a"), ValString("b"), ValString("c")))
+    )
   }
 
   it should "override entries in order" in {
