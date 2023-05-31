@@ -92,26 +92,26 @@ jobs:
           && sudo apt update \
           && sudo apt install gh -y     
 
-      - uses: s4u/maven-settings-action@v2.8.0
-        with:
-          servers: |
-            [{
-                "id": "camunda-nexus",
-                "username": "${{ steps.secrets.outputs.ARTIFACTS_USR }}",
-                "password": "${{ steps.secrets.outputs.ARTIFACTS_PSW }}"
-            },
-            {
-                "id": "central",
-                "username": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_USR }}",
-                "password": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_PSW }}"
-            }]
-          mirrors: |
-            [{
-                "id": "camunda-nexus",
-                "name": "Camunda Nexus",
-                "mirrorOf": "camunda-nexus",
-                "url": "https://repository.nexus.camunda.cloud/content/groups/internal/"
-            }]
+#      - uses: s4u/maven-settings-action@v2.8.0
+#        with:
+#          servers: |
+#            [{
+#                "id": "camunda-nexus",
+#                "username": "${{ steps.secrets.outputs.ARTIFACTS_USR }}",
+#                "password": "${{ steps.secrets.outputs.ARTIFACTS_PSW }}"
+#            },
+#            {
+#                "id": "central",
+#                "username": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_USR }}",
+#                "password": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_PSW }}"
+#            }]
+#          mirrors: |
+#            [{
+#                "id": "camunda-nexus",
+#                "name": "Camunda Nexus",
+#                "mirrorOf": "camunda-nexus",
+#                "url": "https://repository.nexus.camunda.cloud/content/groups/internal/"
+#            }]
 
       - name: Set up Java environment
         uses: actions/setup-java@v3
