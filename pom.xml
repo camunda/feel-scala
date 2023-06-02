@@ -16,7 +16,7 @@
 
   <properties>
     <version.java>1.8</version.java>
-    <scala.version>2.13.10</scala.version>
+    <scala.version>2.13.11</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.20.0</version.log4j>
     <plugin.version.shade>3.4.1</plugin.version.shade>
