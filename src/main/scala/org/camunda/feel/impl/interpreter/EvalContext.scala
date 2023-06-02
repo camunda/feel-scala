@@ -68,7 +68,7 @@ class EvalContext(val valueMapper: ValueMapper,
   )
 
   def merge(otherContext: Context): EvalContext = {
-    val wrappedContext = wrap(otherContext)(valueMapper)
+    val wrappedContext = wrap(otherContext, valueMapper)
     merge(wrappedContext)
   }
 
@@ -119,7 +119,7 @@ object EvalContext {
     functionProvider = functionProvider
   )
 
-  def wrap(context: Context)(implicit valueMapper: ValueMapper): EvalContext =
+  def wrap(context: Context, valueMapper: ValueMapper): EvalContext =
     context match {
       case evalContext: EvalContext => evalContext
       case EmptyContext => empty(valueMapper)

@@ -294,7 +294,7 @@ class FeelInterpreter {
           eval(path),
           c =>
             withFunction(
-              findFunction(EvalContext.wrap(c.context)(context.valueMapper),
+              findFunction(EvalContext.wrap(c.context, context.valueMapper),
                            name,
                            params),
               f => invokeFunction(f, params)))
@@ -1014,7 +1014,7 @@ class FeelInterpreter {
   private def path(v: Val, key: String)(implicit context: EvalContext): Val =
     v match {
       case ctx: ValContext =>
-        EvalContext.wrap(ctx.context)(context.valueMapper).variable(key) match {
+        EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
             ValError(s"context contains no entry with key '$key'")
           case x: Val => x
