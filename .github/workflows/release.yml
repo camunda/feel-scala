@@ -1,6 +1,7 @@
 name: Release Workflow
 on:
   workflow_call:
+  workflow_dispatch:
     inputs:
       releaseBranch:
         description: 'The branch to perform the release on, defaults to `main`'
