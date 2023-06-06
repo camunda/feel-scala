@@ -24,7 +24,7 @@ import org.camunda.feel.impl.interpreter.EvalContext.{mergeFunctionProviders, me
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
 
-import scala.collection.immutable.SortedMap
+import scala.collection.immutable.SeqMap
 
 class EvalContext(val valueMapper: ValueMapper,
                   val variableProvider: VariableProvider,
@@ -162,9 +162,9 @@ object EvalContext {
   }
 
   private def toSortedVariableProvider(variables: Map[String, Any]): VariableProvider =
-    StaticVariableProvider(SortedMap[String, Any]() ++ variables)
+    StaticVariableProvider(SeqMap[String, Any]() ++ variables)
 
   private def toSortedVariableProvider(entry: (String, Any)): VariableProvider =
-    StaticVariableProvider(SortedMap(entry))
+    StaticVariableProvider(SeqMap(entry))
 
 }

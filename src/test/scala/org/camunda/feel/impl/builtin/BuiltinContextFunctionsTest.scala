@@ -68,6 +68,10 @@ class BuiltinContextFunctionsTest
     eval("""get entries({a: "foo", b: "bar"}).key""") should be(ValList(
       List(ValString("a"), ValString("b"))
     ))
+
+    eval("get entries({c: 1, b: 2, a: 3}).key") should be(ValList(
+      List(ValString("c"), ValString("b"), ValString("a"))
+    ))
   }
 
   "A get value function" should "return the value" in {
@@ -160,6 +164,12 @@ class BuiltinContextFunctionsTest
         List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
       )
     )
+
+    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "d", 4)).key """) should be(
+      ValList(
+        List(ValString("c"), ValString("b"), ValString("a"), ValString("d"))
+      )
+    )
   }
 
   it should "override an entry of an existing context" in {
@@ -174,6 +184,18 @@ class BuiltinContextFunctionsTest
     eval(""" get entries(context put({a: 1, b: 2, c: 3}, "b", 20)).key """) should be(
       ValList(
         List(ValString("a"), ValString("b"), ValString("c"))
+      )
+    )
+
+    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "c", 10)).key """) should be(
+      ValList(
+        List(ValString("c"), ValString("b"), ValString("a"))
+      )
+    )
+
+    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "a", 30)).key """) should be(
+      ValList(
+        List(ValString("c"), ValString("b"), ValString("a"))
       )
     )
   }
@@ -312,6 +334,12 @@ class BuiltinContextFunctionsTest
         List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
       )
     )
+
+    eval(" get entries(context merge({d: 1, c: 2}, {b: 3, a: 4})).key ") should be(
+      ValList(
+        List(ValString("d"), ValString("c"), ValString("b"), ValString("a"))
+      )
+    )
   }
 
   it should "override an entry of the existing context" in {
@@ -335,6 +363,12 @@ class BuiltinContextFunctionsTest
     eval(" get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key ") should be(
       ValList(
         List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
+      )
+    )
+
+    eval(" get entries(context merge({c: 1, b: 2, a: 3}, {b: 20, d: 4})).key ") should be(
+      ValList(
+        List(ValString("c"), ValString("b"), ValString("a"), ValString("d"))
       )
     )
   }
@@ -438,6 +472,15 @@ class BuiltinContextFunctionsTest
          {"key":"c","value":3}
          ])).key""") should be(
       ValList(List(ValString("a"), ValString("b"), ValString("c")))
+    )
+
+    eval(
+      """get entries(context([
+         {"key":"c","value":1},
+         {"key":"b","value":2},
+         {"key":"a","value":3}
+         ])).key""") should be(
+      ValList(List(ValString("c"), ValString("b"), ValString("a")))
     )
   }
 
