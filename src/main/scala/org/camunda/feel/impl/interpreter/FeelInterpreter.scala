@@ -141,10 +141,10 @@ class FeelInterpreter {
 
       case ConstContext(entries) =>
         foldEither[(String, Exp), EvalContext](
-          EvalContext.wrap(Context.EmptyContext)(context.valueMapper),
+          EvalContext.empty(context.valueMapper),
           entries, {
             case (ctx, (key, value)) =>
-              eval(value)(context + ctx).toEither.map(v => ctx + (key -> v))
+              eval(value)(context.merge(ctx)).toEither.map(v => ctx.add(key -> v))
           },
           ValContext
         )
@@ -212,7 +212,7 @@ class FeelInterpreter {
                                eval(elseStatement)
                            })
       case In(x, test) =>
-        withVal(eval(x), x => eval(test)(context + (inputKey -> x)))
+        withVal(eval(x), x => eval(test)(context.add(inputKey -> x)))
       case InstanceOf(x, typeName) =>
         withVal(eval(x), x => {
           typeName match {
@@ -233,13 +233,13 @@ class FeelInterpreter {
         withCartesianProduct(
           iterators,
           p =>
-            atLeastOne(p.map(vars => () => eval(condition)(context ++ vars)),
+            atLeastOne(p.map(vars => () => eval(condition)(context.addAll(vars))),
                        ValBoolean))
       case EveryItem(iterators, condition) =>
         withCartesianProduct(
           iterators,
           p =>
-            all(p.map(vars => () => eval(condition)(context ++ vars)),
+            all(p.map(vars => () => eval(condition)(context.addAll(vars))),
                 ValBoolean))
       case For(iterators, exp) =>
         withCartesianProduct(
@@ -247,7 +247,7 @@ class FeelInterpreter {
           p =>
             ValList((List[Val]() /: p) {
               case (partial, vars) => {
-                val iterationContext = context ++ vars + ("partial" -> partial)
+                val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
                 val value = eval(exp)(iterationContext)
                 partial ++ (value :: Nil)
               }
@@ -294,7 +294,7 @@ class FeelInterpreter {
           eval(path),
           c =>
             withFunction(
-              findFunction(EvalContext.wrap(c.context)(context.valueMapper),
+              findFunction(EvalContext.wrap(c.context, context.valueMapper),
                            name,
                            params),
               f => invokeFunction(f, params)))
@@ -309,7 +309,7 @@ class FeelInterpreter {
                                    arguments,
                                    paramValues,
                                    context.valueMapper)
-              case _ => eval(body)(context ++ (params zip paramValues).toMap)
+              case _ => eval(body)(context.addAll((params zip paramValues).toMap))
           }
         )
 
@@ -996,8 +996,8 @@ class FeelInterpreter {
   private def filterContext(x: Val)(
       implicit context: EvalContext): EvalContext =
     x match {
-      case ValContext(ctx: Context) => context + ("item" -> x) + ctx
-      case v                        => context + ("item" -> v)
+      case ValContext(ctx: Context) => context.add("item" -> x).merge(ctx)
+      case v                        => context.add("item" -> v)
     }
 
   private def ref(x: Val, names: List[String])(
@@ -1014,7 +1014,7 @@ class FeelInterpreter {
   private def path(v: Val, key: String)(implicit context: EvalContext): Val =
     v match {
       case ctx: ValContext =>
-        EvalContext.wrap(ctx.context)(context.valueMapper).variable(key) match {
+        EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
             ValError(s"context contains no entry with key '$key'")
           case x: Val => x
