@@ -63,7 +63,7 @@ trait FeelIntegrationTest {
 
     FeelParser.parseExpression(expression) match {
       case Parsed.Success(exp, _) =>
-        interpreter.eval(exp)(rootContext + context)
+        interpreter.eval(exp)(rootContext.merge(context))
       case Parsed.Failure(_, _, extra) => {
         ValError(
           s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
@@ -75,7 +75,11 @@ trait FeelIntegrationTest {
                      expression: String,
                      variables: Map[String, Any] = Map()): Val = {
 
-    val ctx = rootContext ++ variables + (UnaryTests.defaultInputVariable -> input)
+    val inputEntry = UnaryTests.defaultInputVariable -> input
+    val variableValues = (variables + inputEntry).map{ case (key,value) =>
+      key -> rootContext.valueMapper.toVal(value)
+    }
+    val ctx = rootContext.addAll(variableValues)
 
     FeelParser.parseUnaryTests(expression) match {
       case Parsed.Success(exp, _) => interpreter.eval(exp)(ctx)
@@ -86,9 +90,11 @@ trait FeelIntegrationTest {
   }
 
   val rootContext: EvalContext = EvalContext.wrap(
-    Context.StaticContext(variables = Map.empty,
-                          functions = new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions)
-  )(ValueMapper.defaultValueMapper)
+    Context.StaticContext(
+      variables = Map.empty,
+      functions = new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions),
+    ValueMapper.defaultValueMapper
+  )
 
   def withClock(testCode: TimeTravelClock => Any): Unit = {
     try {

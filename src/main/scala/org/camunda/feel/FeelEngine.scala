@@ -124,11 +124,12 @@ class FeelEngine(
       s"configuration: $configuration]"
   )
 
-  private val rootContext: EvalContext = new EvalContext(
+  private val rootContext: EvalContext = EvalContext.create(
     valueMapper = valueMapper,
-    variableProvider = VariableProvider.EmptyVariableProvider,
-    functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(new BuiltinFunctions(clock, valueMapper), functionProvider))
+    functionProvider = FunctionProvider.CompositeFunctionProvider(List(
+      new BuiltinFunctions(clock, valueMapper),
+      functionProvider
+    ))
   )
 
   def evalExpression(
@@ -201,7 +202,7 @@ class FeelEngine(
 
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
     Try {
-      validate(exp).flatMap(_ => eval(exp, rootContext + context))
+      validate(exp).flatMap(_ => eval(exp, rootContext.merge(context)))
     }.recover(failure =>
         Left(
           Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
