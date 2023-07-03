@@ -19,7 +19,7 @@
     <scala.version>2.13.11</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.20.0</version.log4j>
-    <plugin.version.shade>3.4.1</plugin.version.shade>
+    <plugin.version.shade>3.5.0</plugin.version.shade>
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
