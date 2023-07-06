@@ -17,20 +17,11 @@
 package org.camunda.feel
 
 import fastparse.Parsed
-import org.camunda.feel.FeelEngine.{
-  Configuration,
-  EvalExpressionResult,
-  EvalUnaryTestsResult,
-  Failure
-}
+import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, EvaluationResult, FailedEvaluationResult, Failure, SuccessfulEvaluationResult}
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
-import org.camunda.feel.impl.interpreter.{
-  BuiltinFunctions,
-  EvalContext,
-  FeelInterpreter
-}
+import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, EvaluationFailure, EvaluationFailureCollector, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
-import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
+import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, Val, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
@@ -40,6 +31,36 @@ object FeelEngine {
 
   type EvalExpressionResult = Either[Failure, Any]
   type EvalUnaryTestsResult = Either[Failure, Boolean]
+
+  sealed trait EvaluationResult {
+    val result: Any
+    val failure: Failure
+    val isSuccess: Boolean
+    val suppressedFailures: List[EvaluationFailure]
+
+    val isFailure: Boolean = !isSuccess
+    val hasSuppressedFailures: Boolean = suppressedFailures.nonEmpty
+
+    def toEither: Either[Failure, Any] =
+      if (isSuccess) Right(result)
+      else Left(failure)
+
+  }
+
+  case class SuccessfulEvaluationResult(
+                                         result: Any,
+                                         suppressedFailures: List[EvaluationFailure] = List.empty) extends EvaluationResult {
+    override val isSuccess: Boolean = true
+    override val failure: Failure = Failure("<success>")
+  }
+
+  case class FailedEvaluationResult(
+                                     failure: Failure,
+                                     suppressedFailures: List[EvaluationFailure] = List.empty
+                                   ) extends EvaluationResult {
+    override val isSuccess: Boolean = false
+    override val result: Any = failure
+  }
 
   case class Configuration(externalFunctionsEnabled: Boolean = false)
 
@@ -202,18 +223,57 @@ class FeelEngine(
 
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
     Try {
-      validate(exp).flatMap(_ => eval(exp, rootContext.merge(context)))
+      // todo: we need a new context for the failure collector
+      val rootContext = EvalContext.create(
+        valueMapper = valueMapper,
+        functionProvider = FunctionProvider.CompositeFunctionProvider(List(
+          new BuiltinFunctions(clock, valueMapper),
+          functionProvider
+        ))
+      )
+
+      validate(exp).flatMap(_ => eval(exp, rootContext.merge(context)).toEither)
     }.recover(failure =>
         Left(
           Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
       .get
 
+  def evaluate(exp: ParsedExpression, context: Context): EvaluationResult =
+    Try {
+      // todo: we need a new context for the failure collector
+      val rootContext = EvalContext.create(
+        valueMapper = valueMapper,
+        functionProvider = FunctionProvider.CompositeFunctionProvider(List(
+          new BuiltinFunctions(clock, valueMapper),
+          functionProvider
+        ))
+      )
+
+      validate(exp) match {
+        case Right(_) => eval(exp, rootContext.merge(context))
+        case Left(failure) => FailedEvaluationResult(failure = failure)
+      }
+    }.recover(failure =>
+      FailedEvaluationResult(
+        failure = Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
+      .get
+
   private def eval(exp: ParsedExpression,
-                   context: EvalContext): EvalExpressionResult = {
+                   context: EvalContext): EvaluationResult = {
     interpreter.eval(exp.expression)(context) match {
       case ValError(cause) =>
-        Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
-      case value => Right(valueMapper.unpackVal(value))
+        FailedEvaluationResult(
+          failure = Failure(s"failed to evaluate expression '${exp.text}': $cause"),
+          suppressedFailures = context.failureCollector.failures
+        )
+      case value =>
+        if (context.failureCollector.hasFailures) {
+          logger.warn("Suppressed failures:\n{}", context.failureCollector)
+        }
+        SuccessfulEvaluationResult(
+          result = valueMapper.unpackVal(value),
+          suppressedFailures = context.failureCollector.failures
+        )
     }
   }
 

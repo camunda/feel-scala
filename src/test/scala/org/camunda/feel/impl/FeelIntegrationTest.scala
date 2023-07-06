@@ -19,24 +19,12 @@ package org.camunda.feel.impl
 import fastparse.Parsed
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.context.Context
-import org.camunda.feel.impl.interpreter.{
-  BuiltinFunctions,
-  EvalContext,
-  FeelInterpreter
-}
+import org.camunda.feel.context.FunctionProvider.StaticFunctionProvider
+import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, EvaluationFailureCollector, FeelInterpreter}
 import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  LocalDateTime,
-  LocalTime,
-  Time,
-  YearMonthDuration,
-  _
-}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Time, YearMonthDuration, _}
 
 trait FeelIntegrationTest {
 
@@ -63,7 +51,12 @@ trait FeelIntegrationTest {
 
     FeelParser.parseExpression(expression) match {
       case Parsed.Success(exp, _) =>
-        interpreter.eval(exp)(rootContext.merge(context))
+        val evalContext = rootContext.merge(context)
+        val result = interpreter.eval(exp)(evalContext)
+        if (evalContext.failureCollector.hasFailures) {
+          logger.warn("Suppressed failures:\n{}", evalContext.failureCollector)
+        }
+        result
       case Parsed.Failure(_, _, extra) => {
         ValError(
           s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
@@ -89,11 +82,11 @@ trait FeelIntegrationTest {
     }
   }
 
-  val rootContext: EvalContext = EvalContext.wrap(
-    Context.StaticContext(
-      variables = Map.empty,
-      functions = new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions),
-    ValueMapper.defaultValueMapper
+  def rootContext: EvalContext = EvalContext.create(
+    valueMapper = ValueMapper.defaultValueMapper,
+    functionProvider = StaticFunctionProvider(
+      new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions
+    )
   )
 
   def withClock(testCode: TimeTravelClock => Any): Unit = {

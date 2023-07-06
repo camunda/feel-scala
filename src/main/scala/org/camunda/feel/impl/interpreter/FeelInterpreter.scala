@@ -347,9 +347,13 @@ class FeelInterpreter {
     case _           => ValError(message)
   }
 
-  private def withValOrNull(x: Val): Val = x match {
+  private def withValOrNull(x: Val)(implicit context: EvalContext): Val = x match {
     case ValError(e) => {
       logger.warn(s"Suppressed failure: $e")
+      context.addFailure(
+        failureType = EvaluationFailure.UNKOWN,
+        failureMessage = e
+      )
       ValNull
     }
     case _ => x
@@ -511,8 +515,13 @@ class FeelInterpreter {
       case _                     => error(x, s"expect Day-Time-Duration but found '$x'")
     }
 
-  private def withVal(x: Val, f: Val => Val): Val = x match {
-    case e: ValError => e
+  private def withVal(x: Val, f: Val => Val)(implicit context: EvalContext): Val = x match {
+    case e: ValError =>
+      context.addFailure(
+        failureType = EvaluationFailure.UNKOWN,
+        failureMessage = e.error
+      )
+      e
     case _           => f(x)
   }
 
@@ -935,7 +944,8 @@ class FeelInterpreter {
         values + (name -> v) // zip
   }
 
-  private def filterList(list: List[Val], filter: Val => Val): Val = {
+  private def filterList(list: List[Val], filter: Val => Val)(
+    implicit context: EvalContext): Val = {
     val conditionNotFulfilled = ValString("_")
 
     val withBooleanFilter = (list: List[Val]) => mapEither[Val, Val](
@@ -1016,6 +1026,10 @@ class FeelInterpreter {
       case ctx: ValContext =>
         EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
+            context.addFailure(
+              failureType = EvaluationFailure.NO_CONTEXT_ENTRY_FOUND,
+              failureMessage = s"context contains no entry with key '$key'"
+            )
             ValError(s"context contains no entry with key '$key'")
           case x: Val => x
           case _      => ValError(s"context contains no entry with key '$key'")
@@ -1024,6 +1038,10 @@ class FeelInterpreter {
       case value =>
         value.property(key).getOrElse {
           val propertyNames: String = value.propertyNames().mkString(",")
+          context.addFailure(
+            failureType = EvaluationFailure.NO_PROPERTY_FOUND,
+            failureMessage = s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"
+          )
           error(
             value,
             s"No property found with name '$key' of value '$value'. Available properties: $propertyNames")

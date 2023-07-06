@@ -18,10 +18,12 @@ package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
+import org.camunda.feel.context.Context.EmptyContext
+import org.camunda.feel.impl.interpreter.EvaluationFailure
 import org.camunda.feel.syntaxtree.ParsedExpression
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.{EitherValues}
+import org.scalatest.EitherValues
 
 /**
   * @author Philipp Ossler
@@ -114,6 +116,20 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
   it should "fail to parse an unaryTests '<'" in {
     engine.parseUnaryTests("<").left.value.message should startWith(
       "failed to parse expression '<'")
+  }
+
+  it should "return suppressed failures" in {
+    engine.parseExpression("1 + x") match {
+      case Right(parsedExp) =>
+        val result = engine.evaluate(parsedExp, EmptyContext)
+
+        result.isSuccess should be(true)
+        result.hasSuppressedFailures should be(true)
+        result.suppressedFailures should contain(EvaluationFailure(
+          failureType = EvaluationFailure.UNKOWN,
+          failureMessage = "no variable found for name 'x'"
+        ))
+    }
   }
 
 }
