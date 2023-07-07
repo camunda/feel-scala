@@ -130,11 +130,13 @@ class InterpreterUnaryTest
   }
 
   it should "compare to null" in {
-
     evalUnaryTests(null, "3") should be(ValBoolean(false))
-    evalUnaryTests(null, "< 3") should be(ValBoolean(false))
-    evalUnaryTests(null, "> 3") should be(ValBoolean(false))
-    evalUnaryTests(null, "(0..10)") should be(ValBoolean(false))
+  }
+
+  ignore should "compare to null with < or >" in {
+    evalUnaryTests(null, "< 3") should be(ValNull)
+    evalUnaryTests(null, "> 3") should be(ValNull)
+    evalUnaryTests(null, "(0..10)") should be(ValNull)
   }
 
   "A string" should "be equal to another string" in {

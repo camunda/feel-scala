@@ -215,7 +215,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     engine
       .evalExpression("bar.foo = \"baz\"",
                       context = Context.StaticContext(variables, null))
-      .getOrElse() shouldBe ()
+      .getOrElse() shouldBe false
   }
 
   it should "read scala string from object getter with attribute notation" in {
@@ -292,7 +292,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     engine
       .evalExpression("bar.baz = \"foo\"",
                       context = Context.StaticContext(variables, null))
-      .getOrElse() shouldBe ()
+      .getOrElse() shouldBe false
   }
 
   it should "read java.util.Map" in {
