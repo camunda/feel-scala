@@ -18,101 +18,11 @@ package org.camunda.feel.impl.interpreter
 
 import java.time.{Duration, Period}
 import org.camunda.feel.FeelEngine.UnaryTests
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
 import org.camunda.feel.context.Context
 import org.camunda.feel.valuemapper.ValueMapper
-import org.camunda.feel.syntaxtree.{
-  Addition,
-  ArithmeticNegation,
-  AtLeastOne,
-  ClosedConstRangeBoundary,
-  ClosedRangeBoundary,
-  Comparison,
-  Conjunction,
-  ConstBool,
-  ConstContext,
-  ConstDate,
-  ConstDateTime,
-  ConstDayTimeDuration,
-  ConstInputValue,
-  ConstList,
-  ConstLocalDateTime,
-  ConstLocalTime,
-  ConstNull,
-  ConstNumber,
-  ConstRange,
-  ConstRangeBoundary,
-  ConstString,
-  ConstTime,
-  ConstYearMonthDuration,
-  Disjunction,
-  Division,
-  Equal,
-  EveryItem,
-  Exp,
-  Exponentiation,
-  Filter,
-  For,
-  FunctionDefinition,
-  FunctionInvocation,
-  FunctionParameters,
-  GreaterOrEqual,
-  GreaterThan,
-  If,
-  In,
-  InputEqualTo,
-  InputGreaterOrEqual,
-  InputGreaterThan,
-  InputInRange,
-  InputLessOrEqual,
-  InputLessThan,
-  InstanceOf,
-  IterationContext,
-  JavaFunctionInvocation,
-  LessOrEqual,
-  LessThan,
-  Multiplication,
-  NamedFunctionParameters,
-  Not,
-  OpenConstRangeBoundary,
-  OpenRangeBoundary,
-  PathExpression,
-  PositionalFunctionParameters,
-  QualifiedFunctionInvocation,
-  RangeBoundary,
-  Ref,
-  SomeItem,
-  Subtraction,
-  UnaryTestExpression,
-  Val,
-  ValBoolean,
-  ValContext,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValFunction,
-  ValList,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValRange,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  LocalDateTime,
-  LocalTime,
-  Number,
-  Time,
-  YearMonthDuration,
-  logger
-}
+import org.camunda.feel.syntaxtree.{Addition, ArithmeticNegation, AtLeastOne, ClosedConstRangeBoundary, ClosedRangeBoundary, Comparison, Conjunction, ConstBool, ConstContext, ConstDate, ConstDateTime, ConstDayTimeDuration, ConstInputValue, ConstList, ConstLocalDateTime, ConstLocalTime, ConstNull, ConstNumber, ConstRange, ConstRangeBoundary, ConstString, ConstTime, ConstYearMonthDuration, Disjunction, Division, Equal, EveryItem, Exp, Exponentiation, Filter, For, FunctionDefinition, FunctionInvocation, FunctionParameters, GreaterOrEqual, GreaterThan, If, In, InputEqualTo, InputGreaterOrEqual, InputGreaterThan, InputInRange, InputLessOrEqual, InputLessThan, InstanceOf, IterationContext, JavaFunctionInvocation, LessOrEqual, LessThan, Multiplication, NamedFunctionParameters, Not, OpenConstRangeBoundary, OpenRangeBoundary, PathExpression, PositionalFunctionParameters, QualifiedFunctionInvocation, RangeBoundary, Ref, SomeItem, Subtraction, UnaryTestExpression, Val, ValBoolean, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValFunction, ValList, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValRange, ValString, ValTime, ValYearMonthDuration, ZonedTime}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration, logger}
 
 /**
   * @author Philipp Ossler
@@ -351,7 +261,7 @@ class FeelInterpreter {
     case ValError(e) => {
       logger.warn(s"Suppressed failure: $e")
       context.addFailure(
-        failureType = EvaluationFailure.UNKOWN,
+        failureType = EvaluationFailureType.UNKNOWN,
         failureMessage = e
       )
       ValNull
@@ -518,7 +428,7 @@ class FeelInterpreter {
   private def withVal(x: Val, f: Val => Val)(implicit context: EvalContext): Val = x match {
     case e: ValError =>
       context.addFailure(
-        failureType = EvaluationFailure.UNKOWN,
+        failureType = EvaluationFailureType.UNKNOWN,
         failureMessage = e.error
       )
       e
@@ -1027,7 +937,7 @@ class FeelInterpreter {
         EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
             context.addFailure(
-              failureType = EvaluationFailure.NO_CONTEXT_ENTRY_FOUND,
+              failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
               failureMessage = s"context contains no entry with key '$key'"
             )
             ValError(s"context contains no entry with key '$key'")
@@ -1039,7 +949,7 @@ class FeelInterpreter {
         value.property(key).getOrElse {
           val propertyNames: String = value.propertyNames().mkString(",")
           context.addFailure(
-            failureType = EvaluationFailure.NO_PROPERTY_FOUND,
+            failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
             failureMessage = s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"
           )
           error(

@@ -19,7 +19,6 @@ package org.camunda.feel.api
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
 import org.camunda.feel.context.Context.EmptyContext
-import org.camunda.feel.impl.interpreter.EvaluationFailure
 import org.camunda.feel.syntaxtree.ParsedExpression
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -126,7 +125,7 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
         result.isSuccess should be(true)
         result.hasSuppressedFailures should be(true)
         result.suppressedFailures should contain(EvaluationFailure(
-          failureType = EvaluationFailure.UNKOWN,
+          failureType = EvaluationFailureType.UNKNOWN,
           failureMessage = "no variable found for name 'x'"
         ))
     }

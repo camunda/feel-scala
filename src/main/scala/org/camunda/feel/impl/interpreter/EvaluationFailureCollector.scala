@@ -1,6 +1,6 @@
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.interpreter.EvaluationFailure.EvaluationFailureType
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
 
 class EvaluationFailureCollector {
 

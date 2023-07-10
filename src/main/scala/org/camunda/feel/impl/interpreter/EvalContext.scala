@@ -16,12 +16,12 @@
  */
 package org.camunda.feel.impl.interpreter
 
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
 import org.camunda.feel.context.FunctionProvider.{CompositeFunctionProvider, EmptyFunctionProvider, StaticFunctionProvider}
 import org.camunda.feel.context.VariableProvider.{CompositeVariableProvider, EmptyVariableProvider, StaticVariableProvider}
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
 import org.camunda.feel.impl.interpreter.EvalContext.{mergeFunctionProviders, mergeVariableProvider, toSortedVariableProvider, wrap}
-import org.camunda.feel.impl.interpreter.EvaluationFailure.EvaluationFailureType
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
 
