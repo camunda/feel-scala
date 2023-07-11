@@ -176,8 +176,8 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
     evaluationResult.hasSuppressedFailures should be(true)
     evaluationResult.suppressedFailures should contain(EvaluationFailure(
-      failureType = EvaluationFailureType.UNKNOWN,
-      failureMessage = "no variable found for name 'x'"
+      failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+      failureMessage = "No variable found with name 'x'"
     ))
 
     evaluationResult.toEither.isRight should be(true)
@@ -198,8 +198,8 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
     evaluationResult.hasSuppressedFailures should be(true)
     evaluationResult.suppressedFailures should contain(EvaluationFailure(
-      failureType = EvaluationFailureType.UNKNOWN,
-      failureMessage = "no variable found for name 'x'"
+      failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+      failureMessage = "No variable found with name 'x'"
     ))
 
     evaluationResult.toEither.isRight should be(true)
