@@ -272,6 +272,9 @@ class InterpreterExpressionTest
     eval("and") shouldBe aParseError
     eval("or") shouldBe aParseError
     eval("return") shouldBe aParseError
+    eval("{ null: 1 }.null") shouldBe aParseError
+    eval("{ true: 1}.true") shouldBe aParseError
+    eval("{ false: 1}.false") shouldBe aParseError
   }
 
 //  Ignored as these keywords are not listed as reserved keywords yet
