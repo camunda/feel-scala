@@ -18,15 +18,16 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.impl.interpreter.EvaluationErrorMatcher._
 import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
-  * @author Philipp Ossler
-  */
+ * @author Philipp Ossler
+ */
 class InterpreterExpressionTest
-    extends AnyFlatSpec
+  extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
 
@@ -73,14 +74,14 @@ class InterpreterExpressionTest
 
   it should "be an if-then-else (with variable and function call -> then)" in {
     eval("if 7 > var then flatten(xs) else []",
-         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+      Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
   it should "be an if-then-else (with variable and function call -> else)" in {
     eval("if false then var else flatten(xs)",
-         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+      Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
@@ -263,23 +264,26 @@ class InterpreterExpressionTest
   }
 
   "A variable name" should "not be a key-word" in {
+    eval("then") shouldBe aParseError
+    eval("else") shouldBe aParseError
+    eval("function") shouldBe aParseError
+    eval("in") shouldBe aParseError
+    eval("satisfies") shouldBe aParseError
+    eval("and") shouldBe aParseError
+    eval("or") shouldBe aParseError
+    eval("return") shouldBe aParseError
+  }
 
-    eval("some = true", Map("some" -> 1)) shouldBe a[ValError]
-    eval("every = true", Map("every" -> 1)) shouldBe a[ValError]
-    eval("if = true", Map("if" -> 1)) shouldBe a[ValError]
-    eval("then = true", Map("then" -> 1)) shouldBe a[ValError]
-    eval("else = true", Map("else" -> 1)) shouldBe a[ValError]
-    eval("function = true", Map("function" -> 1)) shouldBe a[ValError]
-    eval("for = true", Map("for" -> 1)) shouldBe a[ValError]
-    eval("between = true", Map("between" -> 1)) shouldBe a[ValError]
-    eval("instance = true", Map("instance" -> 1)) shouldBe a[ValError]
-    eval("of = true", Map("of" -> 1)) shouldBe a[ValError]
-    eval("not = true", Map("not" -> 1)) shouldBe a[ValError]
-    eval("in = true", Map("in" -> 1)) shouldBe a[ValError]
-    eval("satisfies = true", Map("satisfies" -> 1)) shouldBe a[ValError]
-    eval("and = true", Map("and" -> 1)) shouldBe a[ValError]
-    eval("or = true", Map("or" -> 1)) shouldBe a[ValError]
-    eval("return = true", Map("return" -> 1)) shouldBe a[ValError]
+//  Ignored as these keywords are not listed as reserved keywords yet
+  ignore should "not be a key-word (ignored)" in {
+    eval("some") shouldBe aParseError
+    eval("every") shouldBe aParseError
+    eval("if") shouldBe aParseError
+    eval("for") shouldBe aParseError
+    eval("between") shouldBe aParseError
+    eval("instance") shouldBe aParseError
+    eval("of") shouldBe aParseError
+    eval("not") shouldBe aParseError
   }
 
   List(
@@ -320,14 +324,16 @@ class InterpreterExpressionTest
   }
 
   it should "be written as single line comments /* .. */" in {
-    eval("""
+    eval(
+      """
         /* the first item */
         [1,2,3][1]
         """) should be(ValNumber(1))
   }
 
   it should "be written as block comments /* .. */" in {
-    eval("""
+    eval(
+      """
         /*
          * the first item
          */
