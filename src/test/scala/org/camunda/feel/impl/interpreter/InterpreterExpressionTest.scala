@@ -264,17 +264,17 @@ class InterpreterExpressionTest
   }
 
   "A variable name" should "not be a key-word" in {
-    eval("then") shouldBe aParseError
-    eval("else") shouldBe aParseError
-    eval("function") shouldBe aParseError
-    eval("in") shouldBe aParseError
-    eval("satisfies") shouldBe aParseError
-    eval("and") shouldBe aParseError
-    eval("or") shouldBe aParseError
-    eval("return") shouldBe aParseError
     eval("{ null: 1 }.null") shouldBe aParseError
     eval("{ true: 1}.true") shouldBe aParseError
     eval("{ false: 1}.false") shouldBe aParseError
+    eval("function") shouldBe aParseError
+    eval("in") shouldBe aParseError
+    eval("return") shouldBe aParseError
+    eval("then") shouldBe aParseError
+    eval("else") shouldBe aParseError
+    eval("satisfies") shouldBe aParseError
+    eval("and") shouldBe aParseError
+    eval("or") shouldBe aParseError
   }
 
 //  Ignored as these keywords are not listed as reserved keywords yet
