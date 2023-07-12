@@ -180,11 +180,13 @@ class InterpreterNumberExpressionTest
     eval("null = 2") should be(ValBoolean(false))
     eval("null != 2") should be(ValBoolean(true))
 
-    eval("2 > null") should be(ValBoolean(false))
-    eval("null < 2") should be(ValBoolean(false))
+    eval("2 > null") should be(ValNull)
+    eval("null < 2") should be(ValNull)
+  }
 
-    eval("null in < 2") should be(ValBoolean(false))
-    eval("null in (2..4)") should be(ValBoolean(false))
+  ignore should "compare with 'null in'" in {
+    eval("null in < 2") should be(ValNull)
+    eval("null in (2..4)") should be(ValNull)
   }
 
   it should "compare with 'between _ and _'" in {

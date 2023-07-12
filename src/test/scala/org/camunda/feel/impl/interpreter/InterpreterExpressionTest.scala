@@ -264,22 +264,22 @@ class InterpreterExpressionTest
 
   "A variable name" should "not be a key-word" in {
 
-    eval("some = true") shouldBe a[ValError]
-    eval("every = true") shouldBe a[ValError]
-    eval("if = true") shouldBe a[ValError]
-    eval("then = true") shouldBe a[ValError]
-    eval("else = true") shouldBe a[ValError]
-    eval("function = true") shouldBe a[ValError]
-    eval("for = true") shouldBe a[ValError]
-    eval("between = true") shouldBe a[ValError]
-    eval("instance = true") shouldBe a[ValError]
-    eval("of = true") shouldBe a[ValError]
-    eval("not = true") shouldBe a[ValError]
-    eval("in = true") shouldBe a[ValError]
-    eval("satisfies = true") shouldBe a[ValError]
-    eval("and = true") shouldBe a[ValError]
-    eval("or = true") shouldBe a[ValError]
-    eval("return = true") shouldBe a[ValError]
+    eval("some = true", Map("some" -> 1)) shouldBe a[ValError]
+    eval("every = true", Map("every" -> 1)) shouldBe a[ValError]
+    eval("if = true", Map("if" -> 1)) shouldBe a[ValError]
+    eval("then = true", Map("then" -> 1)) shouldBe a[ValError]
+    eval("else = true", Map("else" -> 1)) shouldBe a[ValError]
+    eval("function = true", Map("function" -> 1)) shouldBe a[ValError]
+    eval("for = true", Map("for" -> 1)) shouldBe a[ValError]
+    eval("between = true", Map("between" -> 1)) shouldBe a[ValError]
+    eval("instance = true", Map("instance" -> 1)) shouldBe a[ValError]
+    eval("of = true", Map("of" -> 1)) shouldBe a[ValError]
+    eval("not = true", Map("not" -> 1)) shouldBe a[ValError]
+    eval("in = true", Map("in" -> 1)) shouldBe a[ValError]
+    eval("satisfies = true", Map("satisfies" -> 1)) shouldBe a[ValError]
+    eval("and = true", Map("and" -> 1)) shouldBe a[ValError]
+    eval("or = true", Map("or" -> 1)) shouldBe a[ValError]
+    eval("return = true", Map("return" -> 1)) shouldBe a[ValError]
   }
 
   List(

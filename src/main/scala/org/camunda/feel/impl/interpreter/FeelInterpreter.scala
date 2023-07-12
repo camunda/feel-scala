@@ -588,6 +588,8 @@ class FeelInterpreter {
     x match {
       case ValNull                 => f(c(ValNull, y.toOption.getOrElse(ValNull)))
       case x if (y == ValNull)     => f(c(x.toOption.getOrElse(ValNull), ValNull))
+      case _ : ValError            => f(c(ValNull, y.toOption.getOrElse(ValNull)))
+      case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
       case ValBoolean(x)           => withBoolean(y, y => f(c(x, y)))
       case ValString(x)            => withString(y, y => f(c(x, y)))
@@ -657,10 +659,8 @@ class FeelInterpreter {
                      c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case ValNull                => withVal(y, y => ValBoolean(false))
-      case _ if (y == ValNull)    => withVal(x, x => ValBoolean(false))
-      case _ if (!x.isComparable) => ValError(s"$x is not comparable")
-      case _ if (!y.isComparable) => ValError(s"$y is not comparable")
+      case _ if (!x.isComparable) => ValNull
+      case _ if (!y.isComparable) => ValNull
       case _ if (x.getClass != y.getClass) =>
         ValError(s"$x can not be compared to $y")
       case _ => f(c(x, y))
