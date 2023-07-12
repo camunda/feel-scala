@@ -69,4 +69,13 @@ class InterpreterNonExistingVariableExpressionTest
     eval("null >= x") should be(ValNull)
     eval("x >= y") should be(ValNull)
   }
+
+  it should "compare with `between _ and _`" in {
+    eval("x between 1 and 3") should be(ValNull)
+    eval("1 between x and 3") should be(ValNull)
+    eval("3 between 1 and x") should be(ValNull)
+    eval("x between y and 3") should be(ValNull)
+    eval("x between 1 and y") should be(ValNull)
+    eval("x between y and z") should be(ValNull)
+  }
 }
