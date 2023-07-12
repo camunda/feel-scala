@@ -2,7 +2,7 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValString, ValTime, ValYearMonthDuration, ZonedTime}
-import org.camunda.feel.{Date, YearMonthDuration, dateFormatter, dateTimeFormatter, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, localDateTimeFormatter, localTimeFormatter, logger, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
+import org.camunda.feel.{Date, YearMonthDuration, dateFormatter, dateTimeFormatter, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, localDateTimeFormatter, localTimeFormatter, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
 
 import java.math.BigDecimal
 import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
@@ -38,9 +38,8 @@ object ConversionBuiltinFunctions {
         Try {
           ValDate(LocalDate.of(year.intValue, month.intValue, day.intValue))
         }.getOrElse {
-          logger.warn(
-            s"Failed to parse date from: year=$year, month=$month, day=$day");
-          ValNull
+          ValError(
+            s"Failed to parse date from: year=$year, month=$month, day=$day")
         }
     }
   )
@@ -96,9 +95,8 @@ object ConversionBuiltinFunctions {
             LocalTime
               .of(hour.intValue, minute.intValue, second.intValue, nanos))
         }.getOrElse {
-          logger.warn(
-            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
-          ValNull
+          ValError(
+            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second")
         }
     }
   )
@@ -121,9 +119,8 @@ object ConversionBuiltinFunctions {
 
           ValTime(ZonedTime.of(localTime, zonedOffset))
         }.getOrElse {
-          logger.warn(
-            s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset");
-          ValNull
+          ValError(
+            s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset")
         }
       case List(ValNumber(hour),
                 ValNumber(minute),
@@ -133,9 +130,8 @@ object ConversionBuiltinFunctions {
           ValLocalTime(
             LocalTime.of(hour.intValue, minute.intValue, second.intValue))
         }.getOrElse {
-          logger.warn(
-            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
-          ValNull
+          ValError(
+            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second")
         }
     }
   )
@@ -262,25 +258,21 @@ object ConversionBuiltinFunctions {
   private def parseDate(d: String): Val = {
     if (isValidDate(d)) {
       Try(ValDate(d)).getOrElse {
-        logger.warn(s"Failed to parse date from '$d'");
-        ValNull
+        ValError(s"Failed to parse date from '$d'")
       }
     } else {
-      logger.warn(s"Failed to parse date from '$d'");
-      ValNull
+      ValError(s"Failed to parse date from '$d'")
     }
   }
 
   private def parseTime(t: String): Val = {
     if (isOffsetTime(t)) {
       Try(ValTime(t)).getOrElse {
-        logger.warn(s"Failed to parse time from '$t'");
-        ValNull
+        ValError(s"Failed to parse time from '$t'")
       }
     } else {
       Try(ValLocalTime(t)).getOrElse {
-        logger.warn(s"Failed to parse local-time from '$t'");
-        ValNull
+        ValError(s"Failed to parse local-time from '$t'")
       }
     }
   }
@@ -288,39 +280,32 @@ object ConversionBuiltinFunctions {
   private def parseDateTime(dt: String): Val = {
     if (isValidDate(dt)) {
       Try(ValLocalDateTime((dt: Date).atTime(0, 0))).getOrElse {
-        logger.warn(s"Failed to parse date(-time) from '$dt'");
-        ValNull
+        ValError(s"Failed to parse date(-time) from '$dt'")
       }
     } else if (isOffsetDateTime(dt)) {
       Try(ValDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse date-time from '$dt'");
-        ValNull
+        ValError(s"Failed to parse date-time from '$dt'")
       }
     } else if (isLocalDateTime(dt)) {
       Try(ValLocalDateTime(dt)).getOrElse {
-        logger.warn(s"Failed to parse local-date-time from '$dt'");
-        ValNull
+        ValError(s"Failed to parse local-date-time from '$dt'")
       }
     } else {
-      logger.warn(s"Failed to parse date-time from '$dt'");
-      ValNull
+      ValError(s"Failed to parse date-time from '$dt'")
     }
   }
 
   private def parseDuration(d: String): Val = {
     if (isYearMonthDuration(d)) {
       Try(ValYearMonthDuration((d: YearMonthDuration).normalized)).getOrElse {
-        logger.warn(s"Failed to parse year-month-duration from '$d'");
-        ValNull
+        ValError(s"Failed to parse year-month-duration from '$d'")
       }
     } else if (isDayTimeDuration(d)) {
       Try(ValDayTimeDuration(d)).getOrElse {
-        logger.warn(s"Failed to parse day-time-duration from '$d'");
-        ValNull
+        ValError(s"Failed to parse day-time-duration from '$d'")
       }
     } else {
-      logger.warn(s"Failed to parse duration from '$d'");
-      ValNull
+      ValError(s"Failed to parse duration from '$d'")
     }
   }
 

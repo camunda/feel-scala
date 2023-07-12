@@ -1,7 +1,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.{Number, logger}
+import org.camunda.feel.Number
 import org.camunda.feel.syntaxtree.{
   Val,
   ValBoolean,
@@ -65,7 +65,7 @@ object ListBuiltinFunctions {
         list match {
           case Nil                   => ValNull
           case _ if (l.isComparable) => list.min
-          case _                     => logger.warn(s"$l is not comparable"); ValNull
+          case _                     => ValError(s"$l is not comparable")
         }
     },
     hasVarArgs = true
@@ -78,7 +78,7 @@ object ListBuiltinFunctions {
         list match {
           case Nil                   => ValNull
           case _ if (l.isComparable) => list.max
-          case _                     => logger.warn(s"$l is not comparable"); ValNull
+          case _                     => ValError(s"$l is not comparable")
         }
     },
     hasVarArgs = true

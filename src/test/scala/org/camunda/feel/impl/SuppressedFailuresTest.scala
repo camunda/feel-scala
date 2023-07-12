@@ -73,6 +73,24 @@ class SuppressedFailuresTest extends AnyFlatSpec
     )
   }
 
+  it should "report a suppressed failure only once" in {
+    val evaluationResult = engine.evaluateExpression("1 + x")
+
+    evaluationResult.hasSuppressedFailures should be (true)
+    evaluationResult.suppressedFailures should have size(2)
+
+    evaluationResult.suppressedFailures should contain inOrder(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'"
+      ),
+      EvaluationFailure(
+        failureType = EvaluationFailureType.INVALID_TYPE,
+        failureMessage = "Expected Number but found 'ValError(No variable found with name 'x')'"
+      )
+    )
+  }
+
   // ========== test helpers =========
 
   private def reportFailure(failureType: EvaluationFailureType, failureMessage: String) =
