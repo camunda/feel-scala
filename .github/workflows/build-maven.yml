@@ -1,6 +1,7 @@
 name: Build project with Maven
 on:
   pull_request:
+  merge_group:
   schedule:
   - cron: '2 2 * * 1-5' # run nightly master builds on weekdays
 
