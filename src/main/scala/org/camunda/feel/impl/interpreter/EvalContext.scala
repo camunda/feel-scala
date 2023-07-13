@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter
 
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
 import org.camunda.feel.context.FunctionProvider.{CompositeFunctionProvider, EmptyFunctionProvider, StaticFunctionProvider}
 import org.camunda.feel.context.VariableProvider.{CompositeVariableProvider, EmptyVariableProvider, StaticVariableProvider}
@@ -28,7 +29,8 @@ import scala.collection.immutable.SeqMap
 
 class EvalContext(val valueMapper: ValueMapper,
                   val variableProvider: VariableProvider,
-                  val functionProvider: FunctionProvider) extends Context {
+                  val functionProvider: FunctionProvider,
+                  val failureCollector: EvaluationFailureCollector) extends Context {
 
   def variable(name: String): Val = {
     variableProvider
@@ -64,7 +66,8 @@ class EvalContext(val valueMapper: ValueMapper,
   def merge(otherContext: EvalContext): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = mergeVariableProvider(variableProvider, otherContext.variableProvider),
-    functionProvider = mergeFunctionProviders(functionProvider, otherContext.functionProvider)
+    functionProvider = mergeFunctionProviders(functionProvider, otherContext.functionProvider),
+    failureCollector = failureCollector
   )
 
   def merge(otherContext: Context): EvalContext = {
@@ -83,7 +86,8 @@ class EvalContext(val valueMapper: ValueMapper,
       variableProvider,
       toSortedVariableProvider(key, variable)
     ),
-    functionProvider = functionProvider
+    functionProvider = functionProvider,
+    failureCollector = failureCollector
   )
 
   private def addFunction(key: String, function: ValFunction): EvalContext = new EvalContext(
@@ -92,7 +96,8 @@ class EvalContext(val valueMapper: ValueMapper,
     functionProvider = mergeFunctionProviders(
       functionProvider,
       StaticFunctionProvider(Map(key -> List(function)))
-    )
+    ),
+    failureCollector = failureCollector
   )
 
   def addAll(newVariables: Map[String, Val]): EvalContext = new EvalContext(
@@ -101,8 +106,13 @@ class EvalContext(val valueMapper: ValueMapper,
       variableProvider,
       toSortedVariableProvider(newVariables)
     ),
-    functionProvider = functionProvider
+    functionProvider = functionProvider,
+    failureCollector = failureCollector
   )
+
+  def addFailure(failureType: EvaluationFailureType, failureMessage: String): Unit = {
+    failureCollector.addFailure(failureType, failureMessage)
+  }
 
 }
 
@@ -116,7 +126,8 @@ object EvalContext {
   def create(valueMapper: ValueMapper, functionProvider: FunctionProvider): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = EmptyVariableProvider,
-    functionProvider = functionProvider
+    functionProvider = functionProvider,
+    failureCollector = new EvaluationFailureCollector
   )
 
   def wrap(context: Context, valueMapper: ValueMapper): EvalContext =
@@ -126,12 +137,14 @@ object EvalContext {
       case StaticContext(variables, functions) => new EvalContext(
         valueMapper = valueMapper,
         variableProvider = toSortedVariableProvider(variables),
-        functionProvider = StaticFunctionProvider(functions)
+        functionProvider = StaticFunctionProvider(functions),
+        failureCollector = new EvaluationFailureCollector
       )
       case _ => new EvalContext(
         valueMapper = valueMapper,
         variableProvider = context.variableProvider,
-        functionProvider = context.functionProvider
+        functionProvider = context.functionProvider,
+        failureCollector = new EvaluationFailureCollector
       )
     }
 
