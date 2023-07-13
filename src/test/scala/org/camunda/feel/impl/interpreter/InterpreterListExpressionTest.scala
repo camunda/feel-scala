@@ -106,6 +106,30 @@ class InterpreterListExpressionTest
 
     eval("xs [item > 2]", Map("xs" -> List(1, 2, 3, 4))) should be(
       ValList(List(ValNumber(3), ValNumber(4))))
+
+    // items that are not comparable to null are ignored
+    eval("[1,2,3,4][item > null]") should be(
+      ValList(List()))
+
+    // items that are not comparable to null are ignored
+    eval("[1,2,3,4][item < null]") should be(
+      ValList(List()))
+
+    // null is not comparable to 2, so it's ignored
+    eval("[1,2,null,4][item > 2]") should be(
+      ValList(List(ValNumber(4))))
+
+    // null is the only item for which the comparison returns true
+    eval("[1,2,null,4][item = null]") should be(
+      ValList(List(ValNull)))
+
+    // null is the only item for which the comparison returns true
+    eval("[1,2,x,4][item = null]") should be(
+      ValList(List(ValNull)))
+
+    // missing variable becomes null, so same as direct null item
+    eval("[1,2,x,4][item > 2]") should be(
+      ValList(List(ValNumber(4))))
   }
 
   it should "be filtered via index" in {
