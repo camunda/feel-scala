@@ -18,101 +18,11 @@ package org.camunda.feel.impl.interpreter
 
 import java.time.{Duration, Period}
 import org.camunda.feel.FeelEngine.UnaryTests
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context
 import org.camunda.feel.valuemapper.ValueMapper
-import org.camunda.feel.syntaxtree.{
-  Addition,
-  ArithmeticNegation,
-  AtLeastOne,
-  ClosedConstRangeBoundary,
-  ClosedRangeBoundary,
-  Comparison,
-  Conjunction,
-  ConstBool,
-  ConstContext,
-  ConstDate,
-  ConstDateTime,
-  ConstDayTimeDuration,
-  ConstInputValue,
-  ConstList,
-  ConstLocalDateTime,
-  ConstLocalTime,
-  ConstNull,
-  ConstNumber,
-  ConstRange,
-  ConstRangeBoundary,
-  ConstString,
-  ConstTime,
-  ConstYearMonthDuration,
-  Disjunction,
-  Division,
-  Equal,
-  EveryItem,
-  Exp,
-  Exponentiation,
-  Filter,
-  For,
-  FunctionDefinition,
-  FunctionInvocation,
-  FunctionParameters,
-  GreaterOrEqual,
-  GreaterThan,
-  If,
-  In,
-  InputEqualTo,
-  InputGreaterOrEqual,
-  InputGreaterThan,
-  InputInRange,
-  InputLessOrEqual,
-  InputLessThan,
-  InstanceOf,
-  IterationContext,
-  JavaFunctionInvocation,
-  LessOrEqual,
-  LessThan,
-  Multiplication,
-  NamedFunctionParameters,
-  Not,
-  OpenConstRangeBoundary,
-  OpenRangeBoundary,
-  PathExpression,
-  PositionalFunctionParameters,
-  QualifiedFunctionInvocation,
-  RangeBoundary,
-  Ref,
-  SomeItem,
-  Subtraction,
-  UnaryTestExpression,
-  Val,
-  ValBoolean,
-  ValContext,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValFunction,
-  ValList,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValRange,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
-import org.camunda.feel.{
-  Date,
-  DateTime,
-  DayTimeDuration,
-  LocalDateTime,
-  LocalTime,
-  Number,
-  Time,
-  YearMonthDuration,
-  logger
-}
+import org.camunda.feel.syntaxtree.{Addition, ArithmeticNegation, AtLeastOne, ClosedConstRangeBoundary, ClosedRangeBoundary, Comparison, Conjunction, ConstBool, ConstContext, ConstDate, ConstDateTime, ConstDayTimeDuration, ConstInputValue, ConstList, ConstLocalDateTime, ConstLocalTime, ConstNull, ConstNumber, ConstRange, ConstRangeBoundary, ConstString, ConstTime, ConstYearMonthDuration, Disjunction, Division, Equal, EveryItem, Exp, Exponentiation, Filter, For, FunctionDefinition, FunctionInvocation, FunctionParameters, GreaterOrEqual, GreaterThan, If, In, InputEqualTo, InputGreaterOrEqual, InputGreaterThan, InputInRange, InputLessOrEqual, InputLessThan, InstanceOf, IterationContext, JavaFunctionInvocation, LessOrEqual, LessThan, Multiplication, NamedFunctionParameters, Not, OpenConstRangeBoundary, OpenRangeBoundary, PathExpression, PositionalFunctionParameters, QualifiedFunctionInvocation, RangeBoundary, Ref, SomeItem, Subtraction, UnaryTestExpression, Val, ValBoolean, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValFunction, ValList, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValRange, ValString, ValTime, ValYearMonthDuration, ZonedTime}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration, logger}
 
 /**
   * @author Philipp Ossler
@@ -225,7 +135,12 @@ class FeelInterpreter {
         })
 
       // context
-      case Ref(names)               => ref(context.variable(names.head), names.tail)
+      case Ref(names) =>
+        val name = names.head
+        context.variable(name) match {
+          case _: ValError => error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No variable found with name '$name'")
+          case value => ref(value, names.tail)
+        }
       case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
 
       // list
@@ -288,7 +203,12 @@ class FeelInterpreter {
       // functions
       case FunctionInvocation(name, params) =>
         withFunction(findFunction(context, name, params),
-                     f => invokeFunction(f, params))
+          f => invokeFunction(f, params) match {
+            case ValError(failure) =>
+              error(EvaluationFailureType.FUNCTION_INVOCATION_FAILURE, s"Failed to invoke function '$name': $failure")
+              ValNull
+            case result => result
+          })
       case QualifiedFunctionInvocation(path, name, params) =>
         withContext(
           eval(path),
@@ -314,7 +234,7 @@ class FeelInterpreter {
         )
 
       // unsupported expression
-      case exp => ValError(s"unsupported expression '$exp'")
+      case exp => error(s"Unsupported expression '$exp'")
 
     }
 
@@ -342,16 +262,18 @@ class FeelInterpreter {
     }
   }
 
-  private def error(x: Val, message: String) = x match {
-    case e: ValError => e
-    case _           => ValError(message)
+  private def error(message: String)(implicit context: EvalContext): ValError = error(
+    failureType = EvaluationFailureType.UNKNOWN,
+    failureMessage = message
+  )
+
+  private def error(failureType: EvaluationFailureType, failureMessage: String)(implicit context: EvalContext): ValError = {
+      context.addFailure(failureType, failureMessage)
+      ValError(failureMessage)
   }
 
   private def withValOrNull(x: Val): Val = x match {
-    case ValError(e) => {
-      logger.warn(s"Suppressed failure: $e")
-      ValNull
-    }
+    case _: ValError => ValNull
     case _ => x
   }
 
@@ -362,28 +284,30 @@ class FeelInterpreter {
                            f: Boolean => Val)(implicit context: EvalContext): Val =
     withVal(
       input, {
-        case i if (!i.isComparable || !x.isComparable || !y.isComparable) => ValNull
+        case i if (!i.isComparable || !x.isComparable || !y.isComparable) =>
+          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
+          ValNull
         case i if (i.getClass != x.getClass || i.getClass != y.getClass) =>
-          ValError(s"$i can not be compared to $y")
+          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
         case i => f(c(i, x, y))
       }
     )
 
-  private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val): Val =
+  private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val)(implicit context: EvalContext): Val =
     withNumber(x, x => {
       withNumber(y, y => {
         f(x, y)
       })
     })
 
-  private def withNumber(x: Val, f: Number => Val): Val = x match {
+  private def withNumber(x: Val, f: Number => Val)(implicit context: EvalContext): Val = x match {
     case ValNumber(x) => f(x)
-    case _            => error(x, s"expected Number but found '$x'")
+    case _            => error(EvaluationFailureType.INVALID_TYPE, s"Expected Number but found '$x'")
   }
 
-  private def withBoolean(x: Val, f: Boolean => Val): Val = x match {
+  private def withBoolean(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val = x match {
     case ValBoolean(x) => f(x)
-    case _             => error(x, s"expected Boolean but found '$x'")
+    case _             => error(EvaluationFailureType.INVALID_TYPE,s"Expected Boolean but found '$x'")
   }
 
   private def withBooleanOrNull(x: Val, f: Boolean => Val): Val = x match {
@@ -391,17 +315,16 @@ class FeelInterpreter {
     case _             => ValNull
   }
 
-  private def withBooleanOrFalse(x: Val, f: Boolean => Val): Val = x match {
+  private def withBooleanOrFalse(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val = x match {
     case ValBoolean(x) => f(x)
-    case _ => {
-      logger.warn(s"Suppressed failure: expected Boolean but found '$x'")
+    case _ =>
+      error(EvaluationFailureType.INVALID_TYPE, s"Expected Boolean but found '$x'")
       f(false)
-    }
   }
 
-  private def withString(x: Val, f: String => Val): Val = x match {
+  private def withString(x: Val, f: String => Val)(implicit context: EvalContext): Val = x match {
     case ValString(x) => f(x)
-    case _            => error(x, s"expected String but found '$x'")
+    case _            => error(EvaluationFailureType.INVALID_TYPE, s"expected String but found '$x'")
   }
 
   private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
@@ -411,9 +334,9 @@ class FeelInterpreter {
       })
     })
 
-  private def withDate(x: Val, f: Date => Val): Val = x match {
+  private def withDate(x: Val, f: Date => Val)(implicit context: EvalContext): Val = x match {
     case ValDate(x) => f(x)
-    case _          => error(x, s"expected Date but found '$x'")
+    case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected Date but found '$x'")
   }
 
   private def withTimes(x: Val, y: Val, f: (Time, Time) => Val): Val =
@@ -432,14 +355,14 @@ class FeelInterpreter {
       })
     })
 
-  private def withLocalTime(x: Val, f: LocalTime => Val): Val = x match {
+  private def withLocalTime(x: Val, f: LocalTime => Val)(implicit context: EvalContext): Val = x match {
     case ValLocalTime(x) => f(x)
-    case _               => error(x, s"expect Local Time but found '$x'")
+    case _               => error(EvaluationFailureType.INVALID_TYPE, s"Expected Local Time but found '$x'")
   }
 
-  private def withTime(x: Val, f: Time => Val): Val = x match {
+  private def withTime(x: Val, f: Time => Val)(implicit context: EvalContext): Val = x match {
     case ValTime(x) => f(x)
-    case _          => error(x, s"expect Time but found '$x'")
+    case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected Time but found '$x'")
   }
 
   private def withDateTimes(x: Val,
@@ -461,15 +384,15 @@ class FeelInterpreter {
       })
     })
 
-  private def withDateTime(x: Val, f: DateTime => Val): Val = x match {
+  private def withDateTime(x: Val, f: DateTime => Val)(implicit context: EvalContext): Val = x match {
     case ValDateTime(x) => f(x)
-    case _              => error(x, s"expect Date Time but found '$x'")
+    case _              => error(EvaluationFailureType.INVALID_TYPE, s"Expected Date Time but found '$x'")
   }
 
-  private def withLocalDateTime(x: Val, f: LocalDateTime => Val): Val =
+  private def withLocalDateTime(x: Val, f: LocalDateTime => Val)(implicit context: EvalContext): Val =
     x match {
       case ValLocalDateTime(x) => f(x)
-      case _                   => error(x, s"expect Local Date Time but found '$x'")
+      case _                   => error(EvaluationFailureType.INVALID_TYPE, s"Expected Local Date Time but found '$x'")
     }
 
   private def withYearMonthDurations(
@@ -492,16 +415,16 @@ class FeelInterpreter {
       })
     })
 
-  private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val): Val =
+  private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val)(implicit context: EvalContext): Val =
     x match {
       case ValYearMonthDuration(x) => f(x)
-      case _                       => error(x, s"expect Year-Month-Duration but found '$x'")
+      case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Expected Years-Months-Duration but found '$x'")
     }
 
-  private def withDayTimeDuration(x: Val, f: DayTimeDuration => Val): Val =
+  private def withDayTimeDuration(x: Val, f: DayTimeDuration => Val)(implicit context: EvalContext): Val =
     x match {
       case ValDayTimeDuration(x) => f(x)
-      case _                     => error(x, s"expect Day-Time-Duration but found '$x'")
+      case _                     => error(EvaluationFailureType.INVALID_TYPE, s"Expected Days-Time-Duration but found '$x'")
     }
 
   private def withVal(x: Val, f: Val => Val): Val = x match {
@@ -561,7 +484,10 @@ class FeelInterpreter {
     }
 
   private def input(implicit context: EvalContext): Val =
-    context.variable(inputKey)
+    context.variable(inputKey) match {
+      case _: ValError => error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No input value found.")
+      case inputValue => inputValue
+    }
 
   private def dualNumericOp(
       x: Val,
@@ -570,7 +496,7 @@ class FeelInterpreter {
       f: Number => Val)(implicit context: EvalContext): Val =
     x match {
       case ValNumber(x) => withNumber(y, y => f(op(x, y)))
-      case _            => error(x, s"expected Number but found '$x'")
+      case _            => error(s"expected Number but found '$x'")
     }
 
   private def checkEquality(
@@ -643,7 +569,6 @@ class FeelInterpreter {
         )
       case _ =>
         error(
-          x,
           s"expected Number, Boolean, String, Date, Time, Duration, List or Context but found '$x'")
     }
 
@@ -652,14 +577,15 @@ class FeelInterpreter {
                      c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case _ if (!x.isComparable) => ValNull
-      case _ if (!y.isComparable) => ValNull
+      case _ if (!x.isComparable || !y.isComparable) =>
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
+        ValNull
       case _ if (x.getClass != y.getClass) =>
-        ValError(s"$x can not be compared to $y")
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
       case _ => f(c(x, y))
     }
 
-  private def addOp(x: Val, y: Val): Val = x match {
+  private def addOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
     case ValNumber(x)    => withNumber(y, y => ValNumber(x + y))
     case ValString(x)    => withString(y, y => ValString(x + y))
     case ValLocalTime(x) => withDayTimeDuration(y, y => ValLocalTime(x.plus(y)))
@@ -669,14 +595,13 @@ class FeelInterpreter {
         case ValYearMonthDuration(y) => ValLocalDateTime(x.plus(y))
         case ValDayTimeDuration(y)   => ValLocalDateTime(x.plus(y))
         case _ =>
-          error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
+          error(s"expect Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValDateTime(x) =>
       y match {
         case ValYearMonthDuration(y) => ValDateTime(x.plus(y))
         case ValDayTimeDuration(y)   => ValDateTime(x.plus(y))
-        case _ =>
-          error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
+        case _ => error(s"expect Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValYearMonthDuration(x) =>
       y match {
@@ -685,9 +610,7 @@ class FeelInterpreter {
         case ValLocalDateTime(y) => ValLocalDateTime(y.plus(x))
         case ValDateTime(y)      => ValDateTime(y.plus(x))
         case ValDate(y)          => ValDate(y.plus(x))
-        case _ =>
-          error(
-            y,
+        case _ => error(
             s"expect Date-Time, Date, or Year-Month-Duration but found '$x'")
       }
     case ValDayTimeDuration(x) =>
@@ -698,9 +621,7 @@ class FeelInterpreter {
         case ValLocalTime(y)       => ValLocalTime(y.plus(x))
         case ValTime(y)            => ValTime(y.plus(x))
         case ValDate(y)            => ValDate(y.atStartOfDay().plus(x).toLocalDate())
-        case _ =>
-          error(
-            y,
+        case _ => error(
             s"expect Date-Time, Date, Time, or Day-Time-Duration but found '$x'")
       }
     case ValDate(x) =>
@@ -709,26 +630,25 @@ class FeelInterpreter {
           ValDate(x.atStartOfDay().plus(y).toLocalDate())
         case ValYearMonthDuration(y) => ValDate(x.plus(y))
         case _ =>
-          error(y, s"expect Year-Month-/Day-Time-Duration but found '$x'")
+          error(s"expect Year-Month-/Day-Time-Duration but found '$x'")
       }
     case _ =>
-      error(x,
-            s"expected Number, String, Date, Time or Duration but found '$x'")
+      error(s"expected Number, String, Date, Time or Duration but found '$x'")
   }
 
-  private def subOp(x: Val, y: Val): Val = x match {
+  private def subOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
     case ValNumber(x) => withNumber(y, y => ValNumber(x - y))
     case ValLocalTime(x) =>
       y match {
         case ValLocalTime(y)       => ValDayTimeDuration(Duration.between(y, x))
         case ValDayTimeDuration(y) => ValLocalTime(x.minus(y))
-        case _                     => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
+        case _                     => error(s"expect Time, or Day-Time-Duration but found '$x'")
       }
     case ValTime(x) =>
       y match {
         case ValTime(y)            => ValDayTimeDuration(ZonedTime.between(x, y))
         case ValDayTimeDuration(y) => ValTime(x.minus(y))
-        case _                     => error(y, s"expect Time, or Day-Time-Duration but found '$x'")
+        case _                     => error(s"expect Time, or Day-Time-Duration but found '$x'")
       }
     case ValLocalDateTime(x) =>
       y match {
@@ -736,8 +656,7 @@ class FeelInterpreter {
         case ValYearMonthDuration(y) => ValLocalDateTime(x.minus(y))
         case ValDayTimeDuration(y)   => ValLocalDateTime(x.minus(y))
         case _ =>
-          error(y,
-                s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
+          error(s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValDateTime(x) =>
       y match {
@@ -745,8 +664,7 @@ class FeelInterpreter {
         case ValYearMonthDuration(y) => ValDateTime(x.minus(y))
         case ValDayTimeDuration(y)   => ValDateTime(x.minus(y))
         case _ =>
-          error(y,
-                s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
+          error(s"expect Time, or Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValDate(x) =>
       y match {
@@ -756,18 +674,17 @@ class FeelInterpreter {
         case ValDayTimeDuration(y) =>
           ValDate(x.atStartOfDay.minus(y).toLocalDate())
         case _ =>
-          error(y,
-                s"expect Date, or Year-Month-/Day-Time-Duration but found '$x'")
+          error(s"expect Date, or Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValYearMonthDuration(x) =>
       withYearMonthDuration(y, y => ValYearMonthDuration(x.minus(y).normalized))
     case ValDayTimeDuration(x) =>
       withDayTimeDuration(y, y => ValDayTimeDuration(x.minus(y)))
     case _ =>
-      error(x, s"expected Number, Date, Time or Duration but found '$x'")
+      error(s"expected Number, Date, Time or Duration but found '$x'")
   }
 
-  private def mulOp(x: Val, y: Val): Val = x match {
+  private def mulOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
     case ValNumber(x) =>
       y match {
         case ValNumber(y) => ValNumber(x * y)
@@ -777,7 +694,6 @@ class FeelInterpreter {
           ValDayTimeDuration(y.multipliedBy(x.intValue))
         case _ =>
           error(
-            y,
             s"expect Number, or Year-Month-/Day-Time-Duration but found '$x'")
       }
     case ValYearMonthDuration(x) =>
@@ -786,10 +702,10 @@ class FeelInterpreter {
         y => ValYearMonthDuration(x.multipliedBy(y.intValue).normalized))
     case ValDayTimeDuration(x) =>
       withNumber(y, y => ValDayTimeDuration(x.multipliedBy(y.intValue)))
-    case _ => error(x, s"expected Number, or Duration but found '$x'")
+    case _ => error(s"expected Number, or Duration but found '$x'")
   }
 
-  private def divOp(x: Val, y: Val): Val = y match {
+  private def divOp(x: Val, y: Val)(implicit context: EvalContext): Val = y match {
     case ValNumber(y) if (y != 0) =>
       x match {
         case ValNumber(x) => ValNumber(x / y)
@@ -798,7 +714,7 @@ class FeelInterpreter {
             Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
         case ValDayTimeDuration(x) =>
           ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
-        case _ => error(x, s"expected Number, or Duration but found '$x'")
+        case _ => error(s"expected Number, or Duration but found '$x'")
       }
 
     case ValYearMonthDuration(y) if (!y.isZero) =>
@@ -807,7 +723,7 @@ class FeelInterpreter {
     case ValDayTimeDuration(y) if (!y.isZero) =>
       withDayTimeDuration(x, x => ValNumber(x.toMillis / y.toMillis))
 
-    case _ => ValError(s"'$x / $y' is not allowed")
+    case _ => error(s"'$x / $y' is not allowed")
   }
 
   private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
@@ -828,9 +744,10 @@ class FeelInterpreter {
       }
     )
 
-  private def withFunction(x: Val, f: ValFunction => Val): Val = x match {
-    case x: ValFunction => f(x)
-    case _              => error(x, s"expect Function but found '$x'")
+  private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val = x match {
+    case x: ValFunction     => f(x)
+    case ValError(failure)  => error(EvaluationFailureType.NO_FUNCTION_FOUND, failure)
+    case _                  => error(s"expect Function but found '$x'")
   }
 
   private def invokeFunction(function: ValFunction, params: FunctionParameters)(
@@ -863,11 +780,7 @@ class FeelInterpreter {
     }
 
     function.invoke(paramList) match {
-      case ValError(failure) => {
-        // TODO (saig0): customize error handling (#260)
-        logger.warn(s"Failed to invoke function: $failure")
-        ValNull
-      }
+      case e: ValError => e
       case result => context.valueMapper.toVal(result)
     }
   }
@@ -879,7 +792,7 @@ class FeelInterpreter {
     case NamedFunctionParameters(params)      => ctx.function(name, params.keySet)
   }
 
-  private def withType(x: Val, f: String => ValBoolean): Val = x match {
+  private def withType(x: Val, f: String => ValBoolean)(implicit context: EvalContext): Val = x match {
     case ValNumber(_)            => f("number")
     case ValBoolean(_)           => f("boolean")
     case ValString(_)            => f("string")
@@ -894,12 +807,12 @@ class FeelInterpreter {
     case ValList(_)              => f("list")
     case ValContext(_)           => f("context")
     case ValFunction(_, _, _)    => f("function")
-    case _                       => error(x, s"unexpected type '${x.getClass.getName}'")
+    case _                       => error(s"unexpected type '${x.getClass.getName}'")
   }
 
-  private def withList(x: Val, f: ValList => Val): Val = x match {
+  private def withList(x: Val, f: ValList => Val)(implicit context: EvalContext): Val = x match {
     case x: ValList => f(x)
-    case _          => error(x, s"expect List but found '$x'")
+    case _          => error(s"expect List but found '$x'")
   }
 
   private def withLists(
@@ -928,7 +841,8 @@ class FeelInterpreter {
         values + (name -> v) // zip
   }
 
-  private def filterList(list: List[Val], filter: Val => Val): Val = {
+  private def filterList(list: List[Val], filter: Val => Val)(
+    implicit context: EvalContext): Val = {
     val conditionNotFulfilled = ValString("_")
 
     val withBooleanFilter = (list: List[Val]) => mapEither[Val, Val](
@@ -954,7 +868,7 @@ class FeelInterpreter {
           case fulFilledItems: ValList => fulFilledItems
           case error => error
         }
-        case other => ValError(s"Expected boolean filter or number but found '$other'")
+        case other => error(s"Expected boolean filter or number but found '$other'")
       })
     ).getOrElse(
       // Return always an empty list if the given list is empty. Note that we would return `null`
@@ -981,9 +895,9 @@ class FeelInterpreter {
     }
   }
 
-  private def withContext(x: Val, f: ValContext => Val): Val = x match {
+  private def withContext(x: Val, f: ValContext => Val)(implicit context: EvalContext): Val = x match {
     case x: ValContext => f(x)
-    case _             => error(x, s"expect Context but found '$x'")
+    case _             => error(s"expect Context but found '$x'")
   }
 
   private def filterContext(x: Val)(
@@ -1009,17 +923,21 @@ class FeelInterpreter {
       case ctx: ValContext =>
         EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
-            ValError(s"context contains no entry with key '$key'")
+            error(
+              failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+              failureMessage = s"context contains no entry with key '$key'"
+            )
           case x: Val => x
-          case _      => ValError(s"context contains no entry with key '$key'")
+          case _      => error(s"context contains no entry with key '$key'")
         }
       case ValList(list) => ValList(list map (item => path(item, key)))
       case value =>
         value.property(key).getOrElse {
           val propertyNames: String = value.propertyNames().mkString(",")
           error(
-            value,
-            s"No property found with name '$key' of value '$value'. Available properties: $propertyNames")
+            failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+            failureMessage = s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"
+          )
         }
     }
 
@@ -1031,7 +949,7 @@ class FeelInterpreter {
                                  methodName: String,
                                  arguments: List[String],
                                  paramValues: List[Val],
-                                 valueMapper: ValueMapper): Val = {
+                                 valueMapper: ValueMapper)(implicit context: EvalContext): Val = {
     try {
 
       val clazz = JavaClassMapper.loadClass(className)
@@ -1050,12 +968,12 @@ class FeelInterpreter {
 
     } catch {
       case e: ClassNotFoundException =>
-        ValError(s"fail to load class '$className'")
+        error(s"fail to load class '$className'")
       case e: NoSuchMethodException =>
-        ValError(
+        error(
           s"fail to get method with name '$methodName' and arguments '$arguments' from class '$className'")
       case _: Throwable =>
-        ValError(
+        error(
           s"fail to invoke method with name '$methodName' and arguments '$arguments' from class '$className'")
     }
   }
@@ -1073,7 +991,7 @@ class FeelInterpreter {
                 end = toRangeBoundary(range.end, endValue)
               )
             } else {
-              ValError(s"invalid range definition '$range'")
+              error(s"invalid range definition '$range'")
           }
       )
     )
