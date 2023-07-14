@@ -327,33 +327,10 @@ class FeelInterpreter {
     case _            => error(EvaluationFailureType.INVALID_TYPE, s"expected String but found '$x'")
   }
 
-  private def withDates(x: Val, y: Val, f: (Date, Date) => Val): Val =
-    withDate(x, x => {
-      withDate(y, y => {
-        f(x, y)
-      })
-    })
-
   private def withDate(x: Val, f: Date => Val)(implicit context: EvalContext): Val = x match {
     case ValDate(x) => f(x)
     case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected Date but found '$x'")
   }
-
-  private def withTimes(x: Val, y: Val, f: (Time, Time) => Val): Val =
-    withTime(x, x => {
-      withTime(y, y => {
-        f(x, y)
-      })
-    })
-
-  private def withLocalTimes(x: Val,
-                             y: Val,
-                             f: (LocalTime, LocalTime) => Val): Val =
-    withLocalTime(x, x => {
-      withLocalTime(y, y => {
-        f(x, y)
-      })
-    })
 
   private def withLocalTime(x: Val, f: LocalTime => Val)(implicit context: EvalContext): Val = x match {
     case ValLocalTime(x) => f(x)
@@ -365,25 +342,6 @@ class FeelInterpreter {
     case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected Time but found '$x'")
   }
 
-  private def withDateTimes(x: Val,
-                            y: Val,
-                            f: (DateTime, DateTime) => Val): Val =
-    withDateTime(x, x => {
-      withDateTime(y, y => {
-        f(x, y)
-      })
-    })
-
-  private def withLocalDateTimes(
-      x: Val,
-      y: Val,
-      f: (LocalDateTime, LocalDateTime) => Val): Val =
-    withLocalDateTime(x, x => {
-      withLocalDateTime(y, y => {
-        f(x, y)
-      })
-    })
-
   private def withDateTime(x: Val, f: DateTime => Val)(implicit context: EvalContext): Val = x match {
     case ValDateTime(x) => f(x)
     case _              => error(EvaluationFailureType.INVALID_TYPE, s"Expected Date Time but found '$x'")
@@ -394,26 +352,6 @@ class FeelInterpreter {
       case ValLocalDateTime(x) => f(x)
       case _                   => error(EvaluationFailureType.INVALID_TYPE, s"Expected Local Date Time but found '$x'")
     }
-
-  private def withYearMonthDurations(
-      x: Val,
-      y: Val,
-      f: (YearMonthDuration, YearMonthDuration) => Val): Val =
-    withYearMonthDuration(x, x => {
-      withYearMonthDuration(y, y => {
-        f(x, y)
-      })
-    })
-
-  private def withDayTimeDurations(
-      x: Val,
-      y: Val,
-      f: (DayTimeDuration, DayTimeDuration) => Val): Val =
-    withDayTimeDuration(x, x => {
-      withDayTimeDuration(y, y => {
-        f(x, y)
-      })
-    })
 
   private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val)(implicit context: EvalContext): Val =
     x match {
