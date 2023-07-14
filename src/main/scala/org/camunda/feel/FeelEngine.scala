@@ -17,18 +17,10 @@
 package org.camunda.feel
 
 import fastparse.Parsed
-import org.camunda.feel.FeelEngine.{
-  Configuration,
-  EvalExpressionResult,
-  EvalUnaryTestsResult,
-  Failure
-}
-import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
-import org.camunda.feel.impl.interpreter.{
-  BuiltinFunctions,
-  EvalContext,
-  FeelInterpreter
-}
+import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, Failure}
+import org.camunda.feel.api.{EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
+import org.camunda.feel.context.{Context, FunctionProvider}
+import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
@@ -41,7 +33,9 @@ object FeelEngine {
   type EvalExpressionResult = Either[Failure, Any]
   type EvalUnaryTestsResult = Either[Failure, Boolean]
 
-  case class Configuration(externalFunctionsEnabled: Boolean = false)
+  case class Configuration(externalFunctionsEnabled: Boolean = false) {
+    override def toString: String = s"{externalFunctionsEnabled: $externalFunctionsEnabled}"
+  }
 
   def defaultFunctionProvider: FunctionProvider =
     FunctionProvider.EmptyFunctionProvider
@@ -54,7 +48,10 @@ object FeelEngine {
 
   case class Failure(message: String)
 
-  class Builder {
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineBuilder]] instead.
+    */
+  @deprecated class Builder {
 
     private var functionProvider_ : FunctionProvider = defaultFunctionProvider
     private var valueMapper_ : ValueMapper = defaultValueMapper
@@ -111,9 +108,9 @@ class FeelEngine(
     val clock: FeelEngineClock = FeelEngine.defaultClock
 ) {
 
-  val interpreter = new FeelInterpreter()
+  private val interpreter = new FeelInterpreter()
 
-  val validator = new ExpressionValidator(
+  private val validator = new ExpressionValidator(
     externalFunctionsEnabled = configuration.externalFunctionsEnabled)
 
   logger.info(
@@ -124,57 +121,13 @@ class FeelEngine(
       s"configuration: $configuration]"
   )
 
-  private val rootContext: EvalContext = EvalContext.create(
+  private def rootContext(): EvalContext = EvalContext.create(
     valueMapper = valueMapper,
     functionProvider = FunctionProvider.CompositeFunctionProvider(List(
       new BuiltinFunctions(clock, valueMapper),
       functionProvider
     ))
   )
-
-  def evalExpression(
-      expression: String,
-      variables: java.util.Map[String, Object]): EvalExpressionResult =
-    evalExpression(expression, variables.asScala.toMap)
-
-  def evalExpression(
-      expression: String,
-      variables: Map[String, Any] = Map()): EvalExpressionResult = {
-    eval(FeelParser.parseExpression,
-         expression,
-         Context.StaticContext(variables))
-  }
-
-  def evalExpression(expression: String,
-                     context: Context): EvalExpressionResult = {
-    eval(FeelParser.parseExpression, expression, context)
-  }
-
-  def evalUnaryTests(
-      expression: String,
-      variables: java.util.Map[String, Object]): EvalUnaryTestsResult =
-    evalUnaryTests(expression, variables.asScala.toMap)
-
-  def evalUnaryTests(
-      expression: String,
-      variables: Map[String, Any] = Map()): EvalUnaryTestsResult = {
-    eval(FeelParser.parseUnaryTests,
-         expression,
-         Context.StaticContext(variables))
-      .map(value => value.asInstanceOf[Boolean])
-  }
-
-  def evalUnaryTests(expression: String,
-                     context: Context): EvalUnaryTestsResult = {
-    eval(FeelParser.parseUnaryTests, expression, context)
-      .map(value => value.asInstanceOf[Boolean])
-  }
-
-  private def eval(parser: String => Parsed[Exp],
-                   expression: String,
-                   context: Context): EvalExpressionResult =
-    parse(parser, expression)
-      .flatMap(expr => eval(expr, context))
 
   private def parse(parser: String => Parsed[Exp],
                     expression: String): Either[Failure, ParsedExpression] =
@@ -200,38 +153,138 @@ class FeelEngine(
       .toLeft(exp)
   }
 
-  def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
-    Try {
-      validate(exp).flatMap(_ => eval(exp, rootContext.merge(context)))
-    }.recover(failure =>
-        Left(
-          Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
-      .get
-
   private def eval(exp: ParsedExpression,
-                   context: EvalContext): EvalExpressionResult = {
+                   context: EvalContext): EvaluationResult = {
     interpreter.eval(exp.expression)(context) match {
       case ValError(cause) =>
-        Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
-      case value => Right(valueMapper.unpackVal(value))
+        FailedEvaluationResult(
+          failure = Failure(s"failed to evaluate expression '${exp.text}': $cause"),
+          suppressedFailures = context.failureCollector.failures
+        )
+      case value =>
+        SuccessfulEvaluationResult(
+          result = valueMapper.unpackVal(value),
+          suppressedFailures = context.failureCollector.failures
+        )
     }
   }
 
-  def eval(exp: ParsedExpression,
-           variables: java.util.Map[String, Object]): EvalExpressionResult =
-    eval(exp, variables.asScala.toMap)
+  // ============ public API ============
 
-  def eval(exp: ParsedExpression,
-           variables: Map[String, Any] = Map()): EvalExpressionResult = {
-    eval(exp, Context.StaticContext(variables))
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalExpression(
+      expression: String,
+      variables: java.util.Map[String, Object]): EvalExpressionResult =
+    evalExpression(
+      expression = expression,
+      context = Context.StaticContext(variables.asScala.toMap)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalExpression(
+      expression: String,
+      variables: Map[String, Any] = Map()): EvalExpressionResult =
+    evalExpression(
+      expression = expression,
+      context = Context.StaticContext(variables)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalExpression(expression: String,
+                     context: Context): EvalExpressionResult =
+    parseExpression(expression)
+      .flatMap(parsedExpression => eval(parsedExpression, context))
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalUnaryTests(
+      expression: String,
+      variables: java.util.Map[String, Object]): EvalUnaryTestsResult =
+    evalUnaryTests(
+      expression = expression,
+      context = Context.StaticContext(variables.asScala.toMap)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalUnaryTests(
+      expression: String,
+      variables: Map[String, Any] = Map()): EvalUnaryTestsResult =
+    evalUnaryTests(
+      expression = expression,
+      context = Context.StaticContext(variables)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evalUnaryTests(expression: String,
+                     context: Context): EvalUnaryTestsResult = {
+    parseUnaryTests(expression)
+      .flatMap(parsedExpression => eval(parsedExpression, context))
+      .map(value => value.asInstanceOf[Boolean])
   }
 
-  def parseExpression(expression: String): Either[Failure, ParsedExpression] =
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
+    evaluate(expression = exp, context = context).toEither
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def eval(exp: ParsedExpression,
+           variables: java.util.Map[String, Object]): EvalExpressionResult =
+    eval(
+      exp = exp,
+      context = Context.StaticContext(variables.asScala.toMap)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def eval(parsedExpression: ParsedExpression,
+           variables: Map[String, Any] = Map()): EvalExpressionResult =
+    eval(
+      exp = parsedExpression,
+      context = Context.StaticContext(variables)
+    )
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def parseExpression(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseExpression, expression)
       .flatMap(validate)
 
-  def parseUnaryTests(expression: String): Either[Failure, ParsedExpression] =
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def parseUnaryTests(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseUnaryTests, expression)
       .flatMap(validate)
+
+  /**
+    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+    */
+  @deprecated def evaluate(expression: ParsedExpression, context: Context): EvaluationResult =
+    Try {
+      validate(expression) match {
+        case Right(_) => eval(expression, rootContext().merge(context))
+        case Left(failure) => FailedEvaluationResult(failure = failure)
+      }
+    }.recover(failure =>
+      FailedEvaluationResult(
+        failure = Failure(s"failed to evaluate expression '${expression.text}' : $failure")))
+      .get
 
 }
