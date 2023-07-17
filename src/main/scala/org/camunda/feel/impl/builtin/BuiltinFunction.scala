@@ -18,10 +18,7 @@ object BuiltinFunction {
   private def error: PartialFunction[List[Val], Any] = {
     case vars if (vars.exists(_.isInstanceOf[ValError])) =>
       vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
-    case e => {
-      logger.warn(s"Suppressed failure: illegal arguments: $e")
-      ValNull
-    }
+    case e => ValError(s"Illegal arguments: $e")
   }
 
 }
