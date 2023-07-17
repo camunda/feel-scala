@@ -41,6 +41,7 @@ object ListBuiltinFunctions {
     "index of" -> List(indexOfFunction),
     "union" -> List(unionFunction),
     "distinct values" -> List(distinctValuesFunction),
+    "duplicate values" -> List(duplicateValuesFunction),
     "flatten" -> List(flattenFunction),
     "sort" -> List(sortFunction),
     "string join" -> List(joinFunction,
@@ -345,6 +346,11 @@ object ListBuiltinFunctions {
   private def distinctValuesFunction =
     builtinFunction(params = List("list"), invoke = {
       case List(ValList(list)) => ValList(list.distinct)
+    })
+
+  private def duplicateValuesFunction =
+    builtinFunction(params = List("list"), invoke = {
+      case List(ValList(list)) => ValList(list.groupBy(identity).filter{case (_, values) => values.size > 1}.keys.toList)
     })
 
   private def flattenFunction =
