@@ -466,6 +466,8 @@ distinct values([1,2,3,2,1])
 
 ## duplicate values(list)
 
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
 Returns all duplicate values of the given list.
 
 **Function signature**
