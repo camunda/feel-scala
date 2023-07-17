@@ -350,7 +350,7 @@ object ListBuiltinFunctions {
 
   private def duplicateValuesFunction =
     builtinFunction(params = List("list"), invoke = {
-      case List(ValList(list)) => ValList(list.groupBy(identity).filter{case (_, values) => values.size > 1}.keys.toList)
+      case List(ValList(list)) => ValList(list.distinct.filter(x => list.count(_ == x) > 1))
     })
 
   private def flattenFunction =
