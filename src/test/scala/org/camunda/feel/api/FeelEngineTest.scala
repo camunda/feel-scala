@@ -70,7 +70,7 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
       "< 3",
       variables = Map(UnaryTests.defaultInputVariable -> "2")) should be(
       Left(Failure(
-        "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)"))
+        "failed to evaluate expression '< 3': Can't compare ValString(2) with ValNumber(3)"))
     )
   }
 
@@ -78,7 +78,7 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
     engine.evalUnaryTests("< 3", variables = Map[String, Any]()) should be(
       Left(Failure(
-        "failed to evaluate expression '< 3': no variable found for name 'cellInput'"))
+        "failed to evaluate expression '< 3': No input value found."))
     )
   }
 
