@@ -328,6 +328,12 @@ class BuiltinListFunctionsTest
       ValList(List(ValNumber(1), ValNull)))
   }
 
+  it should "return duplicate values for named parameters" in {
+
+    eval(" duplicate values(list: [1,2,3,2,1]) ") should be(
+      ValList(List(ValNumber(1), ValNumber(2))))
+  }
+
   "A flatten() function" should "flatten nested lists" in {
 
     eval(" flatten([[1,2],[[3]], 4]) ") should be(
