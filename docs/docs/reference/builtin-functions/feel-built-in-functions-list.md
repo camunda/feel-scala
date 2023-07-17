@@ -464,6 +464,25 @@ distinct values([1,2,3,2,1])
 // [1,2,3]
 ```
 
+## duplicate values(list)
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
+Returns all duplicate values of the given list.
+
+**Function signature**
+
+```js
+duplicate values(list: list): list
+```
+
+**Examples**
+
+```js
+duplicate values([1,2,3,2,1])
+// [1,2]
+```
+
 ## flatten(list)
 
 Returns a list that includes all elements of the given list without nested lists. 
