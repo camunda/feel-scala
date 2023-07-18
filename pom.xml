@@ -453,10 +453,10 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git@github.com:camunda/feel-scala.git</connection>
-    <url>scm:git:git@github.com:camunda/feel-scala.git</url>
-    <developerConnection>scm:git:git@github.com:camunda/feel-scala.git</developerConnection>
-    <tag>1.4.0</tag>
+    <connection>scm:git:https://${env.GITHUB_TOKEN_USR}:${env.GITHUB_TOKEN_PSW}@github.com/camunda/feel-scala.git</connection>
+    <developerConnection>scm:git:https://${env.GITHUB_TOKEN_USR}:${env.GITHUB_TOKEN_PSW}@github.com/camunda/feel-scala.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/camunda/feel-scala</url>
   </scm>
 
   <distributionManagement>
