@@ -581,9 +581,15 @@ object FeelParser {
       case tests       => AtLeastOne(tests.toList)
     }
 
-  // boolean literals are ambiguous for unary-tests. give precedence to comparison with input.
+  // Expressions are a subset of positive-unary-test. However, we need to give precedence to the
+  // following cases to avoid ambiguous behavior:
+  // - comparison with a boolean (e.g. `true`, `false`)
+  // - comparison with less or greater than (e.g. `< 3`, `>= 5`)
+  // - comparison with an interval (e.g. `[2..5]`)
   private def positiveUnaryTest[_: P]: P[Exp] =
-    (boolean.map(InputEqualTo) ~ End) | expression.map(UnaryTestExpression)
+    (boolean.map(InputEqualTo) ~ End) |
+      simplePositiveUnaryTest |
+      expression.map(UnaryTestExpression)
 
   private def anyInput[_: P]: P[Exp] =
     P(
