@@ -356,21 +356,14 @@ class FeelInterpreter {
   }
 
   private def unaryOpDual(
-      x: Val,
-      y: Val,
-      c: (Val, Val, Val) => Boolean,
-      f: Boolean => Val)(implicit context: EvalContext): Val =
+                           x: Val,
+                           y: Val,
+                           c: (Val, Val, Val) => Boolean,
+                           f: Boolean => Val)(implicit context: EvalContext): Val =
     withVal(
-      input,
-      _ match {
-        case ValNull                             => f(false)
-        case _ if (x == ValNull || y == ValNull) => f(false)
-        case i if (!i.isComparable)              => ValError(s"$i is not comparable")
-        case _ if (!x.isComparable)              => ValError(s"$x is not comparable")
-        case _ if (!y.isComparable)              => ValError(s"$y is not comparable")
-        case i if (i.getClass != x.getClass) =>
-          ValError(s"$i can not be compared to $x")
-        case i if (i.getClass != y.getClass) =>
+      input, {
+        case i if (!i.isComparable || !x.isComparable || !y.isComparable) => ValNull
+        case i if (i.getClass != x.getClass || i.getClass != y.getClass) =>
           ValError(s"$i can not be compared to $y")
         case i => f(c(i, x, y))
       }
