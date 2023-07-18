@@ -184,7 +184,7 @@ class InterpreterNumberExpressionTest
     eval("null < 2") should be(ValNull)
   }
 
-  ignore should "compare with 'null in'" in {
+  it should "compare null with 'in' operator" in {
     eval("null in < 2") should be(ValNull)
     eval("null in (2..4)") should be(ValNull)
   }
