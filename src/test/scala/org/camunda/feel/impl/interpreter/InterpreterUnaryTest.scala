@@ -133,9 +133,14 @@ class InterpreterUnaryTest
     evalUnaryTests(null, "3") should be(ValBoolean(false))
   }
 
-  ignore should "compare to null with < or >" in {
+  it should "compare null with less/greater than" in {
     evalUnaryTests(null, "< 3") should be(ValNull)
+    evalUnaryTests(null, "<= 3") should be(ValNull)
     evalUnaryTests(null, "> 3") should be(ValNull)
+    evalUnaryTests(null, ">= 3") should be(ValNull)
+  }
+
+  it should "compare null with interval" in {
     evalUnaryTests(null, "(0..10)") should be(ValNull)
   }
 
