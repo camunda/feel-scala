@@ -61,4 +61,23 @@ class BuiltinFunctionsTest
     eval("is defined({}.a.b)") should be(ValBoolean(false))
   }
 
+  "A get or else(value: Any, default: Any) function" should "return the value if not null" in {
+
+    eval("get or else(3, 1)") should be(ValNumber(3))
+    eval("""get or else("value", "default")""") should be(ValString("value"))
+    eval("get or else(value:3, default:1)") should be(ValNumber(3))
+  }
+
+  it should "return the default param if value is null" in {
+
+    eval("get or else(null, 1)") should be(ValNumber(1))
+    eval("""get or else(null, "default")""") should be(ValString("default"))
+    eval("get or else(value:null, default:1)") should be(ValNumber(1))
+  }
+
+  it should "return null if both value and default params are null" in {
+
+    eval("get or else(null, null)") should be(ValNull)
+    eval("get or else(value:null, default:null)") should be(ValNull)
+  }
 }
