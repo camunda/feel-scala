@@ -7,7 +7,8 @@ object BooleanBuiltinFunctions {
 
   def functions = Map(
     "not" -> List(notFunction),
-    "is defined" -> List(isDefinedFunction)
+    "is defined" -> List(isDefinedFunction),
+    "get or else" -> List(getOrElse)
   )
 
   private def notFunction =
@@ -22,6 +23,14 @@ object BooleanBuiltinFunctions {
     invoke = {
       case (value: ValError) :: Nil => ValBoolean(false)
       case _                        => ValBoolean(true)
+    }
+  )
+
+  private def getOrElse = builtinFunction(
+    params = List("value", "default"),
+    invoke = {
+      case List(ValNull, default) => default
+      case List(value, _)         => value
     }
   )
 }
