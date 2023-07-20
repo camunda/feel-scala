@@ -526,7 +526,7 @@ object FeelParser {
   // regular function names.
   private def functionNameWithReservedWord[_: P]: P[String] =
     P(
-      "and" | "or" | "date and time" | "years and months duration"
+      "and" | "or" | "date and time" | "years and months duration" | "get or else"
     ).!
 
   private def functionParameters[_: P]: P[FunctionParameters] =

@@ -55,3 +55,28 @@ is defined(x)
 is defined(x.y)
 // false - if no variable "x" exists or it doesn't have a property "y"
 ```
+
+## get or else(value, default)
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
+Return the provided value parameter if not `null`, otherwise return the default parameter
+
+**Function signature**
+
+```js
+get or else(value: Any, default: Any): Any
+```
+
+**Examples**
+
+```js
+get or default("this", "default")
+// "this"
+
+get or default(null, "default")
+// "default"
+
+get or default(null, null)     
+// null
+```
