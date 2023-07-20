@@ -16,13 +16,14 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import java.time.{Duration, Period}
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context
+import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
-import org.camunda.feel.syntaxtree.{Addition, ArithmeticNegation, AtLeastOne, ClosedConstRangeBoundary, ClosedRangeBoundary, Comparison, Conjunction, ConstBool, ConstContext, ConstDate, ConstDateTime, ConstDayTimeDuration, ConstInputValue, ConstList, ConstLocalDateTime, ConstLocalTime, ConstNull, ConstNumber, ConstRange, ConstRangeBoundary, ConstString, ConstTime, ConstYearMonthDuration, Disjunction, Division, Equal, EveryItem, Exp, Exponentiation, Filter, For, FunctionDefinition, FunctionInvocation, FunctionParameters, GreaterOrEqual, GreaterThan, If, In, InputEqualTo, InputGreaterOrEqual, InputGreaterThan, InputInRange, InputLessOrEqual, InputLessThan, InstanceOf, IterationContext, JavaFunctionInvocation, LessOrEqual, LessThan, Multiplication, NamedFunctionParameters, Not, OpenConstRangeBoundary, OpenRangeBoundary, PathExpression, PositionalFunctionParameters, QualifiedFunctionInvocation, RangeBoundary, Ref, SomeItem, Subtraction, UnaryTestExpression, Val, ValBoolean, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValFunction, ValList, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValRange, ValString, ValTime, ValYearMonthDuration, ZonedTime}
-import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration, logger}
+import org.camunda.feel.{Date, DateTime, DayTimeDuration, LocalDateTime, LocalTime, Number, Time, YearMonthDuration}
+
+import java.time.{Duration, Period}
 
 /**
   * @author Philipp Ossler
@@ -148,13 +149,13 @@ class FeelInterpreter {
         withCartesianProduct(
           iterators,
           p =>
-            atLeastOne(p.map(vars => () => eval(condition)(context.addAll(vars))),
+            atLeastOneValue(p.map(vars => () => eval(condition)(context.addAll(vars))),
                        ValBoolean))
       case EveryItem(iterators, condition) =>
         withCartesianProduct(
           iterators,
           p =>
-            all(p.map(vars => () => eval(condition)(context.addAll(vars))),
+            allValues(p.map(vars => () => eval(condition)(context.addAll(vars))),
                 ValBoolean))
       case For(iterators, exp) =>
         withCartesianProduct(
@@ -310,9 +311,11 @@ class FeelInterpreter {
     case _             => error(EvaluationFailureType.INVALID_TYPE,s"Expected Boolean but found '$x'")
   }
 
-  private def withBooleanOrNull(x: Val, f: Boolean => Val): Val = x match {
+  private def withBooleanOrNull(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val = x match {
     case ValBoolean(x) => f(x)
-    case _             => ValNull
+    case _             =>
+      error(EvaluationFailureType.INVALID_TYPE, s"Expected Boolean but found '$x'")
+      ValNull
   }
 
   private def withBooleanOrFalse(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val = x match {
@@ -385,9 +388,9 @@ class FeelInterpreter {
 
   private def atLeastOne(xs: List[Exp], f: Boolean => Val)(
       implicit context: EvalContext): Val =
-    atLeastOne(xs map (x => () => eval(x)), f)
+    atLeastOneValue(xs map (x => () => eval(x)), f)
 
-  private def atLeastOne(items: List[() => Val], f: Boolean => Val): Val = {
+  private def atLeastOneValue(items: List[() => Val], f: Boolean => Val)(implicit context: EvalContext): Val = {
     items.foldLeft(f(false)) {
       case (ValBoolean(true), _) => f(true)
       case (ValNull, item) =>
@@ -401,9 +404,9 @@ class FeelInterpreter {
 
   private def all(xs: List[Exp], f: Boolean => Val)(
       implicit context: EvalContext): Val =
-    all(xs map (x => () => eval(x)), f)
+    allValues(xs map (x => () => eval(x)), f)
 
-  private def all(items: List[() => Val], f: Boolean => Val): Val = {
+  private def allValues(items: List[() => Val], f: Boolean => Val)(implicit context: EvalContext): Val = {
     items.foldLeft(f(true)) {
       case (ValBoolean(false), _) => f(false)
       case (ValNull, item) =>

@@ -73,6 +73,33 @@ class SuppressedFailuresTest extends AnyFlatSpec
     )
   }
 
+  it should "report a suppressed failure if a condition is not a boolean" in {
+    engine.evaluateExpression("if 5 then 1 else 2") should reportFailure(
+      failureType = EvaluationFailureType.INVALID_TYPE,
+      failureMessage = "Expected Boolean but found 'ValNumber(5)'"
+    )
+
+    engine.evaluateExpression("true and 2") should reportFailure(
+      failureType = EvaluationFailureType.INVALID_TYPE,
+      failureMessage = "Expected Boolean but found 'ValNumber(2)'"
+    )
+
+    engine.evaluateExpression("false or 3") should reportFailure(
+      failureType = EvaluationFailureType.INVALID_TYPE,
+      failureMessage = "Expected Boolean but found 'ValNumber(3)'"
+    )
+
+    engine.evaluateExpression("some x in [false, 2] satisfies x") should reportFailure(
+      failureType = EvaluationFailureType.INVALID_TYPE,
+      failureMessage = "Expected Boolean but found 'ValNumber(2)'"
+    )
+
+    engine.evaluateExpression("every x in [true, 3] satisfies x") should reportFailure(
+      failureType = EvaluationFailureType.INVALID_TYPE,
+      failureMessage = "Expected Boolean but found 'ValNumber(3)'"
+    )
+  }
+
   it should "report a suppressed failure only once" in {
     val evaluationResult = engine.evaluateExpression("1 + x")
 
