@@ -58,12 +58,14 @@ is defined(x.y)
 
 ## get or else(value, default)
 
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
 Return the provided value parameter if not `null`, otherwise return the default parameter
 
 **Function signature**
 
 ```js
-get or else(value: Any, default: Any): Val
+get or else(value: Any, default: Any): Any
 ```
 
 **Examples**
