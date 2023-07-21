@@ -242,7 +242,7 @@ class InterpreterListExpressionTest
 
   it should "fail if the filter doesn't return always a boolean" in {
     eval("[1,2,3,4][if item < 3 then true else null]") should be (
-      ValError("expected Boolean but found 'ValNull'")
+      ValError("Expected Boolean but found 'ValNull'")
     )
   }
 

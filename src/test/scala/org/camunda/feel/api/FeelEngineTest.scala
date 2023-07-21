@@ -18,10 +18,11 @@ package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
+import org.camunda.feel.context.Context.EmptyContext
 import org.camunda.feel.syntaxtree.ParsedExpression
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.{EitherValues}
+import org.scalatest.EitherValues
 
 /**
   * @author Philipp Ossler
@@ -69,7 +70,7 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
       "< 3",
       variables = Map(UnaryTests.defaultInputVariable -> "2")) should be(
       Left(Failure(
-        "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)"))
+        "failed to evaluate expression '< 3': Can't compare ValString(2) with ValNumber(3)"))
     )
   }
 
@@ -77,7 +78,7 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
     engine.evalUnaryTests("< 3", variables = Map[String, Any]()) should be(
       Left(Failure(
-        "failed to evaluate expression '< 3': no variable found for name 'cellInput'"))
+        "failed to evaluate expression '< 3': No input value found."))
     )
   }
 
@@ -114,6 +115,22 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
   it should "fail to parse an unaryTests '<'" in {
     engine.parseUnaryTests("<").left.value.message should startWith(
       "failed to parse expression '<'")
+  }
+
+  it should "return suppressed failures" in {
+    engine.parseExpression("1 + x") match {
+      case Right(parsedExp) =>
+        val evaluationResult = engine.evaluate(parsedExp, EmptyContext)
+
+        evaluationResult.isSuccess should be(true)
+        evaluationResult.hasSuppressedFailures should be(true)
+        evaluationResult.suppressedFailures should contain(EvaluationFailure(
+          failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+          failureMessage = "No variable found with name 'x'"
+        ))
+
+      case Left(_) => fail("Expected the expression to be parsed successfully")
+    }
   }
 
 }

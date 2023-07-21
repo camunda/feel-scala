@@ -136,7 +136,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     }
 
     engine.evalExpression("bar", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'bar': no variable found for name 'bar'"))
+      "failed to evaluate expression 'bar': No variable found with name 'bar'"))
   }
 
   val inputVariableContext = StaticVariableProvider(
@@ -166,7 +166,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     }
 
     engine.evalUnaryTests("foo", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'foo': no variable found for name 'myInputVariable'"))
+      "failed to evaluate expression 'foo': No input value found."))
   }
 
 }
