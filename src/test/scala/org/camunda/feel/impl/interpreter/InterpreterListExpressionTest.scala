@@ -108,6 +108,36 @@ class InterpreterListExpressionTest
       ValList(List(ValNumber(3), ValNumber(4))))
   }
 
+  it should "be filtered via comparison with null" in {
+    // items that are not comparable to null are ignored
+    eval("[1,2,3,4][item > null]") should be(
+      ValList(List()))
+
+    // items that are not comparable to null are ignored
+    eval("[1,2,3,4][item < null]") should be(
+      ValList(List()))
+  }
+
+  it should "be filtered via comparison with null elements" in {
+    // null is not comparable to 2, so it's ignored
+    eval("[1,2,null,4][item > 2]") should be(
+      ValList(List(ValNumber(4))))
+
+    // null is the only item for which the comparison returns true
+    eval("[1,2,null,4][item = null]") should be(
+      ValList(List(ValNull)))
+  }
+
+  ignore should "be filtered via comparison with missing variable" in {
+    // null is the only item for which the comparison returns true
+    eval("[1,2,x,4][item = null]") should be(
+      ValList(List(ValNull)))
+
+    // missing variable becomes null, so same as direct null item
+    eval("[1,2,x,4][item > 2]") should be(
+      ValList(List(ValNumber(4))))
+  }
+
   it should "be filtered via index" in {
 
     eval("[1,2,3,4][1]") should be(ValNumber(1))
@@ -234,15 +264,12 @@ class InterpreterListExpressionTest
       ValNumber(1))
   }
 
-  it should "fail if the filter doesn't return a boolean or a number" in {
+  it should "be filtered if the filter doesn't always return a boolean or a number" in {
     eval(""" [1,2,3,4]["not a valid filter"] """) should be (
-      ValError("Expected boolean filter or number but found 'ValString(not a valid filter)'")
+      ValList(List())
     )
-  }
-
-  it should "fail if the filter doesn't return always a boolean" in {
     eval("[1,2,3,4][if item < 3 then true else null]") should be (
-      ValError("Expected Boolean but found 'ValNull'")
+      ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
