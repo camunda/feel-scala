@@ -789,9 +789,9 @@ class FeelInterpreter {
     val withBooleanFilter = (list: List[Val]) => mapEither[Val, Val](
       list,
       item =>
-        withBoolean(filter(item), {
-          case true => item
-          case false => conditionNotFulfilled
+        (filter(item) match {
+          case ValBoolean(true) => item
+          case _ => conditionNotFulfilled
         }).toEither,
       items => ValList(items.filterNot(_ == conditionNotFulfilled))
     )
@@ -809,7 +809,10 @@ class FeelInterpreter {
           case fulFilledItems: ValList => fulFilledItems
           case error => error
         }
-        case other => error(s"Expected boolean filter or number but found '$other'")
+        case _ => withBooleanFilter(list.tail) match {
+          case ValList(fulFilledItems) => ValList(fulFilledItems)
+          case error => error
+        }
       })
     ).getOrElse(
       // Return always an empty list if the given list is empty. Note that we would return `null`
