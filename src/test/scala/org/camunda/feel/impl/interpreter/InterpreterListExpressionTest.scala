@@ -106,7 +106,9 @@ class InterpreterListExpressionTest
 
     eval("xs [item > 2]", Map("xs" -> List(1, 2, 3, 4))) should be(
       ValList(List(ValNumber(3), ValNumber(4))))
+  }
 
+  it should "be filtered via comparison with null" in {
     // items that are not comparable to null are ignored
     eval("[1,2,3,4][item > null]") should be(
       ValList(List()))
@@ -114,7 +116,9 @@ class InterpreterListExpressionTest
     // items that are not comparable to null are ignored
     eval("[1,2,3,4][item < null]") should be(
       ValList(List()))
+  }
 
+  it should "be filtered via comparison with null elements" in {
     // null is not comparable to 2, so it's ignored
     eval("[1,2,null,4][item > 2]") should be(
       ValList(List(ValNumber(4))))
