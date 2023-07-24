@@ -98,20 +98,16 @@ class InterpreterFunctionTest
     eval("a(b(1))", functions = functions) should be(ValNumber(4))
   }
 
-  it should "fail to invoke with wrong number of parameters" in {
+  it should "return null if invoked with wrong parameters" in {
 
     val functions =
       Map("f" -> eval("function(x,y) true").asInstanceOf[ValFunction])
 
-    eval("f()", functions = functions) should be(
-      ValError("no function found with name 'f' and 0 parameters"))
-    eval("f(1)", functions = functions) should be(
-      ValError("no function found with name 'f' and 1 parameters"))
+    eval("f()", functions = functions) should be(ValNull)
+    eval("f(1)", functions = functions) should be(ValNull)
 
-    eval("f(x:1,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,z"))
-    eval("f(x:1,y:2,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,y,z"))
+    eval("f(x:1,z:3)", functions = functions) should be(ValNull)
+    eval("f(x:1,y:2,z:3)", functions = functions) should be(ValNull)
   }
 
   it should "replace not set parameters with null" in {
