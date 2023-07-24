@@ -16,7 +16,8 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -27,7 +28,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 class InterpreterFunctionTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelIntegrationTest
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A function definition" should "be returned as a function" in {
 
@@ -99,23 +102,42 @@ class InterpreterFunctionTest
   }
 
   it should "return null if invoked with wrong parameters" in {
-
     val functions =
       Map("f" -> eval("function(x,y) true").asInstanceOf[ValFunction])
 
-    eval("f()", functions = functions) should be(ValNull)
-    eval("f(1)", functions = functions) should be(ValNull)
+    evaluateExpression("f()", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+      )
 
-    eval("f(x:1,z:3)", functions = functions) should be(ValNull)
-    eval("f(x:1,y:2,z:3)", functions = functions) should be(ValNull)
+    evaluateExpression("f(1)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 1 parameters")
+      )
+
+    evaluateExpression("f(x:1,z:3)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and parameters: x,z")
+      )
+
+    evaluateExpression("f(x:1,y:2,z:3)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and parameters: x,y,z")
+      )
   }
 
   it should "return null if no function exists with the name" in {
-    eval("f()") should be(ValNull)
+    evaluateExpression("f()") should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+      )
   }
 
   it should "return null if the name doesn't resolve to a function" in {
-    eval("f()", variables = Map("x" -> "a variable")) should be(ValNull)
+    evaluateExpression("f()", variables = Map("x" -> "a variable")) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+      )
   }
 
   it should "replace not set parameters with null" in {
