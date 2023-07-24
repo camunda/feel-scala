@@ -110,6 +110,14 @@ class InterpreterFunctionTest
     eval("f(x:1,y:2,z:3)", functions = functions) should be(ValNull)
   }
 
+  it should "return null if no function exists with the name" in {
+    eval("f()") should be(ValNull)
+  }
+
+  it should "return null if the name doesn't resolve to a function" in {
+    eval("f()", variables = Map("x" -> "a variable")) should be(ValNull)
+  }
+
   it should "replace not set parameters with null" in {
 
     val functions = Map("f" -> eval("""
