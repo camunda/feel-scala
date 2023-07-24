@@ -29,7 +29,7 @@ class InterpreterFunctionTest
     with Matchers
     with FeelIntegrationTest {
 
-  "A function definition" should "be interpeted" in {
+  "A function definition" should "be returned as a function" in {
 
     val function = eval("function(x) x + 1")
 
@@ -37,7 +37,7 @@ class InterpreterFunctionTest
     function.asInstanceOf[ValFunction].params should be(List("x"))
   }
 
-  it should "be invoked without parameter" in {
+  "A function invocation" should "invoke a function without parameter" in {
 
     val functions =
       Map("f" -> eval("""function() "invoked" """).asInstanceOf[ValFunction])
@@ -45,7 +45,7 @@ class InterpreterFunctionTest
     eval("f()", functions = functions) should be(ValString("invoked"))
   }
 
-  it should "be invoked with one positional parameter" in {
+  it should "invoke a function with a positional parameter" in {
 
     val functions =
       Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
@@ -54,7 +54,7 @@ class InterpreterFunctionTest
     eval("f(2)", functions = functions) should be(ValNumber(3))
   }
 
-  it should "be invoked with positional parameters" in {
+  it should "invoke a function with positional parameters" in {
 
     val functions =
       Map("add" -> eval("function(x,y) x + y").asInstanceOf[ValFunction])
@@ -63,7 +63,7 @@ class InterpreterFunctionTest
     eval("add(2,3)", functions = functions) should be(ValNumber(5))
   }
 
-  it should "be invoked with one named parameter" in {
+  it should "invoke a function a named parameter" in {
 
     val functions =
       Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
@@ -72,7 +72,7 @@ class InterpreterFunctionTest
     eval("f(x:2)", functions = functions) should be(ValNumber(3))
   }
 
-  it should "be invoked with named parameters" in {
+  it should "invoke a function with named parameters" in {
 
     val functions =
       Map("sub" -> eval("function(x,y) x - y").asInstanceOf[ValFunction])
@@ -81,7 +81,7 @@ class InterpreterFunctionTest
     eval("sub(y:2,x:4)", functions = functions) should be(ValNumber(2))
   }
 
-  it should "be invoked with an expression as parameter" in {
+  it should "take an expression as parameter" in {
 
     val functions =
       Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
@@ -89,7 +89,7 @@ class InterpreterFunctionTest
     eval("f(2 + 3)", functions = functions) should be(ValNumber(6))
   }
 
-  it should "be invoked as parameter of another function" in {
+  it should "take another function as parameter" in {
 
     val functions =
       Map("a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
@@ -126,19 +126,19 @@ class InterpreterFunctionTest
     eval("f(x:1,y:1)", functions = functions) should be(ValString("ok"))
   }
 
-  it should "be invoked and followed by a path" in {
+  it should "be followed by a path" in {
     eval(""" date(2019,09,17).year """) should be(ValNumber(2019))
   }
 
-  it should "be invoked and followed by a filter" in {
+  it should "be followed by a filter" in {
     eval(""" index of([1,2,3,2],2)[1]  """) should be(ValNumber(2))
   }
 
-  it should "be properly evaluated when parameters contain whitespaces" in {
+  it should "invoke a function with parameters contain whitespaces" in {
     eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
   }
 
-  it should "be invoked with one named parameter containing whitespaces" in {
+  it should "invoke a function with a named parameter containing whitespaces" in {
     val functions =
       Map("f" -> eval("""function(test name) `test name` + 1""").asInstanceOf[ValFunction])
 
@@ -146,7 +146,7 @@ class InterpreterFunctionTest
     eval("f(test name:2)", functions = functions) should be(ValNumber(3))
   }
 
-  it should "be invoked with one named parameter containing more than one whitespace" in {
+  it should "invoke a function with a named parameter containing more than one whitespace" in {
     val functions =
       Map("f" -> eval("""function(test   name yada) `test   name yada` + 1""").asInstanceOf[ValFunction])
 
@@ -154,7 +154,7 @@ class InterpreterFunctionTest
     eval("f(test   name yada:2)", functions = functions) should be(ValNumber(3))
   }
 
-  "An external java function definition" should "be invoked with one double parameter" in {
+  "An external Java function invocation" should "invoke a function with a double parameter" in {
 
     val functions = Map(
       "cos" -> eval(
@@ -165,7 +165,7 @@ class InterpreterFunctionTest
     eval("cos(1)", functions = functions) should be(ValNumber(Math.cos(1)))
   }
 
-  it should "be invoked with two int parameters" in {
+  it should "invoke a function with two int parameters" in {
 
     val functions = Map(
       "max" -> eval(
@@ -175,7 +175,7 @@ class InterpreterFunctionTest
     eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
 
-  it should "be invoked with one long parameters" in {
+  it should "invoke a function with a long parameters" in {
 
     val functions = Map(
       "abs" -> eval(
@@ -185,7 +185,7 @@ class InterpreterFunctionTest
     eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
 
-  it should "be invoked with one float parameters" in {
+  it should "invoke a function with a float parameters" in {
 
     val functions = Map(
       "round" -> eval(
