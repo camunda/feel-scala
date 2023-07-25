@@ -16,25 +16,37 @@
  */
 package org.camunda.feel.impl
 
-import org.camunda.feel.api.{EvaluationResult, FeelEngineApi, FeelEngineBuilder}
+import org.camunda.feel.api.{EvaluationResult, FeelEngineApi, FeelEngineBuilder, SuccessfulEvaluationResult, FailedEvaluationResult}
 import org.camunda.feel.context.Context
 import org.camunda.feel.syntaxtree.ValFunction
 
 trait FeelEngineTest {
 
-  val engine: FeelEngineApi = FeelEngineBuilder().build()
+  val engine: FeelEngineApi = FeelEngineBuilder()
+    .withEnabledExternalFunctions(true)
+    .build()
 
   def evaluateExpression(
-      expression: String,
-      variables: Map[String, Any] = Map(),
-      functions: Map[String, ValFunction] = Map()
-  ): EvaluationResult = {
+                          expression: String,
+                          variables: Map[String, Any] = Map(),
+                          functions: Map[String, ValFunction] = Map()
+                        ): EvaluationResult = {
     val context =
       Context.StaticContext(
         variables = variables,
         functions = functions.map { case (n, f) => n -> List(f) })
 
     engine.evaluateExpression(expression, context)
+  }
+
+  def evaluateFunction(function: String): ValFunction = {
+    engine.evaluateExpression(function) match {
+      case SuccessfulEvaluationResult(result: ValFunction, _) => result
+      case SuccessfulEvaluationResult(result, _) =>
+        throw new AssertionError(s"Expected to return a function but was '$result'")
+      case FailedEvaluationResult(failure, _) =>
+        throw new AssertionError(s"Expected to return a function but failed with '${failure.message}'")
+    }
   }
 
 }
