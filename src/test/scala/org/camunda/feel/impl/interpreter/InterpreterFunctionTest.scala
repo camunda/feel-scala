@@ -125,36 +125,36 @@ class InterpreterFunctionTest
 
     evaluateExpression(expression = "f()", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
       )
 
     evaluateExpression(expression = "f(1)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 1 parameters")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 1 parameters")
       )
 
     evaluateExpression(expression = "f(x:1,z:3)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and parameters: x,z")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,z")
       )
 
     evaluateExpression(expression = "f(x:1,y:2,z:3)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and parameters: x,y,z")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,y,z")
       )
   }
 
   it should "return null if no function exists with the name" in {
     evaluateExpression("f()") should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
       )
   }
 
   it should "return null if the name doesn't resolve to a function" in {
     evaluateExpression(expression = "f()", variables = Map("x" -> "a variable")) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "no function found with name 'f' and 0 parameters")
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
       )
   }
 

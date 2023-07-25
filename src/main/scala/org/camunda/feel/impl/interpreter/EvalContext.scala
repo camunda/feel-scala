@@ -47,7 +47,7 @@ class EvalContext(val valueMapper: ValueMapper,
       .getFunctions(name)
       .find(filter)
       .getOrElse(ValError(
-        s"no function found with name '$name' and $paramCount parameters"))
+        s"No function found with name '$name' and $paramCount parameters"))
   }
 
   def function(name: String, parameters: Set[String]): Val = {
@@ -57,7 +57,7 @@ class EvalContext(val valueMapper: ValueMapper,
       .getFunctions(name)
       .find(filter)
       .getOrElse(ValError(
-        s"no function found with name '$name' and parameters: ${
+        s"No function found with name '$name' and parameters: ${
           parameters
             .mkString(",")
         }"))

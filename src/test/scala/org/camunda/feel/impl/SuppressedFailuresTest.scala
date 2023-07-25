@@ -33,14 +33,14 @@ class SuppressedFailuresTest extends AnyFlatSpec
   it should "report a suppressed failure for a non-existing function (with position arguments)" in {
     evaluateExpression("f(1, 2)") should reportFailure(
       failureType = EvaluationFailureType.NO_FUNCTION_FOUND,
-      failureMessage = "no function found with name 'f' and 2 parameters"
+      failureMessage = "No function found with name 'f' and 2 parameters"
     )
   }
 
   it should "report a suppressed failure for a non-existing function (with named arguments)" in {
     evaluateExpression("f(x: 1, y: 2)") should reportFailure(
       failureType = EvaluationFailureType.NO_FUNCTION_FOUND,
-      failureMessage = "no function found with name 'f' and parameters: x,y"
+      failureMessage = "No function found with name 'f' and parameters: x,y"
     )
   }
 
