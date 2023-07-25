@@ -39,6 +39,24 @@ trait FeelEngineTest {
     engine.evaluateExpression(expression, context)
   }
 
+  def evaluateUnaryTests(
+                          expression: String,
+                          inputValue: Any,
+                          variables: Map[String, Any] = Map(),
+                          functions: Map[String, ValFunction] = Map()
+                        ): EvaluationResult = {
+    val context =
+      Context.StaticContext(
+        variables = variables,
+        functions = functions.map { case (n, f) => n -> List(f) })
+
+    engine.evaluateUnaryTests(
+      expression = expression,
+      inputValue = inputValue,
+      context = context
+    )
+  }
+
   def evaluateFunction(function: String): ValFunction = {
     engine.evaluateExpression(function) match {
       case SuccessfulEvaluationResult(result: ValFunction, _) => result
