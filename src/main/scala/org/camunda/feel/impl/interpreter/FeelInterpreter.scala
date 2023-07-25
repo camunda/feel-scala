@@ -871,14 +871,24 @@ class FeelInterpreter {
       case ctx: ValContext =>
         EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
           case _: ValError =>
+            val detailedMessage = ctx.context.variableProvider.keys match {
+              case Nil => "The context is empty"
+              case keys => s"Available keys: ${keys.mkString(", ")}"
+            }
             error(
               failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-              failureMessage = s"context contains no entry with key '$key'"
+              failureMessage = s"No context entry found with key '$key'. $detailedMessage"
             )
+            ValNull
           case x: Val => x
-          case _      => error(s"context contains no entry with key '$key'")
         }
       case ValList(list) => ValList(list map (item => path(item, key)))
+      case ValNull =>
+        error(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = s"No context entry found with key '$key'. The context is null"
+        )
+        ValNull
       case value =>
         value.property(key).getOrElse {
           val propertyNames: String = value.propertyNames().mkString(",")
