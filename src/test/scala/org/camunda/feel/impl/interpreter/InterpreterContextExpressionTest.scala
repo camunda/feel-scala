@@ -16,7 +16,8 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -27,7 +28,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 class InterpreterContextExpressionTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelIntegrationTest
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A context" should "be accessed (variable)" in {
     eval("ctx.a", Map("ctx" -> Map("a" -> 1))) should be(ValNumber(1))
@@ -178,12 +181,6 @@ class InterpreterContextExpressionTest
     eval("[{a:1}, {a:2}][1].a") should be(ValNumber(1))
   }
 
-  it should "fail if one entry fails" in {
-
-    eval(" { a:1, b: {}.x } ") should be(
-      ValError("context contains no entry with key 'x'"))
-  }
-
   it should "be compared with '='" in {
 
     eval("{} = {}") should be(ValBoolean(true))
@@ -246,6 +243,46 @@ class InterpreterContextExpressionTest
     eval("{foo{bar:1}.`foo{bar` = 1") shouldBe a[ValError]
     eval("{foo,bar:1}.`foo,bar` = 1") shouldBe a[ValError]
     eval("{foo:bar:1}.`foo:bar` = 1") shouldBe a[ValError]
+  }
+
+  it should "return null for a non-existing context entry" in {
+    evaluateExpression("{}.x") should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'x'. The context is empty"
+        )
+      )
+
+    evaluateExpression("{x:1, y:2}.z") should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'z'. Available keys: x, y"
+        )
+      )
+  }
+
+  it should "return null for a non-existing context entry (chained)" in {
+    evaluateExpression("{a:1}.b.c") should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'b'. Available keys: a") and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'c'. The context is null")
+    )
+  }
+
+  "A nested context" should "return null for a non-existing context entry" in {
+    evaluateExpression("{x:1, y:{}.z}") should (
+      returnResult(Map("x" -> 1, "y" -> null)) and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'z'. The context is empty"
+        )
+      )
   }
 
 }
