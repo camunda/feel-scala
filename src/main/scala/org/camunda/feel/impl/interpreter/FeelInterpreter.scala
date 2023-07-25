@@ -686,9 +686,13 @@ class FeelInterpreter {
     )
 
   private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val = x match {
-    case x: ValFunction     => f(x)
-    case ValError(failure)  => error(EvaluationFailureType.NO_FUNCTION_FOUND, failure)
-    case _                  => error(s"expect Function but found '$x'")
+    case x: ValFunction => f(x)
+    case ValError(failure) =>
+      error(EvaluationFailureType.NO_FUNCTION_FOUND, failure)
+      ValNull
+    case _ =>
+      error(EvaluationFailureType.INVALID_TYPE, s"Expected function but found '$x'")
+      ValNull
   }
 
   private def invokeFunction(function: ValFunction, params: FunctionParameters)(

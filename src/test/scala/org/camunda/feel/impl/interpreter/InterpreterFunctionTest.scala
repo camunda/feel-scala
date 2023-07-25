@@ -16,10 +16,10 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * @author Philipp Ossler
@@ -27,176 +27,257 @@ import org.scalatest.flatspec.AnyFlatSpec
 class InterpreterFunctionTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
-  "A function definition" should "be interpeted" in {
+  "A function definition" should "be returned as a function" in {
+    val function = evaluateFunction("function(x) x + 1")
 
-    val function = eval("function(x) x + 1")
-
-    function shouldBe a[ValFunction]
-    function.asInstanceOf[ValFunction].params should be(List("x"))
+    function.params should be(List("x"))
   }
 
-  it should "be invoked without parameter" in {
-
-    val functions =
-      Map("f" -> eval("""function() "invoked" """).asInstanceOf[ValFunction])
-
-    eval("f()", functions = functions) should be(ValString("invoked"))
+  "A function invocation" should "invoke a function without parameter" in {
+    evaluateExpression(
+      expression  = "f()",
+      functions = Map("f" -> evaluateFunction("""function() "invoked" """))
+    ) should returnResult("invoked")
   }
 
-  it should "be invoked with one positional parameter" in {
+  it should "invoke a function with a positional parameter" in {
+    val functions = Map("f" -> evaluateFunction("function(x) x + 1"))
 
-    val functions =
-      Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
+    evaluateExpression(
+      expression = "f(1)",
+      functions = functions
+    ) should returnResult(2)
 
-    eval("f(1)", functions = functions) should be(ValNumber(2))
-    eval("f(2)", functions = functions) should be(ValNumber(3))
+    evaluateExpression(
+      expression = "f(2)",
+      functions = functions
+    ) should returnResult(3)
   }
 
-  it should "be invoked with positional parameters" in {
-
+  it should "invoke a function with positional parameters" in {
     val functions =
-      Map("add" -> eval("function(x,y) x + y").asInstanceOf[ValFunction])
+      Map("add" -> evaluateFunction("function(x,y) x + y"))
 
-    eval("add(1,2)", functions = functions) should be(ValNumber(3))
-    eval("add(2,3)", functions = functions) should be(ValNumber(5))
+    evaluateExpression(
+      expression = "add(1,2)",
+      functions = functions
+    ) should returnResult(3)
+
+    evaluateExpression(
+      expression = "add(2,3)",
+      functions = functions
+    ) should returnResult(5)
   }
 
-  it should "be invoked with one named parameter" in {
-
+  it should "invoke a function a named parameter" in {
     val functions =
-      Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
+      Map("f" -> evaluateFunction("function(x) x + 1"))
 
-    eval("f(x:1)", functions = functions) should be(ValNumber(2))
-    eval("f(x:2)", functions = functions) should be(ValNumber(3))
+    evaluateExpression(
+      expression = "f(x:1)",
+      functions = functions
+    ) should returnResult(2)
+
+    evaluateExpression(
+      expression = "f(x:2)",
+      functions = functions
+    ) should returnResult(3)
   }
 
-  it should "be invoked with named parameters" in {
-
+  it should "invoke a function with named parameters" in {
     val functions =
-      Map("sub" -> eval("function(x,y) x - y").asInstanceOf[ValFunction])
+      Map("sub" -> evaluateFunction("function(x,y) x - y"))
 
-    eval("sub(x:4,y:2)", functions = functions) should be(ValNumber(2))
-    eval("sub(y:2,x:4)", functions = functions) should be(ValNumber(2))
+    evaluateExpression(
+      expression = "sub(x:4,y:2)",
+      functions = functions
+    ) should returnResult(2)
+
+    evaluateExpression(
+      expression = "sub(y:2,x:4)",
+      functions = functions
+    ) should returnResult(2)
   }
 
-  it should "be invoked with an expression as parameter" in {
-
-    val functions =
-      Map("f" -> eval("function(x) x + 1").asInstanceOf[ValFunction])
-
-    eval("f(2 + 3)", functions = functions) should be(ValNumber(6))
+  it should "take an expression as parameter" in {
+    evaluateExpression(
+      expression = "f(2 + 3)",
+      functions = Map("f" -> evaluateFunction("function(x) x + 1"))
+    ) should returnResult(6)
   }
 
-  it should "be invoked as parameter of another function" in {
-
-    val functions =
-      Map("a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
-          "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction])
-
-    eval("a(b(1))", functions = functions) should be(ValNumber(4))
+  it should "take another function as parameter" in {
+    evaluateExpression(
+      expression = "a(b(1))",
+      functions = Map(
+        "a" -> evaluateFunction("function(x) x + 1"),
+        "b" -> evaluateFunction("function(x) x + 2")
+      )
+    ) should returnResult(4)
   }
 
-  it should "fail to invoke with wrong number of parameters" in {
-
+  it should "return null if invoked with wrong parameters" in {
     val functions =
-      Map("f" -> eval("function(x,y) true").asInstanceOf[ValFunction])
+      Map("f" -> evaluateFunction("function(x,y) true"))
 
-    eval("f()", functions = functions) should be(
-      ValError("no function found with name 'f' and 0 parameters"))
-    eval("f(1)", functions = functions) should be(
-      ValError("no function found with name 'f' and 1 parameters"))
+    evaluateExpression(expression = "f()", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
+      )
 
-    eval("f(x:1,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,z"))
-    eval("f(x:1,y:2,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,y,z"))
+    evaluateExpression(expression = "f(1)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 1 parameters")
+      )
+
+    evaluateExpression(expression = "f(x:1,z:3)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,z")
+      )
+
+    evaluateExpression(expression = "f(x:1,y:2,z:3)", functions = functions) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,y,z")
+      )
+  }
+
+  it should "return null if no function exists with the name" in {
+    evaluateExpression("f()") should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
+      )
+  }
+
+  it should "return null if the name doesn't resolve to a function" in {
+    evaluateExpression(expression = "f()", variables = Map("x" -> "a variable")) should (
+      returnNull() and
+        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
+      )
+  }
+
+  it should "return null for a built-in function if invoked with wrong arguments" in {
+    evaluateExpression("number(null)") should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
+          failureMessage = "Failed to invoke function 'number': Illegal arguments: List(ValNull)")
+      )
   }
 
   it should "replace not set parameters with null" in {
-
-    val functions = Map("f" -> eval("""
+    val functions = Map("f" -> evaluateFunction("""
       function(x,y)
         if x = null
         then "x"
         else if y = null
         then "y"
         else "ok"
-        """).asInstanceOf[ValFunction])
+        """))
 
-    eval("f(x:1)", functions = functions) should be(ValString("y"))
-    eval("f(y:1)", functions = functions) should be(ValString("x"))
-    eval("f(x:1,y:1)", functions = functions) should be(ValString("ok"))
+    evaluateExpression(
+      expression = "f(x:1)",
+      functions = functions
+    ) should returnResult("y")
+
+    evaluateExpression(
+      expression = "f(y:1)",
+      functions = functions
+    ) should returnResult("x")
+
+    evaluateExpression(
+      expression = "f(x:1,y:1)",
+      functions = functions
+    ) should returnResult("ok")
   }
 
-  it should "be invoked and followed by a path" in {
-    eval(""" date(2019,09,17).year """) should be(ValNumber(2019))
+  it should "be followed by a path" in {
+    evaluateExpression(""" date(2019,09,17).year """) should returnResult(2019)
   }
 
-  it should "be invoked and followed by a filter" in {
-    eval(""" index of([1,2,3,2],2)[1]  """) should be(ValNumber(2))
+  it should "be followed by a filter" in {
+    evaluateExpression(""" index of([1,2,3,2],2)[1]  """) should returnResult(2)
   }
 
-  it should "be properly evaluated when parameters contain whitespaces" in {
-    eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
+  it should "invoke a function with parameters contain whitespaces" in {
+    evaluateExpression(
+      expression = """number(from: "1.000.000,01", decimal separator:",", grouping separator:".")"""
+    ) should returnResult(1_000_000.01)
   }
 
-  it should "be invoked with one named parameter containing whitespaces" in {
+  it should "invoke a function with a named parameter containing whitespaces" in {
     val functions =
-      Map("f" -> eval("""function(test name) `test name` + 1""").asInstanceOf[ValFunction])
+      Map("f" -> evaluateFunction("""function(test name) `test name` + 1"""))
 
-    eval("f(test name:1)", functions = functions) should be(ValNumber(2))
-    eval("f(test name:2)", functions = functions) should be(ValNumber(3))
+    evaluateExpression(
+      expression = "f(test name:1)",
+      functions = functions
+    ) should returnResult(2)
+
+    evaluateExpression(
+      expression = "f(test name:2)",
+      functions = functions
+    ) should returnResult(3)
   }
 
-  it should "be invoked with one named parameter containing more than one whitespace" in {
+  it should "invoke a function with a named parameter containing more than one whitespace" in {
     val functions =
-      Map("f" -> eval("""function(test   name yada) `test   name yada` + 1""").asInstanceOf[ValFunction])
+      Map("f" -> evaluateFunction("""function(test   name yada) `test   name yada` + 1"""))
 
-    eval("f(test   name yada:1)", functions = functions) should be(ValNumber(2))
-    eval("f(test   name yada:2)", functions = functions) should be(ValNumber(3))
+    evaluateExpression(
+      expression = "f(test   name yada:1)",
+      functions = functions
+    ) should returnResult(2)
+
+    evaluateExpression(
+      expression = "f(test   name yada:2)",
+      functions = functions
+    ) should returnResult(3)
   }
 
-  "An external java function definition" should "be invoked with one double parameter" in {
-
+  "An external Java function invocation" should "invoke a function with a double parameter" in {
     val functions = Map(
-      "cos" -> eval(
-        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """)
-        .asInstanceOf[ValFunction])
+      "cos" -> evaluateFunction(
+        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """))
 
-    eval("cos(0)", functions = functions) should be(ValNumber(1))
-    eval("cos(1)", functions = functions) should be(ValNumber(Math.cos(1)))
+    evaluateExpression(
+      expression = "cos(0)",
+      functions = functions
+    ) should returnResult(1)
+
+    evaluateExpression(
+      expression = "cos(1)",
+      functions = functions
+    ) should returnResult(Math.cos(1))
   }
 
-  it should "be invoked with two int parameters" in {
-
-    val functions = Map(
-      "max" -> eval(
-        """ function(x,y) external { java: { class: "java.lang.Math", method signature: "max(int, int)" } } """)
-        .asInstanceOf[ValFunction])
-
-    eval("max(1,2)", functions = functions) should be(ValNumber(2))
+  it should "invoke a function with two int parameters" in {
+    evaluateExpression(
+      expression = "max(1,2)",
+      functions = Map("max" -> evaluateFunction(
+        """ function(x,y) external { java: {
+          class: "java.lang.Math", method signature: "max(int, int)" } } """))
+    ) should returnResult(2)
   }
 
-  it should "be invoked with one long parameters" in {
-
-    val functions = Map(
-      "abs" -> eval(
-        """ function(a) external { java: { class: "java.lang.Math", method signature: "abs(long)" } } """)
-        .asInstanceOf[ValFunction])
-
-    eval("abs(-1)", functions = functions) should be(ValNumber(1))
+  it should "invoke a function with a long parameters" in {
+    evaluateExpression(
+      expression = "abs(-1)",
+      functions = Map("abs" -> evaluateFunction(
+        """ function(a) external { java: {
+          class: "java.lang.Math", method signature: "abs(long)" } } """))
+    ) should returnResult(1)
   }
 
-  it should "be invoked with one float parameters" in {
-
-    val functions = Map(
-      "round" -> eval(
-        """ function(a) external { java: { class: "java.lang.Math", method signature: "round(float)" } } """)
-        .asInstanceOf[ValFunction])
-
-    eval("round(3.2)", functions = functions) should be(ValNumber(3))
+  it should "invoke a function with a float parameters" in {
+    evaluateExpression(
+      expression = "round(3.2)",
+      functions = Map("round" -> evaluateFunction(
+        """ function(a) external { java: {
+          class: "java.lang.Math", method signature: "round(float)" } } """))
+    ) should returnResult(3)
   }
 
 }
