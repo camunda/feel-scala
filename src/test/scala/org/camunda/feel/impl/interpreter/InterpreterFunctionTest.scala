@@ -158,6 +158,15 @@ class InterpreterFunctionTest
       )
   }
 
+  it should "return null for a built-in function if invoked with wrong arguments" in {
+    evaluateExpression("number(null)") should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
+          failureMessage = "Failed to invoke function 'number': Illegal arguments: List(ValNull)")
+      )
+  }
+
   it should "replace not set parameters with null" in {
     val functions = Map("f" -> evaluateFunction("""
       function(x,y)

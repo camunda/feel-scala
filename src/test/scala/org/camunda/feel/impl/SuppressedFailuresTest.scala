@@ -30,27 +30,6 @@ class SuppressedFailuresTest extends AnyFlatSpec
     )
   }
 
-  it should "report a suppressed failure for a non-existing function (with position arguments)" in {
-    evaluateExpression("f(1, 2)") should reportFailure(
-      failureType = EvaluationFailureType.NO_FUNCTION_FOUND,
-      failureMessage = "No function found with name 'f' and 2 parameters"
-    )
-  }
-
-  it should "report a suppressed failure for a non-existing function (with named arguments)" in {
-    evaluateExpression("f(x: 1, y: 2)") should reportFailure(
-      failureType = EvaluationFailureType.NO_FUNCTION_FOUND,
-      failureMessage = "No function found with name 'f' and parameters: x,y"
-    )
-  }
-
-  it should "report a suppressed failure if a function invocation fails" in {
-    evaluateExpression("number(null)") should reportFailure(
-      failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-      failureMessage = "Failed to invoke function 'number': Illegal arguments: List(ValNull)"
-    )
-  }
-
   it should "report a suppressed failure if input is not comparable with interval" in {
     evaluateUnaryTests("[2..5]", "NaN") should reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
