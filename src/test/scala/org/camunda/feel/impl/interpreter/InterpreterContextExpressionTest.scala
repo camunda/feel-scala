@@ -53,17 +53,6 @@ class InterpreterContextExpressionTest
     eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))
   }
 
-  it should "be accessed in a list (literal)" in {
-
-    eval("[ {a:1, b:2}, {a:3, b:4} ].a") should be(
-      ValList(List(ValNumber(1), ValNumber(3))))
-  }
-
-  it should "be accessed in a list (variable)" in {
-    eval("a.b", Map("a" -> List(Map("b" -> 1), Map("b" -> 2)))) should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
-  }
-
   it should "be accessed in same context" in {
 
     eval("{ a:1, b:(a+1), c:(b+1)}.c") should be(ValNumber(3))
@@ -282,6 +271,45 @@ class InterpreterContextExpressionTest
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'z'. The context is empty"
         )
+      )
+  }
+
+  "A context projection" should "contain the value of each entry (with literal)" in {
+    evaluateExpression("[ {a:1, b:2}, {a:3, b:4} ].a") should returnResult(
+      List(1, 3)
+    )
+  }
+
+  it should "contain the value of each entry (with variable)" in {
+    evaluateExpression(
+      expression = "a.b",
+      variables = Map("a" -> List(Map("b" -> 1), Map("b" -> 2)))
+    ) should returnResult(List(1, 2))
+  }
+
+  it should "contain null if a context doesn't have the given key" in {
+    evaluateExpression("[ {a:1}, {b:2} ].a") should (
+      returnResult(List(1, null)) and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'a'. Available keys: b")
+      )
+
+    evaluateExpression("[ {a:1}, {b:2} ].b") should (
+      returnResult(List(null, 2)) and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'b'. Available keys: a")
+      )
+
+    evaluateExpression("[ {a:1}, {b:2} ].c") should (
+      returnResult(List(null, null)) and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'c'. Available keys: a") and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'c'. Available keys: b")
       )
   }
 
