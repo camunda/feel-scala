@@ -32,4 +32,4 @@ jobs:
           ${{ runner.os }}-maven-
 
     - name: Run Maven
-      run: mvn -B clean verify com.mycila:license-maven-plugin:check
+      run: mvn -B clean -P checkFormat verify
