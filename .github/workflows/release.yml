@@ -92,6 +92,13 @@ jobs:
           && sudo apt update \
           && sudo apt install gh -y     
 
+      - name: Set up Java environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+          cache: maven
+
       - uses: s4u/maven-settings-action@v2.8.0
         with:
           servers: |
@@ -112,13 +119,6 @@ jobs:
                 "mirrorOf": "camunda-nexus",
                 "url": "https://repository.nexus.camunda.cloud/content/groups/internal/"
             }]
-
-      - name: Set up Java environment
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 11
-          cache: maven
 
       - name: Maven Release
         id: maven-release
