@@ -32,35 +32,7 @@ class InterpreterContextExpressionTest
     with FeelEngineTest
     with EvaluationResultMatchers {
 
-  "A context" should "be accessed (variable)" in {
-    eval("ctx.a", Map("ctx" -> Map("a" -> 1))) should be(ValNumber(1))
-  }
-
-  it should "be accessed (literal)" in {
-    eval("{ a: 1 }.a") should be(ValNumber(1))
-  }
-
-  it should "be accessed in a nested context" in {
-
-    val context = eval("{ a: { b:1 } }.a")
-    context shouldBe a[ValContext]
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("b" -> ValNumber(1)))
-
-    eval("{ a: { b:1 } }.a.b") should be(ValNumber(1))
-  }
-
-  it should "be accessed in same context" in {
-
-    eval("{ a:1, b:(a+1), c:(b+1)}.c") should be(ValNumber(3))
-
-    eval("{ a: { b: 1 }, c: (1 + a.b) }.c") should be(ValNumber(2))
-  }
-
-  it should "be filtered in a list" in {
+  "A context" should "be filtered in a list" in {
 
     val list = eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]")
     list shouldBe a[ValList]
@@ -156,9 +128,16 @@ class InterpreterContextExpressionTest
     eval("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should be(ValNumber(1))
   }
 
-  it should "access a variable in a nested context" in {
+  it should "access previous entries within the same context" in {
+    evaluateExpression("{a:1, b:a+1, c:b+1}") should returnResult(
+      Map("a" -> 1, "b" -> 2, "c" -> 3)
+    )
+  }
 
-    eval("{ a:1, b:{ c:a+2 } }.b.c") should be(ValNumber(3))
+  it should "access previous entries of outer context" in {
+    evaluateExpression("{a:1, b:{c:a+2}}") should returnResult(
+      Map("a" -> 1, "b" -> Map("c" -> 3))
+    )
   }
 
   it should "not override variables of nested context" in {
@@ -209,32 +188,40 @@ class InterpreterContextExpressionTest
     )
   }
 
-  it should "be accessed when defined with a name having white spaces" in {
-    eval("{foo bar:1}.`foo bar` = 1") should be(ValBoolean(true))
-    eval("{foo   bar:1}.`foo   bar` = 1") should be(ValBoolean(true))
-    eval("{foo bar:1, fizz buzz: 30}.`fizz buzz` = 1") should be(
-      ValBoolean(false))
-  }
-
-  it should "be accessed when defined with a name having special symbols" in {
-    eval("{foo+bar:1}.`foo+bar` = 1") should be(ValBoolean(true))
-    eval("{foo+bar:1, simple_special++char:4}.`simple_special++char` = 4") should be(
-      ValBoolean(true))
-    eval("""{\uD83D\uDC0E:"\uD83D\uDE00"}.`\uD83D\uDC0E`""") should be(
-      ValString("\uD83D\uDE00"))
-
-    eval(
-      "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`") should be(
-      ValNumber(5))
-  }
-
   it should "fail when special symbols violate context syntax" in {
     eval("{foo{bar:1}.`foo{bar` = 1") shouldBe a[ValError]
     eval("{foo,bar:1}.`foo,bar` = 1") shouldBe a[ValError]
     eval("{foo:bar:1}.`foo:bar` = 1") shouldBe a[ValError]
   }
 
-  it should "return null for a non-existing context entry" in {
+  "A context path expression" should "return the value (with literal)" in {
+    evaluateExpression("{a:1}.a") should returnResult(1)
+  }
+
+  it should "return the value (with variable)" in {
+    evaluateExpression(
+      expression = "a.b",
+      variables = Map("a" -> Map("b" -> 1))
+    ) should returnResult(1)
+  }
+
+  it should "return a nested context" in {
+    evaluateExpression("{a: {b:1}}.a") should returnResult(
+      Map("b" -> 1)
+    )
+  }
+
+  it should "return the value of the nested context" in {
+    evaluateExpression("{a: {b:1}}.a.b") should returnResult(1)
+  }
+
+  it should "return the value of a previous nested context entry" in {
+    evaluateExpression("{a:{b:1}, c:a.b+1}") should returnResult(
+      Map("a" -> Map("b" -> 1), "c" -> 2)
+    )
+  }
+
+  it should "return null if the context is empty" in {
     evaluateExpression("{}.x") should (
       returnNull() and
         reportFailure(
@@ -242,7 +229,9 @@ class InterpreterContextExpressionTest
           failureMessage = "No context entry found with key 'x'. The context is empty"
         )
       )
+  }
 
+  it should "return null if no entry exists with the key" in {
     evaluateExpression("{x:1, y:2}.z") should (
       returnNull() and
         reportFailure(
@@ -252,7 +241,19 @@ class InterpreterContextExpressionTest
       )
   }
 
-  it should "return null for a non-existing context entry (chained)" in {
+  it should "return null if the context is null" in {
+    evaluateExpression(
+      expression = "a.b",
+      variables = Map("a" -> null)
+    ) should (
+      returnNull() and
+        reportFailure(
+          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+          failureMessage = "No context entry found with key 'b'. The context is null")
+      )
+  }
+
+  it should "return null if the chained context is null" in {
     evaluateExpression("{a:1}.b.c") should (
       returnNull() and
         reportFailure(
@@ -264,7 +265,7 @@ class InterpreterContextExpressionTest
     )
   }
 
-  "A nested context" should "return null for a non-existing context entry" in {
+  it should "return null if the context is empty (inside a context)" in {
     evaluateExpression("{x:1, y:{}.z}") should (
       returnResult(Map("x" -> 1, "y" -> null)) and
         reportFailure(
@@ -272,6 +273,32 @@ class InterpreterContextExpressionTest
           failureMessage = "No context entry found with key 'z'. The context is empty"
         )
       )
+  }
+
+  it should "return the value of a key with whitespaces" in {
+    evaluateExpression("{foo bar:1}.`foo bar`") should returnResult(1)
+
+    evaluateExpression("{foo   bar:2}.`foo   bar`") should returnResult(2)
+
+    evaluateExpression("{foo bar:3, fizz buzz: 4}.`fizz buzz`") should returnResult(4)
+  }
+
+  it should "return the value of a key with special symbols" in {
+    evaluateExpression(
+      expression = "{foo+bar:1}.`foo+bar`"
+    ) should returnResult(1)
+
+    evaluateExpression(
+      expression = "{foo+bar:1, simple_special++char:4}.`simple_special++char`"
+    ) should returnResult(4)
+
+    evaluateExpression(
+      expression = """{\uD83D\uDC0E:"\uD83D\uDE00"}.`\uD83D\uDC0E`"""
+    ) should returnResult("\uD83D\uDE00")
+
+    evaluateExpression(
+      expression = "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`"
+    ) should returnResult(5)
   }
 
   "A context projection" should "contain the value of each entry (with literal)" in {
