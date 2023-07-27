@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -27,54 +27,70 @@ import org.scalatest.matchers.should.Matchers
 class InterpreterBeanExpressionTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A bean" should "access a field" in {
-
     class A(val b: Int)
 
-    eval("a.b", Map("a" -> new A(2))) should be(ValNumber(2))
-
+    evaluateExpression(
+      expression = "a.b",
+      variables = Map("a" -> new A(2))
+    ) should returnResult(2)
   }
 
   it should "access a getter method as field" in {
-
     class A(b: Int) {
       def getFoo() = b + 1
     }
 
-    eval("a.foo", Map("a" -> new A(2))) should be(ValNumber(3))
-
+    evaluateExpression(
+      expression = "a.foo",
+      variables = Map("a" -> new A(2))
+    ) should returnResult(3)
   }
 
   it should "ignore getter method with arguments as field" in {
-
     class A(x: Int) {
       def getResult(y: Int): Int = x + y
     }
 
-    eval("a.result", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'result'")
-    )
+    evaluateExpression(
+      expression = "a.result",
+      variables = Map("a" -> new A(2))
+    ) should (returnNull() and
+      reportFailure(
+        failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+        failureMessage = "No context entry found with key 'result'. Available keys: "
+      ))
   }
 
   it should "ignore method with arguments as field (builder-style)" in {
-
     class A(x: Int) {
       def plus(y: Int): A = new A(x + y)
     }
 
-    eval("a.plus", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'plus'")
-    )
+    evaluateExpression(
+      expression = "a.plus",
+      variables = Map("a" -> new A(2))
+    ) should (returnNull() and
+      reportFailure(
+        failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+        failureMessage = "No context entry found with key 'plus'. Available keys: "
+      ))
   }
 
   it should "not access a private field" in {
     class A(private val x: Int)
 
-    eval("a.x", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'x'")
-    )
+    evaluateExpression(
+      expression = "a.x",
+      variables = Map("a" -> new A(2))
+    ) should (returnNull() and
+      reportFailure(
+        failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+        failureMessage = "No context entry found with key 'x'. Available keys: "
+      ))
   }
 
   it should "not access a private method" in {
@@ -82,51 +98,70 @@ class InterpreterBeanExpressionTest
       private def getResult(): Int = x
     }
 
-    eval("a.result", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'result'")
-    )
+    evaluateExpression(
+      expression = "a.result",
+      variables = Map("a" -> new A(2))
+    ) should (returnNull() and
+      reportFailure(
+        failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
+        failureMessage = "No context entry found with key 'result'. Available keys: x"
+      ))
   }
 
   it should "invoke a method without arguments" in {
-
     class A {
       def foo() = "foo"
     }
 
-    eval("a.foo()", Map("a" -> new A())) should be(ValString("foo"))
-
+    evaluateExpression(
+      expression = "a.foo()",
+      variables = Map("a" -> new A())
+    ) should returnResult("foo")
   }
 
   it should "invoke a method with one argument" in {
-
     class A {
       def incr(x: Int) = x + 1
     }
 
-    eval("a.incr(1)", Map("a" -> new A())) should be(ValNumber(2))
-
+    evaluateExpression(
+      expression = "a.incr(1)",
+      variables = Map("a" -> new A())
+    ) should returnResult(2)
   }
 
   it should "access a nullable field" in {
-
     class A(val a: String, val b: String)
 
-    eval(""" a.a = null """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" a.b = null """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(true))
-    eval(""" null = a.a """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" null = a.b""", Map("a" -> new A("not null", null))) should be(
-      ValBoolean(true))
-    eval(""" a.a = a.b """, Map("a" -> new A("not null", "not null"))) should be(
-      ValBoolean(true))
-    eval(""" a.a = a.b """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" a.a = a.b """, Map("a" -> new A(null, "not null"))) should be(
-      ValBoolean(false))
-    eval(""" a.a = a.b """, Map("a" -> new A(null, null))) should be(
-      ValBoolean(true))
+    evaluateExpression(
+      expression = "a.a",
+      variables = Map("a" -> new A(a = "not null", b = null))
+    ) should returnResult("not null")
+
+    evaluateExpression(
+      expression = "a.b",
+      variables = Map("a" -> new A(a = "not null", b = null))
+    ) should returnNull()
+
+    evaluateExpression(
+      expression = "a.a = a.b",
+      variables = Map("a" -> new A(a = "not null", b = "not null"))
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = "a.a = a.b",
+      variables = Map("a" -> new A(a = "not null", b = null))
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = "a.a = a.b",
+      variables = Map("a" -> new A(a = null, b = "not null"))
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = "a.a = a.b",
+      variables = Map("a" -> new A(a = null, b = null))
+    ) should returnResult(true)
   }
 
 }
