@@ -32,103 +32,7 @@ class InterpreterContextExpressionTest
     with FeelEngineTest
     with EvaluationResultMatchers {
 
-  "A context" should "be filtered in a list" in {
-
-    val list = eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]")
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items.head
-
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))
-  }
-
-  it should "be filtered via comparison with missing entry" in {
-
-    val list = eval("[{x: 1, y: 2}, {x: 3}][y > 1]")
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items.head
-
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
-  }
-
-  it should "be filtered via comparison with null value" in {
-    val list = eval("[{x: 1}, {x: null}][x > 0]")
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items.head
-
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("x" -> ValNumber(1)))
-  }
-
-  it should "be filtered via matching null comparison" in {
-    val list = eval("[{x: 1}, {x: null}][x = null]")
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items.head
-
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("x" -> ValNull))
-  }
-
-  // note that a missing entry is equivalent to that entry containing null
-  it should "be filtered via missing entry null comparison" in {
-    val list = eval("[{x: 1}, {y: 1}][x = null]")
-    list shouldBe a[ValList]
-
-    val items = list.asInstanceOf[ValList].items
-    items should have size 1
-    val context = items.head
-
-    context
-      .asInstanceOf[ValContext]
-      .context
-      .variableProvider
-      .getVariables should be(Map("y" -> ValNumber(1)))
-  }
-
-  it should "be filtered by name 'item'" in {
-
-    eval("[ {item:1}, {item:2}, {item:3} ][item >= 2]") match {
-      case ValList(List(ValContext(context1), ValContext(context2))) =>
-        context1.variableProvider.getVariables should be(
-          Map("item" -> ValNumber(2)))
-        context2.variableProvider.getVariables should be(
-          Map("item" -> ValNumber(3)))
-
-      case actual => fail(s"expected a list with two items but found '$actual'")
-    }
-  }
-
-  it should "be accessed and filtered in a list" in {
-
-    eval("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should be(ValNumber(1))
-  }
-
-  it should "access previous entries within the same context" in {
+  "A context" should "access previous entries within the same context" in {
     evaluateExpression("{a:1, b:a+1, c:b+1}") should returnResult(
       Map("a" -> 1, "b" -> 2, "c" -> 3)
     )
@@ -143,10 +47,6 @@ class InterpreterContextExpressionTest
   it should "not override variables of nested context" in {
 
     eval("{ a:1, b:{ a:2, c:a+3 } }.b.c") should be(ValNumber(5))
-  }
-
-  it should "be filtered and accessed" in {
-    eval("[{a:1}, {a:2}][1].a") should be(ValNumber(1))
   }
 
   it should "be compared with '='" in {
@@ -338,6 +238,51 @@ class InterpreterContextExpressionTest
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'c'. Available keys: b")
       )
+  }
+
+  "A context filter" should "access a context entry by key" in {
+    evaluateExpression("[ {a:1, b:2}, {a:3, b:4} ][a > 2]") should returnResult(
+      List(Map("a" -> 3, "b" -> 4))
+    )
+  }
+
+  it should "access a context entry by the key 'item'" in {
+    evaluateExpression("[ {item:1}, {item:2}, {item:3} ][item >= 2]") should returnResult(
+      List(Map("item" -> 2), Map("item" -> 3))
+    )
+  }
+
+  it should "be followed by a path expression" in {
+    evaluateExpression("[{a:1}, {a:2}][1].a") should returnResult(1)
+  }
+
+  it should "be applied to a path expression" in {
+    evaluateExpression("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should returnResult(1)
+  }
+
+  it should "not contain an entry if it doesn't have the given key" in {
+    evaluateExpression("[{x: 1, y: 2}, {x: 3}][y > 1]") should returnResult(
+      List(Map("x" -> 1, "y" -> 2))
+    )
+  }
+
+  it should "not contain an entry if it the value is null" in {
+    evaluateExpression("[{x: 1}, {x: null}][x > 0]") should returnResult(
+      List(Map("x" -> 1))
+    )
+  }
+
+  it should "contain all entries with null value" in {
+    evaluateExpression("[{x: 1}, {x: null}][x = null]") should returnResult(
+      List(Map("x" -> null))
+    )
+  }
+
+  it should "contain all entries with null value or missing context entry" in {
+    // note that a missing entry is equivalent to that entry containing null
+    evaluateExpression("[{x: 1}, {y: 1}][x = null]") should returnResult(
+      List(Map("y" -> 1))
+    )
   }
 
 }
