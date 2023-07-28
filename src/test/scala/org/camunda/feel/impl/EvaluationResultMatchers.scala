@@ -25,6 +25,13 @@ trait EvaluationResultMatchers {
 
   def returnNull() = new EvaluationResultValueMatcher(expectedResult = null)
 
+  def failWith(expectedFailureMessage: String) =
+    new EvaluationResultFailureMatcher(expectedFailureMessage)
+
+  def failToParse() = new EvaluationResultFailureMatcher(
+    expectedFailureMessage = "failed to parse"
+  )
+
   def reportFailure(failureType: EvaluationFailureType, failureMessage: String) =
     new SuppressedFailureMatcher(EvaluationFailure(failureType, failureMessage))
 
@@ -55,6 +62,23 @@ trait EvaluationResultMatchers {
       evaluationResult match {
         case SuccessfulEvaluationResult(_, suppressedFailures) => matchResult(suppressedFailures)
         case FailedEvaluationResult(_, suppressedFailures) => matchResult(suppressedFailures)
+      }
+    }
+  }
+
+  class EvaluationResultFailureMatcher(expectedFailureMessage: String) extends Matcher[EvaluationResult] {
+    override def apply(evaluationResult: EvaluationResult): MatchResult = {
+      evaluationResult match {
+        case SuccessfulEvaluationResult(result, _) => MatchResult(
+          false,
+          s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'",
+          s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'"
+        )
+        case FailedEvaluationResult(failure, _) => MatchResult(
+          failure.message.contains(expectedFailureMessage),
+          s"the evaluation failure message didn't contain '$expectedFailureMessage' but was '${failure.message}'",
+          s"the evaluation failure message contained '${failure.message}' as expected",
+        )
       }
     }
   }

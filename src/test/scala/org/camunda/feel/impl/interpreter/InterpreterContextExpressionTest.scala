@@ -17,10 +17,9 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
-import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
-import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * @author Philipp Ossler
@@ -28,7 +27,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 class InterpreterContextExpressionTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest
     with FeelEngineTest
     with EvaluationResultMatchers {
 
@@ -45,53 +43,53 @@ class InterpreterContextExpressionTest
   }
 
   it should "not override variables of nested context" in {
-
-    eval("{ a:1, b:{ a:2, c:a+3 } }.b.c") should be(ValNumber(5))
+    evaluateExpression("{ a:1, b:{ a:2, c:a+3 } }") should returnResult(
+      Map("a" -> 1, "b" -> Map("a" -> 2, "c" -> 5))
+    )
   }
 
   it should "be compared with '='" in {
+    evaluateExpression("{} = {}") should returnResult(true)
+    evaluateExpression("{x:1} = {x:1}") should returnResult(true)
+    evaluateExpression("{x:{ y:1 }} = {x:{ y:1 }}") should returnResult(true)
 
-    eval("{} = {}") should be(ValBoolean(true))
-    eval("{x:1} = {x:1}") should be(ValBoolean(true))
-    eval("{x:{ y:1 }} = {x:{ y:1 }}") should be(ValBoolean(true))
+    evaluateExpression("{} = {x:1}") should returnResult(false)
+    evaluateExpression("{x:1} = {}") should returnResult(false)
+    evaluateExpression("{x:1} = {x:2}") should returnResult(false)
+    evaluateExpression("{x:1} = {y:1}") should returnResult(false)
 
-    eval("{} = {x:1}") should be(ValBoolean(false))
-    eval("{x:1} = {}") should be(ValBoolean(false))
-    eval("{x:1} = {x:2}") should be(ValBoolean(false))
-    eval("{x:1} = {y:1}") should be(ValBoolean(false))
-
-    eval("{x:1} = {x:true}") should be(ValBoolean(false))
+    evaluateExpression("{x:1} = {x:true}") should returnResult(false)
   }
 
   it should "be compared with '!='" in {
+    evaluateExpression("{} != {}") should returnResult(false)
+    evaluateExpression("{x:1} != {x:1}") should returnResult(false)
+    evaluateExpression("{x:{ y:1 }} != {x:{ y:1 }}") should returnResult(false)
 
-    eval("{} != {}") should be(ValBoolean(false))
-    eval("{x:1} != {x:1}") should be(ValBoolean(false))
-    eval("{x:{ y:1 }} != {x:{ y:1 }}") should be(ValBoolean(false))
+    evaluateExpression("{} != {x:1}") should returnResult(true)
+    evaluateExpression("{x:1} != {}") should returnResult(true)
+    evaluateExpression("{x:1} != {x:2}") should returnResult(true)
+    evaluateExpression("{x:1} != {y:1}") should returnResult(true)
 
-    eval("{} != {x:1}") should be(ValBoolean(true))
-    eval("{x:1} != {}") should be(ValBoolean(true))
-    eval("{x:1} != {x:2}") should be(ValBoolean(true))
-    eval("{x:1} != {y:1}") should be(ValBoolean(true))
-
-    eval("{x:1} != {x:true}") should be(ValBoolean(true))
+    evaluateExpression("{x:1} != {x:true}") should returnResult(true)
   }
 
   it should "be accessed and compared" in {
-    eval("{x:1}.x = 1") should be(ValBoolean(true))
+    evaluateExpression("{x:1}.x = 1") should returnResult(true)
   }
 
   it should "fail to compare if not a context" in {
-
-    eval("{} = 1") should be(
-      ValError("expect Context but found 'ValNumber(1)'")
+    evaluateExpression("{} = 1") should failWith(
+      "expect Context but found 'ValNumber(1)'"
     )
   }
 
   it should "fail when special symbols violate context syntax" in {
-    eval("{foo{bar:1}.`foo{bar` = 1") shouldBe a[ValError]
-    eval("{foo,bar:1}.`foo,bar` = 1") shouldBe a[ValError]
-    eval("{foo:bar:1}.`foo:bar` = 1") shouldBe a[ValError]
+    evaluateExpression("{foo{bar:1}.`foo{bar` = 1") should failToParse()
+
+    evaluateExpression("{foo,bar:1}.`foo,bar` = 1") should failToParse()
+
+    evaluateExpression("{foo:bar:1}.`foo:bar` = 1") should failToParse()
   }
 
   "A context path expression" should "return the value (with literal)" in {
