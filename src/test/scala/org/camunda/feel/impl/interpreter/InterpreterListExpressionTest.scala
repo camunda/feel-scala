@@ -275,8 +275,8 @@ class InterpreterListExpressionTest
 
   it should "fail if one element fails" in {
 
-    eval("[1, {}.x]") should be(
-      ValError("context contains no entry with key 'x'"))
+    eval("[1, x]") should be(
+      ValError("No variable found with name 'x'"))
   }
 
   it should "be compared with '='" in {
