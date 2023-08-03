@@ -63,6 +63,9 @@ object ConversionBuiltinFunctions {
   private def dateTime =
     builtinFunction(params = List("from"), invoke = {
       case List(ValString(from)) => parseDateTime(from)
+      case List(ValDate(from)) => parseDateTime(from.format(dateFormatter))
+      case List(ValLocalDateTime(from)) =>
+        parseDateTime(from.format(localDateTimeFormatter))
       case List(ValDateTime(from)) =>
         val formattedDateTime = from.format(dateTimeFormatter)
         // remove offset-id if zone-id is present
