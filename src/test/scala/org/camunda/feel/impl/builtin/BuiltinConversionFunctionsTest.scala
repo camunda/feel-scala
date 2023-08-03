@@ -22,7 +22,7 @@ import org.camunda.feel.syntaxtree._
 import org.camunda.feel._
 import org.camunda.feel.impl.FeelIntegrationTest
 
-import java.time.ZonedDateTime
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 
@@ -33,6 +33,12 @@ class BuiltinConversionFunctionsTest
     extends AnyFlatSpec
     with Matchers
     with FeelIntegrationTest {
+
+  private val now = ZonedDateTime.of(
+    LocalDate.parse("2023-08-04"),
+    LocalTime.parse("14:31:30.123456789"),
+    ZoneId.of("Europe/Berlin")
+  )
 
   "A date() function" should "convert String" in {
 
@@ -61,6 +67,10 @@ class BuiltinConversionFunctionsTest
 
     eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00+01:00")) should be(
       ValDateTime("2012-12-24T23:59:00+01:00"))
+
+    eval(""" date and time(x) """, Map("x" -> ValDateTime(now))) should be(
+      ValDateTime(now))
+
   }
 
   it should "convert (DateTime, Timezone)" in {
