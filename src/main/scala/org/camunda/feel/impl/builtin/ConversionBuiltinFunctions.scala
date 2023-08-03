@@ -63,6 +63,13 @@ object ConversionBuiltinFunctions {
   private def dateTime =
     builtinFunction(params = List("from"), invoke = {
       case List(ValString(from)) => parseDateTime(from)
+      case List(ValDateTime(from)) =>
+        val formattedDateTime = from.format(dateTimeFormatter)
+        // remove offset-id if zone-id is present
+        val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern
+          .matcher(formattedDateTime)
+          .replaceAll("$1$3")
+        parseDateTime(dateTimeWithOffsetOrZoneId)
     })
 
   private def dateTime2 = builtinFunction(
