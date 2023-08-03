@@ -68,6 +68,14 @@ class BuiltinConversionFunctionsTest
     eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00+01:00")) should be(
       ValDateTime("2012-12-24T23:59:00+01:00"))
 
+    eval(""" date and time(x) """, Map("x" -> ValDate("2023-08-04"))) should be(
+      ValLocalDateTime("2023-08-04T00:00")
+    )
+
+    eval(""" date and time(x) """, Map("x" -> ValLocalDateTime("2023-08-04T15:45:00"))) should be(
+      ValLocalDateTime("2023-08-04T15:45:00")
+    )
+
     eval(""" date and time(x) """, Map("x" -> ValDateTime(now))) should be(
       ValDateTime(now))
 
