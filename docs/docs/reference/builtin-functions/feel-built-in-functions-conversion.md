@@ -185,12 +185,18 @@ Parses the given string into a date and time.
 ```js
 date and time(from: string): date and time
 ```
+```js
+date and time(from: date and time): date and time
+```
 
 **Examples**
 
 ```js
 date and time("2018-04-29T009:30:00") 
-// date and time("2018-04-29T009:30:00")
+// date and time("2018-04-29T09:30:00")
+
+date and time(now())
+// date and time("2023-08-03T15:30:00.12345")
 ```
 
 ## date and time(date, time)
