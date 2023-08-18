@@ -75,13 +75,75 @@ class InterpreterContextExpressionTest
 
     val items = list.asInstanceOf[ValList].items
     items should have size 1
-    val context = items(0)
+    val context = items.head
 
     context
       .asInstanceOf[ValContext]
       .context
       .variableProvider
       .getVariables should be(Map("a" -> ValNumber(3), "b" -> ValNumber(4)))
+  }
+
+  it should "be filtered via comparison with missing entry" in {
+
+    val list = eval("[{x: 1, y: 2}, {x: 3}][y > 1]")
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items.head
+
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
+  }
+
+  it should "be filtered via comparison with null value" in {
+    val list = eval("[{x: 1}, {x: null}][x > 0]")
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items.head
+
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("x" -> ValNumber(1)))
+  }
+
+  it should "be filtered via matching null comparison" in {
+    val list = eval("[{x: 1}, {x: null}][x = null]")
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items.head
+
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("x" -> ValNull))
+  }
+
+  // note that a missing entry is equivalent to that entry containing null
+  it should "be filtered via missing entry null comparison" in {
+    val list = eval("[{x: 1}, {y: 1}][x = null]")
+    list shouldBe a[ValList]
+
+    val items = list.asInstanceOf[ValList].items
+    items should have size 1
+    val context = items.head
+
+    context
+      .asInstanceOf[ValContext]
+      .context
+      .variableProvider
+      .getVariables should be(Map("y" -> ValNumber(1)))
   }
 
   it should "be filtered by name 'item'" in {
