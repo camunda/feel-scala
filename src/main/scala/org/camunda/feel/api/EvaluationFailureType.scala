@@ -39,6 +39,8 @@ object EvaluationFailureType {
 
   case object FUNCTION_INVOCATION_FAILURE extends EvaluationFailureType
 
+  case object ASSERT_FAILURE extends EvaluationFailureType
+
 }
 
 

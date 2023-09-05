@@ -18,7 +18,7 @@ package org.camunda.feel
 
 import fastparse.Parsed
 import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, Failure}
-import org.camunda.feel.api.{EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType, EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
 import org.camunda.feel.context.{Context, FunctionProvider}
 import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
@@ -161,12 +161,26 @@ class FeelEngine(
           failure = Failure(s"failed to evaluate expression '${exp.text}': $cause"),
           suppressedFailures = context.failureCollector.failures
         )
+      case _ if containsAssertionError(context) =>
+        FailedEvaluationResult(
+          failure = Failure(s"The evaluation failed, the provided condition is not fulfilled"),
+          suppressedFailures = context.failureCollector.failures
+        )
       case value =>
         SuccessfulEvaluationResult(
           result = valueMapper.unpackVal(value),
           suppressedFailures = context.failureCollector.failures
         )
     }
+  }
+
+  /**
+   * Check if an {@link EvaluationFailureType.ASSERT_FAILURE} error is raised during the evaluation of an expression
+   * @param context the context of the evaluation
+   * @return true if an an {@link EvaluationFailureType.ASSERT_FAILURE} is raised, false otherwise
+   */
+  private def containsAssertionError(context: EvalContext): Boolean = {
+    context.failureCollector.failures.map(failure => failure.failureType).contains(EvaluationFailureType.ASSERT_FAILURE);
   }
 
   // ============ public API ============
