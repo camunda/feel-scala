@@ -80,3 +80,53 @@ get or default(null, "default")
 get or default(null, null)     
 // null
 ```
+
+## assert(value, condition)
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
+Verify that the provided condition is met, if the condition is true the function returns the value. Otherwise, the evaluation fails with an error
+
+**Function signature**
+
+```js
+assert(value: Any, condition: Any)
+```
+
+**Examples**
+
+```js
+assert(x, x > 3) with x = 4
+// 4
+
+assert(x, x != null) with x = "value"
+// "value"
+
+assert(x, x > 5) with x = 4
+// error("The condition is not fulfilled")
+```
+
+## assert(value, condition, cause)
+
+<MarkerCamundaExtension></MarkerCamundaExtension>
+
+Verify that the provided condition is met, if the condition is true the function returns the value. Otherwise, the evaluation fails with an error and the provide error message
+
+**Function signature**
+
+```js
+assert(value: Any, condition: Any, cause: String)
+```
+
+**Examples**
+
+```js
+assert(x, x > 3, "Custom error message") with x = 4
+// 4
+
+assert(x, x > 5, "Custom error message") with x = 4
+// error("Custom error message")
+
+assert(x, x != null, "Custom error message") with x = null
+// error("Custom error message")
+```
