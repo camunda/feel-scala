@@ -40,11 +40,8 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       Right(true))
   }
 
-  it should "fail on access to missing member" in {
-    engine.evalExpression("b", variables = Map("a" -> 2)) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
+  it should "return null if the variable doesn't exist" in {
+    engine.evalExpression("b", variables = Map("a" -> 2)) shouldBe Right(null)
   }
 
   "A custom context" should "provide its members" in {
@@ -65,18 +62,6 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     engine.evalExpression("a", myCustomContext) should be(Right(2))
     engine.evalExpression("floor(3.8)", myCustomContext) should be(Right(3))
     engine.evalUnaryTests("2", myCustomContext) should be(Right(true))
-  }
-
-  it should "fail on access to missing member" in {
-    val context = new CustomContext {
-      override def variableProvider: VariableProvider =
-        VariableProvider.StaticVariableProvider(Map.empty)
-    }
-
-    engine.evalExpression("b", context) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
   }
 
   it should "provide its functions" in {
@@ -128,15 +113,14 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     engine.evalExpression("foo", context) should be(Right(7))
   }
 
-  it should "fail on expression evaluation" in {
+  it should "return null if variable doesn't exist" in {
     val variables: Map[String, _] = Map()
 
     val context: CustomContext = new CustomContext {
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evalExpression("bar", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'bar': No variable found with name 'bar'"))
+    engine.evalExpression("bar", context) shouldBe Right(null)
   }
 
   val inputVariableContext = StaticVariableProvider(
