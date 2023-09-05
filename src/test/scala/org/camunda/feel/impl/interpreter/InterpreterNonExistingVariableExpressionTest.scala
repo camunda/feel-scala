@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter;
 
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -95,4 +96,13 @@ class InterpreterNonExistingVariableExpressionTest
     evaluateExpression("x between 1 and y") should returnNull()
     evaluateExpression("x between y and z") should returnNull()
   }
+
+  it should "return null" in {
+    evaluateExpression("non_existing") should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'non_existing'")
+      )
+  }
+
 }
