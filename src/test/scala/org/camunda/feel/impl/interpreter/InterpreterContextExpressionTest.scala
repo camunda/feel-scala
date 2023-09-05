@@ -134,7 +134,7 @@ class InterpreterContextExpressionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'z'. Available keys: x, y"
+          failureMessage = "No context entry found with key 'z'. Available keys: 'x', 'y'"
         )
       )
   }
@@ -156,7 +156,7 @@ class InterpreterContextExpressionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: a") and
+          failureMessage = "No context entry found with key 'b'. Available keys: 'a'") and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'c'. The context is null")
@@ -217,24 +217,24 @@ class InterpreterContextExpressionTest
       returnResult(List(1, null)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'a'. Available keys: b")
+          failureMessage = "No context entry found with key 'a'. Available keys: 'b'")
       )
 
     evaluateExpression("[ {a:1}, {b:2} ].b") should (
       returnResult(List(null, 2)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: a")
+          failureMessage = "No context entry found with key 'b'. Available keys: 'a'")
       )
 
     evaluateExpression("[ {a:1}, {b:2} ].c") should (
       returnResult(List(null, null)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: a") and
+          failureMessage = "No context entry found with key 'c'. Available keys: 'a'") and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: b")
+          failureMessage = "No context entry found with key 'c'. Available keys: 'b'")
       )
   }
 

@@ -873,7 +873,7 @@ class FeelInterpreter {
           case _: ValError =>
             val detailedMessage = ctx.context.variableProvider.keys match {
               case Nil => "The context is empty"
-              case keys => s"Available keys: ${keys.mkString(", ")}"
+              case keys => s"Available keys: ${keys.map("'" + _ + "'").mkString(", ")}"
             }
             error(
               failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
@@ -891,7 +891,7 @@ class FeelInterpreter {
         ValNull
       case value =>
         value.property(key).getOrElse {
-          val propertyNames: String = value.propertyNames().mkString(",")
+          val propertyNames: String = value.propertyNames().map("'" + _ + "'").mkString(", ")
           error(
             failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
             failureMessage = s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"

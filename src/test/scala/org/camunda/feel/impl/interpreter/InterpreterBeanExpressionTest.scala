@@ -104,7 +104,7 @@ class InterpreterBeanExpressionTest
     ) should (returnNull() and
       reportFailure(
         failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-        failureMessage = "No context entry found with key 'result'. Available keys: x"
+        failureMessage = "No context entry found with key 'result'. Available keys: 'x'"
       ))
   }
 
