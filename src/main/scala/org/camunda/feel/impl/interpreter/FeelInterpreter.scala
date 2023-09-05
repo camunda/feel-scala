@@ -139,7 +139,9 @@ class FeelInterpreter {
       case Ref(names) =>
         val name = names.head
         context.variable(name) match {
-          case _: ValError => error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No variable found with name '$name'")
+          case _: ValError =>
+            error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No variable found with name '$name'")
+            ValNull
           case value => ref(value, names.tail)
         }
       case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
