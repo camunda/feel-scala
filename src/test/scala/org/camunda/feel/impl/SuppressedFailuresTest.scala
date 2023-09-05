@@ -35,14 +35,14 @@ class SuppressedFailuresTest extends AnyFlatSpec
   it should "report a suppressed failure for a non-existing context entry" in {
     evaluateExpression("{x: 1}.y") should reportFailure(
       failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-      failureMessage = "context contains no entry with key 'y'"
+      failureMessage = "No context entry found with key 'y'. Available keys: 'x'"
     )
   }
 
   it should "report a suppressed failure for a non-existing property" in {
     evaluateExpression(""" @"P1Y".days """) should reportFailure(
       failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-      failureMessage = "No property found with name 'days' of value 'P1Y'. Available properties: years,months"
+      failureMessage = "No property found with name 'days' of value 'P1Y'. Available properties: 'years', 'months'"
     )
   }
 

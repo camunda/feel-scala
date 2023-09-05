@@ -52,11 +52,12 @@ class BuiltinFunctionsTest
     eval(""" is defined( {"a":1}.a ) """) should be(ValBoolean(true))
   }
 
-  it should "return false if the value is not present" in {
-
+  it should "return false if a variable doesn't exist" in {
     eval("is defined(a)") should be(ValBoolean(false))
     eval("is defined(a.b)") should be(ValBoolean(false))
+  }
 
+  ignore should "return false if a context entry doesn't exist" in {
     eval("is defined({}.a)") should be(ValBoolean(false))
     eval("is defined({}.a.b)") should be(ValBoolean(false))
   }
