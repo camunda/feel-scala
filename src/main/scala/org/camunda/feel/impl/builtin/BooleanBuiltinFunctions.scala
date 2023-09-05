@@ -17,7 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValError, ValFunction, ValNull, ValString}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValError, ValNull, ValString}
 
 object BooleanBuiltinFunctions {
 
