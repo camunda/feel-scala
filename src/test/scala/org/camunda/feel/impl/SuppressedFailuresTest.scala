@@ -107,7 +107,7 @@ class SuppressedFailuresTest extends AnyFlatSpec
       ),
       EvaluationFailure(
         failureType = EvaluationFailureType.INVALID_TYPE,
-        failureMessage = "Expected Number but found 'ValError(No variable found with name 'x')'"
+        failureMessage = "Expected Number but found 'ValNull'"
       )
     )
   }
