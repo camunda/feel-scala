@@ -206,9 +206,11 @@ class BuiltinContextFunctionsTest
       ValBoolean(true))
   }
 
-  it should "return null if the value is not present" in {
+  it should "add a context entry with null if the value is not present" in {
 
-    eval(""" context put({}, "x", notExisting) """) should be(ValNull)
+    eval(""" context put({}, "x", notExisting) = {x:null} """) should be(
+      ValBoolean(true)
+    )
   }
 
   it should "be invoked with named parameters (key)" in {
