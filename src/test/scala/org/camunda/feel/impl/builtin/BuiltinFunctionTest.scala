@@ -16,10 +16,9 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * @author Philipp
@@ -27,60 +26,61 @@ import org.scalatest.flatspec.AnyFlatSpec
 class BuiltinFunctionsTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A built-in function" should "return null if arguments doesn't match" in {
 
-    eval("date(true)") should be(ValNull)
-    eval("number(false)") should be(ValNull)
+    evaluateExpression("date(true)") should returnNull()
+    evaluateExpression("number(false)") should returnNull()
   }
 
   "A not() function" should "negate Boolean" in {
 
-    eval(" not(true) ") should be(ValBoolean(false))
-    eval(" not(false) ") should be(ValBoolean(true))
+    evaluateExpression(" not(true) ") should returnResult(false)
+    evaluateExpression(" not(false) ") should returnResult(true)
   }
 
   "A is defined() function" should "return true if the value is present" in {
 
-    eval("is defined(null)") should be(ValBoolean(true))
+    evaluateExpression("is defined(null)") should returnResult(true)
 
-    eval("is defined(1)") should be(ValBoolean(true))
-    eval("is defined(true)") should be(ValBoolean(true))
-    eval("is defined([])") should be(ValBoolean(true))
-    eval("is defined({})") should be(ValBoolean(true))
-    eval(""" is defined( {"a":1}.a ) """) should be(ValBoolean(true))
+    evaluateExpression("is defined(1)") should returnResult(true)
+    evaluateExpression("is defined(true)") should returnResult(true)
+    evaluateExpression("is defined([])") should returnResult(true)
+    evaluateExpression("is defined({})") should returnResult(true)
+    evaluateExpression(""" is defined( {"a":1}.a ) """) should returnResult(true)
   }
 
   // see: https://github.com/camunda/feel-scala/issues/695
   ignore should "return false if a variable doesn't exist" in {
-    eval("is defined(a)") should be(ValBoolean(false))
-    eval("is defined(a.b)") should be(ValBoolean(false))
+    evaluateExpression("is defined(a)") should returnResult(false)
+    evaluateExpression("is defined(a.b)") should returnResult(false)
   }
 
   // see: https://github.com/camunda/feel-scala/issues/695
   ignore should "return false if a context entry doesn't exist" in {
-    eval("is defined({}.a)") should be(ValBoolean(false))
-    eval("is defined({}.a.b)") should be(ValBoolean(false))
+    evaluateExpression("is defined({}.a)") should returnResult(false)
+    evaluateExpression("is defined({}.a.b)") should returnResult(false)
   }
 
   "A get or else(value: Any, default: Any) function" should "return the value if not null" in {
 
-    eval("get or else(3, 1)") should be(ValNumber(3))
-    eval("""get or else("value", "default")""") should be(ValString("value"))
-    eval("get or else(value:3, default:1)") should be(ValNumber(3))
+    evaluateExpression("get or else(3, 1)") should returnResult(3)
+    evaluateExpression("""get or else("value", "default")""") should returnResult("value")
+    evaluateExpression("get or else(value:3, default:1)") should returnResult(3)
   }
 
   it should "return the default param if value is null" in {
 
-    eval("get or else(null, 1)") should be(ValNumber(1))
-    eval("""get or else(null, "default")""") should be(ValString("default"))
-    eval("get or else(value:null, default:1)") should be(ValNumber(1))
+    evaluateExpression("get or else(null, 1)") should returnResult(1)
+    evaluateExpression("""get or else(null, "default")""") should returnResult("default")
+    evaluateExpression("get or else(value:null, default:1)") should returnResult(1)
   }
 
   it should "return null if both value and default params are null" in {
 
-    eval("get or else(null, null)") should be(ValNull)
-    eval("get or else(value:null, default:null)") should be(ValNull)
+    evaluateExpression("get or else(null, null)") should returnNull()
+    evaluateExpression("get or else(value:null, default:null)") should returnNull()
   }
 }
