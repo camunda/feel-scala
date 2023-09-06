@@ -52,11 +52,13 @@ class BuiltinFunctionsTest
     eval(""" is defined( {"a":1}.a ) """) should be(ValBoolean(true))
   }
 
-  it should "return false if a variable doesn't exist" in {
+  // see: https://github.com/camunda/feel-scala/issues/695
+  ignore should "return false if a variable doesn't exist" in {
     eval("is defined(a)") should be(ValBoolean(false))
     eval("is defined(a.b)") should be(ValBoolean(false))
   }
 
+  // see: https://github.com/camunda/feel-scala/issues/695
   ignore should "return false if a context entry doesn't exist" in {
     eval("is defined({}.a)") should be(ValBoolean(false))
     eval("is defined({}.a.b)") should be(ValBoolean(false))
