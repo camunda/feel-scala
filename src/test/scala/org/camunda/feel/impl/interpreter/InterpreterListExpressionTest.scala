@@ -273,10 +273,11 @@ class InterpreterListExpressionTest
     )
   }
 
-  it should "fail if one element fails" in {
+  it should "contain null if a variable doesn't exist" in {
 
     eval("[1, x]") should be(
-      ValError("No variable found with name 'x'"))
+      ValList(List(ValNumber(1), ValNull))
+    )
   }
 
   it should "be compared with '='" in {
