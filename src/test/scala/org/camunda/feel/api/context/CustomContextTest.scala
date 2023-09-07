@@ -140,7 +140,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     engine.evalUnaryTests("foo", context) should be(Right(false))
   }
 
-  it should "fail on unary-test evaluation" in {
+  it should "return null if input value doesn't exist" in {
     val variables: Map[String, _] = Map("foo" -> 7)
 
     val context: CustomContext = new CustomContext {
@@ -149,8 +149,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
           List(inputVariableContext, SimpleTestContext(variables)))
     }
 
-    engine.evalUnaryTests("foo", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'foo': No input value found."))
+    engine.evalUnaryTests("foo", context) should be(Right(ValBoolean(false)))
   }
 
 }
