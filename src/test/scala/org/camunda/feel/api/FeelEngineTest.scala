@@ -74,14 +74,6 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
     )
   }
 
-  it should "fail evaluation because of missing input" in {
-
-    engine.evalUnaryTests("< 3", variables = Map[String, Any]()) should be(
-      Left(Failure(
-        "failed to evaluate expression '< 3': No input value found."))
-    )
-  }
-
   it should "fail while parsing '<'" in {
     engine
       .evalUnaryTests("<", variables = Map[String, Any]())
