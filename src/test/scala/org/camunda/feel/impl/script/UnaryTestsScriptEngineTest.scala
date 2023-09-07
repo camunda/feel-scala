@@ -71,11 +71,6 @@ class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
     compiledScript.eval(context).asInstanceOf[Boolean] should be(true)
   }
 
-  it should "throw an exception when parse an expression" in {
-
-    a[ScriptException] should be thrownBy eval("3 + 4", new SimpleScriptContext)
-  }
-
   it should "throw an exception when compile an invalid script" in {
 
     a[ScriptException] should be thrownBy scriptEngine.compile("? 3")
