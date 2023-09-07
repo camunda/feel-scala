@@ -128,7 +128,7 @@ class InterpreterListExpressionTest
       ValList(List(ValNull)))
   }
 
-  ignore should "be filtered via comparison with missing variable" in {
+  it should "be filtered via comparison with missing variable" in {
     // null is the only item for which the comparison returns true
     eval("[1,2,x,4][item = null]") should be(
       ValList(List(ValNull)))
