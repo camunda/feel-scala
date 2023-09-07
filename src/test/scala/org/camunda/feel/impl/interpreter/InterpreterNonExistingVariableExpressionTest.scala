@@ -105,4 +105,35 @@ class InterpreterNonExistingVariableExpressionTest
       )
   }
 
+  "A non-existing input value" should "be equal to null" in {
+    // use parse + evaluate to avoid setting an input value
+    val parsedExpression = engine.parseUnaryTests("null").parsedExpression
+
+    engine.evaluate(parsedExpression) should (
+      returnResult(true) and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
+  it should "not be equal to a non-null value" in {
+    val parsedExpression = engine.parseUnaryTests("2").parsedExpression
+
+    engine.evaluate(parsedExpression) should (
+      returnResult(false) and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
+  it should "not compare to a non-null value" in {
+    val parsedExpression = engine.parseUnaryTests("< 2").parsedExpression
+
+    engine.evaluate(parsedExpression) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
 }
