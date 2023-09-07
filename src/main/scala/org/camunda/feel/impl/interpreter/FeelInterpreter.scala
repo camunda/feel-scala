@@ -428,7 +428,9 @@ class FeelInterpreter {
 
   private def input(implicit context: EvalContext): Val =
     context.variable(inputKey) match {
-      case _: ValError => error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No input value found.")
+      case _: ValError =>
+        error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No input value found.")
+        ValNull
       case inputValue => inputValue
     }
 
