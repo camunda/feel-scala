@@ -62,18 +62,17 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
 
     }
 
-    engine.evaluateExpression(
+    evaluateExpression(
       expression = "a",
       context = myCustomContext
     ) should returnResult(2)
 
-    engine.evaluateExpression(
+    evaluateExpression(
       expression = "floor(3.8)",
       context = myCustomContext) should returnResult(3)
 
-    engine.evaluateUnaryTests(
+    evaluateUnaryTests(
       expression = "2",
-      inputValue = 2,
       context = myCustomContext) should returnResult(true)
   }
 
@@ -109,14 +108,13 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
       override val functionProvider = myFunctionProvider
     }
 
-    engine.evaluateExpression(
+    evaluateExpression(
       expression = "a + f(2) + a + f(8)",
       context = myCustomContext
     ) should returnResult(18)
 
     variableCallCount should be(2)
     functionCallCount should be(2)
-
   }
 
   it should "evaluate expression" in {
@@ -126,7 +124,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evaluateExpression(
+    evaluateExpression(
       expression = "foo",
       context = context
     ) should returnResult(7)
@@ -139,7 +137,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evaluateExpression(
+    evaluateExpression(
       expression = "bar",
       context = context
     ) should returnNull()
@@ -159,9 +157,8 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
           List(inputVariableContext, SimpleTestContext(variables)))
     }
 
-    engine.evaluateUnaryTests(
+    evaluateUnaryTests(
       expression = "foo",
-      inputValue = 8,
       context = context) should returnResult(false)
   }
 
@@ -174,9 +171,8 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
           List(inputVariableContext, SimpleTestContext(variables)))
     }
 
-    engine.evaluateUnaryTests(
+    evaluateUnaryTests(
       expression = "foo",
-      inputValue = 8,
       context = context) should returnResult(false)
   }
 

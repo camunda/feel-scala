@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter;
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.context.Context
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -106,10 +107,7 @@ class InterpreterNonExistingVariableExpressionTest
   }
 
   "A non-existing input value" should "be equal to null" in {
-    // use parse + evaluate to avoid setting an input value
-    val parsedExpression = engine.parseUnaryTests("null").parsedExpression
-
-    engine.evaluate(parsedExpression) should (
+    evaluateUnaryTests(expression = "null", context = Context.EmptyContext) should (
       returnResult(true) and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
         failureMessage = "No input value found.")
@@ -117,9 +115,7 @@ class InterpreterNonExistingVariableExpressionTest
   }
 
   it should "not be equal to a non-null value" in {
-    val parsedExpression = engine.parseUnaryTests("2").parsedExpression
-
-    engine.evaluate(parsedExpression) should (
+    evaluateUnaryTests("2", context = Context.EmptyContext) should (
       returnResult(false) and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
         failureMessage = "No input value found.")
@@ -127,9 +123,7 @@ class InterpreterNonExistingVariableExpressionTest
   }
 
   it should "not compare to a non-null value" in {
-    val parsedExpression = engine.parseUnaryTests("< 2").parsedExpression
-
-    engine.evaluate(parsedExpression) should (
+    evaluateUnaryTests("< 2", context = Context.EmptyContext) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
         failureMessage = "No input value found.")

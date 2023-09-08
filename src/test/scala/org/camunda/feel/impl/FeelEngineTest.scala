@@ -39,6 +39,13 @@ trait FeelEngineTest {
     engine.evaluateExpression(expression, context)
   }
 
+  def evaluateExpression(
+                          expression: String,
+                          context: Context
+                        ): EvaluationResult = {
+    engine.evaluateExpression(expression, context)
+  }
+
   def evaluateUnaryTests(
                           expression: String,
                           inputValue: Any,
@@ -53,6 +60,19 @@ trait FeelEngineTest {
     engine.evaluateUnaryTests(
       expression = expression,
       inputValue = inputValue,
+      context = context
+    )
+  }
+
+  def evaluateUnaryTests(
+                          expression: String,
+                          context: Context
+                        ): EvaluationResult = {
+    // use parse + evaluate to avoid setting an input value
+    val parsedExpression = engine.parseUnaryTests(expression).parsedExpression
+
+    engine.evaluate(
+      expression = parsedExpression,
       context = context
     )
   }
