@@ -17,14 +17,15 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValError, ValNull}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValError, ValNull, ValString}
 
 object BooleanBuiltinFunctions {
 
   def functions = Map(
     "not" -> List(notFunction),
     "is defined" -> List(isDefinedFunction),
-    "get or else" -> List(getOrElse)
+    "get or else" -> List(getOrElse),
+    "assert" -> List(assertFunction, assertFunction2)
   )
 
   private def notFunction =
@@ -49,4 +50,21 @@ object BooleanBuiltinFunctions {
       case List(value, _)         => value
     }
   )
+
+  private def assertFunction = builtinFunction(
+    params = List("value", "condition"),
+    invoke = {
+      case List(value, ValBoolean(true)) => value
+      case _ => ValError("The condition is not fulfilled")
+    }
+  )
+
+  private def assertFunction2 = builtinFunction(
+    params = List("value", "condition", "cause"),
+    invoke = {
+      case List(value, ValBoolean(true), _) => value
+      case List(_, _, ValString(cause)) => ValError(cause)
+    }
+  )
+
 }

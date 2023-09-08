@@ -207,6 +207,9 @@ class FeelInterpreter {
       case FunctionInvocation(name, params) =>
         withFunction(findFunction(context, name, params),
           f => invokeFunction(f, params) match {
+            case ValError(failure) if name == "assert" =>
+              error(EvaluationFailureType.ASSERT_FAILURE, failure)
+              ValError(failure)
             case ValError(failure) =>
               error(EvaluationFailureType.FUNCTION_INVOCATION_FAILURE, s"Failed to invoke function '$name': $failure")
               ValNull
