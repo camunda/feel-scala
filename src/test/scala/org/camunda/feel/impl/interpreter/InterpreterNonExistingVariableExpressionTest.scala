@@ -16,82 +16,118 @@
  */
 package org.camunda.feel.impl.interpreter;
 
-import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.context.Context
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class InterpreterNonExistingVariableExpressionTest
-        extends AnyFlatSpec
-        with Matchers
-        with FeelIntegrationTest {
+  extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
-  "a non existing variable" should "compare with '='" in {
-    eval("x = 1") should be(ValBoolean(false))
-    eval("1 = x") should be(ValBoolean(false))
-    eval("x = true") should be(ValBoolean(false))
-    eval("true = x") should be(ValBoolean(false))
-    eval(""" x = "string" """) should be(ValBoolean(false))
-    eval(""" "string" = x """) should be(ValBoolean(false))
-    eval("x = null") should be(ValBoolean(true))
-    eval("null = x") should be(ValBoolean(true))
-    eval("x = y") should be(ValBoolean(true))
+  "A non-existing variable" should "compare with '='" in {
+    evaluateExpression("x = 1") should returnResult(false)
+    evaluateExpression("1 = x") should returnResult(false)
+    evaluateExpression("x = true") should returnResult(false)
+    evaluateExpression("true = x") should returnResult(false)
+    evaluateExpression(""" x = "string" """) should returnResult(false)
+    evaluateExpression(""" "string" = x """) should returnResult(false)
+
+    evaluateExpression("x = null") should returnResult(true)
+    evaluateExpression("null = x") should returnResult(true)
+    evaluateExpression("x = y") should returnResult(true)
   }
-  
+
   it should "compare with `<`" in {
-    eval("x < 1") should be(ValNull)
-    eval("1 < x") should be(ValNull)
-    eval("x < true") should be(ValNull)
-    eval("true < x") should be(ValNull)
-    eval(""" x < "string" """) should be(ValNull)
-    eval(""" "string" < x """) should be(ValNull)
-    eval("x < null") should be(ValNull)
-    eval("null < x") should be(ValNull)
-    eval("x < y") should be(ValNull)
+    evaluateExpression("x < 1") should returnNull()
+    evaluateExpression("1 < x") should returnNull()
+    evaluateExpression("x < true") should returnNull()
+    evaluateExpression("true < x") should returnNull()
+    evaluateExpression(""" x < "string" """) should returnNull()
+    evaluateExpression(""" "string" < x """) should returnNull()
+    evaluateExpression("x < null") should returnNull()
+    evaluateExpression("null < x") should returnNull()
+    evaluateExpression("x < y") should returnNull()
   }
 
   it should "compare with `>`" in {
-    eval("x > 1") should be(ValNull)
-    eval("1 > x") should be(ValNull)
-    eval("x > true") should be(ValNull)
-    eval("true > x") should be(ValNull)
-    eval(""" x > "string" """) should be(ValNull)
-    eval(""" "string" > x """) should be(ValNull)
-    eval("x > null") should be(ValNull)
-    eval("null > x") should be(ValNull)
-    eval("x > y") should be(ValNull)
+    evaluateExpression("x > 1") should returnNull()
+    evaluateExpression("1 > x") should returnNull()
+    evaluateExpression("x > true") should returnNull()
+    evaluateExpression("true > x") should returnNull()
+    evaluateExpression(""" x > "string" """) should returnNull()
+    evaluateExpression(""" "string" > x """) should returnNull()
+    evaluateExpression("x > null") should returnNull()
+    evaluateExpression("null > x") should returnNull()
+    evaluateExpression("x > y") should returnNull()
   }
 
   it should "compare with `<=`" in {
-    eval("x <= 1") should be(ValNull)
-    eval("1 <= x") should be(ValNull)
-    eval("x <= true") should be(ValNull)
-    eval("true <= x") should be(ValNull)
-    eval(""" x <= "string" """) should be(ValNull)
-    eval(""" "string" <= x """) should be(ValNull)
-    eval("x <= null") should be(ValNull)
-    eval("null <= x") should be(ValNull)
-    eval("x <= y") should be(ValNull)
+    evaluateExpression("x <= 1") should returnNull()
+    evaluateExpression("1 <= x") should returnNull()
+    evaluateExpression("x <= true") should returnNull()
+    evaluateExpression("true <= x") should returnNull()
+    evaluateExpression(""" x <= "string" """) should returnNull()
+    evaluateExpression(""" "string" <= x """) should returnNull()
+    evaluateExpression("x <= null") should returnNull()
+    evaluateExpression("null <= x") should returnNull()
+    evaluateExpression("x <= y") should returnNull()
   }
 
   it should "compare with `>=`" in {
-    eval("x >= 1") should be(ValNull)
-    eval("1 >= x") should be(ValNull)
-    eval("x >= true") should be(ValNull)
-    eval("true >= x") should be(ValNull)
-    eval(""" x >= "string" """) should be(ValNull)
-    eval(""" "string" >= x """) should be(ValNull)
-    eval("x >= null") should be(ValNull)
-    eval("null >= x") should be(ValNull)
-    eval("x >= y") should be(ValNull)
+    evaluateExpression("x >= 1") should returnNull()
+    evaluateExpression("1 >= x") should returnNull()
+    evaluateExpression("x >= true") should returnNull()
+    evaluateExpression("true >= x") should returnNull()
+    evaluateExpression(""" x >= "string" """) should returnNull()
+    evaluateExpression(""" "string" >= x """) should returnNull()
+    evaluateExpression("x >= null") should returnNull()
+    evaluateExpression("null >= x") should returnNull()
+    evaluateExpression("x >= y") should returnNull()
   }
 
   it should "compare with `between _ and _`" in {
-    eval("x between 1 and 3") should be(ValNull)
-    eval("1 between x and 3") should be(ValNull)
-    eval("3 between 1 and x") should be(ValNull)
-    eval("x between y and 3") should be(ValNull)
-    eval("x between 1 and y") should be(ValNull)
-    eval("x between y and z") should be(ValNull)
+    evaluateExpression("x between 1 and 3") should returnNull()
+    evaluateExpression("1 between x and 3") should returnNull()
+    evaluateExpression("3 between 1 and x") should returnNull()
+    evaluateExpression("x between y and 3") should returnNull()
+    evaluateExpression("x between 1 and y") should returnNull()
+    evaluateExpression("x between y and z") should returnNull()
   }
+
+  it should "return null" in {
+    evaluateExpression("non_existing") should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'non_existing'")
+      )
+  }
+
+  "A non-existing input value" should "be equal to null" in {
+    evaluateUnaryTests(expression = "null", context = Context.EmptyContext) should (
+      returnResult(true) and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
+  it should "not be equal to a non-null value" in {
+    evaluateUnaryTests("2", context = Context.EmptyContext) should (
+      returnResult(false) and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
+  it should "not compare to a non-null value" in {
+    evaluateUnaryTests("< 2", context = Context.EmptyContext) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No input value found.")
+      )
+  }
+
 }

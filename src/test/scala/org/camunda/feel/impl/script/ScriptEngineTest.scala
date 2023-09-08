@@ -84,22 +84,9 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
     a[ScriptException] should be thrownBy eval("? 3", new SimpleScriptContext)
   }
 
-  it should "throw an exception when input is missing" in {
-
-    a[ScriptException] should be thrownBy eval("< 3", new SimpleScriptContext)
-  }
-
   it should "throw an exception when compile an invalid script" in {
 
     a[ScriptException] should be thrownBy scriptEngine.compile("? 3")
-  }
-
-  it should "throw an exception when input is missing of a compiled script" in {
-
-    val compiledScript = scriptEngine.compile("< 3")
-
-    a[ScriptException] should be thrownBy compiledScript.eval(
-      new SimpleScriptContext)
   }
 
   it should "be extend by a custom function provider" in {

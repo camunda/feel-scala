@@ -18,33 +18,32 @@ package org.camunda.feel.api.context
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
-import org.camunda.feel.context.{
-  CustomContext,
-  FunctionProvider,
-  VariableProvider
-}
+import org.camunda.feel.context.{CustomContext, FunctionProvider, VariableProvider}
 import org.camunda.feel.context.VariableProvider.StaticVariableProvider
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-class CustomContextTest extends AnyFlatSpec with Matchers {
-
-  val engine = new FeelEngine
+class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest with EvaluationResultMatchers {
 
   "A default context" should "provide its members" in {
-    engine.evalExpression("a", variables = Map("a" -> 2)) should be(Right(2))
-    engine.evalUnaryTests(
-      "2",
-      variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      Right(true))
+    evaluateExpression(
+      expression = "a",
+      variables = Map("a" -> 2)
+    ) should returnResult(2)
+
+    evaluateUnaryTests(
+      expression = "2",
+      inputValue = 2
+    ) should returnResult(true)
   }
 
-  it should "fail on access to missing member" in {
-    engine.evalExpression("b", variables = Map("a" -> 2)) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
+  it should "return null if the variable doesn't exist" in {
+    evaluateExpression(
+      expression = "b",
+      variables = Map("a" -> 2)
+    ) should returnNull()
   }
 
   "A custom context" should "provide its members" in {
@@ -52,9 +51,9 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
 
       override def variableProvider: VariableProvider = new VariableProvider {
         override def getVariable(name: String): Option[Any] = name match {
-          case "a"                             => Some(2)
+          case "a" => Some(2)
           case UnaryTests.defaultInputVariable => Some(2)
-          case _                               => None
+          case _ => None
         }
 
         override def keys: Iterable[String] =
@@ -62,21 +61,19 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       }
 
     }
-    engine.evalExpression("a", myCustomContext) should be(Right(2))
-    engine.evalExpression("floor(3.8)", myCustomContext) should be(Right(3))
-    engine.evalUnaryTests("2", myCustomContext) should be(Right(true))
-  }
 
-  it should "fail on access to missing member" in {
-    val context = new CustomContext {
-      override def variableProvider: VariableProvider =
-        VariableProvider.StaticVariableProvider(Map.empty)
-    }
+    evaluateExpression(
+      expression = "a",
+      context = myCustomContext
+    ) should returnResult(2)
 
-    engine.evalExpression("b", context) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
+    evaluateExpression(
+      expression = "floor(3.8)",
+      context = myCustomContext) should returnResult(3)
+
+    evaluateUnaryTests(
+      expression = "2",
+      context = myCustomContext) should returnResult(true)
   }
 
   it should "provide its functions" in {
@@ -111,11 +108,13 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       override val functionProvider = myFunctionProvider
     }
 
-    engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(
-      Right(18))
+    evaluateExpression(
+      expression = "a + f(2) + a + f(8)",
+      context = myCustomContext
+    ) should returnResult(18)
+
     variableCallCount should be(2)
     functionCallCount should be(2)
-
   }
 
   it should "evaluate expression" in {
@@ -125,18 +124,23 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evalExpression("foo", context) should be(Right(7))
+    evaluateExpression(
+      expression = "foo",
+      context = context
+    ) should returnResult(7)
   }
 
-  it should "fail on expression evaluation" in {
+  it should "return null if variable doesn't exist" in {
     val variables: Map[String, _] = Map()
 
     val context: CustomContext = new CustomContext {
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evalExpression("bar", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'bar': No variable found with name 'bar'"))
+    evaluateExpression(
+      expression = "bar",
+      context = context
+    ) should returnNull()
   }
 
   val inputVariableContext = StaticVariableProvider(
@@ -153,10 +157,12 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
           List(inputVariableContext, SimpleTestContext(variables)))
     }
 
-    engine.evalUnaryTests("foo", context) should be(Right(false))
+    evaluateUnaryTests(
+      expression = "foo",
+      context = context) should returnResult(false)
   }
 
-  it should "fail on unary-test evaluation" in {
+  it should "return null if input value doesn't exist" in {
     val variables: Map[String, _] = Map("foo" -> 7)
 
     val context: CustomContext = new CustomContext {
@@ -165,8 +171,9 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
           List(inputVariableContext, SimpleTestContext(variables)))
     }
 
-    engine.evalUnaryTests("foo", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'foo': No input value found."))
+    evaluateUnaryTests(
+      expression = "foo",
+      context = context) should returnResult(false)
   }
 
 }
