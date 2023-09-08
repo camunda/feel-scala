@@ -159,7 +159,7 @@ class FeelEngine(
       case _ if containsAssertionError(context) => {
         val failureMessage = getAssertErrorMessage(context)
         FailedEvaluationResult(
-          failure = Failure(s"Assertion failure on evaluate the expression '${exp.text}': ${failureMessage}'"),
+          failure = Failure(s"Assertion failure on evaluate the expression '${exp.text}': ${failureMessage}"),
           suppressedFailures = context.failureCollector.failures
         )
       }
@@ -182,7 +182,7 @@ class FeelEngine(
    * @return true if an an {@link EvaluationFailureType.ASSERT_FAILURE} is raised, false otherwise
    */
   private def containsAssertionError(context: EvalContext): Boolean = {
-    context.failureCollector.failures.exists(_.failureType == EvaluationFailureType.ASSERT_FAILURE);
+    context.failureCollector.failures.exists(_.failureType == EvaluationFailureType.ASSERT_FAILURE)
   }
 
   private def getAssertErrorMessage(context: EvalContext): String = {
