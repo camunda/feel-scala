@@ -85,7 +85,8 @@ get or default(null, null)
 
 <MarkerCamundaExtension></MarkerCamundaExtension>
 
-Verify that the provided condition is met, if the condition is true the function returns the value. Otherwise, the evaluation fails with an error
+Verify that the given condition is met. If the condition is `true`, the function returns the value. 
+Otherwise, the evaluation fails with an error.
 
 **Function signature**
 
@@ -96,21 +97,21 @@ assert(value: Any, condition: Any)
 **Examples**
 
 ```js
-assert(x, x > 3) with x = 4
-// 4
+assert(x, x != null)
+// "value" - if x is "value"
+// error - if x is null or doesn't exist
 
-assert(x, x != null) with x = "value"
-// "value"
-
-assert(x, x > 5) with x = 4
-// error("The condition is not fulfilled")
+assert(x, x >= 0) 
+// 4 - if x is 4
+// error - if x is less than zero
 ```
 
 ## assert(value, condition, cause)
 
 <MarkerCamundaExtension></MarkerCamundaExtension>
 
-Verify that the provided condition is met, if the condition is true the function returns the value. Otherwise, the evaluation fails with an error and the provide error message
+Verify that the given condition is met. If the condition is `true`, the function returns the value.
+Otherwise, the evaluation fails with an error containing the given message.
 
 **Function signature**
 
@@ -121,12 +122,11 @@ assert(value: Any, condition: Any, cause: String)
 **Examples**
 
 ```js
-assert(x, x > 3, "Custom error message") with x = 4
-// 4
+assert(x, x != null, "'x' should not be null")
+// "value" - if x is "value"
+// error('x' should not be null) - if x is null or doesn't exist
 
-assert(x, x > 5, "Custom error message") with x = 4
-// error("Custom error message")
-
-assert(x, x != null, "Custom error message") with x = null
-// error("Custom error message")
+assert(x, x >= 0, "'x' should be positive")
+// 4 - if x is 4
+// error('x' should be positive) - if x is less than zero
 ```
