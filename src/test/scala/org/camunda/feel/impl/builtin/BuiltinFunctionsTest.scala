@@ -163,10 +163,6 @@ class BuiltinFunctionsTest
       expression = """assert(value: x, condition: x = 3)""",
       variables = Map("x" -> 3)
     ) should returnResult(3)
-
-    evaluateExpression(
-      expression = "list contains(assert(my_list, my_list != null), 2)"
-    ) should failWith("The evaluation failed, the provided condition is not fulfilled")
   }
 
   it should "fail the evaluation if the condition is evaluated to false" in {
@@ -189,6 +185,10 @@ class BuiltinFunctionsTest
       expression = """assert(x, x = 5)""",
       variables = Map("x" -> 4)
     ) should failWith("The condition is not fulfilled")
+
+    evaluateExpression(
+      expression = """list contains(assert(my_list, my_list != null), 2)"""
+    ) should failWith("Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null), 2)': The condition is not fulfilled'")
   }
 
   "A assert(value: Any, condition: Any, cause: String) function" should "return the value if the condition evaluated to true" in {
@@ -237,6 +237,6 @@ class BuiltinFunctionsTest
 
     evaluateExpression(
       expression = """list contains(assert(my_list, my_list != null, "The condition is not true"), 2)"""
-    ) should failWith("The evaluation failed, the provided condition is not fulfilled")
+    ) should failWith("Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null, \"The condition is not true\"), 2)': The condition is not true'")
   }
 }

@@ -156,14 +156,16 @@ class FeelEngine(
   private def eval(exp: ParsedExpression,
                    context: EvalContext): EvaluationResult = {
     interpreter.eval(exp.expression)(context) match {
+      case _ if containsAssertionError(context) => {
+        val failureMessage = getAssertErrorMessage(context)
+        FailedEvaluationResult(
+          failure = Failure(s"Assertion failure on evaluate the expression '${exp.text}': ${failureMessage}'"),
+          suppressedFailures = context.failureCollector.failures
+        )
+      }
       case ValError(cause) =>
         FailedEvaluationResult(
           failure = Failure(s"failed to evaluate expression '${exp.text}': $cause"),
-          suppressedFailures = context.failureCollector.failures
-        )
-      case _ if containsAssertionError(context) =>
-        FailedEvaluationResult(
-          failure = Failure(s"The evaluation failed, the provided condition is not fulfilled"),
           suppressedFailures = context.failureCollector.failures
         )
       case value =>
@@ -180,7 +182,11 @@ class FeelEngine(
    * @return true if an an {@link EvaluationFailureType.ASSERT_FAILURE} is raised, false otherwise
    */
   private def containsAssertionError(context: EvalContext): Boolean = {
-    context.failureCollector.failures.map(failure => failure.failureType).contains(EvaluationFailureType.ASSERT_FAILURE);
+    context.failureCollector.failures.exists(_.failureType == EvaluationFailureType.ASSERT_FAILURE);
+  }
+
+  private def getAssertErrorMessage(context: EvalContext): String = {
+    context.failureCollector.failures.find(_.failureType == EvaluationFailureType.ASSERT_FAILURE).get.failureMessage
   }
 
   // ============ public API ============
