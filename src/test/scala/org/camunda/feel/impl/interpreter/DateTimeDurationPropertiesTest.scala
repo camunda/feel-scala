@@ -17,7 +17,8 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel._
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -30,7 +31,9 @@ import java.time.ZonedDateTime
 class DateTimeDurationPropertiesTest
     extends AnyFlatSpec
     with Matchers
-    with FeelIntegrationTest {
+    with FeelIntegrationTest
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A date" should "has a year property" in {
 
@@ -52,12 +55,13 @@ class DateTimeDurationPropertiesTest
     eval(""" date("2020-09-30").weekday """) should be(ValNumber(3))
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" date("2020-09-30").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" date("2020-09-30").seconds """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'seconds' of value 'ValDate(2020-09-30)'. Available properties: 'year', 'month', 'day', 'weekday'"
+      )
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -96,12 +100,13 @@ class DateTimeDurationPropertiesTest
     eval(""" time("11:45:30+02:00").timezone """) should be(ValNull)
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" time("11:45:30+02:00").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" time("11:45:30+02:00").day """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'day' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
+      )
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -137,12 +142,13 @@ class DateTimeDurationPropertiesTest
     eval(""" time("11:45:30").timezone """) should be(ValNull)
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" time("11:45:30").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalTime(11:45:30)'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" time("11:45:30").day """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'day' of value 'ValLocalTime(11:45:30)'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
+      )
+    )
   }
 
   ///// -----
@@ -212,12 +218,13 @@ class DateTimeDurationPropertiesTest
       ValNull)
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" date and time("2020-09-30T22:50:30+02:00").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" date and time("2020-09-30T22:50:30+02:00").days """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'days' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
+      )
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -281,12 +288,13 @@ class DateTimeDurationPropertiesTest
       ValNumber(3))
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" date and time("2020-09-30T22:50:30").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" date and time("2020-09-30T22:50:30").days """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'days' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
+      )
+    )
   }
 
   ///// -----
@@ -301,12 +309,13 @@ class DateTimeDurationPropertiesTest
     eval(""" duration("P2Y3M").months """) should be(ValNumber(3))
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" duration("P2Y3M").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'P2Y3M'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" duration("P2Y3M").day """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'day' of value 'P2Y3M'. Available properties: 'years', 'months'"
+      )
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -336,12 +345,13 @@ class DateTimeDurationPropertiesTest
     eval(""" duration("P1DT2H10M30S").seconds """) should be(ValNumber(30))
   }
 
-  it should "return an error if the property is not available" in {
-    val result = eval(""" duration("P1DT2H10M30S").x """)
-
-    result shouldBe a[ValError]
-    result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'P1DT2H10M30S'. Available properties:")
+  it should "return null if the property is not available" in {
+    evaluateExpression(""" duration("P1DT2H10M30S").day """) should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
+        failureMessage = "No property found with name 'day' of value 'P1DT2H10M30S'. Available properties: 'days', 'hours', 'minutes', 'seconds'"
+      )
+      )
   }
 
   it should "has properties with @-notation" in {
