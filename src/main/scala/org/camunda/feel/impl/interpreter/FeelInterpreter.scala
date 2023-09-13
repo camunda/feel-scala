@@ -457,6 +457,9 @@ class FeelInterpreter {
       case x if (y == ValNull)     => f(c(x.toOption.getOrElse(ValNull), ValNull))
       case _ : ValError            => f(c(ValNull, y.toOption.getOrElse(ValNull)))
       case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
+      case _ if (x.getClass != y.getClass) =>
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
+        ValNull
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
       case ValBoolean(x)           => withBoolean(y, y => f(c(x, y)))
       case ValString(x)            => withString(y, y => f(c(x, y)))
@@ -530,6 +533,7 @@ class FeelInterpreter {
         ValNull
       case _ if (x.getClass != y.getClass) =>
         error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
+        ValNull
       case _ => f(c(x, y))
     }
 
