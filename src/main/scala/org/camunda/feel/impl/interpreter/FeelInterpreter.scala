@@ -295,6 +295,7 @@ class FeelInterpreter {
           ValNull
         case i if (i.getClass != x.getClass || i.getClass != y.getClass) =>
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
+          ValNull
         case i => f(c(i, x, y))
       }
     )
@@ -682,18 +683,18 @@ class FeelInterpreter {
     withVal(
       input,
       i =>
-        if (x == ValBoolean(true)) {
-          ValBoolean(true)
-
-        } else if (checkEquality(i, x, _ == _, ValBoolean) == ValBoolean(true)) {
-          ValBoolean(true)
-
-        } else {
-          x match {
-            case ValList(ys) => ValBoolean(ys.contains(i))
-            case _           => ValBoolean(false)
-          }
-      }
+        x match {
+          case ValBoolean(true)                 => ValBoolean(true)   // the expression is true
+          case ValList(ys) if ys.contains(i)    => ValBoolean(true)   // the expression contains the input value
+          case _ =>
+            checkEquality(i, x, _ == _, ValBoolean) match {
+              case ValBoolean(true)             => ValBoolean(true)   // the expression is the input value
+              case _ if x == ValBoolean(false)  => ValBoolean(false)  // the expression is false
+              case _ if x.isInstanceOf[ValList] => ValBoolean(false)  // the expression is a list but doesn't contain the input value
+              case ValNull                      => ValNull            // the expression can't be compared to the input value
+              case _                            => ValBoolean(false)  // the expression is not the input value
+            }
+        }
     )
 
   private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val = x match {
