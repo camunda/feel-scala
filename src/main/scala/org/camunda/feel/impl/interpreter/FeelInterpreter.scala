@@ -903,6 +903,7 @@ class FeelInterpreter {
             failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
             failureMessage = s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"
           )
+          ValNull
         }
     }
 
