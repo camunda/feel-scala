@@ -53,11 +53,6 @@ class BuiltinFunctionsTest
   }
 
   "A is defined() function" should "return true if the value is present" in {
-
-    evaluateExpression(
-      expression = "is defined(null)"
-    ) should returnResult(true)
-
     evaluateExpression(
       expression = "is defined(1)"
     ) should returnResult(true)
@@ -76,6 +71,12 @@ class BuiltinFunctionsTest
 
     evaluateExpression(
       expression = """ is defined( {"a":1}.a ) """
+    ) should returnResult(true)
+  }
+
+  it should "return true if the value is null" in {
+    evaluateExpression(
+      expression = "is defined(null)"
     ) should returnResult(true)
   }
 
