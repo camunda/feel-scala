@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter
 
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -304,10 +305,12 @@ class InterpreterListExpressionTest
     evaluateExpression("[1][1] = 1") should returnResult(true)
   }
 
-  it should "fail to compare if not a list" in {
-    evaluateExpression("[] = 1") should failWith(
-      "expect List but found 'ValNumber(1)'"
-    )
+  it should "return null if compare to not a list" in {
+    evaluateExpression("[] = 1") should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NOT_COMPARABLE,
+        failureMessage = "Can't compare ValList(List()) with ValNumber(1)"
+      ))
   }
 
   "A for-expression" should "iterate over a range" in {

@@ -78,9 +78,12 @@ class InterpreterContextExpressionTest
     evaluateExpression("{x:1}.x = 1") should returnResult(true)
   }
 
-  it should "fail to compare if not a context" in {
-    evaluateExpression("{} = 1") should failWith(
-      "expect Context but found 'ValNumber(1)'"
+  it should "return null if compare to not a context" in {
+    evaluateExpression("{} = 1") should (
+      returnNull() and reportFailure(
+        failureType = EvaluationFailureType.NOT_COMPARABLE,
+        failureMessage = "Can't compare ValContext() with ValNumber(1)"
+      )
     )
   }
 

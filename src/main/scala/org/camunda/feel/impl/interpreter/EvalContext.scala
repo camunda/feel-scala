@@ -114,6 +114,7 @@ class EvalContext(val valueMapper: ValueMapper,
     failureCollector.addFailure(failureType, failureMessage)
   }
 
+  override def toString: String = variableProvider.getVariables.mkString
 }
 
 object EvalContext {
