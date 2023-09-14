@@ -74,10 +74,10 @@ class BuiltinFunctionsTest
     ) should returnResult(true)
   }
 
-  it should "return true if the value is null" in {
+  it should "return false if the value is null" in {
     evaluateExpression(
       expression = "is defined(null)"
-    ) should returnResult(true)
+    ) should returnResult(false)
   }
 
   it should "return false if a variable doesn't exist" in {
