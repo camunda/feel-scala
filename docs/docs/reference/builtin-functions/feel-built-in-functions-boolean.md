@@ -30,9 +30,8 @@ not(null)
 
 <MarkerCamundaExtension></MarkerCamundaExtension>
 
-Checks if a given value is defined. A value is defined if it exists, and it is an instance of one of the FEEL data types including `null`.
-
-The function can be used to check if a variable or a context entry (e.g. a property of a variable) exists. It allows differentiating between a `null` variable and a value that doesn't exist.
+Checks if a given value is not `null`. If the value is `null` then the function returns `false`. 
+Otherwise, the function returns `true`.
 
 **Function signature**
 
@@ -47,7 +46,7 @@ is defined(1)
 // true
 
 is defined(null)
-// true
+// false
 
 is defined(x)
 // false - if no variable "x" exists
@@ -55,6 +54,13 @@ is defined(x)
 is defined(x.y)
 // false - if no variable "x" exists or it doesn't have a property "y"
 ```
+
+:::caution Breaking change
+
+This function worked differently in previous versions. It returned `true` if the value was `null`.
+Since this version, the function returns `false` if the value is `null`. 
+
+:::
 
 ## get or else(value, default)
 

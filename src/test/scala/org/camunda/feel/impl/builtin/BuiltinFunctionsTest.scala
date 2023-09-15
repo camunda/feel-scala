@@ -53,11 +53,6 @@ class BuiltinFunctionsTest
   }
 
   "A is defined() function" should "return true if the value is present" in {
-
-    evaluateExpression(
-      expression = "is defined(null)"
-    ) should returnResult(true)
-
     evaluateExpression(
       expression = "is defined(1)"
     ) should returnResult(true)
@@ -79,9 +74,13 @@ class BuiltinFunctionsTest
     ) should returnResult(true)
   }
 
-  // see: https://github.com/camunda/feel-scala/issues/695
-  ignore should "return false if a variable doesn't exist" in {
+  it should "return false if the value is null" in {
+    evaluateExpression(
+      expression = "is defined(null)"
+    ) should returnResult(false)
+  }
 
+  it should "return false if a variable doesn't exist" in {
     evaluateExpression(
       expression = "is defined(a)"
     ) should returnResult(false)
@@ -91,9 +90,7 @@ class BuiltinFunctionsTest
     ) should returnResult(false)
   }
 
-  // see: https://github.com/camunda/feel-scala/issues/695
-  ignore should "return false if a context entry doesn't exist" in {
-
+  it should "return false if a context entry doesn't exist" in {
     evaluateExpression(
       expression = "is defined({}.a)"
     ) should returnResult(false)

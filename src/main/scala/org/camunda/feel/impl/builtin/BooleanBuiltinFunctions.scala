@@ -38,8 +38,8 @@ object BooleanBuiltinFunctions {
   private def isDefinedFunction = builtinFunction(
     params = List("value"),
     invoke = {
-      case (value: ValError) :: Nil => ValBoolean(false)
-      case _                        => ValBoolean(true)
+      case List(ValNull)  => ValBoolean(false)
+      case _              => ValBoolean(true)
     }
   )
 
