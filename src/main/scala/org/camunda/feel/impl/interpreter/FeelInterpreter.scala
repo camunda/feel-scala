@@ -290,11 +290,9 @@ class FeelInterpreter {
                            f: Boolean => Val)(implicit context: EvalContext): Val =
     withVal(
       input, {
-        case i if (!i.isComparable || !x.isComparable || !y.isComparable) =>
+        case i if !isComparable(i, x, y) || !hasSameType(i, x, y) =>
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
           ValNull
-        case i if (i.getClass != x.getClass || i.getClass != y.getClass) =>
-          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
         case i => f(c(i, x, y))
       }
     )
@@ -378,6 +376,10 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
+  private def isComparable(values: Val*): Boolean = values.forall(_.isComparable)
+
+  private def hasSameType(values: Val*): Boolean = values.map(_.getClass).distinct.size == 1
+
   private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
       val inStart: Boolean = range.start match {
@@ -457,6 +459,9 @@ class FeelInterpreter {
       case x if (y == ValNull)     => f(c(x.toOption.getOrElse(ValNull), ValNull))
       case _ : ValError            => f(c(ValNull, y.toOption.getOrElse(ValNull)))
       case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
+      case _ if !hasSameType(x, y) =>
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
+        ValNull
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
       case ValBoolean(x)           => withBoolean(y, y => f(c(x, y)))
       case ValString(x)            => withString(y, y => f(c(x, y)))
@@ -525,11 +530,9 @@ class FeelInterpreter {
                      c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case _ if (!x.isComparable || !y.isComparable) =>
+      case _ if !isComparable(x, y) || !hasSameType(x, y) =>
         error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
         ValNull
-      case _ if (x.getClass != y.getClass) =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
       case _ => f(c(x, y))
     }
 
@@ -678,18 +681,18 @@ class FeelInterpreter {
     withVal(
       input,
       i =>
-        if (x == ValBoolean(true)) {
-          ValBoolean(true)
-
-        } else if (checkEquality(i, x, _ == _, ValBoolean) == ValBoolean(true)) {
-          ValBoolean(true)
-
-        } else {
-          x match {
-            case ValList(ys) => ValBoolean(ys.contains(i))
-            case _           => ValBoolean(false)
-          }
-      }
+        x match {
+          case ValBoolean(true)                 => ValBoolean(true)   // the expression is true
+          case ValList(ys) if ys.contains(i)    => ValBoolean(true)   // the expression contains the input value
+          case _ =>
+            checkEquality(i, x, _ == _, ValBoolean) match {
+              case ValBoolean(true)             => ValBoolean(true)   // the expression is the input value
+              case _ if x == ValBoolean(false)  => ValBoolean(false)  // the expression is false
+              case _ if x.isInstanceOf[ValList] => ValBoolean(false)  // the expression is a list but doesn't contain the input value
+              case ValNull                      => ValNull            // the expression can't be compared to the input value
+              case _                            => ValBoolean(false)  // the expression is not the input value
+            }
+        }
     )
 
   private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val = x match {
