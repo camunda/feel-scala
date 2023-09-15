@@ -194,31 +194,10 @@ object ConversionBuiltinFunctions {
   private def isValidDecimalSeparator(separator: String) =
     separator == "," || separator == "."
 
-  private lazy val dateTimeOffsetZoneIdPattern =
-    Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
-
   private def stringFunction = builtinFunction(
     params = List("from"),
     invoke = {
-      case List(ValString(from))  => ValString(from)
-      case List(ValBoolean(from)) => ValString(from.toString)
-      case List(ValNumber(from))  => ValString(from.toString)
-      case List(ValDate(from))    => ValString(from.format(dateFormatter))
-      case List(ValLocalTime(from)) =>
-        ValString(from.format(localTimeFormatter))
-      case List(ValTime(from)) => ValString(from.format)
-      case List(ValLocalDateTime(from)) =>
-        ValString(from.format(localDateTimeFormatter))
-      case List(ValDateTime(from)) => {
-        val formattedDateTime = from.format(dateTimeFormatter)
-        // remove offset-id if zone-id is present
-        val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern
-          .matcher(formattedDateTime)
-          .replaceAll("$1$3")
-        ValString(dateTimeWithOffsetOrZoneId)
-      }
-      case List(duration: ValYearMonthDuration) => ValString(duration.toString)
-      case List(duration: ValDayTimeDuration)   => ValString(duration.toString)
+      case List(from)  => ValString(from.toString)
     }
   )
 
