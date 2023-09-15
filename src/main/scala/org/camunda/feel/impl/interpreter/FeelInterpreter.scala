@@ -290,10 +290,7 @@ class FeelInterpreter {
                            f: Boolean => Val)(implicit context: EvalContext): Val =
     withVal(
       input, {
-        case i if (!i.isComparable || !x.isComparable || !y.isComparable) =>
-          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
-          ValNull
-        case i if (i.getClass != x.getClass || i.getClass != y.getClass) =>
+        case i if !isComparable(i, x, y) || !hasSameType(i, x, y) =>
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $input with $x and $y")
           ValNull
         case i => f(c(i, x, y))
@@ -379,6 +376,10 @@ class FeelInterpreter {
     case _           => f(x)
   }
 
+  private def isComparable(values: Val*): Boolean = values.forall(_.isComparable)
+
+  private def hasSameType(values: Val*): Boolean = values.map(_.getClass).distinct.size == 1
+
   private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
       val inStart: Boolean = range.start match {
@@ -458,7 +459,7 @@ class FeelInterpreter {
       case x if (y == ValNull)     => f(c(x.toOption.getOrElse(ValNull), ValNull))
       case _ : ValError            => f(c(ValNull, y.toOption.getOrElse(ValNull)))
       case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
-      case _ if (x.getClass != y.getClass) =>
+      case _ if !hasSameType(x, y) =>
         error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
         ValNull
       case ValNumber(x)            => withNumber(y, y => f(c(x, y)))
@@ -529,10 +530,7 @@ class FeelInterpreter {
                      c: (Val, Val) => Boolean,
                      f: Boolean => Val)(implicit context: EvalContext): Val =
     x match {
-      case _ if (!x.isComparable || !y.isComparable) =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
-        ValNull
-      case _ if (x.getClass != y.getClass) =>
+      case _ if !isComparable(x, y) || !hasSameType(x, y) =>
         error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare $x with $y")
         ValNull
       case _ => f(c(x, y))
