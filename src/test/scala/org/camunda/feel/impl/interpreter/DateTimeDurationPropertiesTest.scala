@@ -56,7 +56,7 @@ class DateTimeDurationPropertiesTest
     evaluateExpression(""" date("2020-09-30").seconds """) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-        failureMessage = "No property found with name 'seconds' of value 'ValDate(2020-09-30)'. Available properties: 'year', 'month', 'day', 'weekday'"
+        failureMessage = "No property found with name 'seconds' of value '2020-09-30'. Available properties: 'year', 'month', 'day', 'weekday'"
       )
     )
   }
@@ -104,7 +104,7 @@ class DateTimeDurationPropertiesTest
     evaluateExpression(""" time("11:45:30+02:00").day """) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-        failureMessage = "No property found with name 'day' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
+        failureMessage = "No property found with name 'day' of value '11:45:30+02:00'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
       )
     )
   }
@@ -146,7 +146,7 @@ class DateTimeDurationPropertiesTest
     evaluateExpression(""" time("11:45:30").day """) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-        failureMessage = "No property found with name 'day' of value 'ValLocalTime(11:45:30)'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
+        failureMessage = "No property found with name 'day' of value '11:45:30'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
       )
     )
   }
@@ -214,7 +214,7 @@ class DateTimeDurationPropertiesTest
     evaluateExpression(""" date and time("2020-09-30T22:50:30+02:00").days """) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-        failureMessage = "No property found with name 'days' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
+        failureMessage = "No property found with name 'days' of value '2020-09-30T22:50:30+02:00'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
       )
     )
   }
@@ -275,7 +275,7 @@ class DateTimeDurationPropertiesTest
     evaluateExpression(""" date and time("2020-09-30T22:50:30").days """) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-        failureMessage = "No property found with name 'days' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
+        failureMessage = "No property found with name 'days' of value '2020-09-30T22:50:30'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
       )
     )
   }

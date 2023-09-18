@@ -49,48 +49,48 @@ class SuppressedFailuresTest extends AnyFlatSpec
   it should "report a suppressed failure if input is not comparable with interval" in {
     evaluateUnaryTests("[2..5]", "NaN") should reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValString(NaN) with ValNumber(2) and ValNumber(5)"
+      failureMessage = """Can't compare '"NaN"' with '2' and '5'"""
     )
   }
 
   it should "report a suppressed failure if values are not comparable" in {
     evaluateExpression("true < 2") should reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValBoolean(true) with ValNumber(2)"
+      failureMessage = "Can't compare 'true' with '2'"
     )
   }
 
   it should "report a suppressed failure if an addition has incompatible values" in {
     evaluateExpression("2 + true") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Number but found 'ValBoolean(true)'"
+      failureMessage = "Expected number but found 'true'"
     )
   }
 
   it should "report a suppressed failure if a condition is not a boolean" in {
     evaluateExpression("if 5 then 1 else 2") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Boolean but found 'ValNumber(5)'"
+      failureMessage = "Expected boolean but found '5'"
     )
 
     evaluateExpression("true and 2") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Boolean but found 'ValNumber(2)'"
+      failureMessage = "Expected boolean but found '2'"
     )
 
     evaluateExpression("false or 3") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Boolean but found 'ValNumber(3)'"
+      failureMessage = "Expected boolean but found '3'"
     )
 
     evaluateExpression("some x in [false, 2] satisfies x") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Boolean but found 'ValNumber(2)'"
+      failureMessage = "Expected boolean but found '2'"
     )
 
     evaluateExpression("every x in [true, 3] satisfies x") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected Boolean but found 'ValNumber(3)'"
+      failureMessage = "Expected boolean but found '3'"
     )
   }
 
@@ -107,7 +107,7 @@ class SuppressedFailuresTest extends AnyFlatSpec
       ),
       EvaluationFailure(
         failureType = EvaluationFailureType.INVALID_TYPE,
-        failureMessage = "Expected Number but found 'ValNull'"
+        failureMessage = "Expected number but found 'null'"
       )
     )
   }

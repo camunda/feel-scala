@@ -309,7 +309,7 @@ class InterpreterListExpressionTest
     evaluateExpression("[] = 1") should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NOT_COMPARABLE,
-        failureMessage = "Can't compare ValList(List()) with ValNumber(1)"
+        failureMessage = "Can't compare '[]' with '1'"
       ))
   }
 

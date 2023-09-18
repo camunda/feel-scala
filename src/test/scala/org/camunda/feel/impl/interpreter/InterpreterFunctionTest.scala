@@ -163,7 +163,7 @@ class InterpreterFunctionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-          failureMessage = "Failed to invoke function 'number': Illegal arguments: List(ValNull)")
+          failureMessage = "Failed to invoke function 'number': Illegal arguments: 'null'")
       )
   }
 
