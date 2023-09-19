@@ -1,4 +1,4 @@
-name: Release Workflow
+name: Release a new version
 on:
   workflow_call:
   workflow_dispatch:
@@ -13,11 +13,11 @@ on:
         type: string
         required: true
       nextDevelopmentVersion:
-        description: 'Next development version.'
+        description: 'The next development version.'
         type: string
         required: true
       dryRun:
-        description: 'Whether to perform a dry release where no changes or artifacts are pushed, defaults to true.'
+        description: 'Dry run? No chances will be published.'
         type: boolean
         default: true
 
@@ -150,6 +150,7 @@ jobs:
           ARTIFACT_DIR=$(mktemp -d)
           cp target/feel-engine-${RELEASE_VERSION}.jar "${ARTIFACT_DIR}/"
           cp target/feel-engine-${RELEASE_VERSION}-complete.jar "${ARTIFACT_DIR}/"
+          cp target/dependencies.txt "${ARTIFACT_DIR}/"
           echo "dir=${ARTIFACT_DIR}" >> $GITHUB_OUTPUT
 
       - name: Upload Release Artifacts
