@@ -150,6 +150,7 @@ jobs:
           ARTIFACT_DIR=$(mktemp -d)
           cp target/feel-engine-${RELEASE_VERSION}.jar "${ARTIFACT_DIR}/"
           cp target/feel-engine-${RELEASE_VERSION}-complete.jar "${ARTIFACT_DIR}/"
+          cp target/dependencies.txt "${ARTIFACT_DIR}/"
           echo "dir=${ARTIFACT_DIR}" >> $GITHUB_OUTPUT
 
       - name: Upload Release Artifacts
