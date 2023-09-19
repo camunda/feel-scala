@@ -17,7 +17,7 @@ on:
         type: string
         required: true
       dryRun:
-        description: 'Dry run? No chances will be published.'
+        description: 'Dry run? No changes will be published.'
         type: boolean
         default: true
 
