@@ -237,10 +237,10 @@
 
       <plugin>
         <groupId>org.antipathy</groupId>
-        <artifactId>mvn-scalafmt_2.12</artifactId>
-        <version>0.8_1.5.1</version>
+        <artifactId>mvn-scalafmt_2.13</artifactId>
+        <version>1.1.1684076452.9f83818</version>
         <configuration>
-          <parameters>--diff</parameters>
+          <configLocation>${project.basedir}/.scalafmt.conf</configLocation>
         </configuration>
       </plugin>
 
@@ -432,7 +432,7 @@
         <plugins>
           <plugin>
             <groupId>org.antipathy</groupId>
-            <artifactId>mvn-scalafmt_2.12</artifactId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
             <executions>
               <execution>
                 <id>scala-format</id>
@@ -468,7 +468,7 @@
         <plugins>
           <plugin>
             <groupId>org.antipathy</groupId>
-            <artifactId>mvn-scalafmt_2.12</artifactId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
             <executions>
               <execution>
                 <id>scala-format</id>
