@@ -21,6 +21,7 @@ const LiveFeel = ({
     "<click 'Evaluate' to see the result of the expression>"
   );
   const [error, setError] = React.useState(null);
+  const [warnings, setWarnings] = React.useState(null);
 
   // https://regex101.com/r/WnWTtz/1
   const errorPattern = /^.+(?<line>\d+):(?<position>\d+).+$/gm;
@@ -39,6 +40,7 @@ const LiveFeel = ({
     try {
       // to indicate the progress
       setResult("<evaluating the expression...>");
+      setWarnings(null)
 
       const parsedContext = parseContext();
       evaluate(parsedContext);
@@ -77,24 +79,33 @@ const LiveFeel = ({
             message: errorMessage,
             line: match?.groups?.line,
             position: match?.groups?.position,
-          });
+          }, response.data.warnings);
         } else {
-          onResult(JSON.stringify(response.data.result));
+          onResult(response.data);
         }
       });
   }
 
-  function onResult(result) {
+  function onResult(data) {
     setError(null);
+
+    const result = JSON.stringify(data.result);
     setResult(result);
+
+    if (data.warnings.length >= 1) {
+      setWarnings(data.warnings);
+    }
+
     if (onResultCallback) {
       onResultCallback(result);
     }
   }
 
-  function onError(error) {
+  function onError(error, warnings) {
     setResult(null);
     setError(error);
+    setWarnings(warnings);
+
     if (onErrorCallback) {
       onErrorCallback(error);
     }
@@ -139,6 +150,13 @@ const LiveFeel = ({
       <CodeBlock title={resultTitle()} language="json">
         {result || error?.message}
       </CodeBlock>
+      <br />
+      <h2>Warnings</h2>
+      <CodeBlock>
+        {warnings?.map((item,i) =>
+          <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
+      </CodeBlock>
+
     </div>
   );
 };
