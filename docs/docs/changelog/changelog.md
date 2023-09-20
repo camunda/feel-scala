@@ -10,6 +10,29 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+# 1.17
+
+<MarkerChangelogVersion versionZeebe="8.3.0" versionC7="not yet" />
+
+**Expressions:**
+
+* Overhauled error handling. Instead of failing the evaluation, for example, because of a non-existing
+  variable or context entry, it handles these cases and returns `null`. 
+
+**Built-in functions:**
+
+* New built-in
+  function [duplicate values()](../reference/builtin-functions/feel-built-in-functions-list#duplicate-valueslist)
+  to find duplicate list items
+* New built-in
+  function [get or else()](../reference/builtin-functions/feel-built-in-functions-boolean#get-or-elsevalue-default)
+  to handle `null` values
+* New built-in
+  function [assert()](../reference/builtin-functions/feel-built-in-functions-boolean#assertvalue-condition)
+  to fail the evaluation if a condition is not met
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.17.0).
+
 # 1.16
 
 <MarkerChangelogVersion versionZeebe="8.2.0" versionC7="not yet" />
