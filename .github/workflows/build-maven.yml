@@ -7,21 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '11', '17' ]
-
-    name: Java ${{ matrix.Java }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
-
+      uses: actions/checkout@v3
     - name: Java setup
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: ${{ matrix.java }}
-
+        java-version: 11
     - name: Cache
       uses: actions/cache@v3
       with:
@@ -29,6 +22,5 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-
     - name: Run Maven
       run: mvn -B clean verify com.mycila:license-maven-plugin:check
