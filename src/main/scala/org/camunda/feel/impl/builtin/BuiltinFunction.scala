@@ -32,9 +32,11 @@ object BuiltinFunction {
   }
 
   private def error: PartialFunction[List[Val], Any] = {
-    case vars if (vars.exists(_.isInstanceOf[ValError])) =>
-      vars.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
-    case e => ValError(s"Illegal arguments: $e")
+    case args if (args.exists(_.isInstanceOf[ValError])) =>
+      args.filter(_.isInstanceOf[ValError]).head.asInstanceOf[ValError]
+    case args =>
+      val argumentList = args.map("'" + _ + "'").mkString(", ")
+      ValError(s"Illegal arguments: $argumentList")
   }
 
 }

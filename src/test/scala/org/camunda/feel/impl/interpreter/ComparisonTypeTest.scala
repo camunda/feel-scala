@@ -50,17 +50,17 @@ class ComparisonTypeTest extends AnyFlatSpec
   it should "return null if the values have a different type" in {
     evaluateExpression("1 = true") should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValNumber(1) with ValBoolean(true)"
+      failureMessage = "Can't compare '1' with 'true'"
     ))
 
     evaluateExpression(""" 1 = "a" """) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValNumber(1) with ValString(a)"
+      failureMessage = """Can't compare '1' with '"a"'"""
     ))
 
     evaluateExpression(""" 1 = @"P1D" """) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValNumber(1) with P1D"
+      failureMessage = "Can't compare '1' with 'P1D'"
     ))
   }
 
@@ -84,12 +84,12 @@ class ComparisonTypeTest extends AnyFlatSpec
   it should "return null if the values have a different type" in {
     evaluateExpression("1 < true") should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValNumber(1) with ValBoolean(true)"
+      failureMessage = "Can't compare '1' with 'true'"
     ))
 
     evaluateExpression(""" 1 > @"P1D" """) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValNumber(1) with P1D"
+      failureMessage = "Can't compare '1' with 'P1D'"
     ))
   }
 
@@ -113,12 +113,12 @@ class ComparisonTypeTest extends AnyFlatSpec
   it should "return null if the values have a different type" in {
     evaluateUnaryTests(expression = "1", inputValue = true) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValBoolean(true) with ValNumber(1)"
+      failureMessage = "Can't compare 'true' with '1'"
     ))
 
     evaluateUnaryTests(expression = "1", inputValue = "a") should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValString(a) with ValNumber(1)"
+      failureMessage = """Can't compare '"a"' with '1'"""
     ))
   }
 
@@ -134,12 +134,12 @@ class ComparisonTypeTest extends AnyFlatSpec
   it should "return null if the values have a different type" in {
     evaluateUnaryTests(expression = "< 1", inputValue = true) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValBoolean(true) with ValNumber(1)"
+      failureMessage = "Can't compare 'true' with '1'"
     ))
 
     evaluateUnaryTests(expression = "> 1", inputValue = "a") should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare ValString(a) with ValNumber(1)"
+      failureMessage = """Can't compare '"a"' with '1'"""
     ))
   }
 

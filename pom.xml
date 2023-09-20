@@ -326,6 +326,17 @@
               <differenceType>7009</differenceType>
               <method>* validator()</method>
             </ignored>
+            <!-- ignore auto-generated Scala functions -->
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/**</className>
+              <differenceType>7002</differenceType>
+              <method>scala.Function1 andThen(scala.Function1)</method>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/**</className>
+              <differenceType>7002</differenceType>
+              <method>scala.Function1 compose(scala.Function1)</method>
+            </ignored>
           </ignored>
         </configuration>
       </plugin>
