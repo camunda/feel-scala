@@ -1,0 +1,40 @@
+---
+id: chapter-2
+title: "Chapter 2"
+---
+
+import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
+
+Once Zee arrived to Pamplona, a mystical creature appeared: Lerna's Hydra. :snake: The Hydra was a
+one-headed monster that when it's head was cut off, 2 more heads would grew in its place.
+
+Zee reached for a sword :dagger_knife: and cut off the head of the beast. As a result 2 more
+appeared. :scream: Zee cut both heads off again, which doubled to 4. How many heads would the beast
+have after cutting them for 5 times?
+
+We could try to represent this in a multiplication like this: `2*2*2*2*2`, but we can leverage
+[exponentiation](/docs/reference/language-guide/feel-numeric-expressions.md#exponentiation) and
+represent it like the following expression:
+
+<LiveFeel
+  defaultExpression={dedent`
+    // use exponentiation to represent the multiplications
+    2*2*2*2*2`}
+  feelContext='{"base": 2, "exponent": 5}'
+  metadata={{ page: "challenge-2" }}
+/>
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>
+      By the 5th time, there were 32 heads and no apparent way out, thankfully the heads started
+      fighting with each other and Zee was able to escape.
+    </div>
+    <br />
+    <pre title={'Expression'}>
+      base ** exponent
+    </pre>
+  </div>
+</details>

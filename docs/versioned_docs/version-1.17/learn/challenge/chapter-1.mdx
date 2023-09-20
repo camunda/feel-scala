@@ -1,0 +1,40 @@
+---
+id: chapter-1
+title: "Chapter 1"
+---
+
+import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
+
+Let's start our quest. :triangular_flag_on_post: FEEL allows you to use basic
+[numeric calculations](/docs/reference/language-guide/feel-numeric-expressions.md) like addition,
+subtraction and multiplication to name a few. Our friend arrived in Spain by boat, specifically
+Cadiz. The goal is to reach Pamplona (which is 1,030.8 kms away).
+
+As part of the quest, Zee received magical items :sparkles: and decided to use The Boots of Hermes
+:shoe:, which give its wearer a speed of 48.2 kms/hour.
+
+Using numeric operators, how many hours would it take to get there? Consider resting for 30 minutes
+every 5 hours. Let's also round up the number for total resting time by using a
+[numeric function](/docs/reference/builtin-functions/feel-built-in-functions-numeric.md).
+
+<LiveFeel
+  defaultExpression={dedent`
+      // change formula considering resting time plus total time
+      round up(distance / speed, 0)`}
+  feelContext='{"distance": 1030.8, "speed": 48.2, "restInHrs": 0.5, "restInterval": 5}'
+  metadata={{ page: "challenge-1" }}
+/>
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>
+      It would take Zee 24 hours to complete the trip.
+    </div>
+    <br />
+    <pre title={'Expression'}>
+      round up(restInHrs * (distance / speed) / restInterval + distance / speed, 0)
+    </pre>
+  </div>
+</details>
