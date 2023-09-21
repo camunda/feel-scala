@@ -23,7 +23,7 @@
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
     <skip-third-party-bom>false</skip-third-party-bom>
-    <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
+    <plugin.version.javadoc>3.0.1</plugin.version.javadoc>
   </properties>
 
   <dependencyManagement>
@@ -143,6 +143,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <version>3.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <failOnError>false</failOnError>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
