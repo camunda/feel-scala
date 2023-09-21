@@ -23,6 +23,7 @@
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
     <skip-third-party-bom>false</skip-third-party-bom>
+    <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
   </properties>
 
   <dependencyManagement>
