@@ -19,7 +19,7 @@
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.20.0</version.log4j>
 
-    <plugin.version.shade>3.5.0</plugin.version.shade>
+    <plugin.version.shade>3.5.1</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
     <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
 
