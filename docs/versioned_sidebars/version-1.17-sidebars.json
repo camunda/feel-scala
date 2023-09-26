@@ -18,7 +18,8 @@
             "reference/language-guide/feel-temporal-expressions",
             "reference/language-guide/feel-variables",
             "reference/language-guide/feel-control-flow",
-            "reference/language-guide/feel-functions"
+            "reference/language-guide/feel-functions",
+            "reference/language-guide/feel-error-handling"
           ]
         },
         {

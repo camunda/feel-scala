@@ -17,9 +17,11 @@ A unary-tests expression returns `true` if one of the following conditions is fu
 
 ### Comparison
 
-Compares the input value with a given value. Both values must be of the same type.
+Compares the input value with a given value. The input value is passed implicitly as the first
+argument of the operator.
 
-The input value is passed implicitly as the first argument of the operator.
+Both values must be of the same type. Otherwise, the result is `null`.
+
 
 <table>
   <tr>

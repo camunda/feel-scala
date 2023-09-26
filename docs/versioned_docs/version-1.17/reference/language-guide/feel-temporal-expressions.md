@@ -42,6 +42,10 @@ duration("P3M")
 
 ### Addition
 
+Adds a value to another value. The operator is defined for the followings types. 
+
+If a value has a different type, the result is `null`.
+
 <table>
   <tr>
     <th>First argument</th>
@@ -108,6 +112,13 @@ duration("P2D") + duration("P5D")
 ```
 
 ### Subtraction
+
+Subtracts a value from another value. The operator is defined for the followings types.
+
+If a value has a different type, the result is `null`.
+
+If one value has a timezone or time-offset, the other value must have a timezone or time-offset too.
+Otherwise, the result is `null`. 
 
 <table>
   <tr>
@@ -188,6 +199,10 @@ duration("P1Y") - duration("P3M")
 
 ### Multiplication
 
+Multiplies a value by another value. The operator is defined for the followings types.
+
+If a value has a different type, the result is `null`.
+
 <table>
   <tr>
     <th>First argument</th>
@@ -230,6 +245,10 @@ duration("P1M") * 6
 ```
 
 ### Division
+
+Divides a value by another value. The operator is defined for the followings types.
+
+If a value has a different type, the result is `null`.
 
 <table>
   <tr>

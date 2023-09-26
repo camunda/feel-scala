@@ -23,12 +23,16 @@ Creates a new numeric value. Leading zeros are valid.
 
 ### Addition
 
+Adds a value to another value.
+
 ```js
 2 + 3
 // 5
 ```
 
 ### Subtraction
+
+Subtracts a value from another value.
 
 ```js
 5 - 3
@@ -37,6 +41,8 @@ Creates a new numeric value. Leading zeros are valid.
 
 ### Multiplication
 
+Multiplies a value by another value.
+
 ```js
 5 * 3        
 // 15
@@ -44,12 +50,16 @@ Creates a new numeric value. Leading zeros are valid.
 
 ### Division
 
+Divides a value by another value.
+
 ```js
 6 / 2  
 // 3
 ```
 
 ### Exponentiation
+
+Raises a value to the power of another value.
 
 ```js
 2 ** 3   
