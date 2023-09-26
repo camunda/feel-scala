@@ -18,8 +18,9 @@ This section is split into expressions based on their operational data type:
 The following sections cover more general areas that are not restricted to one data type:
 
 - [Variables](./feel-variables.md)
-- [Control Flow](./feel-control-flow.md)
+- [Control flow](./feel-control-flow.md)
 - [Functions](./feel-functions.md)
+- [Error handling](feel-error-handling.md)
 
 ### Comments
 
