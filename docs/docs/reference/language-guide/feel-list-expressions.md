@@ -69,7 +69,8 @@ The index of a list starts at `1`. In other languages, the index starts at `0`.
 a[c]
 ```
 
-Filters the list `a` by the condition `c`. The result of the expression is a list that contains all elements where the condition `c` evaluates to `true`.
+Filters the list `a` by the condition `c`. The result of the expression is a list that contains all
+elements where the condition `c` evaluates to `true`. The other elements are excluded.
 
 While filtering, the current element is assigned to the variable `item`.
 

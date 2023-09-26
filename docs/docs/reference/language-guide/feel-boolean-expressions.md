@@ -16,7 +16,9 @@ false
 
 ### Comparison
 
-Two values of the same type can be compared using the following operators:
+Compares two values with one of the following operators.
+
+Both values must be of the same type. Otherwise, the result is `null`.
 
 <table>
   <tr>
@@ -122,26 +124,6 @@ null = null
 {}.y = null
 // true
 ```
-
-:::tip
-
-The built-in
-function [is defined()](../builtin-functions/feel-built-in-functions-boolean.md#is-definedvalue) can be
-used to differentiate between a value that is `null` and a variable or context entry that doesn't
-exist.
-
-```js
-is defined(null)
-// true
-
-is defined({x: null}.x)
-// true
-
-is defined({}.y)
-// false
-```
-
-:::
 
 ### Conjunction/and
 
