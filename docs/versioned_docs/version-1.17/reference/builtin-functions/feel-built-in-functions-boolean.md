@@ -77,13 +77,13 @@ get or else(value: Any, default: Any): Any
 **Examples**
 
 ```js
-get or default("this", "default")
+get or else("this", "default")
 // "this"
 
-get or default(null, "default")
+get or else(null, "default")
 // "default"
 
-get or default(null, null)     
+get or else(null, null)     
 // null
 ```
 
