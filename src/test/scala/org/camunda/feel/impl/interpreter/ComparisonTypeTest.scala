@@ -21,10 +21,11 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ComparisonTypeTest extends AnyFlatSpec
-  with Matchers
-  with FeelEngineTest
-  with EvaluationResultMatchers {
+class ComparisonTypeTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "An equal operator" should "compare two values of the same type" in {
     evaluateExpression("1 = 1") should returnResult(true)
@@ -107,7 +108,7 @@ class ComparisonTypeTest extends AnyFlatSpec
   }
 
   it should "compare two null values" in {
-    evaluateUnaryTests(expression = "null", inputValue = null)should returnResult(true)
+    evaluateUnaryTests(expression = "null", inputValue = null) should returnResult(true)
   }
 
   it should "return null if the values have a different type" in {
@@ -132,7 +133,10 @@ class ComparisonTypeTest extends AnyFlatSpec
   }
 
   it should "return null if the values have a different type" in {
-    evaluateUnaryTests(expression = "< 1", inputValue = true) should (returnNull() and reportFailure(
+    evaluateUnaryTests(
+      expression = "< 1",
+      inputValue = true
+    ) should (returnNull() and reportFailure(
       failureType = EvaluationFailureType.NOT_COMPARABLE,
       failureMessage = "Can't compare 'true' with '1'"
     ))

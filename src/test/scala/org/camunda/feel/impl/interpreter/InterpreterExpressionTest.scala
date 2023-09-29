@@ -23,13 +23,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
- * @author Philipp Ossler
- */
-class InterpreterExpressionTest
-  extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+/** @author
+  *   Philipp Ossler
+  */
+class InterpreterExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "An expression" should "be an if-then-else (with parentheses)" in {
     val exp = """ if (x < 5) then "low" else "high" """
@@ -73,26 +70,22 @@ class InterpreterExpressionTest
   }
 
   it should "be an if-then-else (with variable and function call -> then)" in {
-    eval("if 7 > var then flatten(xs) else []",
-      Map("xs" -> List(1, 2), "var" -> 3)) should be(
+    eval("if 7 > var then flatten(xs) else []", Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
   it should "be an if-then-else (with variable and function call -> else)" in {
-    eval("if false then var else flatten(xs)",
-      Map("xs" -> List(1, 2), "var" -> 3)) should be(
+    eval("if false then var else flatten(xs)", Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      ValBoolean(true))
+    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(ValBoolean(true))
 
-    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(
-      ValBoolean(false))
+    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(ValBoolean(false))
   }
 
   it should "be an instance of (literal)" in {
@@ -127,7 +120,9 @@ class InterpreterExpressionTest
   }
 
   it should "be an instance of (date and time)" in {
-    eval("""date and time("2023-03-07T11:27:00") instance of date and time""") should be(ValBoolean(true))
+    eval("""date and time("2023-03-07T11:27:00") instance of date and time""") should be(
+      ValBoolean(true)
+    )
     eval(""" @"2023-03-07T11:27:00" instance of date and time""") should be(ValBoolean(true))
     eval("1 instance of date and time") should be(ValBoolean(false))
   }
@@ -186,8 +181,7 @@ class InterpreterExpressionTest
 
     eval("{x:(xs[1])}.x", context) should be(ValNumber(1))
     eval("{x:(xs)[1]}.x", context) should be(ValNumber(1))
-    eval("{x:(xs)}.x", context) should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    eval("{x:(xs)}.x", context) should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
   }
 
   it should "contains nested filter expressions" in {
@@ -313,8 +307,7 @@ class InterpreterExpressionTest
   ).foreach { variableName =>
     it should s"contain a key-word ($variableName)" in {
 
-      eval(s"$variableName = true", Map(variableName -> true)) should be(
-        ValBoolean(true))
+      eval(s"$variableName = true", Map(variableName -> true)) should be(ValBoolean(true))
     }
   }
 
@@ -327,16 +320,14 @@ class InterpreterExpressionTest
   }
 
   it should "be written as single line comments /* .. */" in {
-    eval(
-      """
+    eval("""
         /* the first item */
         [1,2,3][1]
         """) should be(ValNumber(1))
   }
 
   it should "be written as block comments /* .. */" in {
-    eval(
-      """
+    eval("""
         /*
          * the first item
          */

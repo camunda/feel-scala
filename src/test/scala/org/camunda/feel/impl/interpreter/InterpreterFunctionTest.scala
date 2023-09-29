@@ -21,8 +21,8 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class InterpreterFunctionTest
     extends AnyFlatSpec
@@ -38,7 +38,7 @@ class InterpreterFunctionTest
 
   "A function invocation" should "invoke a function without parameter" in {
     evaluateExpression(
-      expression  = "f()",
+      expression = "f()",
       functions = Map("f" -> evaluateFunction("""function() "invoked" """))
     ) should returnResult("invoked")
   }
@@ -125,37 +125,55 @@ class InterpreterFunctionTest
 
     evaluateExpression(expression = "f()", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and 0 parameters"
+        )
+    )
 
     evaluateExpression(expression = "f(1)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 1 parameters")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and 1 parameters"
+        )
+    )
 
     evaluateExpression(expression = "f(x:1,z:3)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,z")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and parameters: x,z"
+        )
+    )
 
     evaluateExpression(expression = "f(x:1,y:2,z:3)", functions = functions) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and parameters: x,y,z")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and parameters: x,y,z"
+        )
+    )
   }
 
   it should "return null if no function exists with the name" in {
     evaluateExpression("f()") should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and 0 parameters"
+        )
+    )
   }
 
   it should "return null if the name doesn't resolve to a function" in {
     evaluateExpression(expression = "f()", variables = Map("x" -> "a variable")) should (
       returnNull() and
-        reportFailure(EvaluationFailureType.NO_FUNCTION_FOUND, "No function found with name 'f' and 0 parameters")
-      )
+        reportFailure(
+          EvaluationFailureType.NO_FUNCTION_FOUND,
+          "No function found with name 'f' and 0 parameters"
+        )
+    )
   }
 
   it should "return null for a built-in function if invoked with wrong arguments" in {
@@ -163,8 +181,9 @@ class InterpreterFunctionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-          failureMessage = "Failed to invoke function 'number': Illegal arguments: 'null'")
-      )
+          failureMessage = "Failed to invoke function 'number': Illegal arguments: 'null'"
+        )
+    )
   }
 
   it should "replace not set parameters with null" in {
@@ -240,7 +259,9 @@ class InterpreterFunctionTest
   "An external Java function invocation" should "invoke a function with a double parameter" in {
     val functions = Map(
       "cos" -> evaluateFunction(
-        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """))
+        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """
+      )
+    )
 
     evaluateExpression(
       expression = "cos(0)",
@@ -256,8 +277,7 @@ class InterpreterFunctionTest
   it should "invoke a function with two int parameters" in {
     evaluateExpression(
       expression = "max(1,2)",
-      functions = Map("max" -> evaluateFunction(
-        """ function(x,y) external { java: {
+      functions = Map("max" -> evaluateFunction(""" function(x,y) external { java: {
           class: "java.lang.Math", method signature: "max(int, int)" } } """))
     ) should returnResult(2)
   }
@@ -265,8 +285,7 @@ class InterpreterFunctionTest
   it should "invoke a function with a long parameters" in {
     evaluateExpression(
       expression = "abs(-1)",
-      functions = Map("abs" -> evaluateFunction(
-        """ function(a) external { java: {
+      functions = Map("abs" -> evaluateFunction(""" function(a) external { java: {
           class: "java.lang.Math", method signature: "abs(long)" } } """))
     ) should returnResult(1)
   }
@@ -274,8 +293,7 @@ class InterpreterFunctionTest
   it should "invoke a function with a float parameters" in {
     evaluateExpression(
       expression = "round(3.2)",
-      functions = Map("round" -> evaluateFunction(
-        """ function(a) external { java: {
+      functions = Map("round" -> evaluateFunction(""" function(a) external { java: {
           class: "java.lang.Math", method signature: "round(float)" } } """))
     ) should returnResult(3)
   }

@@ -21,10 +21,7 @@ import org.camunda.feel.syntaxtree.{ValBoolean, ValNull}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-class BuiltinRangeFunctionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinRangeFunctionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A before() function" should "return true when a low number is entered before a high number" in {
 
@@ -714,64 +711,62 @@ class BuiltinRangeFunctionTest
 
   it should "support date values" in {
 
-    eval(""" before(date("2021-12-21"), date("2021-12-24")) """) should be(
-      ValBoolean(true))
-    eval(
-      """ before(date("2021-12-21"), [date("2021-12-01")..date("2021-12-24")])""") should be(
-      ValBoolean(false))
+    eval(""" before(date("2021-12-21"), date("2021-12-24")) """) should be(ValBoolean(true))
+    eval(""" before(date("2021-12-21"), [date("2021-12-01")..date("2021-12-24")])""") should be(
+      ValBoolean(false)
+    )
   }
 
   it should "support time values" in {
 
-    eval(""" before(time("12:00:00+01:00"), time("13:00:00+01:00")) """) should be(
-      ValBoolean(true))
+    eval(""" before(time("12:00:00+01:00"), time("13:00:00+01:00")) """) should be(ValBoolean(true))
     eval(
-      """ before(time("12:00:00+01:00"), [time("10:00:00+01:00")..time("13:00:00+01:00")])""") should be(
-      ValBoolean(false))
+      """ before(time("12:00:00+01:00"), [time("10:00:00+01:00")..time("13:00:00+01:00")])"""
+    ) should be(ValBoolean(false))
   }
 
   it should "support time values (local)" in {
 
-    eval(""" before(time("12:00:00"), time("13:00:00")) """) should be(
-      ValBoolean(true))
+    eval(""" before(time("12:00:00"), time("13:00:00")) """) should be(ValBoolean(true))
     eval(""" before(time("12:00:00"), [time("10:00:00")..time("13:00:00")])""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
   }
 
   it should "support date-time values" in {
 
     eval(
-      """ before(date and time("2021-12-21T12:00:00+01:00"), date and time("2021-12-24T12:00:00+01:00")) """) should be(
-      ValBoolean(true))
+      """ before(date and time("2021-12-21T12:00:00+01:00"), date and time("2021-12-24T12:00:00+01:00")) """
+    ) should be(ValBoolean(true))
     eval(
-      """ before(date and time("2021-12-21T12:00:00+01:00"), [date and time("2021-12-01T12:00:00+01:00")..date and time("2021-12-24T12:00:00+01:00")])""") should be(
-      ValBoolean(false))
+      """ before(date and time("2021-12-21T12:00:00+01:00"), [date and time("2021-12-01T12:00:00+01:00")..date and time("2021-12-24T12:00:00+01:00")])"""
+    ) should be(ValBoolean(false))
   }
 
   it should "support date-time values (local)" in {
 
     eval(
-      """ before(date and time("2021-12-21T12:00:00"), date and time("2021-12-24T12:00:00")) """) should be(
-      ValBoolean(true))
+      """ before(date and time("2021-12-21T12:00:00"), date and time("2021-12-24T12:00:00")) """
+    ) should be(ValBoolean(true))
     eval(
-      """ before(date and time("2021-12-21T12:00:00"), [date and time("2021-12-01T12:00:00")..date and time("2021-12-24T12:00:00")])""") should be(
-      ValBoolean(false))
+      """ before(date and time("2021-12-21T12:00:00"), [date and time("2021-12-01T12:00:00")..date and time("2021-12-24T12:00:00")])"""
+    ) should be(ValBoolean(false))
   }
 
   it should "support year-month-duration values" in {
 
-    eval(""" before(duration("P3M"), duration("P6M")) """) should be(
-      ValBoolean(true))
+    eval(""" before(duration("P3M"), duration("P6M")) """) should be(ValBoolean(true))
     eval(""" before(duration("P3M"), [duration("P1M")..duration("P6M")])""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
   }
 
   it should "support days-times-duration values" in {
 
-    eval(""" before(duration("PT3H"), duration("PT6H")) """) should be(
-      ValBoolean(true))
+    eval(""" before(duration("PT3H"), duration("PT6H")) """) should be(ValBoolean(true))
     eval(""" before(duration("PT3H"), [duration("PT1H")..duration("PT6H")])""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
   }
 
   it should "return null for string values" in {

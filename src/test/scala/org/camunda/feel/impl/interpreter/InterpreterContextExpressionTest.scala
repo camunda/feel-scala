@@ -21,8 +21,8 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class InterpreterContextExpressionTest
     extends AnyFlatSpec
@@ -129,7 +129,7 @@ class InterpreterContextExpressionTest
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'x'. The context is empty"
         )
-      )
+    )
   }
 
   it should "return null if no entry exists with the key" in {
@@ -139,7 +139,7 @@ class InterpreterContextExpressionTest
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'z'. Available keys: 'x', 'y'"
         )
-      )
+    )
   }
 
   it should "return null if the context is null" in {
@@ -150,8 +150,9 @@ class InterpreterContextExpressionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. The context is null")
-      )
+          failureMessage = "No context entry found with key 'b'. The context is null"
+        )
+    )
   }
 
   it should "return null if the chained context is null" in {
@@ -159,10 +160,12 @@ class InterpreterContextExpressionTest
       returnNull() and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: 'a'") and
+          failureMessage = "No context entry found with key 'b'. Available keys: 'a'"
+        ) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. The context is null")
+          failureMessage = "No context entry found with key 'c'. The context is null"
+        )
     )
   }
 
@@ -173,7 +176,7 @@ class InterpreterContextExpressionTest
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
           failureMessage = "No context entry found with key 'z'. The context is empty"
         )
-      )
+    )
   }
 
   it should "return the value of a key with whitespaces" in {
@@ -198,7 +201,8 @@ class InterpreterContextExpressionTest
     ) should returnResult("\uD83D\uDE00")
 
     evaluateExpression(
-      expression = "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`"
+      expression =
+        "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`"
     ) should returnResult(5)
   }
 
@@ -220,25 +224,29 @@ class InterpreterContextExpressionTest
       returnResult(List(1, null)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'a'. Available keys: 'b'")
-      )
+          failureMessage = "No context entry found with key 'a'. Available keys: 'b'"
+        )
+    )
 
     evaluateExpression("[ {a:1}, {b:2} ].b") should (
       returnResult(List(null, 2)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: 'a'")
-      )
+          failureMessage = "No context entry found with key 'b'. Available keys: 'a'"
+        )
+    )
 
     evaluateExpression("[ {a:1}, {b:2} ].c") should (
       returnResult(List(null, null)) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: 'a'") and
+          failureMessage = "No context entry found with key 'c'. Available keys: 'a'"
+        ) and
         reportFailure(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: 'b'")
-      )
+          failureMessage = "No context entry found with key 'c'. Available keys: 'b'"
+        )
+    )
   }
 
   "A context filter" should "access a context entry by key" in {
