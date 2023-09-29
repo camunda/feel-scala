@@ -19,11 +19,12 @@
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.20.0</version.log4j>
     <plugin.version.shade>3.4.1</plugin.version.shade>
+    <plugin.version.gpg>1.6</plugin.version.gpg>
+    <plugin.version.javadoc>3.0.1</plugin.version.javadoc>
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.resourceEncoding>${encoding}</project.build.resourceEncoding>
     <skip-third-party-bom>false</skip-third-party-bom>
-    <plugin.version.javadoc>3.0.1</plugin.version.javadoc>
   </properties>
 
   <dependencyManagement>
@@ -149,6 +150,16 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
             <failOnError>false</failOnError>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <configuration>
+            <gpgArguments>
+              <arg>--pinentry-mode</arg>
+              <arg>loopback</arg>
+            </gpgArguments>
           </configuration>
         </plugin>
       </plugins>
