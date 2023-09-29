@@ -17,15 +17,32 @@
 package org.camunda.feel.api
 
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
-import org.camunda.feel.syntaxtree.{ClosedRangeBoundary, OpenRangeBoundary, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValFunction, ValList, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValRange, ValString, ValTime, ValYearMonthDuration, ZonedTime}
+import org.camunda.feel.syntaxtree.{
+  ClosedRangeBoundary,
+  OpenRangeBoundary,
+  ValContext,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValError,
+  ValFunction,
+  ValList,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNull,
+  ValNumber,
+  ValRange,
+  ValString,
+  ValTime,
+  ValYearMonthDuration,
+  ZonedTime
+}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, Period, ZonedDateTime}
 
-class StringRepresentationTypeTest
-  extends AnyFlatSpec
-    with Matchers {
+class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
 
   "Null" should "return 'null'" in {
     ValNull.toString should be("null")

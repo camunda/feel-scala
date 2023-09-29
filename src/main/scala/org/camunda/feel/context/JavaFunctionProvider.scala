@@ -18,37 +18,35 @@ package org.camunda.feel.context
 
 import java.util.{Collections, Optional}
 import org.camunda.feel.syntaxtree.{Val, ValFunction}
-import scala.jdk.CollectionConverters.{
-  CollectionHasAsScala,
-  ListHasAsScala,
-  SeqHasAsJava
-}
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, ListHasAsScala, SeqHasAsJava}
 
-/**
-  * Provides one or more functions which can be used in an expression.
+/** Provides one or more functions which can be used in an expression.
   */
 abstract class JavaFunctionProvider extends CustomFunctionProvider {
 
-  /**
-    * Returns the function for the given name.
+  /** Returns the function for the given name.
     *
-    * @param functionName the name of the function
-    * @return the function or [[Optional.empty()]], if no function is provided for this name
+    * @param functionName
+    *   the name of the function
+    * @return
+    *   the function or [[Optional.empty()]], if no function is provided for this name
     */
   def resolveFunction(functionName: String): Optional[JavaFunction]
 
-  /**
-    * Returns the names of all functions.
+  /** Returns the names of all functions.
     *
-    * @return the names of all functions
+    * @return
+    *   the names of all functions
     */
   def getFunctionNames(): java.util.Collection[String]
 
-  /**
-    * Returns a list of functions for the given name. There can be multiple functions with different parameters.
+  /** Returns a list of functions for the given name. There can be multiple functions with different
+    * parameters.
     *
-    * @param functionName the name of the function
-    * @return a list of functions or an empty list, if no function is provided for this name
+    * @param functionName
+    *   the name of the function
+    * @return
+    *   a list of functions or an empty list, if no function is provided for this name
     */
   def resolveFunctions(functionName: String): java.util.List[JavaFunction] = {
     val function = resolveFunction(functionName)

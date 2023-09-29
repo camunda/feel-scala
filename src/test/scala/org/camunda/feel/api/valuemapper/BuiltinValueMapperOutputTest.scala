@@ -98,8 +98,7 @@ class BuiltinValueMapperOutputTest extends AnyFlatSpec with Matchers {
 
   it should "return date-time with zone id as java.time.ZonedDateTime" in {
     engine
-      .evalExpression(
-        """ date and time("2019-08-12T22:22:22@Europe/Berlin") """)
+      .evalExpression(""" date and time("2019-08-12T22:22:22@Europe/Berlin") """)
       .map {
         _ shouldBe ZonedDateTime.of(
           LocalDateTime.parse("2019-08-12T22:22:22"),

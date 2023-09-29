@@ -25,7 +25,11 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest with EvaluationResultMatchers {
+class CustomContextTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A default context" should "provide its members" in {
     evaluateExpression(
@@ -51,9 +55,9 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
 
       override def variableProvider: VariableProvider = new VariableProvider {
         override def getVariable(name: String): Option[Any] = name match {
-          case "a" => Some(2)
+          case "a"                             => Some(2)
           case UnaryTests.defaultInputVariable => Some(2)
-          case _ => None
+          case _                               => None
         }
 
         override def keys: Iterable[String] =
@@ -67,13 +71,9 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
       context = myCustomContext
     ) should returnResult(2)
 
-    evaluateExpression(
-      expression = "floor(3.8)",
-      context = myCustomContext) should returnResult(3)
+    evaluateExpression(expression = "floor(3.8)", context = myCustomContext) should returnResult(3)
 
-    evaluateUnaryTests(
-      expression = "2",
-      context = myCustomContext) should returnResult(true)
+    evaluateUnaryTests(expression = "2", context = myCustomContext) should returnResult(true)
   }
 
   it should "provide its functions" in {
@@ -91,9 +91,12 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
     }
 
     val myFunctionProvider = new FunctionProvider {
-      val f = ValFunction(List("x"), {
-        case List(ValNumber(x)) => ValNumber(x + 2)
-      })
+      val f = ValFunction(
+        List("x"),
+        { case List(ValNumber(x)) =>
+          ValNumber(x + 2)
+        }
+      )
 
       override def getFunctions(name: String): List[ValFunction] = {
         functionCallCount += 1;
@@ -146,7 +149,8 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
   val inputVariableContext = StaticVariableProvider(
     Map(
       UnaryTests.inputVariable -> "myInputVariable"
-    ))
+    )
+  )
 
   it should "evaluate unary-test" in {
     val variables: Map[String, _] = Map("myInputVariable" -> 8, "foo" -> 7)
@@ -154,12 +158,11 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
     val context: CustomContext = new CustomContext {
       override val variableProvider =
         VariableProvider.CompositeVariableProvider(
-          List(inputVariableContext, SimpleTestContext(variables)))
+          List(inputVariableContext, SimpleTestContext(variables))
+        )
     }
 
-    evaluateUnaryTests(
-      expression = "foo",
-      context = context) should returnResult(false)
+    evaluateUnaryTests(expression = "foo", context = context) should returnResult(false)
   }
 
   it should "return null if input value doesn't exist" in {
@@ -168,12 +171,11 @@ class CustomContextTest extends AnyFlatSpec with Matchers with FeelEngineTest wi
     val context: CustomContext = new CustomContext {
       override val variableProvider =
         VariableProvider.CompositeVariableProvider(
-          List(inputVariableContext, SimpleTestContext(variables)))
+          List(inputVariableContext, SimpleTestContext(variables))
+        )
     }
 
-    evaluateUnaryTests(
-      expression = "foo",
-      context = context) should returnResult(false)
+    evaluateUnaryTests(expression = "foo", context = context) should returnResult(false)
   }
 
 }

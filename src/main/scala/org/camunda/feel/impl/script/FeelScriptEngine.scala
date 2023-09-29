@@ -38,10 +38,7 @@ import javax.script.{
 import scala.annotation.tailrec
 import scala.jdk.CollectionConverters.MapHasAsScala
 
-trait FeelScriptEngine
-    extends AbstractScriptEngine
-    with ScriptEngine
-    with Compilable {
+trait FeelScriptEngine extends AbstractScriptEngine with ScriptEngine with Compilable {
 
   val eval: (String, Map[String, Any]) => EvalExpressionResult
 
@@ -68,14 +65,14 @@ trait FeelScriptEngine
 
   def eval(script: String, context: ScriptContext): Object = {
     val engineContext = getEngineContext(context)
-    val result = eval(script, engineContext)
+    val result        = eval(script, engineContext)
 
     handleEvaluationResult(result)
   }
 
   def eval(script: CompiledFeelScript, context: ScriptContext): Object = {
     val engineContext = getEngineContext(context)
-    val result = engine.eval(script.expression, engineContext)
+    val result        = engine.eval(script.expression, engineContext)
 
     handleEvaluationResult(result)
   }
@@ -87,11 +84,12 @@ trait FeelScriptEngine
   }
 
   def compile(script: String): CompiledScript = parse(script) match {
-    case Parsed.Success(exp, _) =>
+    case Parsed.Success(exp, _)      =>
       CompiledFeelScript(this, ParsedExpression(exp, script))
     case Parsed.Failure(_, _, extra) =>
       throw new ScriptException(
-        s"failed to parse expression '$script':\n${extra.trace().aggregateMsg}")
+        s"failed to parse expression '$script':\n${extra.trace().aggregateMsg}"
+      )
   }
 
   private def handleEvaluationResult(result: EvalExpressionResult): Object =
@@ -118,13 +116,12 @@ trait FeelScriptEngine
   }
 
   @tailrec
-  private def read(reader: Reader,
-                   buffer: StringBuffer = new StringBuffer): String = {
+  private def read(reader: Reader, buffer: StringBuffer = new StringBuffer): String = {
     val chars = new Array[Char](16 * 1024)
 
     reader.read(chars, 0, chars.length) match {
       case -1 => buffer.toString
-      case i =>
+      case i  =>
         buffer.append(chars, 0, i)
         read(reader, buffer)
     }

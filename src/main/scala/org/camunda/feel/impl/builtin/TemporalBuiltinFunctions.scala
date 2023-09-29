@@ -36,30 +36,28 @@ import java.util.Locale
 class TemporalBuiltinFunctions(clock: FeelEngineClock) {
 
   def functions = Map(
-    "now" -> List(nowFunction),
-    "today" -> List(todayFunction),
-    "day of year" -> List(dateTimeFunction(getDayOfYear)),
-    "day of week" -> List(dateTimeFunction(getDayOfWeek)),
-    "month of year" -> List(dateTimeFunction(getMonthOfYear)),
-    "week of year" -> List(dateTimeFunction(getWeekOfYear)),
+    "now"               -> List(nowFunction),
+    "today"             -> List(todayFunction),
+    "day of year"       -> List(dateTimeFunction(getDayOfYear)),
+    "day of week"       -> List(dateTimeFunction(getDayOfWeek)),
+    "month of year"     -> List(dateTimeFunction(getMonthOfYear)),
+    "week of year"      -> List(dateTimeFunction(getWeekOfYear)),
     "last day of month" -> List(dateTimeFunction(getLastDayOfMonth))
   )
 
   private def nowFunction = builtinFunction(
     params = List.empty,
-    invoke = {
-      case _ =>
-        val now = clock.getCurrentTime
-        ValDateTime(now)
+    invoke = { case _ =>
+      val now = clock.getCurrentTime
+      ValDateTime(now)
     }
   )
 
   private def todayFunction = builtinFunction(
     params = List.empty,
-    invoke = {
-      case _ =>
-        val today = clock.getCurrentTime.toLocalDate
-        ValDate(today)
+    invoke = { case _ =>
+      val today = clock.getCurrentTime.toLocalDate
+      ValDate(today)
     }
   )
 
@@ -79,20 +77,20 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
   }
 
   private def getDayOfWeek(date: Date): ValString = {
-    val dayOfWeek = date.getDayOfWeek
+    val dayOfWeek   = date.getDayOfWeek
     val displayName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
     ValString(displayName)
   }
 
   private def getMonthOfYear(date: Date): ValString = {
-    val month = date.getMonth
+    val month       = date.getMonth
     val displayName = month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
     ValString(displayName)
   }
 
   private def getWeekOfYear(date: Date): ValNumber = {
     val temporalField = WeekFields.ISO.weekOfWeekBasedYear()
-    val weekOfYear = date.get(temporalField)
+    val weekOfYear    = date.get(temporalField)
     ValNumber(weekOfYear)
   }
 

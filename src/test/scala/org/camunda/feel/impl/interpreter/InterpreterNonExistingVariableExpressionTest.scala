@@ -23,7 +23,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class InterpreterNonExistingVariableExpressionTest
-  extends AnyFlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
     with EvaluationResultMatchers {
@@ -102,32 +102,36 @@ class InterpreterNonExistingVariableExpressionTest
     evaluateExpression("non_existing") should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No variable found with name 'non_existing'")
+        failureMessage = "No variable found with name 'non_existing'"
       )
+    )
   }
 
   "A non-existing input value" should "be equal to null" in {
     evaluateUnaryTests(expression = "null", context = Context.EmptyContext) should (
       returnResult(true) and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No input value found.")
+        failureMessage = "No input value found."
       )
+    )
   }
 
   it should "not be equal to a non-null value" in {
     evaluateUnaryTests("2", context = Context.EmptyContext) should (
       returnResult(false) and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No input value found.")
+        failureMessage = "No input value found."
       )
+    )
   }
 
   it should "not compare to a non-null value" in {
     evaluateUnaryTests("< 2", context = Context.EmptyContext) should (
       returnNull() and reportFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No input value found.")
+        failureMessage = "No input value found."
       )
+    )
   }
 
 }

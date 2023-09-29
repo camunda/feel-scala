@@ -51,7 +51,8 @@ object SpiServiceLoader {
     } catch {
       case t: Throwable =>
         System.err.println(
-          s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}")
+          s"Failed to load service provider: ${classTag[T].runtimeClass.getSimpleName}"
+        )
         t.printStackTrace()
         throw t
     }

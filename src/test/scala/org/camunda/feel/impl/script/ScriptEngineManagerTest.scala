@@ -21,8 +21,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import javax.script.ScriptEngineManager
 import scala.collection.JavaConverters._
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class ScriptEngineManagerTest extends AnyFlatSpec with Matchers {
 
@@ -44,8 +44,7 @@ class ScriptEngineManagerTest extends AnyFlatSpec with Matchers {
 
   it should "get feel script engine by qualified name" in {
 
-    val engine = scriptEngineManager.getEngineByName(
-      "http://www.omg.org/spec/FEEL/20140401")
+    val engine = scriptEngineManager.getEngineByName("http://www.omg.org/spec/FEEL/20140401")
 
     engine.getClass should be(classOf[FeelExpressionScriptEngine])
   }
@@ -70,7 +69,8 @@ class ScriptEngineManagerTest extends AnyFlatSpec with Matchers {
     val factories = scriptEngineManager.getEngineFactories
 
     (factories.asScala.map(f => f.getClass)) should contain allOf (classOf[
-      FeelScriptEngineFactory], classOf[FeelUnaryTestsScriptEngineFactory])
+      FeelScriptEngineFactory
+    ], classOf[FeelUnaryTestsScriptEngineFactory])
   }
 
   it should "get feel unary tests script engine by name" in {

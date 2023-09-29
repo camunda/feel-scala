@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterStringExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A string" should "concatenates to another String" in {
 
@@ -77,19 +74,20 @@ class InterpreterStringExpressionTest
     eval(""" "a" != null """) should be(ValBoolean(true))
   }
 
-  List(""" \' """,
-       """ \" """,
-       """ \\ """,
-       """ \n """,
-       """ \r """,
-       """ \t """,
-       """ \u269D """,
-       """ \U101EF """)
+  List(
+    """ \' """,
+    """ \" """,
+    """ \\ """,
+    """ \n """,
+    """ \r """,
+    """ \t """,
+    """ \u269D """,
+    """ \U101EF """
+  )
     .foreach { escapeChar =>
       it should s"contains an escape sequence ($escapeChar)" in {
 
-        eval(s""" "a $escapeChar b" """) should be(
-          ValString(s"""a $escapeChar b"""))
+        eval(s""" "a $escapeChar b" """) should be(ValString(s"""a $escapeChar b"""))
       }
     }
 

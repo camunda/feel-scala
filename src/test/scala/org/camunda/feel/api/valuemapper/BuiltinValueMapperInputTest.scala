@@ -36,8 +36,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.String.valueOf("3.4"))
 
     engine
-      .evalExpression("foo + \"hello\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + \"hello\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.String]
   }
 
@@ -45,8 +44,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Float.valueOf("3.4"))
 
     engine
-      .evalExpression("foo + 1",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + 1", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Double]
   }
 
@@ -54,8 +52,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Double.valueOf("3.4"))
 
     engine
-      .evalExpression("foo + 1",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + 1", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Double]
   }
 
@@ -63,8 +60,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Integer.valueOf("3"))
 
     engine
-      .evalExpression("foo + 1",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + 1", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
@@ -72,8 +68,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Long.valueOf("3"))
 
     engine
-      .evalExpression("foo + 1",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + 1", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
@@ -81,8 +76,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Short.valueOf("3"))
 
     engine
-      .evalExpression("foo + 1",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo + 1", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Long]
   }
 
@@ -90,8 +84,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> java.lang.Boolean.valueOf("true"))
 
     engine
-      .evalExpression("foo or false",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo or false", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe a[java.lang.Boolean]
   }
 
@@ -109,8 +102,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> nullValue)
 
     engine
-      .evalExpression("foo = null",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo = null", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -119,8 +111,10 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> new SimpleTestPojo("foo"))
 
     engine
-      .evalExpression("foo.getMyString() = \"foo\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression(
+        "foo.getMyString() = \"foo\"",
+        context = Context.StaticContext(variables, null)
+      )
       .getOrElse() shouldBe true
   }
 
@@ -129,8 +123,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> new SimpleTestPojo("foo"))
 
     engine
-      .evalExpression("foo.myString = \"foo\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.myString = \"foo\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -141,8 +134,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> pojo)
 
     engine
-      .evalExpression("foo.isEnabled() = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.isEnabled() = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -153,8 +145,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> pojo)
 
     engine
-      .evalExpression("foo.enabled = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.enabled = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -165,8 +156,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> pojo)
 
     engine
-      .evalExpression("foo.enabled = false",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.enabled = false", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -177,8 +167,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> pojo)
 
     engine
-      .evalExpression("foo.getDisabled() = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.getDisabled() = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -189,8 +178,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("foo" -> pojo)
 
     engine
-      .evalExpression("foo.disabled = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("foo.disabled = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -201,8 +189,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.isFoo() = \"baz\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.isFoo() = \"baz\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -213,8 +200,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.foo = \"baz\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.foo = \"baz\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe false
   }
 
@@ -224,8 +210,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.foo = \"baz\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.foo = \"baz\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -235,8 +220,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.getEnabled() = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.getEnabled() = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -246,8 +230,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.enabled = true",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.enabled = true", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -257,8 +240,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.isDisabled = false",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.isDisabled = false", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -268,8 +250,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.disabled = false",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.disabled = false", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -279,8 +260,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.isBaz = \"foo\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.isBaz = \"foo\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe true
   }
 
@@ -290,8 +270,7 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     val variables = Map("bar" -> pojo)
 
     engine
-      .evalExpression("bar.baz = \"foo\"",
-                      context = Context.StaticContext(variables, null))
+      .evalExpression("bar.baz = \"foo\"", context = Context.StaticContext(variables, null))
       .getOrElse() shouldBe false
   }
 
@@ -307,7 +286,8 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     engine
       .evalExpression(
         "map.foo = \"myString\" and map.bar = 2 and map.baz.foo = \"bar\"",
-        context = Context.StaticContext(variables, null))
+        context = Context.StaticContext(variables, null)
+      )
       .getOrElse() shouldBe true
   }
 
@@ -323,19 +303,20 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
     engine
       .evalExpression(
         "list[1] = \"myString\" and list[2] = 2 and list[3].foo = \"bar\"",
-        context = Context.StaticContext(variables, null))
+        context = Context.StaticContext(variables, null)
+      )
       .getOrElse() shouldBe true
   }
 
   class MyScalaType {
-    private val foo: String = "baz"
-    private val baz: String = "foo"
+    private val foo: String      = "baz"
+    private val baz: String      = "foo"
     private val enabled: Boolean = true
-    private val disabled = false
+    private val disabled         = false
 
-    def getFoo: String = foo
-    def isBaz: String = baz
+    def getFoo: String      = foo
+    def isBaz: String       = baz
     def getEnabled: Boolean = enabled
-    def isDisabled = disabled
+    def isDisabled          = disabled
   }
 }

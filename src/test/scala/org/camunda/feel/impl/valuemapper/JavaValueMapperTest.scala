@@ -26,8 +26,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class JavaValueMapperTest extends AnyFlatSpec with Matchers {
 
   val valueMapper =
-    ValueMapper.CompositeValueMapper(
-      List(DefaultValueMapper.instance, new JavaValueMapper()))
+    ValueMapper.CompositeValueMapper(List(DefaultValueMapper.instance, new JavaValueMapper()))
 
   "The JavaValueMapper" should "return whole number as java.lang.Long" in {
 
@@ -66,8 +65,7 @@ class JavaValueMapperTest extends AnyFlatSpec with Matchers {
     list.add("a")
     list.add("b")
 
-    valueMapper.unpackVal(ValList(List(ValString("a"), ValString("b")))) should be(
-      list)
+    valueMapper.unpackVal(ValList(List(ValString("a"), ValString("b")))) should be(list)
   }
 
   it should "return context as java.util.Map" in {
@@ -77,8 +75,8 @@ class JavaValueMapperTest extends AnyFlatSpec with Matchers {
     map.put("y", "2")
 
     valueMapper.unpackVal(
-      ValContext(Context.StaticContext(
-        variables = Map("x" -> "1", "y" -> "2")))) should be(map)
+      ValContext(Context.StaticContext(variables = Map("x" -> "1", "y" -> "2")))
+    ) should be(map)
   }
 
 }

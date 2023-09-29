@@ -29,8 +29,7 @@ trait ValueMapper {
 
 object ValueMapper {
 
-  case class CompositeValueMapper(customMappers: List[CustomValueMapper])
-      extends ValueMapper {
+  case class CompositeValueMapper(customMappers: List[CustomValueMapper]) extends ValueMapper {
 
     val customMappersByPriority =
       (DefaultValueMapper.instance :: customMappers).distinct
@@ -43,8 +42,7 @@ object ValueMapper {
           case _           =>
         }
       }
-      throw new IllegalArgumentException(
-        s"no value mapper found for '$x' ('${x.getClass}')")
+      throw new IllegalArgumentException(s"no value mapper found for '$x' ('${x.getClass}')")
     }
 
     override def unpackVal(value: Val): Any = {

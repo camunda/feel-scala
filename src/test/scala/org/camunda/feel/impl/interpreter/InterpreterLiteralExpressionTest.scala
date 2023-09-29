@@ -32,13 +32,10 @@ import java.time.{
   ZonedDateTime
 }
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterLiteralExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterLiteralExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A literal" should "be a number" in {
 
@@ -103,8 +100,7 @@ class InterpreterLiteralExpressionTest
     result shouldBe a[ValContext]
     result match {
       case ValContext(context) =>
-        context.variableProvider.getVariables should be(
-          Map("a" -> ValNumber(1)))
+        context.variableProvider.getVariables should be(Map("a" -> ValNumber(1)))
     }
   }
 
@@ -116,36 +112,40 @@ class InterpreterLiteralExpressionTest
 
     // nested
     eval("[ [1], [2] ]") should be(
-      ValList(List(ValList(List(ValNumber(1))), ValList(List(ValNumber(2))))))
+      ValList(List(ValList(List(ValNumber(1))), ValList(List(ValNumber(2)))))
+    )
   }
 
   "A date literal" should "be defined" in {
     eval(""" date("2021-09-08") """) should be(
       ValDate(
         LocalDate.parse("2021-09-08")
-      ))
+      )
+    )
   }
 
   it should "be defined with '@'" in {
     eval(""" @"2021-09-08" """) should be(
       ValDate(
         LocalDate.parse("2021-09-08")
-      ))
+      )
+    )
   }
 
   "A time literal" should "be defined without offset" in {
     eval(""" time("10:30:00") """) should be(
       ValLocalTime(
         LocalTime.parse("10:30:00")
-      ))
+      )
+    )
   }
 
   it should "be defined with offset" in {
     eval(""" time("10:30:00+02:00") """) should be(
       ValTime(
-        ZonedTime.of(time = LocalTime.parse("10:30:00"),
-                     offset = ZoneOffset.ofHours(2))
-      ))
+        ZonedTime.of(time = LocalTime.parse("10:30:00"), offset = ZoneOffset.ofHours(2))
+      )
+    )
   }
 
   it should "be defined with timezone" in {
@@ -155,22 +155,24 @@ class InterpreterLiteralExpressionTest
           time = LocalTime.parse("10:30:00"),
           zoneId = ZoneId.of("Europe/Berlin")
         )
-      ))
+      )
+    )
   }
 
   it should "be defined with '@' and no offset" in {
     eval(""" @"10:30:00" """) should be(
       ValLocalTime(
         LocalTime.parse("10:30:00")
-      ))
+      )
+    )
   }
 
   it should "be defined with '@' and offset" in {
     eval(""" @"10:30:00+02:00" """) should be(
       ValTime(
-        ZonedTime.of(time = LocalTime.parse("10:30:00"),
-                     offset = ZoneOffset.ofHours(2))
-      ))
+        ZonedTime.of(time = LocalTime.parse("10:30:00"), offset = ZoneOffset.ofHours(2))
+      )
+    )
   }
 
   it should "be defined with '@' and timezone" in {
@@ -180,22 +182,24 @@ class InterpreterLiteralExpressionTest
           time = LocalTime.parse("10:30:00"),
           zoneId = ZoneId.of("Europe/Berlin")
         )
-      ))
+      )
+    )
   }
 
   "A date-time literal" should "be defined without offset" in {
     eval(""" date and time("2021-09-08T10:30:00") """) should be(
       ValLocalDateTime(
         LocalDateTime.parse("2021-09-08T10:30:00")
-      ))
+      )
+    )
   }
 
   it should "be defined with offset" in {
     eval(""" date and time("2021-09-08T10:30:00+02:00") """) should be(
       ValDateTime(
-        ZonedDateTime.of(LocalDateTime.parse("2021-09-08T10:30:00"),
-                         ZoneOffset.ofHours(2))
-      ))
+        ZonedDateTime.of(LocalDateTime.parse("2021-09-08T10:30:00"), ZoneOffset.ofHours(2))
+      )
+    )
   }
 
   it should "be defined with timezone" in {
@@ -205,22 +209,24 @@ class InterpreterLiteralExpressionTest
           LocalDateTime.parse("2021-09-08T10:30:00"),
           ZoneId.of("Europe/Berlin")
         )
-      ))
+      )
+    )
   }
 
   it should "be defined with '@' and no offset" in {
     eval(""" @"2021-09-08T10:30:00" """) should be(
       ValLocalDateTime(
         LocalDateTime.parse("2021-09-08T10:30:00")
-      ))
+      )
+    )
   }
 
   it should "be defined with '@' and offset" in {
     eval(""" @"2021-09-08T10:30:00+02:00" """) should be(
       ValDateTime(
-        ZonedDateTime.of(LocalDateTime.parse("2021-09-08T10:30:00"),
-                         ZoneOffset.ofHours(2))
-      ))
+        ZonedDateTime.of(LocalDateTime.parse("2021-09-08T10:30:00"), ZoneOffset.ofHours(2))
+      )
+    )
   }
 
   it should "be defined with '@' and timezone" in {
@@ -230,35 +236,40 @@ class InterpreterLiteralExpressionTest
           LocalDateTime.parse("2021-09-08T10:30:00"),
           ZoneId.of("Europe/Berlin")
         )
-      ))
+      )
+    )
   }
 
   "A years-months duration" should "be defined" in {
     eval(""" duration("P1Y6M") """) should be(
       ValYearMonthDuration(
         Period.ofYears(1).withMonths(6)
-      ))
+      )
+    )
   }
 
   it should "be defined with '@'" in {
     eval(""" @"P1Y6M" """) should be(
       ValYearMonthDuration(
         Period.ofYears(1).withMonths(6)
-      ))
+      )
+    )
   }
 
   "A days-time duration" should "be defined" in {
     eval(""" duration("P1DT12H30M") """) should be(
       ValDayTimeDuration(
         Duration.parse("P1DT12H30M")
-      ))
+      )
+    )
   }
 
   it should "be defined with '@'" in {
     eval(""" @"P1DT12H30M" """) should be(
       ValDayTimeDuration(
         Duration.parse("P1DT12H30M")
-      ))
+      )
+    )
   }
 
 }
