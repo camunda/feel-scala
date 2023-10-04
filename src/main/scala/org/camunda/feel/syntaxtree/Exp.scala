@@ -27,8 +27,8 @@ import org.camunda.feel.{
   YearMonthDuration
 }
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 sealed trait Exp
 
@@ -65,8 +65,7 @@ case class ConstList(items: List[Exp]) extends Exp
 
 case class ConstContext(entries: List[(String, Exp)]) extends Exp
 
-case class ConstRange(start: ConstRangeBoundary, end: ConstRangeBoundary)
-    extends Exp
+case class ConstRange(start: ConstRangeBoundary, end: ConstRangeBoundary) extends Exp
 
 case class InputLessThan(x: Exp) extends Exp
 
@@ -114,17 +113,12 @@ case class GreaterThan(x: Exp, y: Exp) extends Comparison
 
 case class GreaterOrEqual(x: Exp, y: Exp) extends Comparison
 
-case class FunctionInvocation(function: String, params: FunctionParameters)
+case class FunctionInvocation(function: String, params: FunctionParameters) extends Exp
+
+case class JavaFunctionInvocation(className: String, methodName: String, arguments: List[String])
     extends Exp
 
-case class JavaFunctionInvocation(className: String,
-                                  methodName: String,
-                                  arguments: List[String])
-    extends Exp
-
-case class QualifiedFunctionInvocation(path: Exp,
-                                       function: String,
-                                       params: FunctionParameters)
+case class QualifiedFunctionInvocation(path: Exp, function: String, params: FunctionParameters)
     extends Exp
 
 case class FunctionDefinition(parameters: List[String], body: Exp) extends Exp

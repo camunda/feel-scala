@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinFunctionsTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A built-in function" should "return null if arguments doesn't match" in {
 

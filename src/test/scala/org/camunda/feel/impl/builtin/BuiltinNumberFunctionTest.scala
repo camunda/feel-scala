@@ -23,13 +23,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.math.BigDecimal.{double2bigDecimal, int2bigDecimal}
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinNumberFunctionsTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinNumberFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A decimal() function" should "return number with a given scale" in {
 

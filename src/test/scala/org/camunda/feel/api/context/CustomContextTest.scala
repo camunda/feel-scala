@@ -18,11 +18,7 @@ package org.camunda.feel.api.context
 
 import org.camunda.feel.FeelEngine
 import org.camunda.feel.FeelEngine.{Failure, UnaryTests}
-import org.camunda.feel.context.{
-  CustomContext,
-  FunctionProvider,
-  VariableProvider
-}
+import org.camunda.feel.context.{CustomContext, FunctionProvider, VariableProvider}
 import org.camunda.feel.context.VariableProvider.StaticVariableProvider
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
@@ -34,17 +30,14 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
 
   "A default context" should "provide its members" in {
     engine.evalExpression("a", variables = Map("a" -> 2)) should be(Right(2))
-    engine.evalUnaryTests(
-      "2",
-      variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      Right(true))
+    engine.evalUnaryTests("2", variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
+      Right(true)
+    )
   }
 
   it should "fail on access to missing member" in {
     engine.evalExpression("b", variables = Map("a" -> 2)) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
+    Left(Failure("failed to evaluate expression 'b': no variable found for name 'b'"))
   }
 
   "A custom context" should "provide its members" in {
@@ -74,9 +67,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     }
 
     engine.evalExpression("b", context) should be
-    Left(
-      Failure(
-        "failed to evaluate expression 'b': no variable found for name 'b'"))
+    Left(Failure("failed to evaluate expression 'b': no variable found for name 'b'"))
   }
 
   it should "provide its functions" in {
@@ -94,9 +85,12 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     }
 
     val myFunctionProvider = new FunctionProvider {
-      val f = ValFunction(List("x"), {
-        case List(ValNumber(x)) => ValNumber(x + 2)
-      })
+      val f = ValFunction(
+        List("x"),
+        { case List(ValNumber(x)) =>
+          ValNumber(x + 2)
+        }
+      )
 
       override def getFunctions(name: String): List[ValFunction] = {
         functionCallCount += 1;
@@ -111,8 +105,7 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       override val functionProvider = myFunctionProvider
     }
 
-    engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(
-      Right(18))
+    engine.evalExpression("a + f(2) + a + f(8)", myCustomContext) should be(Right(18))
     variableCallCount should be(2)
     functionCallCount should be(2)
 
@@ -135,14 +128,16 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
       override val variableProvider = SimpleTestContext(variables)
     }
 
-    engine.evalExpression("bar", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'bar': no variable found for name 'bar'"))
+    engine.evalExpression("bar", context) shouldBe Left(
+      Failure("failed to evaluate expression 'bar': no variable found for name 'bar'")
+    )
   }
 
   val inputVariableContext = StaticVariableProvider(
     Map(
       UnaryTests.inputVariable -> "myInputVariable"
-    ))
+    )
+  )
 
   it should "evaluate unary-test" in {
     val variables: Map[String, _] = Map("myInputVariable" -> 8, "foo" -> 7)
@@ -150,7 +145,8 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     val context: CustomContext = new CustomContext {
       override val variableProvider =
         VariableProvider.CompositeVariableProvider(
-          List(inputVariableContext, SimpleTestContext(variables)))
+          List(inputVariableContext, SimpleTestContext(variables))
+        )
     }
 
     engine.evalUnaryTests("foo", context) should be(Right(false))
@@ -162,11 +158,13 @@ class CustomContextTest extends AnyFlatSpec with Matchers {
     val context: CustomContext = new CustomContext {
       override val variableProvider =
         VariableProvider.CompositeVariableProvider(
-          List(inputVariableContext, SimpleTestContext(variables)))
+          List(inputVariableContext, SimpleTestContext(variables))
+        )
     }
 
-    engine.evalUnaryTests("foo", context) shouldBe Left(Failure(
-      "failed to evaluate expression 'foo': no variable found for name 'myInputVariable'"))
+    engine.evalUnaryTests("foo", context) shouldBe Left(
+      Failure("failed to evaluate expression 'foo': no variable found for name 'myInputVariable'")
+    )
   }
 
 }

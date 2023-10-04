@@ -24,13 +24,10 @@ import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.int2bigDecimal
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinContextFunctionsTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinContextFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A get entries function" should "return all entries (when invoked with 'context' argument)" in {
 
@@ -38,8 +35,9 @@ class BuiltinContextFunctionsTest
     list match {
       case ValList(List(ValContext(context))) =>
         context.variableProvider.getVariables should be(
-          Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
-      case other => fail(s"Expected list with one context but found '$other'")
+          Map("key" -> ValString("foo"), "value" -> ValNumber(123))
+        )
+      case other                              => fail(s"Expected list with one context but found '$other'")
     }
   }
 
@@ -49,8 +47,9 @@ class BuiltinContextFunctionsTest
     list match {
       case ValList(List(ValContext(context))) =>
         context.variableProvider.getVariables should be(
-          Map("key" -> ValString("foo"), "value" -> ValNumber(123)))
-      case other => fail(s"Expected list with one context but found '$other'")
+          Map("key" -> ValString("foo"), "value" -> ValNumber(123))
+        )
+      case other                              => fail(s"Expected list with one context but found '$other'")
     }
   }
 
@@ -68,8 +67,7 @@ class BuiltinContextFunctionsTest
   }
 
   it should "return the value when arguments are named 'context' and 'key'" in {
-    eval(""" get value(context:{foo: 123}, key:"foo") """) should be(
-      ValNumber(123))
+    eval(""" get value(context:{foo: 123}, key:"foo") """) should be(ValNumber(123))
   }
 
   it should "return null if not contains" in {
@@ -81,7 +79,8 @@ class BuiltinContextFunctionsTest
     eval(""" put({}, "x", 1) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
-      ))
+      )
+    )
   }
 
   it should "add an entry to an existing context" in {
@@ -89,7 +88,8 @@ class BuiltinContextFunctionsTest
     eval(""" put({x:1}, "y", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
-      ))
+      )
+    )
   }
 
   it should "override an entry of an existing context" in {
@@ -97,13 +97,13 @@ class BuiltinContextFunctionsTest
     eval(""" put({x:1}, "x", 2) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(2)))
-      ))
+      )
+    )
   }
 
   it should "add a context entry to an existing context" in {
 
-    eval(""" put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(
-      ValBoolean(true))
+    eval(""" put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(ValBoolean(true))
   }
 
   it should "return null if the value is not present" in {
@@ -116,7 +116,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({}) """) should be(
       ValContext(
         StaticContext(variables = Map.empty)
-      ))
+      )
+    )
   }
 
   it should "return a single context" in {
@@ -124,7 +125,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
-      ))
+      )
+    )
   }
 
   it should "combine empty contexts" in {
@@ -132,7 +134,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({}, {}) """) should be(
       ValContext(
         StaticContext(variables = Map.empty)
-      ))
+      )
+    )
   }
 
   it should "add all entries to an empty context" in {
@@ -140,7 +143,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({}, {x:1}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1)))
-      ))
+      )
+    )
   }
 
   it should "add an entry to an context" in {
@@ -148,7 +152,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1}, {y:2}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
-      ))
+      )
+    )
   }
 
   it should "add all entries to an context" in {
@@ -156,8 +161,10 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1}, {y:2, z:3}) """) should be(
       ValContext(
         StaticContext(variables =
-          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
-      ))
+          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3))
+        )
+      )
+    )
   }
 
   it should "override an entry of the existing context" in {
@@ -165,7 +172,8 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1}, {x:2}) """) should be(
       ValContext(
         StaticContext(variables = Map("x" -> ValNumber(2)))
-      ))
+      )
+    )
   }
 
   it should "override entries in order" in {
@@ -173,8 +181,10 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
       ValContext(
         StaticContext(variables =
-          Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2)))
-      ))
+          Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2))
+        )
+      )
+    )
   }
 
   it should "combine three contexts" in {
@@ -182,14 +192,15 @@ class BuiltinContextFunctionsTest
     eval(""" put all({x:1}, {y:2}, {z:3}) """) should be(
       ValContext(
         StaticContext(variables =
-          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3)))
-      ))
+          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3))
+        )
+      )
+    )
   }
 
   it should "add a nested context" in {
 
-    eval(""" put all({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(
-      ValBoolean(true))
+    eval(""" put all({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(ValBoolean(true))
   }
 
   it should "return null if one entry is not a context" in {
@@ -206,58 +217,71 @@ class BuiltinContextFunctionsTest
 
     eval(""" context([{"key":"a", "value":1}]) """) should be(
       ValContext(
-        StaticContext(Map(
-          "a" -> ValNumber(1)
-        ))))
+        StaticContext(
+          Map(
+            "a" -> ValNumber(1)
+          )
+        )
+      )
+    )
   }
 
   it should "return a context with multiple entries" in {
 
     eval(
-      """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """) should be(
+      """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """
+    ) should be(
       ValContext(
         StaticContext(
           Map(
             "a" -> ValNumber(1),
             "b" -> ValBoolean(true),
             "c" -> ValString("ok")
-          ))))
+          )
+        )
+      )
+    )
   }
 
   it should "return a context with a nested list" in {
 
     eval(""" context([{"key":"a", "value":[1,2,3]}]) """) should be(
       ValContext(
-        StaticContext(Map(
-          "a" -> ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
-        ))))
+        StaticContext(
+          Map(
+            "a" -> ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+          )
+        )
+      )
+    )
   }
 
   it should "return a context with a nested context" in {
 
-    eval(""" context([{"key":"a", "value": {x:1} }]) = {a: {x:1}} """) should be(
-      ValBoolean(true))
+    eval(""" context([{"key":"a", "value": {x:1} }]) = {a: {x:1}} """) should be(ValBoolean(true))
   }
 
   it should "override entries in order" in {
 
     eval(
-      """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """) should be(
+      """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """
+    ) should be(
       ValContext(
-        StaticContext(Map(
-          "a" -> ValNumber(2)
-        ))))
+        StaticContext(
+          Map(
+            "a" -> ValNumber(2)
+          )
+        )
+      )
+    )
   }
 
   it should "be the reverse operation to `get entries()`" in {
 
     eval(""" context(get entries({})) = {} """) should be(ValBoolean(true))
-    eval(""" context(get entries({a:1})) = {a:1} """) should be(
-      ValBoolean(true))
-    eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(
-      ValBoolean(true))
-    eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(
-      ValBoolean(true))
+    eval(""" context(get entries({a:1})) = {a:1} """) should be(ValBoolean(true))
+    eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(ValBoolean(true))
+    eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(ValBoolean(true))
   }
 
   it should "return null if one entry is not a context" in {
@@ -267,20 +291,17 @@ class BuiltinContextFunctionsTest
 
   it should "return null if one entry doesn't contain a key" in {
 
-    eval(""" context([{"key":"a", "value":1}, {"value":2}]) """) should be(
-      ValNull)
+    eval(""" context([{"key":"a", "value":1}, {"value":2}]) """) should be(ValNull)
   }
 
   it should "return null if one entry doesn't contain a value" in {
 
-    eval(""" context([{"key":"a", "value":1}, {"key":"b"}]) """) should be(
-      ValNull)
+    eval(""" context([{"key":"a", "value":1}, {"key":"b"}]) """) should be(ValNull)
   }
 
   it should "return null if the key of one entry is not a string" in {
 
-    eval(""" context([{"key":"a", "value":1}, {"key":2, "value":2}]) """) should be(
-      ValNull)
+    eval(""" context([{"key":"a", "value":1}, {"key":2, "value":2}]) """) should be(ValNull)
   }
 
 }

@@ -22,13 +22,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "An expression" should "be an if-then-else (with parentheses)" in {
     val exp = """ if (x < 5) then "low" else "high" """
@@ -72,26 +69,22 @@ class InterpreterExpressionTest
   }
 
   it should "be an if-then-else (with variable and function call -> then)" in {
-    eval("if 7 > var then flatten(xs) else []",
-         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+    eval("if 7 > var then flatten(xs) else []", Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
   it should "be an if-then-else (with variable and function call -> else)" in {
-    eval("if false then var else flatten(xs)",
-         Map("xs" -> List(1, 2), "var" -> 3)) should be(
+    eval("if false then var else flatten(xs)", Map("xs" -> List(1, 2), "var" -> 3)) should be(
       ValList(List(ValNumber(1), ValNumber(2)))
     )
   }
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      ValBoolean(true))
+    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(ValBoolean(true))
 
-    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(
-      ValBoolean(false))
+    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(ValBoolean(false))
   }
 
   it should "be an instance of (literal)" in {
@@ -154,8 +147,7 @@ class InterpreterExpressionTest
 
     eval("{x:(xs[1])}.x", context) should be(ValNumber(1))
     eval("{x:(xs)[1]}.x", context) should be(ValNumber(1))
-    eval("{x:(xs)}.x", context) should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    eval("{x:(xs)}.x", context) should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
   }
 
   it should "contains nested filter expressions" in {
@@ -275,8 +267,7 @@ class InterpreterExpressionTest
   ).foreach { variableName =>
     it should s"contain a key-word ($variableName)" in {
 
-      eval(s"$variableName = true", Map(variableName -> true)) should be(
-        ValBoolean(true))
+      eval(s"$variableName = true", Map(variableName -> true)) should be(ValBoolean(true))
     }
   }
 

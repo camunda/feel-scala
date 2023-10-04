@@ -44,21 +44,19 @@ class BuiltinTemporalFunctionsTest
     ZoneId.of("Europe/Berlin")
   )
 
-  private val date = "date(2019,9,17)"
+  private val date          = "date(2019,9,17)"
   private val localDateTime = """date and time("2019-09-17T14:30:00")"""
-  private val dateTime =
+  private val dateTime      =
     """date and time("2019-09-17T14:30:00@Europe/Berlin")"""
 
-  "The now() function" should "return the current date-time" in withClock {
-    clock =>
-      clock.currentTime(now)
-      eval(""" now() """) should be(ValDateTime(now))
+  "The now() function" should "return the current date-time" in withClock { clock =>
+    clock.currentTime(now)
+    eval(""" now() """) should be(ValDateTime(now))
   }
 
-  "The today() function" should "return the current date" in withClock {
-    clock =>
-      clock.currentTime(now)
-      eval(""" today() """) should be(ValDate(now.toLocalDate))
+  "The today() function" should "return the current date" in withClock { clock =>
+    clock.currentTime(now)
+    eval(""" today() """) should be(ValDate(now.toLocalDate))
   }
 
   "The day of year() function" should "return the day within the year" in {

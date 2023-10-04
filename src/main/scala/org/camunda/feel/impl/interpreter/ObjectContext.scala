@@ -21,15 +21,15 @@ import org.camunda.feel.syntaxtree.ValFunction
 
 import java.lang.reflect.Method
 
-/**
-  * A context that wraps the fields and methods of a given JVM object
+/** A context that wraps the fields and methods of a given JVM object
   *
-  * @param obj the JVM object to be wrapped
+  * @param obj
+  *   the JVM object to be wrapped
   */
 case class ObjectContext(obj: Any) extends Context {
 
   private lazy val publicFields = obj.getClass.getFields
-  private lazy val allFields = obj.getClass.getDeclaredFields
+  private lazy val allFields    = obj.getClass.getDeclaredFields
 
   private lazy val publicMethodsWithoutArguments = obj.getClass.getMethods
     .filter(method => method.getParameterCount == 0)
@@ -41,20 +41,19 @@ case class ObjectContext(obj: Any) extends Context {
 
       fieldForName.map(_.get(obj)) orElse {
         val methods = publicMethodsWithoutArguments find (method =>
-          isGetterOf(method, name) || isBooleanGetterOf(method, name))
+          isGetterOf(method, name) || isBooleanGetterOf(method, name)
+        )
 
         methods.map(_.invoke(obj))
       }
     }
 
     override def keys: Iterable[String] = {
-      val fieldsWithPublicGetter = allFields.filter(
-        field =>
-          publicMethodsWithoutArguments.exists(
-            method =>
-              isGetterOf(method, field.getName) || isBooleanGetterOf(
-                method,
-                field.getName)))
+      val fieldsWithPublicGetter = allFields.filter(field =>
+        publicMethodsWithoutArguments.exists(method =>
+          isGetterOf(method, field.getName) || isBooleanGetterOf(method, field.getName)
+        )
+      )
 
       publicFields.map(_.getName) ++ fieldsWithPublicGetter.map(_.getName)
     }
@@ -73,10 +72,10 @@ case class ObjectContext(obj: Any) extends Context {
             params,
             params => {
 
-              val paramJavaObjects = params zip method.getParameterTypes map {
-                case (obj, clazz) => JavaClassMapper.asJavaObject(obj, clazz)
+              val paramJavaObjects = params zip method.getParameterTypes map { case (obj, clazz) =>
+                JavaClassMapper.asJavaObject(obj, clazz)
               }
-              val result = method.invoke(obj, paramJavaObjects: _*)
+              val result           = method.invoke(obj, paramJavaObjects: _*)
               result
             }
           )
@@ -103,8 +102,9 @@ case class ObjectContext(obj: Any) extends Context {
   private def isBooleanGetterOf(method: Method, fieldName: String): Boolean = {
     val returnType = method.getReturnType
 
-    method.getName == getBooleanGetterName(fieldName) && (returnType == java.lang.Boolean.TYPE || returnType == classOf[
-      java.lang.Boolean])
+    method.getName == getBooleanGetterName(
+      fieldName
+    ) && (returnType == java.lang.Boolean.TYPE || returnType == classOf[java.lang.Boolean])
   }
 
 }

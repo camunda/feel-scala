@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterFunctionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterFunctionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A function definition" should "be interpeted" in {
 
@@ -92,8 +89,10 @@ class InterpreterFunctionTest
   it should "be invoked as parameter of another function" in {
 
     val functions =
-      Map("a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
-          "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction])
+      Map(
+        "a" -> eval("function(x) x + 1").asInstanceOf[ValFunction],
+        "b" -> eval("function(x) x + 2").asInstanceOf[ValFunction]
+      )
 
     eval("a(b(1))", functions = functions) should be(ValNumber(4))
   }
@@ -104,14 +103,18 @@ class InterpreterFunctionTest
       Map("f" -> eval("function(x,y) true").asInstanceOf[ValFunction])
 
     eval("f()", functions = functions) should be(
-      ValError("no function found with name 'f' and 0 parameters"))
+      ValError("no function found with name 'f' and 0 parameters")
+    )
     eval("f(1)", functions = functions) should be(
-      ValError("no function found with name 'f' and 1 parameters"))
+      ValError("no function found with name 'f' and 1 parameters")
+    )
 
     eval("f(x:1,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,z"))
+      ValError("no function found with name 'f' and parameters: x,z")
+    )
     eval("f(x:1,y:2,z:3)", functions = functions) should be(
-      ValError("no function found with name 'f' and parameters: x,y,z"))
+      ValError("no function found with name 'f' and parameters: x,y,z")
+    )
   }
 
   it should "replace not set parameters with null" in {
@@ -139,7 +142,9 @@ class InterpreterFunctionTest
   }
 
   it should "be properly evaluated when parameters contain whitespaces" in {
-    eval("""number(from: "1.000.000,01", decimal separator:",", grouping separator:".")""") should be(ValNumber(1_000_000.01))
+    eval(
+      """number(from: "1.000.000,01", decimal separator:",", grouping separator:".")"""
+    ) should be(ValNumber(1_000_000.01))
   }
 
   it should "be invoked with one named parameter containing whitespaces" in {
@@ -152,7 +157,10 @@ class InterpreterFunctionTest
 
   it should "be invoked with one named parameter containing more than one whitespace" in {
     val functions =
-      Map("f" -> eval("""function(test   name yada) `test   name yada` + 1""").asInstanceOf[ValFunction])
+      Map(
+        "f" -> eval("""function(test   name yada) `test   name yada` + 1""")
+          .asInstanceOf[ValFunction]
+      )
 
     eval("f(test   name yada:1)", functions = functions) should be(ValNumber(2))
     eval("f(test   name yada:2)", functions = functions) should be(ValNumber(3))
@@ -162,8 +170,10 @@ class InterpreterFunctionTest
 
     val functions = Map(
       "cos" -> eval(
-        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """)
-        .asInstanceOf[ValFunction])
+        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """
+      )
+        .asInstanceOf[ValFunction]
+    )
 
     eval("cos(0)", functions = functions) should be(ValNumber(1))
     eval("cos(1)", functions = functions) should be(ValNumber(Math.cos(1)))
@@ -173,8 +183,10 @@ class InterpreterFunctionTest
 
     val functions = Map(
       "max" -> eval(
-        """ function(x,y) external { java: { class: "java.lang.Math", method signature: "max(int, int)" } } """)
-        .asInstanceOf[ValFunction])
+        """ function(x,y) external { java: { class: "java.lang.Math", method signature: "max(int, int)" } } """
+      )
+        .asInstanceOf[ValFunction]
+    )
 
     eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
@@ -183,8 +195,10 @@ class InterpreterFunctionTest
 
     val functions = Map(
       "abs" -> eval(
-        """ function(a) external { java: { class: "java.lang.Math", method signature: "abs(long)" } } """)
-        .asInstanceOf[ValFunction])
+        """ function(a) external { java: { class: "java.lang.Math", method signature: "abs(long)" } } """
+      )
+        .asInstanceOf[ValFunction]
+    )
 
     eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
@@ -193,8 +207,10 @@ class InterpreterFunctionTest
 
     val functions = Map(
       "round" -> eval(
-        """ function(a) external { java: { class: "java.lang.Math", method signature: "round(float)" } } """)
-        .asInstanceOf[ValFunction])
+        """ function(a) external { java: { class: "java.lang.Math", method signature: "round(float)" } } """
+      )
+        .asInstanceOf[ValFunction]
+    )
 
     eval("round(3.2)", functions = functions) should be(ValNumber(3))
   }

@@ -22,13 +22,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class DateTimeDurationPropertiesTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A date" should "has a year property" in {
 
@@ -55,7 +52,8 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:")
+      "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:"
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -64,7 +62,7 @@ class DateTimeDurationPropertiesTest
     eval(""" @"2017-03-10".day """) should be(ValNumber(10))
   }
 
-  ///// -----
+  // /// -----
 
   "A time" should "has a hour property" in {
 
@@ -83,14 +81,12 @@ class DateTimeDurationPropertiesTest
 
   it should "has a time offset property" in {
 
-    eval(""" time("11:45:30+02:00").time offset """) should be(
-      ValDayTimeDuration("PT2H"))
+    eval(""" time("11:45:30+02:00").time offset """) should be(ValDayTimeDuration("PT2H"))
   }
 
   it should "has a timezone property" in {
 
-    eval(""" time("11:45:30@Europe/Paris").timezone """) should be(
-      ValString("Europe/Paris"))
+    eval(""" time("11:45:30@Europe/Paris").timezone """) should be(ValString("Europe/Paris"))
     eval(""" time("11:45:30+02:00").timezone """) should be(ValNull)
   }
 
@@ -99,7 +95,8 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:")
+      "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:"
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -108,7 +105,7 @@ class DateTimeDurationPropertiesTest
     eval(""" @"11:45:30+02:00".second """) should be(ValNumber(30))
   }
 
-  ///// -----
+  // /// -----
 
   "A local time" should "has a hour property" in {
 
@@ -140,65 +137,60 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalTime(11:45:30)'. Available properties:")
+      "No property found with name 'x' of value 'ValLocalTime(11:45:30)'. Available properties:"
+    )
   }
 
-  ///// -----
+  // /// -----
 
   "A date-time" should "has a year property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").year """) should be(
-      ValNumber(2017))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").year """) should be(ValNumber(2017))
   }
 
   it should "has a month property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").month """) should be(
-      ValNumber(3))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").month """) should be(ValNumber(3))
   }
 
   it should "has a day property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").day """) should be(
-      ValNumber(10))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").day """) should be(ValNumber(10))
   }
 
   it should "has a weekday property" in {
 
-    eval(""" date and time("2020-09-30T22:50:30+02:00").weekday """) should be(
-      ValNumber(3))
+    eval(""" date and time("2020-09-30T22:50:30+02:00").weekday """) should be(ValNumber(3))
   }
 
   it should "has a hour property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").hour """) should be(
-      ValNumber(11))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").hour """) should be(ValNumber(11))
   }
 
   it should "has a minute property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").minute """) should be(
-      ValNumber(45))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").minute """) should be(ValNumber(45))
   }
 
   it should "has a second property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30+02:00").second """) should be(
-      ValNumber(30))
+    eval(""" date and time("2017-03-10T11:45:30+02:00").second """) should be(ValNumber(30))
   }
 
   it should "has a time offset property" in {
 
     eval(""" date and time("2017-03-10T11:45:30+02:00").time offset """) should be(
-      ValDayTimeDuration("PT2H"))
+      ValDayTimeDuration("PT2H")
+    )
   }
 
   it should "has a timezone property" in {
 
     eval(""" date and time("2017-03-10T11:45:30@Europe/Paris").timezone """) should be(
-      ValString("Europe/Paris"))
-    eval(""" date and time("2017-03-10T11:45:30+02:00").timezone """) should be(
-      ValNull)
+      ValString("Europe/Paris")
+    )
+    eval(""" date and time("2017-03-10T11:45:30+02:00").timezone """) should be(ValNull)
   }
 
   it should "return an error if the property is not available" in {
@@ -206,7 +198,8 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:")
+      "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:"
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -215,59 +208,50 @@ class DateTimeDurationPropertiesTest
     eval(""" @"2017-03-10T11:45:30+02:00".day """) should be(ValNumber(10))
   }
 
-  ///// -----
+  // /// -----
 
   "A local date-time" should "has a year property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").year """) should be(
-      ValNumber(2017))
+    eval(""" date and time("2017-03-10T11:45:30").year """) should be(ValNumber(2017))
   }
 
   it should "has a month property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").month """) should be(
-      ValNumber(3))
+    eval(""" date and time("2017-03-10T11:45:30").month """) should be(ValNumber(3))
   }
 
   it should "has a day property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").day """) should be(
-      ValNumber(10))
+    eval(""" date and time("2017-03-10T11:45:30").day """) should be(ValNumber(10))
   }
 
   it should "has a hour property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").hour """) should be(
-      ValNumber(11))
+    eval(""" date and time("2017-03-10T11:45:30").hour """) should be(ValNumber(11))
   }
 
   it should "has a minute property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").minute """) should be(
-      ValNumber(45))
+    eval(""" date and time("2017-03-10T11:45:30").minute """) should be(ValNumber(45))
   }
 
   it should "has a second property" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").second """) should be(
-      ValNumber(30))
+    eval(""" date and time("2017-03-10T11:45:30").second """) should be(ValNumber(30))
   }
 
   it should "has a time offset property = null" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").time offset """) should be(
-      ValNull)
+    eval(""" date and time("2017-03-10T11:45:30").time offset """) should be(ValNull)
   }
 
   it should "has a timezone property = null" in {
 
-    eval(""" date and time("2017-03-10T11:45:30").timezone """) should be(
-      ValNull)
+    eval(""" date and time("2017-03-10T11:45:30").timezone """) should be(ValNull)
   }
 
   it should "has a weekday property" in {
-    eval(""" date and time("2020-09-30T22:50:30").weekday """) should be(
-      ValNumber(3))
+    eval(""" date and time("2020-09-30T22:50:30").weekday """) should be(ValNumber(3))
   }
 
   it should "return an error if the property is not available" in {
@@ -275,10 +259,11 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties:")
+      "No property found with name 'x' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties:"
+    )
   }
 
-  ///// -----
+  // /// -----
 
   "A year-month-duration" should "has a years property" in {
 
@@ -295,7 +280,8 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'P2Y3M'. Available properties:")
+      "No property found with name 'x' of value 'P2Y3M'. Available properties:"
+    )
   }
 
   it should "has properties with @-notation" in {
@@ -303,7 +289,7 @@ class DateTimeDurationPropertiesTest
     eval(""" @"P2Y3M".months """) should be(ValNumber(3))
   }
 
-  ///// -----
+  // /// -----
 
   "A day-time-duration" should "has a days property" in {
 
@@ -330,7 +316,8 @@ class DateTimeDurationPropertiesTest
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'P1DT2H10M30S'. Available properties:")
+      "No property found with name 'x' of value 'P1DT2H10M30S'. Available properties:"
+    )
   }
 
   it should "has properties with @-notation" in {

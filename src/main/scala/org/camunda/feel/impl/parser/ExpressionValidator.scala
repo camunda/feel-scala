@@ -62,12 +62,15 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
   private def validate(exp: Exp): List[Failure] = exp match {
     // validate expression
     case JavaFunctionInvocation(_, _, _) if !externalFunctionsEnabled =>
-      List(Failure(
-        "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."))
+      List(
+        Failure(
+          "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."
+        )
+      )
 
     // delegate to inner expression
-    case ConstList(items) => items.flatMap(validate)
-    case ConstContext(entries) =>
+    case ConstList(items)       => items.flatMap(validate)
+    case ConstContext(entries)  =>
       entries.flatMap { case (_, value) => validate(value) }
     case ConstRange(start, end) => validate(start.value) ++ validate(end.value)
 
@@ -93,20 +96,18 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
 
     case If(condition, statement, elseStatement) =>
       validate(condition) ++ validate(statement) ++ validate(elseStatement)
-    case Disjunction(x, y) => validate(x) ++ validate(y)
-    case Conjunction(x, y) => validate(x) ++ validate(y)
-    case In(x, test)       => validate(x) ++ validate(test)
+    case Disjunction(x, y)                       => validate(x) ++ validate(y)
+    case Conjunction(x, y)                       => validate(x) ++ validate(y)
+    case In(x, test)                             => validate(x) ++ validate(test)
 
-    case AtLeastOne(xs) => xs.flatMap(validate)
-    case SomeItem(iterators, condition) =>
-      iterators.flatMap { case (_, value) => validate(value) } ++ validate(
-        condition)
+    case AtLeastOne(xs)                  => xs.flatMap(validate)
+    case SomeItem(iterators, condition)  =>
+      iterators.flatMap { case (_, value) => validate(value) } ++ validate(condition)
     case EveryItem(iterators, condition) =>
-      iterators.flatMap { case (_, value) => validate(value) } ++ validate(
-        condition)
-    case For(iterators, body) =>
+      iterators.flatMap { case (_, value) => validate(value) } ++ validate(condition)
+    case For(iterators, body)            =>
       iterators.flatMap { case (_, value) => validate(value) } ++ validate(body)
-    case Filter(list, filter) => validate(list) ++ validate(filter)
+    case Filter(list, filter)            => validate(list) ++ validate(filter)
 
     case PathExpression(path, _)   => validate(path)
     case Not(x)                    => validate(x)

@@ -18,10 +18,7 @@ package org.camunda.feel.syntaxtree
 
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.TemporalAmount
-import org.camunda.feel.{
-  localTimeFormatter,
-  timeFormatterWithOffsetAndOptionalPrefix
-}
+import org.camunda.feel.{localTimeFormatter, timeFormatterWithOffsetAndOptionalPrefix}
 
 import java.time.{
   Duration,
@@ -35,16 +32,14 @@ import java.time.{
 }
 import scala.util.Try
 
-case class ZonedTime(time: LocalTime,
-                     offset: ZoneOffset,
-                     zone: Option[ZoneId]) {
+case class ZonedTime(time: LocalTime, offset: ZoneOffset, zone: Option[ZoneId]) {
 
   import ZonedTime._
 
   val hasTimeZone = zone.isDefined
 
   val nanos = {
-    val nod = time.toNanoOfDay
+    val nod         = time.toNanoOfDay
     val offsetNanos = offset.getTotalSeconds() * NANOS_PER_SECOND
     nod - offsetNanos
   }
@@ -124,7 +119,7 @@ object ZonedTime {
 
     val localTime = LocalTime.from(temporal)
 
-    val zoneId = ZoneId.from(temporal)
+    val zoneId             = ZoneId.from(temporal)
     val offset: ZoneOffset = Try(ZoneOffset.from(temporal))
       .getOrElse(zoneId.getRules.getStandardOffset(Instant.now))
 
@@ -148,15 +143,15 @@ object ZonedTime {
 
   def of(offsetTime: OffsetTime): ZonedTime = {
     val localTime = offsetTime.toLocalTime()
-    val offset = offsetTime.getOffset
+    val offset    = offsetTime.getOffset
 
     ZonedTime(localTime, offset, None)
   }
 
   def of(dateTime: ZonedDateTime): ZonedTime = {
     val localTime = dateTime.toLocalTime()
-    val offset = dateTime.getOffset
-    val zone = {
+    val offset    = dateTime.getOffset
+    val zone      = {
       if (dateTime.getZone.equals(offset)) {
         None
       } else {
