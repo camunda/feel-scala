@@ -19,11 +19,7 @@ package org.camunda.feel.impl
 import fastparse.Parsed
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.context.Context
-import org.camunda.feel.impl.interpreter.{
-  BuiltinFunctions,
-  EvalContext,
-  FeelInterpreter
-}
+import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
@@ -52,9 +48,12 @@ trait FeelIntegrationTest {
   ): Val = {
 
     val context =
-      Context.StaticContext(variables = variables, functions = functions.map {
-        case (n, f) => n -> List(f)
-      }.toMap)
+      Context.StaticContext(
+        variables = variables,
+        functions = functions.map { case (n, f) =>
+          n -> List(f)
+        }.toMap
+      )
 
     eval(expression, context)
   }
@@ -62,28 +61,25 @@ trait FeelIntegrationTest {
   def eval(expression: String, context: Context): Val = {
 
     FeelParser.parseExpression(expression) match {
-      case Parsed.Success(exp, _) =>
+      case Parsed.Success(exp, _)      =>
         interpreter.eval(exp)(rootContext.merge(context))
       case Parsed.Failure(_, _, extra) => {
-        ValError(
-          s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
+        ValError(s"failed to parse expression '$expression':\n${extra.trace().aggregateMsg}")
       }
     }
   }
 
-  def evalUnaryTests(input: Any,
-                     expression: String,
-                     variables: Map[String, Any] = Map()): Val = {
+  def evalUnaryTests(input: Any, expression: String, variables: Map[String, Any] = Map()): Val = {
 
-    val inputEntry = UnaryTests.defaultInputVariable -> input
-    val variableValues = (variables + inputEntry).map{ case (key,value) =>
+    val inputEntry     = UnaryTests.defaultInputVariable -> input
+    val variableValues = (variables + inputEntry).map { case (key, value) =>
       key -> rootContext.valueMapper.toVal(value)
     }
-    val ctx = rootContext.addAll(variableValues)
+    val ctx            = rootContext.addAll(variableValues)
 
     FeelParser.parseUnaryTests(expression) match {
       case Parsed.Success(exp, _) => interpreter.eval(exp)(ctx)
-      case e: Parsed.Failure => {
+      case e: Parsed.Failure      => {
         ValError(s"failed to parse expression '$expression':\n$e")
       }
     }
@@ -92,7 +88,8 @@ trait FeelIntegrationTest {
   val rootContext: EvalContext = EvalContext.wrap(
     Context.StaticContext(
       variables = Map.empty,
-      functions = new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions),
+      functions = new BuiltinFunctions(clock, ValueMapper.defaultValueMapper).functions
+    ),
     ValueMapper.defaultValueMapper
   )
 

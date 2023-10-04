@@ -23,13 +23,10 @@ import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.int2bigDecimal
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinStringFunctionsTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinStringFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A substring() function" should "return string with _ characters" in {
 
@@ -47,8 +44,7 @@ class BuiltinStringFunctionsTest
   }
 
   it should "be invoked with named parameters" in {
-    eval(""" substring(string: "foobar", start position:3) """) should be(
-      ValString("obar"))
+    eval(""" substring(string: "foobar", start position:3) """) should be(ValString("obar"))
   }
 
   "A string length() function" should "return the length of a String" in {
@@ -84,13 +80,12 @@ class BuiltinStringFunctionsTest
 
   "A replace() function" should "replace a String" in {
 
-    eval(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should be(
-      ValString("[1=ab][2=]cd"))
+    eval(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should be(ValString("[1=ab][2=]cd"))
   }
 
   it should "replace a String with regex pattern" in (eval(
-    """ replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """) should be(
-    ValString("(012) 345-6789")))
+    """ replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """
+  ) should be(ValString("(012) 345-6789")))
 
   it should "return null if the pattern is invalid" in {
     eval(""" replace("abc", "([a-z)", "$1") """) should be(ValNull)
@@ -131,26 +126,25 @@ class BuiltinStringFunctionsTest
   "A split() function" should "return a list of substrings" in {
 
     eval(""" split("John Doe", "\s") """) should be(
-      ValList(List(ValString("John"), ValString("Doe"))))
+      ValList(List(ValString("John"), ValString("Doe")))
+    )
 
     eval(""" split("a;b;c;;", ";") """) should be(
-      ValList(
-        List(ValString("a"),
-             ValString("b"),
-             ValString("c"),
-             ValString(""),
-             ValString(""))))
+      ValList(List(ValString("a"), ValString("b"), ValString("c"), ValString(""), ValString("")))
+    )
   }
 
   "An extract() function" should "return a list of strings matching a pattern" in {
 
     eval(""" extract("this is foobar and folbar", "fo[a-z]*") """) should be(
-      ValList(List(ValString("foobar"), ValString("folbar"))))
+      ValList(List(ValString("foobar"), ValString("folbar")))
+    )
 
     eval(""" extract("nothing", "fo[a-z]*") """) should be(ValList(List()))
 
     eval(""" extract("This is fobbar!", "fo[a-z]*") """) should be(
-      ValList(List(ValString("fobbar"))))
+      ValList(List(ValString("fobbar")))
+    )
   }
 
   it should "return null if the pattern is invalid" in {

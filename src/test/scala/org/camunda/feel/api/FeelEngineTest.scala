@@ -23,8 +23,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.{EitherValues}
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
@@ -32,14 +32,12 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
   "A FeelEngine" should "evaluate a unaryTests '< 3'" in {
 
-    engine.evalUnaryTests(
-      "< 3",
-      variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      Right(true))
-    engine.evalUnaryTests(
-      "< 3",
-      variables = Map(UnaryTests.defaultInputVariable -> 3)) should be(
-      Right(false))
+    engine.evalUnaryTests("< 3", variables = Map(UnaryTests.defaultInputVariable -> 2)) should be(
+      Right(true)
+    )
+    engine.evalUnaryTests("< 3", variables = Map(UnaryTests.defaultInputVariable -> 3)) should be(
+      Right(false)
+    )
   }
 
   it should "evaluate a expression '2+4'" in {
@@ -49,35 +47,35 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
   it should "evaluate an unaryTest with custom input variable name" in {
 
-    engine.evalUnaryTests("< 3",
-                          variables = Map(
-                            "myInput" -> 2,
-                            UnaryTests.inputVariable -> "myInput")) should be(
+    engine.evalUnaryTests(
+      "< 3",
+      variables = Map("myInput" -> 2, UnaryTests.inputVariable -> "myInput")
+    ) should be(
       Right(true)
     )
-    engine.evalUnaryTests("< 3",
-                          variables = Map(
-                            "myInput" -> 3,
-                            UnaryTests.inputVariable -> "myInput")) should be(
+    engine.evalUnaryTests(
+      "< 3",
+      variables = Map("myInput" -> 3, UnaryTests.inputVariable -> "myInput")
+    ) should be(
       Right(false)
     )
   }
 
   it should "fail evaluation because of wrong type" in {
 
-    engine.evalUnaryTests(
-      "< 3",
-      variables = Map(UnaryTests.defaultInputVariable -> "2")) should be(
-      Left(Failure(
-        "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)"))
+    engine.evalUnaryTests("< 3", variables = Map(UnaryTests.defaultInputVariable -> "2")) should be(
+      Left(
+        Failure(
+          "failed to evaluate expression '< 3': ValString(2) can not be compared to ValNumber(3)"
+        )
+      )
     )
   }
 
   it should "fail evaluation because of missing input" in {
 
     engine.evalUnaryTests("< 3", variables = Map[String, Any]()) should be(
-      Left(Failure(
-        "failed to evaluate expression '< 3': no variable found for name 'cellInput'"))
+      Left(Failure("failed to evaluate expression '< 3': no variable found for name 'cellInput'"))
     )
   }
 
@@ -100,20 +98,21 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
   it should "fail to parse an expression 'x+'" in {
     engine.parseExpression("x+").left.value.message should startWith(
-      "failed to parse expression 'x+'")
+      "failed to parse expression 'x+'"
+    )
   }
 
   it should "parse an unaryTests '< 3'" in {
     val expr = engine.parseUnaryTests("< 3")
 
     expr shouldBe a[Right[_, ParsedExpression]]
-    engine.eval(expr.value, Map(UnaryTests.defaultInputVariable -> 2)) should be(
-      Right(true))
+    engine.eval(expr.value, Map(UnaryTests.defaultInputVariable -> 2)) should be(Right(true))
   }
 
   it should "fail to parse an unaryTests '<'" in {
     engine.parseUnaryTests("<").left.value.message should startWith(
-      "failed to parse expression '<'")
+      "failed to parse expression '<'"
+    )
   }
 
 }

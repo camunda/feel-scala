@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterUnaryTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterUnaryTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A number" should "compare with '<'" in {
 
@@ -125,8 +122,7 @@ class InterpreterUnaryTest
     evalUnaryTests(3, "a.b", Map("a" -> new A(4))) should be(ValBoolean(false))
 
     evalUnaryTests(3, "< a.b", Map("a" -> new A(4))) should be(ValBoolean(true))
-    evalUnaryTests(3, "< a.b", Map("a" -> new A(2))) should be(
-      ValBoolean(false))
+    evalUnaryTests(3, "< a.b", Map("a" -> new A(2))) should be(ValBoolean(false))
   }
 
   it should "compare to null" in {
@@ -190,10 +186,8 @@ class InterpreterUnaryTest
     evalUnaryTests(true, "true and null") shouldBe ValBoolean(false)
     evalUnaryTests(true, "false and null") shouldBe ValBoolean(false)
 
-    evalUnaryTests(true, """true and "otherwise" """) shouldBe ValBoolean(
-      false)
-    evalUnaryTests(true, """false and "otherwise" """) shouldBe ValBoolean(
-      false)
+    evalUnaryTests(true, """true and "otherwise" """) shouldBe ValBoolean(false)
+    evalUnaryTests(true, """false and "otherwise" """) shouldBe ValBoolean(false)
   }
 
   it should "compare to a disjunction (or)" in {
@@ -206,263 +200,250 @@ class InterpreterUnaryTest
     evalUnaryTests(true, "false or null") shouldBe ValBoolean(false)
 
     evalUnaryTests(true, """true or "otherwise" """) shouldBe ValBoolean(true)
-    evalUnaryTests(true, """false or "otherwise" """) shouldBe ValBoolean(
-      false)
+    evalUnaryTests(true, """false or "otherwise" """) shouldBe ValBoolean(false)
   }
 
   "A date" should "compare with '<'" in {
 
-    evalUnaryTests(date("2015-09-17"), """< date("2015-09-18")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-18"), """< date("2015-09-18")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-19"), """< date("2015-09-18")""") should be(
-      ValBoolean(false))
+    evalUnaryTests(date("2015-09-17"), """< date("2015-09-18")""") should be(ValBoolean(true))
+    evalUnaryTests(date("2015-09-18"), """< date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-19"), """< date("2015-09-18")""") should be(ValBoolean(false))
   }
 
   it should "compare with '<='" in {
 
-    evalUnaryTests(date("2015-09-17"), """<= date("2015-09-18")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-18"), """<= date("2015-09-18")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-19"), """<= date("2015-09-18")""") should be(
-      ValBoolean(false))
+    evalUnaryTests(date("2015-09-17"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    evalUnaryTests(date("2015-09-18"), """<= date("2015-09-18")""") should be(ValBoolean(true))
+    evalUnaryTests(date("2015-09-19"), """<= date("2015-09-18")""") should be(ValBoolean(false))
   }
 
   it should "compare with '>'" in {
 
-    evalUnaryTests(date("2015-09-17"), """> date("2015-09-18")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-18"), """> date("2015-09-18")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-19"), """> date("2015-09-18")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(date("2015-09-17"), """> date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-18"), """> date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-19"), """> date("2015-09-18")""") should be(ValBoolean(true))
   }
 
   it should "compare with '>='" in {
 
-    evalUnaryTests(date("2015-09-17"), """>= date("2015-09-18")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-18"), """>= date("2015-09-18")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-19"), """>= date("2015-09-18")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(date("2015-09-17"), """>= date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-18"), """>= date("2015-09-18")""") should be(ValBoolean(true))
+    evalUnaryTests(date("2015-09-19"), """>= date("2015-09-18")""") should be(ValBoolean(true))
   }
 
   it should "be equal to another date" in {
 
-    evalUnaryTests(date("2015-09-17"), """date("2015-09-18")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-18"), """date("2015-09-18")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(date("2015-09-17"), """date("2015-09-18")""") should be(ValBoolean(false))
+    evalUnaryTests(date("2015-09-18"), """date("2015-09-18")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '(date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    evalUnaryTests(date("2015-09-17"),
-                   """(date("2015-09-17")..date("2015-09-19"))""") should be(
-      ValBoolean(false))
-    evalUnaryTests(date("2015-09-18"),
-                   """(date("2015-09-17")..date("2015-09-19"))""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-19"),
-                   """(date("2015-09-17")..date("2015-09-19"))""") should be(
-      ValBoolean(false))
+    evalUnaryTests(date("2015-09-17"), """(date("2015-09-17")..date("2015-09-19"))""") should be(
+      ValBoolean(false)
+    )
+    evalUnaryTests(date("2015-09-18"), """(date("2015-09-17")..date("2015-09-19"))""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(date("2015-09-19"), """(date("2015-09-17")..date("2015-09-19"))""") should be(
+      ValBoolean(false)
+    )
   }
 
   it should """be in interval '[date("2015-09-17")..date("2015-09-19")]'""" in {
 
-    evalUnaryTests(date("2015-09-17"),
-                   """[date("2015-09-17")..date("2015-09-19")]""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-18"),
-                   """[date("2015-09-17")..date("2015-09-19")]""") should be(
-      ValBoolean(true))
-    evalUnaryTests(date("2015-09-19"),
-                   """[date("2015-09-17")..date("2015-09-19")]""") should be(
-      ValBoolean(true))
+    evalUnaryTests(date("2015-09-17"), """[date("2015-09-17")..date("2015-09-19")]""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(date("2015-09-18"), """[date("2015-09-17")..date("2015-09-19")]""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(date("2015-09-19"), """[date("2015-09-17")..date("2015-09-19")]""") should be(
+      ValBoolean(true)
+    )
   }
 
   "A time" should "compare with '<'" in {
 
-    evalUnaryTests(localTime("08:31:14"), """< time("10:00:00")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(localTime("10:10:00"), """< time("10:00:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(localTime("11:31:14"), """< time("10:00:00")""") should be(
-      ValBoolean(false))
+    evalUnaryTests(localTime("08:31:14"), """< time("10:00:00")""") should be(ValBoolean(true))
+    evalUnaryTests(localTime("10:10:00"), """< time("10:00:00")""") should be(ValBoolean(false))
+    evalUnaryTests(localTime("11:31:14"), """< time("10:00:00")""") should be(ValBoolean(false))
 
     evalUnaryTests(time("10:00:00+01:00"), """< time("11:00:00+01:00")""") should be(
-      ValBoolean(true))
+      ValBoolean(true)
+    )
     evalUnaryTests(time("10:00:00+01:00"), """< time("10:00:00+01:00")""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
   }
 
   it should "be equal to another time" in {
 
-    evalUnaryTests(localTime("08:31:14"), """time("10:00:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(localTime("08:31:14"), """time("08:31:14")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(localTime("08:31:14"), """time("10:00:00")""") should be(ValBoolean(false))
+    evalUnaryTests(localTime("08:31:14"), """time("08:31:14")""") should be(ValBoolean(true))
 
     evalUnaryTests(time("10:00:00+01:00"), """time("10:00:00+02:00")""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
     evalUnaryTests(time("10:00:00+01:00"), """time("11:00:00+02:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(time("10:00:00+01:00"), """time("10:00:00+01:00")""") should be(
-      ValBoolean(true))
+      ValBoolean(false)
+    )
+    evalUnaryTests(time("10:00:00+01:00"), """time("10:00:00+01:00")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '[time("08:00:00")..time("10:00:00")]'""" in {
 
-    evalUnaryTests(localTime("07:45:10"),
-                   """[time("08:00:00")..time("10:00:00")]""") should be(
-      ValBoolean(false))
-    evalUnaryTests(localTime("09:15:20"),
-                   """[time("08:00:00")..time("10:00:00")]""") should be(
-      ValBoolean(true))
-    evalUnaryTests(localTime("11:30:30"),
-                   """[time("08:00:00")..time("10:00:00")]""") should be(
-      ValBoolean(false))
+    evalUnaryTests(localTime("07:45:10"), """[time("08:00:00")..time("10:00:00")]""") should be(
+      ValBoolean(false)
+    )
+    evalUnaryTests(localTime("09:15:20"), """[time("08:00:00")..time("10:00:00")]""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(localTime("11:30:30"), """[time("08:00:00")..time("10:00:00")]""") should be(
+      ValBoolean(false)
+    )
 
     evalUnaryTests(
       time("11:30:00+01:00"),
-      """[time("08:00:00+01:00")..time("10:00:00+01:00")]""") should be(
-      ValBoolean(false))
+      """[time("08:00:00+01:00")..time("10:00:00+01:00")]"""
+    ) should be(ValBoolean(false))
     evalUnaryTests(
       time("09:30:00+01:00"),
-      """[time("08:00:00+01:00")..time("10:00:00+01:00")]""") should be(
-      ValBoolean(true))
+      """[time("08:00:00+01:00")..time("10:00:00+01:00")]"""
+    ) should be(ValBoolean(true))
   }
 
   "A date-time" should "compare with '<'" in {
 
-    evalUnaryTests(localDateTime("2015-09-17T08:31:14"),
-                   """< date and time("2015-09-17T10:00:00")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(localDateTime("2015-09-17T10:10:00"),
-                   """< date and time("2015-09-17T10:00:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(localDateTime("2015-09-17T11:31:14"),
-                   """< date and time("2015-09-17T10:00:00")""") should be(
-      ValBoolean(false))
+    evalUnaryTests(
+      localDateTime("2015-09-17T08:31:14"),
+      """< date and time("2015-09-17T10:00:00")"""
+    ) should be(ValBoolean(true))
+    evalUnaryTests(
+      localDateTime("2015-09-17T10:10:00"),
+      """< date and time("2015-09-17T10:00:00")"""
+    ) should be(ValBoolean(false))
+    evalUnaryTests(
+      localDateTime("2015-09-17T11:31:14"),
+      """< date and time("2015-09-17T10:00:00")"""
+    ) should be(ValBoolean(false))
 
     evalUnaryTests(
       dateTime("2015-09-17T10:00:00+01:00"),
-      """< date and time("2015-09-17T12:00:00+01:00")""") should be(
-      ValBoolean(true))
+      """< date and time("2015-09-17T12:00:00+01:00")"""
+    ) should be(ValBoolean(true))
     evalUnaryTests(
       dateTime("2015-09-17T10:00:00+01:00"),
-      """< date and time("2015-09-17T09:00:00+01:00")""") should be(
-      ValBoolean(false))
+      """< date and time("2015-09-17T09:00:00+01:00")"""
+    ) should be(ValBoolean(false))
   }
 
   it should "be equal to another date-time" in {
 
-    evalUnaryTests(localDateTime("2015-09-17T08:31:14"),
-                   """date and time("2015-09-17T10:00:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(localDateTime("2015-09-17T08:31:14"),
-                   """date and time("2015-09-17T08:31:14")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(
+      localDateTime("2015-09-17T08:31:14"),
+      """date and time("2015-09-17T10:00:00")"""
+    ) should be(ValBoolean(false))
+    evalUnaryTests(
+      localDateTime("2015-09-17T08:31:14"),
+      """date and time("2015-09-17T08:31:14")"""
+    ) should be(ValBoolean(true))
 
-    evalUnaryTests(dateTime("2015-09-17T08:30:00+01:00"),
-                   """date and time("2015-09-17T09:30:00+01:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(dateTime("2015-09-17T08:30:00+01:00"),
-                   """date and time("2015-09-17T08:30:00+02:00")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(dateTime("2015-09-17T08:30:00+01:00"),
-                   """date and time("2015-09-17T08:30:00+01:00")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(
+      dateTime("2015-09-17T08:30:00+01:00"),
+      """date and time("2015-09-17T09:30:00+01:00")"""
+    ) should be(ValBoolean(false))
+    evalUnaryTests(
+      dateTime("2015-09-17T08:30:00+01:00"),
+      """date and time("2015-09-17T08:30:00+02:00")"""
+    ) should be(ValBoolean(false))
+    evalUnaryTests(
+      dateTime("2015-09-17T08:30:00+01:00"),
+      """date and time("2015-09-17T08:30:00+01:00")"""
+    ) should be(ValBoolean(true))
   }
 
   it should """be in interval '[dante and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]'""" in {
 
     evalUnaryTests(
       localDateTime("2015-09-17T07:45:10"),
-      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(
-      ValBoolean(false))
+      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]"""
+    ) should be(ValBoolean(false))
     evalUnaryTests(
       localDateTime("2015-09-17T09:15:20"),
-      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(
-      ValBoolean(true))
+      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]"""
+    ) should be(ValBoolean(true))
     evalUnaryTests(
       localDateTime("2015-09-17T11:30:30"),
-      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]""") should be(
-      ValBoolean(false))
+      """[date and time("2015-09-17T08:00:00")..date and time("2015-09-17T10:00:00")]"""
+    ) should be(ValBoolean(false))
 
     evalUnaryTests(
       dateTime("2015-09-17T08:30:00+01:00"),
-      """[date and time("2015-09-17T09:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]""") should be(
-      ValBoolean(false))
+      """[date and time("2015-09-17T09:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]"""
+    ) should be(ValBoolean(false))
     evalUnaryTests(
       dateTime("2015-09-17T08:30:00+01:00"),
-      """[date and time("2015-09-17T08:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]""") should be(
-      ValBoolean(true))
+      """[date and time("2015-09-17T08:00:00+01:00")..date and time("2015-09-17T10:00:00+01:00")]"""
+    ) should be(ValBoolean(true))
   }
 
   "A year-month-duration" should "compare with '<'" in {
 
-    evalUnaryTests(yearMonthDuration("P1Y"), """< duration("P2Y")""") should be(
-      ValBoolean(true))
-    evalUnaryTests(yearMonthDuration("P1Y"), """< duration("P1Y")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(yearMonthDuration("P1Y2M"), """< duration("P1Y")""") should be(
-      ValBoolean(false))
+    evalUnaryTests(yearMonthDuration("P1Y"), """< duration("P2Y")""") should be(ValBoolean(true))
+    evalUnaryTests(yearMonthDuration("P1Y"), """< duration("P1Y")""") should be(ValBoolean(false))
+    evalUnaryTests(yearMonthDuration("P1Y2M"), """< duration("P1Y")""") should be(ValBoolean(false))
   }
 
   it should "be equal to another duration" in {
 
-    evalUnaryTests(yearMonthDuration("P1Y4M"), """duration("P1Y3M")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(yearMonthDuration("P1Y4M"), """duration("P1Y4M")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(yearMonthDuration("P1Y4M"), """duration("P1Y3M")""") should be(ValBoolean(false))
+    evalUnaryTests(yearMonthDuration("P1Y4M"), """duration("P1Y4M")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '[duration("P1Y")..duration("P2Y")]'""" in {
 
-    evalUnaryTests(yearMonthDuration("P6M"),
-                   """[duration("P1Y")..duration("P2Y")]""") should be(
-      ValBoolean(false))
-    evalUnaryTests(yearMonthDuration("P1Y8M"),
-                   """[duration("P1Y")..duration("P2Y")]""") should be(
-      ValBoolean(true))
-    evalUnaryTests(yearMonthDuration("P2Y1M"),
-                   """[duration("P1Y")..duration("P2Y")]""") should be(
-      ValBoolean(false))
+    evalUnaryTests(yearMonthDuration("P6M"), """[duration("P1Y")..duration("P2Y")]""") should be(
+      ValBoolean(false)
+    )
+    evalUnaryTests(yearMonthDuration("P1Y8M"), """[duration("P1Y")..duration("P2Y")]""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(yearMonthDuration("P2Y1M"), """[duration("P1Y")..duration("P2Y")]""") should be(
+      ValBoolean(false)
+    )
   }
 
   "A day-time-duration" should "compare with '<'" in {
 
     evalUnaryTests(dayTimeDuration("P1DT4H"), """< duration("P2DT4H")""") should be(
-      ValBoolean(true))
+      ValBoolean(true)
+    )
     evalUnaryTests(dayTimeDuration("P2DT4H"), """< duration("P2DT4H")""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
     evalUnaryTests(dayTimeDuration("P2DT8H"), """< duration("P2DT4H")""") should be(
-      ValBoolean(false))
+      ValBoolean(false)
+    )
   }
 
   it should "be equal to another duration" in {
 
-    evalUnaryTests(dayTimeDuration("P1DT4H"), """duration("P2DT4H")""") should be(
-      ValBoolean(false))
-    evalUnaryTests(dayTimeDuration("P2DT4H"), """duration("P2DT4H")""") should be(
-      ValBoolean(true))
+    evalUnaryTests(dayTimeDuration("P1DT4H"), """duration("P2DT4H")""") should be(ValBoolean(false))
+    evalUnaryTests(dayTimeDuration("P2DT4H"), """duration("P2DT4H")""") should be(ValBoolean(true))
   }
 
   it should """be in interval '[duration("P1D")..duration("P2D")]'""" in {
 
-    evalUnaryTests(dayTimeDuration("PT4H"),
-                   """[duration("P1D")..duration("P2D")]""") should be(
-      ValBoolean(false))
-    evalUnaryTests(dayTimeDuration("P1DT4H"),
-                   """[duration("P1D")..duration("P2D")]""") should be(
-      ValBoolean(true))
-    evalUnaryTests(dayTimeDuration("P2DT4H"),
-                   """[duration("P1D")..duration("P2D")]""") should be(
-      ValBoolean(false))
+    evalUnaryTests(dayTimeDuration("PT4H"), """[duration("P1D")..duration("P2D")]""") should be(
+      ValBoolean(false)
+    )
+    evalUnaryTests(dayTimeDuration("P1DT4H"), """[duration("P1D")..duration("P2D")]""") should be(
+      ValBoolean(true)
+    )
+    evalUnaryTests(dayTimeDuration("P2DT4H"), """[duration("P1D")..duration("P2D")]""") should be(
+      ValBoolean(false)
+    )
   }
 
   "A list" should "be equal to another list" in {
@@ -477,17 +458,13 @@ class InterpreterUnaryTest
   }
 
   it should "be checked in an every expression" in {
-    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(
-      ValBoolean(false))
-    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(
-      ValBoolean(true))
+    evalUnaryTests(List(1, 2, 3), "every x in ? satisfies x > 3") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "every x in ? satisfies x > 3") should be(ValBoolean(true))
   }
 
   it should "be checked in a some expression" in {
-    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(
-      ValBoolean(false))
-    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(
-      ValBoolean(true))
+    evalUnaryTests(List(1, 2, 3), "some x in ? satisfies x > 4") should be(ValBoolean(false))
+    evalUnaryTests(List(4, 5, 6), "some x in ? satisfies x > 4") should be(ValBoolean(true))
   }
 
   "A context" should "be equal to another context" in {
@@ -517,10 +494,8 @@ class InterpreterUnaryTest
 
   "A function" should "be invoked with ? (input value)" in {
 
-    evalUnaryTests("foo", """ starts with(?, "f") """) should be(
-      ValBoolean(true))
-    evalUnaryTests("foo", """ starts with(?, "b") """) should be(
-      ValBoolean(false))
+    evalUnaryTests("foo", """ starts with(?, "f") """) should be(ValBoolean(true))
+    evalUnaryTests("foo", """ starts with(?, "b") """) should be(ValBoolean(false))
   }
 
   it should "be invoked as endpoint" in {
@@ -542,13 +517,13 @@ class InterpreterUnaryTest
 
   it should "be compared to literal" in {
 
-    evalUnaryTests(date("2019-08-12"),
-                   """ date(now) """,
-                   Map("now" -> "2019-08-12")) should be(ValBoolean(true))
+    evalUnaryTests(date("2019-08-12"), """ date(now) """, Map("now" -> "2019-08-12")) should be(
+      ValBoolean(true)
+    )
 
-    evalUnaryTests(date("2019-08-12"),
-                   """ date(now) """,
-                   Map("now" -> "2019-08-13")) should be(ValBoolean(false))
+    evalUnaryTests(date("2019-08-12"), """ date(now) """, Map("now" -> "2019-08-13")) should be(
+      ValBoolean(false)
+    )
   }
 
   it should "be compared with a list value" in {
@@ -558,8 +533,8 @@ class InterpreterUnaryTest
   }
 
   it should "be compared with a list variable" in {
-    evalUnaryTests(2, "x", Map("x" -> List(1,2,3))) should be (ValBoolean(true))
-    evalUnaryTests(4, "x", Map("x" -> List(1,2,3))) should be (ValBoolean(false))
+    evalUnaryTests(2, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(true))
+    evalUnaryTests(4, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(false))
   }
 
 }

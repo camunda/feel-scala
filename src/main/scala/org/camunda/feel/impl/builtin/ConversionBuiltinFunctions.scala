@@ -1,8 +1,60 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValString, ValTime, ValYearMonthDuration, ZonedTime}
-import org.camunda.feel.{Date, YearMonthDuration, dateFormatter, dateTimeFormatter, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, localDateTimeFormatter, localTimeFormatter, logger, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
+import org.camunda.feel.syntaxtree.{
+  Val,
+  ValBoolean,
+  ValDate,
+  ValDateTime,
+  ValDayTimeDuration,
+  ValError,
+  ValLocalDateTime,
+  ValLocalTime,
+  ValNull,
+  ValNumber,
+  ValString,
+  ValTime,
+  ValYearMonthDuration,
+  ZonedTime
+}
+import org.camunda.feel.{
+  Date,
+  YearMonthDuration,
+  dateFormatter,
+  dateTimeFormatter,
+  isDayTimeDuration,
+  isLocalDateTime,
+  isOffsetDateTime,
+  isOffsetTime,
+  isValidDate,
+  isYearMonthDuration,
+  localDateTimeFormatter,
+  localTimeFormatter,
+  logger,
+  stringToDate,
+  stringToDateTime,
+  stringToDayTimeDuration,
+  stringToLocalDateTime,
+  stringToLocalTime,
+  stringToNumber,
+  stringToYearMonthDuration
+}
 
 import java.math.BigDecimal
 import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
@@ -12,12 +64,12 @@ import scala.util.Try
 object ConversionBuiltinFunctions {
 
   def functions = Map(
-    "date" -> List(dateFunction, dateFunction3),
-    "date and time" -> List(dateTime, dateTime2),
-    "time" -> List(timeFunction, timeFunction3, timeFunction4),
-    "number" -> List(numberFunction, numberFunction2, numberFunction3),
-    "string" -> List(stringFunction),
-    "duration" -> List(durationFunction),
+    "date"                      -> List(dateFunction, dateFunction3),
+    "date and time"             -> List(dateTime, dateTime2),
+    "time"                      -> List(timeFunction, timeFunction3, timeFunction4),
+    "number"                    -> List(numberFunction, numberFunction2, numberFunction3),
+    "string"                    -> List(stringFunction),
+    "duration"                  -> List(durationFunction),
     "years and months duration" -> List(durationFunction2)
   )
 
@@ -33,41 +85,42 @@ object ConversionBuiltinFunctions {
 
   private def dateFunction3 = builtinFunction(
     params = List("year", "month", "day"),
-    invoke = {
-      case List(ValNumber(year), ValNumber(month), ValNumber(day)) =>
-        Try {
-          ValDate(LocalDate.of(year.intValue, month.intValue, day.intValue))
-        }.getOrElse {
-          logger.warn(
-            s"Failed to parse date from: year=$year, month=$month, day=$day");
-          ValNull
-        }
+    invoke = { case List(ValNumber(year), ValNumber(month), ValNumber(day)) =>
+      Try {
+        ValDate(LocalDate.of(year.intValue, month.intValue, day.intValue))
+      }.getOrElse {
+        logger.warn(s"Failed to parse date from: year=$year, month=$month, day=$day");
+        ValNull
+      }
     }
   )
 
   private def dateTime =
-    builtinFunction(params = List("from"), invoke = {
-      case List(ValString(from)) => parseDateTime(from)
-    })
+    builtinFunction(
+      params = List("from"),
+      invoke = { case List(ValString(from)) =>
+        parseDateTime(from)
+      }
+    )
 
   private def dateTime2 = builtinFunction(
     params = List("date", "time"),
     invoke = {
-      case List(ValDate(date), ValLocalTime(time)) =>
+      case List(ValDate(date), ValLocalTime(time))              =>
         ValLocalDateTime(date.atTime(time))
-      case List(ValDate(date), ValTime(time)) =>
+      case List(ValDate(date), ValTime(time))                   =>
         ValDateTime(time.withDate(date))
       case List(ValLocalDateTime(dateTime), ValLocalTime(time)) =>
         ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-      case List(ValLocalDateTime(dateTime), ValTime(time)) =>
+      case List(ValLocalDateTime(dateTime), ValTime(time))      =>
         ValDateTime(time.withDate(dateTime.toLocalDate()))
-      case List(ValDateTime(dateTime), ValLocalTime(time)) =>
+      case List(ValDateTime(dateTime), ValLocalTime(time))      =>
         ValLocalDateTime(dateTime.toLocalDate().atTime(time))
-      case List(ValDateTime(dateTime), ValTime(time)) =>
+      case List(ValDateTime(dateTime), ValTime(time))           =>
         ValDateTime(time.withDate(dateTime.toLocalDate()))
-      case List(ValLocalDateTime(date), ValString(timezone)) =>
+      case List(ValLocalDateTime(date), ValString(timezone))    =>
         ValDateTime(date.atZone(ZoneId.of(timezone)))
-      case List(ValDateTime(date), ValString(timezone)) =>
+      case List(ValDateTime(date), ValString(timezone))         =>
         ValDateTime(date.withZoneSameInstant(ZoneId.of(timezone)))
     }
   )
@@ -78,82 +131,82 @@ object ConversionBuiltinFunctions {
       case List(ValString(from))        => parseTime(from)
       case List(ValLocalDateTime(from)) => ValLocalTime(from.toLocalTime())
       case List(ValDateTime(from))      => ValTime(ZonedTime.of(from))
-      case List(ValDate(from)) =>
+      case List(ValDate(from))          =>
         ValTime(ZonedTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC))
     }
   )
 
   private def timeFunction3 = builtinFunction(
     params = List("hour", "minute", "second"),
-    invoke = {
-      case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) =>
-        Try {
-          val nanos = second.bigDecimal
-            .remainder(BigDecimal.ONE)
-            .movePointRight(9)
-            .intValue
-          ValLocalTime(
-            LocalTime
-              .of(hour.intValue, minute.intValue, second.intValue, nanos))
-        }.getOrElse {
-          logger.warn(
-            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
-          ValNull
-        }
+    invoke = { case List(ValNumber(hour), ValNumber(minute), ValNumber(second)) =>
+      Try {
+        val nanos = second.bigDecimal
+          .remainder(BigDecimal.ONE)
+          .movePointRight(9)
+          .intValue
+        ValLocalTime(
+          LocalTime
+            .of(hour.intValue, minute.intValue, second.intValue, nanos)
+        )
+      }.getOrElse {
+        logger.warn(s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
+        ValNull
+      }
     }
   )
 
   private def timeFunction4 = builtinFunction(
     params = List("hour", "minute", "second", "offset"),
     invoke = {
-      case List(ValNumber(hour),
-                ValNumber(minute),
-                ValNumber(second),
-                ValDayTimeDuration(offset)) =>
+      case List(
+            ValNumber(hour),
+            ValNumber(minute),
+            ValNumber(second),
+            ValDayTimeDuration(offset)
+          ) =>
         Try {
-          val nanos = second.bigDecimal
+          val nanos       = second.bigDecimal
             .remainder(BigDecimal.ONE)
             .movePointRight(9)
             .intValue
-          val localTime =
+          val localTime   =
             LocalTime.of(hour.intValue, minute.intValue, second.intValue, nanos)
           val zonedOffset = ZoneOffset.ofTotalSeconds(offset.getSeconds.toInt)
 
           ValTime(ZonedTime.of(localTime, zonedOffset))
         }.getOrElse {
           logger.warn(
-            s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset");
+            s"Failed to parse time from: hour=$hour, minute=$minute, second=$second, offset=$offset"
+          );
           ValNull
         }
-      case List(ValNumber(hour),
-                ValNumber(minute),
-                ValNumber(second),
-                ValNull) =>
+      case List(ValNumber(hour), ValNumber(minute), ValNumber(second), ValNull) =>
         Try {
-          ValLocalTime(
-            LocalTime.of(hour.intValue, minute.intValue, second.intValue))
+          ValLocalTime(LocalTime.of(hour.intValue, minute.intValue, second.intValue))
         }.getOrElse {
           logger.warn(
-            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second");
+            s"Failed to parse local-time from: hour=$hour, minute=$minute, second=$second"
+          );
           ValNull
         }
     }
   )
 
   private def numberFunction =
-    builtinFunction(params = List("from"), invoke = {
-      case List(ValString(from)) => ValNumber(from)
-    })
+    builtinFunction(
+      params = List("from"),
+      invoke = { case List(ValString(from)) =>
+        ValNumber(from)
+      }
+    )
 
   private def numberFunction2 = builtinFunction(
     params = List("from", "grouping separator"),
     invoke = {
-      case List(ValString(from), ValString(grouping))
-          if (isValidGroupingSeparator(grouping)) =>
+      case List(ValString(from), ValString(grouping)) if (isValidGroupingSeparator(grouping)) =>
         ValNumber(from.replace(grouping, ""))
-      case List(ValString(from), ValString(grouping)) =>
-        ValError(
-          s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
+      case List(ValString(from), ValString(grouping))                                         =>
+        ValError(s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
     }
   )
 
@@ -162,17 +215,18 @@ object ConversionBuiltinFunctions {
     invoke = {
       case List(ValString(from), ValString(grouping), ValString(decimal))
           if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
-            decimal) && grouping != decimal) =>
+            decimal
+          ) && grouping != decimal) =>
         ValNumber(from.replace(grouping, "").replace(decimal, "."))
-      case List(ValString(from), ValNull, ValString(decimal))
-          if isValidDecimalSeparator(decimal) =>
+      case List(ValString(from), ValNull, ValString(decimal)) if isValidDecimalSeparator(decimal) =>
         ValNumber(from.replace(decimal, "."))
       case List(ValString(from), ValString(grouping), ValNull)
           if isValidGroupingSeparator(grouping) =>
         ValNumber(from.replace(grouping, ""))
-      case List(ValString(from), ValString(grouping), ValString(decimal)) =>
+      case List(ValString(from), ValString(grouping), ValString(decimal))                         =>
         ValError(
-          s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'")
+          s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'"
+        )
     }
   )
 
@@ -188,17 +242,17 @@ object ConversionBuiltinFunctions {
   private def stringFunction = builtinFunction(
     params = List("from"),
     invoke = {
-      case List(ValString(from))  => ValString(from)
-      case List(ValBoolean(from)) => ValString(from.toString)
-      case List(ValNumber(from))  => ValString(from.toString)
-      case List(ValDate(from))    => ValString(from.format(dateFormatter))
-      case List(ValLocalTime(from)) =>
+      case List(ValString(from))                => ValString(from)
+      case List(ValBoolean(from))               => ValString(from.toString)
+      case List(ValNumber(from))                => ValString(from.toString)
+      case List(ValDate(from))                  => ValString(from.format(dateFormatter))
+      case List(ValLocalTime(from))             =>
         ValString(from.format(localTimeFormatter))
-      case List(ValTime(from)) => ValString(from.format)
-      case List(ValLocalDateTime(from)) =>
+      case List(ValTime(from))                  => ValString(from.format)
+      case List(ValLocalDateTime(from))         =>
         ValString(from.format(localDateTimeFormatter))
-      case List(ValDateTime(from)) => {
-        val formattedDateTime = from.format(dateTimeFormatter)
+      case List(ValDateTime(from))              => {
+        val formattedDateTime          = from.format(dateTimeFormatter)
         // remove offset-id if zone-id is present
         val dateTimeWithOffsetOrZoneId = dateTimeOffsetZoneIdPattern
           .matcher(formattedDateTime)
@@ -211,51 +265,54 @@ object ConversionBuiltinFunctions {
   )
 
   private def durationFunction =
-    builtinFunction(params = List("from"), invoke = {
-      case List(ValString(from)) => parseDuration(from)
-    })
+    builtinFunction(
+      params = List("from"),
+      invoke = { case List(ValString(from)) =>
+        parseDuration(from)
+      }
+    )
 
   private def durationFunction2 = builtinFunction(
     params = List("from", "to"),
     invoke = {
-      case List(ValDate(from), ValDate(to)) =>
+      case List(ValDate(from), ValDate(to))                   =>
         ValYearMonthDuration(Period.between(from, to).withDays(0).normalized)
       case List(ValLocalDateTime(from), ValLocalDateTime(to)) =>
         ValYearMonthDuration(
           Period
             .between(from.toLocalDate, to.toLocalDate)
             .withDays(0)
-            .normalized)
-      case List(ValDateTime(from), ValDateTime(to)) =>
+            .normalized
+        )
+      case List(ValDateTime(from), ValDateTime(to))           =>
         ValYearMonthDuration(
           Period
             .between(from.toLocalDate, to.toLocalDate)
             .withDays(0)
-            .normalized)
-      case List(ValDateTime(from), ValLocalDateTime(to)) =>
+            .normalized
+        )
+      case List(ValDateTime(from), ValLocalDateTime(to))      =>
         ValYearMonthDuration(
           Period
             .between(from.toLocalDate, to.toLocalDate)
             .withDays(0)
-            .normalized)
-      case List(ValLocalDateTime(from), ValDateTime(to)) =>
+            .normalized
+        )
+      case List(ValLocalDateTime(from), ValDateTime(to))      =>
         ValYearMonthDuration(
           Period
             .between(from.toLocalDate, to.toLocalDate)
             .withDays(0)
-            .normalized)
-      case List(ValDate(from), ValDateTime(to)) =>
-        ValYearMonthDuration(
-          Period.between(from, to.toLocalDate()).withDays(0).normalized)
-      case List(ValDate(from), ValLocalDateTime(to)) =>
-        ValYearMonthDuration(
-          Period.between(from, to.toLocalDate()).withDays(0).normalized)
-      case List(ValDateTime(from), ValDate(to)) =>
-        ValYearMonthDuration(
-          Period.between(from.toLocalDate(), to).withDays(0).normalized)
-      case List(ValLocalDateTime(from), ValDate(to)) =>
-        ValYearMonthDuration(
-          Period.between(from.toLocalDate(), to).withDays(0).normalized)
+            .normalized
+        )
+      case List(ValDate(from), ValDateTime(to))               =>
+        ValYearMonthDuration(Period.between(from, to.toLocalDate()).withDays(0).normalized)
+      case List(ValDate(from), ValLocalDateTime(to))          =>
+        ValYearMonthDuration(Period.between(from, to.toLocalDate()).withDays(0).normalized)
+      case List(ValDateTime(from), ValDate(to))               =>
+        ValYearMonthDuration(Period.between(from.toLocalDate(), to).withDays(0).normalized)
+      case List(ValLocalDateTime(from), ValDate(to))          =>
+        ValYearMonthDuration(Period.between(from.toLocalDate(), to).withDays(0).normalized)
     }
   )
 

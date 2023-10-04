@@ -42,8 +42,7 @@ object VariableProvider {
     override def keys: Iterable[String] = List.empty
   }
 
-  case class StaticVariableProvider(variables: Map[String, Any])
-      extends VariableProvider {
+  case class StaticVariableProvider(variables: Map[String, Any]) extends VariableProvider {
 
     override def getVariable(name: String): Option[Any] = variables.get(name)
 
@@ -51,15 +50,14 @@ object VariableProvider {
 
   }
 
-  case class CacheVariableProvider(provider: VariableProvider)
-      extends VariableProvider {
+  case class CacheVariableProvider(provider: VariableProvider) extends VariableProvider {
 
     private val cache: mutable.Map[String, Any] = mutable.Map.empty
 
     override def getVariable(name: String): Option[Any] =
       cache.get(name) match {
         case Some(value) => Some(value)
-        case None =>
+        case None        =>
           provider.getVariable(name) match {
             case Some(value) => cache.put(name, value); Some(value)
             case None        => None
@@ -70,8 +68,7 @@ object VariableProvider {
 
   }
 
-  case class CompositeVariableProvider(providers: List[VariableProvider])
-      extends VariableProvider {
+  case class CompositeVariableProvider(providers: List[VariableProvider]) extends VariableProvider {
 
     override def getVariable(name: String): Option[Any] = {
       for (provider <- providers) {

@@ -79,30 +79,31 @@ class DefaultValueMapper extends CustomValueMapper {
     case x: YearMonthDuration                   => Some(ValYearMonthDuration(x))
     case x: DayTimeDuration                     => Some(ValDayTimeDuration(x))
     case x: List[_]                             => Some(ValList(x map innerValueMapper))
-    case x: Map[_, _] =>
+    case x: Map[_, _]                           =>
       Some {
         val (functions, variables) = x
-          .map {
-            case (key, value) => key.toString -> innerValueMapper(value)
+          .map { case (key, value) =>
+            key.toString -> innerValueMapper(value)
           }
           .partition { case (key, value) => value.isInstanceOf[ValFunction] }
 
         ValContext(
           Context.StaticContext(
             variables = variables,
-            functions = functions.map {
-              case (key, f) => key -> List(f.asInstanceOf[ValFunction])
+            functions = functions.map { case (key, f) =>
+              key -> List(f.asInstanceOf[ValFunction])
             }
-          ))
+          )
+        )
       }
-    case Some(x)                 => Some(innerValueMapper(x))
-    case None                    => Some(ValNull)
-    case x if (isEnumeration(x)) => Some(ValString(x.toString))
+    case Some(x)                                => Some(innerValueMapper(x))
+    case None                                   => Some(ValNull)
+    case x if (isEnumeration(x))                => Some(ValString(x.toString))
 
     // extended java types
-    case x: java.math.BigDecimal => Some(ValNumber(x))
-    case x: java.math.BigInteger => Some(ValNumber(BigDecimal(x)))
-    case x: java.util.Date =>
+    case x: java.math.BigDecimal     => Some(ValNumber(x))
+    case x: java.math.BigInteger     => Some(ValNumber(BigDecimal(x)))
+    case x: java.util.Date           =>
       Some(
         ValLocalDateTime(
           LocalDateTime.ofInstant(x.toInstant, ZoneId.systemDefault())
@@ -112,25 +113,25 @@ class DefaultValueMapper extends CustomValueMapper {
       Some(
         ValDateTime(x.toZonedDateTime())
       )
-    case x: java.time.OffsetTime =>
+    case x: java.time.OffsetTime     =>
       Some(
         ValTime(ZonedTime.of(x))
       )
-    case x: java.util.List[_] =>
+    case x: java.util.List[_]        =>
       Some(
         ValList(x.asScala.toList map innerValueMapper)
       )
-    case x: java.util.Map[_, _] =>
+    case x: java.util.Map[_, _]      =>
       Some(
-        ValContext(Context.StaticContext(x.asScala.map {
-          case (key, value) => key.toString -> innerValueMapper(value)
+        ValContext(Context.StaticContext(x.asScala.map { case (key, value) =>
+          key.toString -> innerValueMapper(value)
         }.toMap))
       )
-    case x: java.lang.Enum[_] => Some(ValString(x.name))
+    case x: java.lang.Enum[_]        => Some(ValString(x.name))
 
     // other objects
     case x: Throwable => Some(ValError(x.getMessage))
-    case x =>
+    case x            =>
       try {
         Some(
           ValContext(Context.CacheContext(ObjectContext(x)))
@@ -159,14 +160,13 @@ class DefaultValueMapper extends CustomValueMapper {
       case ValYearMonthDuration(duration) => Some(duration)
       case ValDayTimeDuration(duration)   => Some(duration)
       case ValList(list)                  => Some(list map innerValueMapper)
-      case ValContext(c: Context) =>
+      case ValContext(c: Context)         =>
         Some(
-          c.variableProvider.getVariables.map {
-            case (key, value) =>
-              value match {
-                case packed: Val => key -> innerValueMapper(packed)
-                case unpacked    => key -> unpacked
-              }
+          c.variableProvider.getVariables.map { case (key, value) =>
+            value match {
+              case packed: Val => key -> innerValueMapper(packed)
+              case unpacked    => key -> unpacked
+            }
           }.toMap
         )
 

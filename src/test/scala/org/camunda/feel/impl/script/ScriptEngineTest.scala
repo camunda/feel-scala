@@ -24,8 +24,8 @@ import javax.script.ScriptContext
 import javax.script.SimpleScriptContext
 import javax.script.ScriptException
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
@@ -38,7 +38,7 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
   it should "evaluate a simpleUnaryTest script '< 3' using engine scope" in {
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
@@ -49,7 +49,7 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
   it should "evaluate a simpleUnaryTest script '< 3' using global scope" in {
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.GLOBAL_SCOPE)
@@ -71,7 +71,7 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
     compiledScript should not be (null)
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
@@ -98,8 +98,7 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
     val compiledScript = scriptEngine.compile("< 3")
 
-    a[ScriptException] should be thrownBy compiledScript.eval(
-      new SimpleScriptContext)
+    a[ScriptException] should be thrownBy compiledScript.eval(new SimpleScriptContext)
   }
 
   it should "be extend by a custom function provider" in {
@@ -118,9 +117,11 @@ class ScriptEngineTest extends AnyFlatSpec with Matchers {
 
   it should "be configured by a custom clock" in {
 
-    val now = ZonedDateTime.of(LocalDate.parse("2020-07-31"),
-                               LocalTime.parse("14:27:30"),
-                               ZoneId.of("Europe/Berlin"))
+    val now = ZonedDateTime.of(
+      LocalDate.parse("2020-07-31"),
+      LocalTime.parse("14:27:30"),
+      ZoneId.of("Europe/Berlin")
+    )
 
     PinnedClock.currentTime = now
 
