@@ -21,8 +21,8 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class InterpreterBeanExpressionTest
     extends AnyFlatSpec

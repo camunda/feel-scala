@@ -22,13 +22,12 @@ import javax.script.ScriptContext
 import javax.script.SimpleScriptContext
 import javax.script.ScriptException
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
 
-  val scriptEngine = new FeelUnaryTestsScriptEngine(
-    new FeelUnaryTestsScriptEngineFactory)
+  val scriptEngine = new FeelUnaryTestsScriptEngine(new FeelUnaryTestsScriptEngineFactory)
 
   "The feel unary tests script engine" should "get the script engine factory" in {
 
@@ -37,7 +36,7 @@ class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
 
   it should "evaluate a simpleUnaryTest script '< 3'" in {
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
@@ -48,7 +47,7 @@ class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
 
   it should "evaluate a simpleUnaryTest script 'not(3,4)'" in {
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
@@ -63,7 +62,7 @@ class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
 
     compiledScript should not be (null)
 
-    val context = new SimpleScriptContext
+    val context  = new SimpleScriptContext
     val bindings = scriptEngine.createBindings()
     bindings.put("cellInput", 2)
     context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)

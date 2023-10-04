@@ -113,8 +113,7 @@ import org.camunda.feel.{
 
 import scala.util.Try
 
-/**
-  * The parser is written following the FEEL grammar definition in the DMN specification.
+/** The parser is written following the FEEL grammar definition in the DMN specification.
   *
   * In order to understand how the parser works, it is recommended to read the documentation first:
   * [[https://www.lihaoyi.com/fastparse]]. Additional resources:
@@ -163,9 +162,7 @@ object FeelParser {
 
   private def javaLikeIdentifier[_: P]: P[String] =
     P(
-      CharPred(Character.isJavaIdentifierStart) ~~ CharsWhile(
-        Character.isJavaIdentifierPart,
-        0)
+      CharPred(Character.isJavaIdentifierStart) ~~ CharsWhile(Character.isJavaIdentifierPart, 0)
     ).!
 
   // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
@@ -197,11 +194,10 @@ object FeelParser {
   // --------------- utility parsers ---------------
 
   // shortcut function to define an optional parser
-  private def optional[_: P](optionalParser: Exp => P[Exp]): Exp => P[Exp] = {
-    base =>
-      optionalParser(base).?.map(
-        _.fold(base)(result => result)
-      )
+  private def optional[_: P](optionalParser: Exp => P[Exp]): Exp => P[Exp] = { base =>
+    optionalParser(base).?.map(
+      _.fold(base)(result => result)
+    )
   }
 
   // --------------- expressions ---------------
@@ -238,15 +234,15 @@ object FeelParser {
   private def ifOp[_: P]: P[Exp] =
     P(
       "if" ~ expression ~ "then" ~ expression ~ "else" ~ expression
-    ).map {
-      case (condition, thenExp, elseExp) => If(condition, thenExp, elseExp)
+    ).map { case (condition, thenExp, elseExp) =>
+      If(condition, thenExp, elseExp)
     }
 
   private def forOp[_: P]: P[Exp] =
     P(
       "for" ~ listIterator.rep(1, sep = ",") ~ "return" ~ expression
-    ).map {
-      case (iterators, exp) => For(iterators.toList, exp)
+    ).map { case (iterators, exp) =>
+      For(iterators.toList, exp)
     }
 
   private def listIterator[_: P]: P[(String, Exp)] = P(
@@ -256,8 +252,8 @@ object FeelParser {
   private def iterationContext[_: P]: P[Exp] =
     P(
       expLvl4 ~ ".." ~ expLvl4
-    ).map {
-      case (start, end) => IterationContext(start, end)
+    ).map { case (start, end) =>
+      IterationContext(start, end)
     }
 
   private def quantifiedOp[_: P]: P[Exp] =
@@ -265,7 +261,7 @@ object FeelParser {
       ("some" | "every").! ~ listIterator
         .rep(1, sep = ",") ~ "satisfies" ~ expression
     ).map {
-      case ("some", iterators, condition) =>
+      case ("some", iterators, condition)  =>
         SomeItem(iterators.toList, condition)
       case ("every", iterators, condition) =>
         EveryItem(iterators.toList, condition)
@@ -274,15 +270,15 @@ object FeelParser {
   private def disjunction[_: P]: P[Exp] =
     P(
       expLvl2 ~ ("or" ~ expLvl2).rep
-    ).map {
-      case (base, ops) => ops.foldLeft(base)(Disjunction)
+    ).map { case (base, ops) =>
+      ops.foldLeft(base)(Disjunction)
     }
 
   private def conjunction[_: P]: P[Exp] =
     P(
       expLvl3 ~ ("and" ~ expLvl3).rep
-    ).map {
-      case (base, ops) => ops.foldLeft(base)(Conjunction)
+    ).map { case (base, ops) =>
+      ops.foldLeft(base)(Conjunction)
     }
 
   private def comparison[_: P](value: Exp): P[Exp] =
@@ -303,8 +299,8 @@ object FeelParser {
   private def between[_: P](x: Exp): P[Exp] =
     P(
       "between" ~ expLvl4 ~ "and" ~ expLvl4
-    ).map {
-      case (a, b) => Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
+    ).map { case (a, b) =>
+      Conjunction(GreaterOrEqual(x, a), LessOrEqual(x, b))
     }
 
   private def instanceOf[_: P](value: Exp): P[Exp] =
@@ -336,30 +332,28 @@ object FeelParser {
   private def addSub[_: P]: P[Exp] =
     P(
       mathOpLvl2 ~ (CharIn("+\\-").! ~ mathOpLvl2).rep
-    ).map {
-      case (value, ops) =>
-        ops.foldLeft(value) {
-          case (x, ("+", y)) => Addition(x, y)
-          case (x, ("-", y)) => Subtraction(x, y)
-        }
+    ).map { case (value, ops) =>
+      ops.foldLeft(value) {
+        case (x, ("+", y)) => Addition(x, y)
+        case (x, ("-", y)) => Subtraction(x, y)
+      }
     }
 
   private def mulDiv[_: P]: P[Exp] =
     P(
       mathOpLvl3 ~ (CharIn("*/").! ~ mathOpLvl3).rep
-    ).map {
-      case (value, ops) =>
-        ops.foldLeft(value) {
-          case (x, ("*", y)) => Multiplication(x, y)
-          case (x, ("/", y)) => Division(x, y)
-        }
+    ).map { case (value, ops) =>
+      ops.foldLeft(value) {
+        case (x, ("*", y)) => Multiplication(x, y)
+        case (x, ("/", y)) => Division(x, y)
+      }
     }
 
   private def exponent[_: P]: P[Exp] =
     P(
       mathOpLvl4 ~ ("**" ~ mathOpLvl4).rep
-    ).map {
-      case (value, ops) => ops.foldLeft(value)(Exponentiation)
+    ).map { case (value, ops) =>
+      ops.foldLeft(value)(Exponentiation)
     }
 
   private def mathNegation[_: P]: P[Exp] =
@@ -469,8 +463,8 @@ object FeelParser {
     P(
       "function" ~ "(" ~ parameter
         .rep(0, sep = ",") ~ ")" ~ (externalFunction | expression)
-    ).map {
-      case (parameters, body) => FunctionDefinition(parameters.toList, body)
+    ).map { case (parameters, body) =>
+      FunctionDefinition(parameters.toList, body)
     }
 
   private def parameter[_: P]: P[String] = parameterName
@@ -489,9 +483,8 @@ object FeelParser {
         "class" ~ ":" ~ stringWithQuotes ~ "," ~
         "method signature" ~ ":" ~ javaMethodSignature ~
         "}" ~ "}"
-    ).map {
-      case (className, (methodName, parameters)) =>
-        JavaFunctionInvocation(className, methodName, parameters.toList)
+    ).map { case (className, (methodName, parameters)) =>
+      JavaFunctionInvocation(className, methodName, parameters.toList)
     }
 
   private def javaMethodSignature[_: P]: P[(String, Seq[String])] = P(
@@ -508,18 +501,18 @@ object FeelParser {
       ((identifierWithWhitespaces | functionNameWithReservedWord)
         .map(List(_)) | qualifiedName) ~ "(" ~ functionParameters.? ~ ")"
     ).map {
-      case (name :: Nil, None) =>
+      case (name :: Nil, None)             =>
         FunctionInvocation(name, PositionalFunctionParameters(List.empty))
       case (name :: Nil, Some(parameters)) =>
         FunctionInvocation(name, parameters)
-      case (names, None) =>
-        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
-                                    names.last,
-                                    PositionalFunctionParameters(List.empty))
-      case (names, Some(parameters)) =>
-        QualifiedFunctionInvocation(Ref(names.dropRight(1)),
-                                    names.last,
-                                    parameters)
+      case (names, None)                   =>
+        QualifiedFunctionInvocation(
+          Ref(names.dropRight(1)),
+          names.last,
+          PositionalFunctionParameters(List.empty)
+        )
+      case (names, Some(parameters))       =>
+        QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, parameters)
     }
 
   // List all built-in function names that contains a reserved word. These names are not allowed as
@@ -616,8 +609,8 @@ object FeelParser {
   private def range[_: P]: P[ConstRange] =
     P(
       rangeStart ~ ".." ~ rangeEnd
-    ).map {
-      case (start, end) => ConstRange(start, end)
+    ).map { case (start, end) =>
+      ConstRange(start, end)
     }
 
   private def rangeStart[_: P]: P[ConstRangeBoundary] =

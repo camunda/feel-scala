@@ -19,8 +19,8 @@ package org.camunda.feel.impl.script
 import javax.script.{ScriptEngine, ScriptEngineFactory}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class FeelScriptEngineFactory extends ScriptEngineFactory {
 
@@ -42,10 +42,7 @@ class FeelScriptEngineFactory extends ScriptEngineFactory {
   def getMimeTypes(): java.util.List[String] = List.empty.asJava
 
   def getNames(): java.util.List[String] =
-    List(ENGINE_NAME,
-         LANGUAGE_NAME,
-         LANGUAGE_SHORT_NAME,
-         LANGUAGE_QUALIFIED_NAME).asJava
+    List(ENGINE_NAME, LANGUAGE_NAME, LANGUAGE_SHORT_NAME, LANGUAGE_QUALIFIED_NAME).asJava
 
   def getOutputStatement(x$1: String): String =
     throw new UnsupportedOperationException()

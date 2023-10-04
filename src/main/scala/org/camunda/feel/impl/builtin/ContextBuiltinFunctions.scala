@@ -27,25 +27,25 @@ import scala.annotation.tailrec
 class ContextBuiltinFunctions(valueMapper: ValueMapper) {
 
   def functions = Map(
-    "get entries" -> List(getEntriesFunction("context"),
-      getEntriesFunction("m")),
-    "get value" -> List(getValueFunction(List("m", "key")),
-      getValueFunction(List("context", "key")), getValueFunction2),
-    "context put" -> List(contextPutFunction, contextPutFunction2),
-    "put" -> List(contextPutFunction), // deprecated function name
+    "get entries"   -> List(getEntriesFunction("context"), getEntriesFunction("m")),
+    "get value"     -> List(
+      getValueFunction(List("m", "key")),
+      getValueFunction(List("context", "key")),
+      getValueFunction2
+    ),
+    "context put"   -> List(contextPutFunction, contextPutFunction2),
+    "put"           -> List(contextPutFunction),   // deprecated function name
     "context merge" -> List(contextMergeFunction),
-    "put all" -> List(contextMergeFunction), // deprecated function name
-    "context" -> List(contextFunction)
+    "put all"       -> List(contextMergeFunction), // deprecated function name
+    "context"       -> List(contextFunction)
   )
 
   private def getEntriesFunction(paramName: String) = builtinFunction(
     params = List(paramName),
-    invoke = {
-      case List(ValContext(c: Context)) =>
-        c.variableProvider.getVariables.map {
-          case (key, value) =>
-            Map("key" -> ValString(key), "value" -> value)
-        }.toList
+    invoke = { case List(ValContext(c: Context)) =>
+      c.variableProvider.getVariables.map { case (key, value) =>
+        Map("key" -> ValString(key), "value" -> value)
+      }.toList
     }
   )
 
@@ -53,7 +53,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     params = parameters,
     invoke = {
       case List(context: ValContext, keys: ValList) => getValueFunction2.invoke(List(context, keys))
-      case List(ValContext(c), ValString(key)) =>
+      case List(ValContext(c), ValString(key))      =>
         c.variableProvider
           .getVariable(key)
           .getOrElse(ValNull)
@@ -66,21 +66,21 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
       case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) =>
         val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
         getValueRecursive(context, listOfKeys)
-      case List(ValContext(_), ValList(_)) => ValNull
+      case List(ValContext(_), ValList(_))                                   => ValNull
     }
   )
 
   @tailrec
   private def getValueRecursive(context: Context, keys: List[String]): Val = {
     keys match {
-      case Nil => ValNull
+      case Nil          => ValNull
       case head :: tail =>
         val result = context.variableProvider.getVariable(head).map(valueMapper.toVal)
         result match {
-          case None => ValNull
+          case None                             => ValNull
           case Some(value: Val) if tail.isEmpty => value
-          case Some(ValContext(nestedContext)) => getValueRecursive(nestedContext, tail)
-          case Some(_) => ValNull
+          case Some(ValContext(nestedContext))  => getValueRecursive(nestedContext, tail)
+          case Some(_)                          => ValNull
         }
     }
   }
@@ -88,13 +88,16 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
   private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),
     invoke = {
-      case List(ValContext(_), ValString(_), ValError(_)) => ValNull
-      case List(context: ValContext, ValString(key), value) => contextPut(
-        contextValue = context, key = key, value = value
-      )
+      case List(ValContext(_), ValString(_), ValError(_))                                 => ValNull
+      case List(context: ValContext, ValString(key), value)                               =>
+        contextPut(
+          contextValue = context,
+          key = key,
+          value = value
+        )
       // delegate to other context put function with keys
-      case List(ValContext(_), ValList(_), ValError(_)) => ValNull
-      case List(ValContext(_), ValList(keys), _) if keys.isEmpty => ValNull
+      case List(ValContext(_), ValList(_), ValError(_))                                   => ValNull
+      case List(ValContext(_), ValList(keys), _) if keys.isEmpty                          => ValNull
       case List(context: ValContext, keys: ValList, value) if isListOfStrings(keys.items) =>
         contextPutFunction2.invoke(List(context, keys, value))
     }
@@ -102,15 +105,15 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
 
   private def contextPut(contextValue: ValContext, key: String, value: Val): ValContext = {
     ValContext(
-      StaticContext(
-        variables = contextValue.context.variableProvider.getVariables + (key -> value)))
+      StaticContext(variables = contextValue.context.variableProvider.getVariables + (key -> value))
+    )
   }
 
   private def contextPutFunction2 = builtinFunction(
     params = List("context", "keys", "value"),
     invoke = {
-      case List(ValContext(_), ValList(_), ValError(_)) => ValNull
-      case List(ValContext(_), ValList(keys), _) if keys.isEmpty => ValNull
+      case List(ValContext(_), ValList(_), ValError(_))                             => ValNull
+      case List(ValContext(_), ValList(keys), _) if keys.isEmpty                    => ValNull
       case List(context: ValContext, ValList(keys), value) if isListOfStrings(keys) =>
         val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
 
@@ -120,19 +123,24 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
 
   @tailrec
   private def contextPutWithKeys(
-                                  contextValue: ValContext,
-                                  keys: List[String], value: Val,
-                                  parentContextUpdater: ValContext => ValContext = identity): ValContext = {
+      contextValue: ValContext,
+      keys: List[String],
+      value: Val,
+      parentContextUpdater: ValContext => ValContext = identity
+  ): ValContext = {
     keys match {
-      case Nil => contextValue
-      case key :: Nil =>
+      case Nil         => contextValue
+      case key :: Nil  =>
         val modifiedContext = contextPut(contextValue = contextValue, key = key, value = value)
         parentContextUpdater(modifiedContext)
       case key :: tail =>
-        val contextOfKey = contextValue.context.variableProvider.getVariable(key).map {
-          case contextOfKey: ValContext => contextOfKey
-          case _ => ValContext(EmptyContext)
-        }.getOrElse(ValContext(EmptyContext))
+        val contextOfKey = contextValue.context.variableProvider
+          .getVariable(key)
+          .map {
+            case contextOfKey: ValContext => contextOfKey
+            case _                        => ValContext(EmptyContext)
+          }
+          .getOrElse(ValContext(EmptyContext))
 
         // recursive call for the next key with its nested context
         contextPutWithKeys(
@@ -141,11 +149,12 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
           value = value,
           parentContextUpdater =
             // pass a lambda to update this context with the modified nested context
-            nestedContext => contextPut(
-              contextValue = contextValue,
-              key = key,
-              value = nestedContext
-            )
+            nestedContext =>
+              contextPut(
+                contextValue = contextValue,
+                key = key,
+                value = nestedContext
+              )
         )
     }
   }
@@ -162,12 +171,12 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
             variables = contexts
               .flatMap(_ match {
                 case ValContext(c) => c.variableProvider.getVariables
-                case _ => Map.empty
+                case _             => Map.empty
               })
               .toMap
           )
         )
-      case _ => ValNull
+      case _                                                     => ValNull
     },
     hasVarArgs = true
   )
@@ -179,14 +188,13 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     params = List("entries"),
     invoke = {
       case List(ValList(entries)) if isListOfKeyValuePairs(entries) =>
-        ValContext(StaticContext(variables = entries.flatMap {
-          case ValContext(context) =>
-            val getValue = context.variableProvider.getVariable(_)
-            getValue("key")
-              .map { case ValString(key) => key }
-              .flatMap(key => getValue("value").map(value => key -> value))
+        ValContext(StaticContext(variables = entries.flatMap { case ValContext(context) =>
+          val getValue = context.variableProvider.getVariable(_)
+          getValue("key")
+            .map { case ValString(key) => key }
+            .flatMap(key => getValue("value").map(value => key -> value))
         }.toMap))
-      case _ => ValNull
+      case _                                                        => ValNull
     }
   )
 
@@ -197,7 +205,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
         keys.contains("value") && context.variableProvider
           .getVariable("key")
           .exists(_.isInstanceOf[ValString])
-      case _ => false
+      case _                   => false
     }
 
 }

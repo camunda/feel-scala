@@ -27,7 +27,8 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
   val defaultEngine = new FeelEngine()
 
   val engineWithEnabledFunctions = new FeelEngine(
-    configuration = Configuration(externalFunctionsEnabled = true))
+    configuration = Configuration(externalFunctionsEnabled = true)
+  )
 
   val externalFunctionInvocation =
     """{
@@ -41,44 +42,50 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
 
   val disabledExternalFunctionFailure = Failure(
     s"validation of expression '$externalFunctionInvocation' failed: " +
-      "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration.")
+      "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."
+  )
 
   val invocationResult = 1
 
   "A (default) FeelEngine" should "fail to parse an external function" in {
 
     defaultEngine.parseExpression(externalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure))
+      Left(disabledExternalFunctionFailure)
+    )
   }
 
   it should "fail to evaluate an external function" in {
 
     defaultEngine.evalExpression(externalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure))
+      Left(disabledExternalFunctionFailure)
+    )
   }
 
   it should "fail to evaluate a parsed external function" in {
 
     defaultEngine.eval(parsedExternalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure))
+      Left(disabledExternalFunctionFailure)
+    )
   }
 
   "A FEEL engine with enabled external functions" should "parse an external function" in {
 
-    engineWithEnabledFunctions.parseExpression(externalFunctionInvocation) shouldBe a[
-      Right[_, ParsedExpression]]
+    engineWithEnabledFunctions
+      .parseExpression(externalFunctionInvocation) shouldBe a[Right[_, ParsedExpression]]
   }
 
   it should "evaluate an external function" in {
 
     engineWithEnabledFunctions.evalExpression(externalFunctionInvocation) should be(
-      Right(invocationResult))
+      Right(invocationResult)
+    )
   }
 
   it should "evaluate a parsed external function" in {
 
     engineWithEnabledFunctions.eval(parsedExternalFunctionInvocation) should be(
-      Right(invocationResult))
+      Right(invocationResult)
+    )
   }
 
 }

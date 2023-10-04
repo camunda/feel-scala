@@ -24,13 +24,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.math.BigDecimal.{double2bigDecimal, int2bigDecimal}
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinNumberFunctionsTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinNumberFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A decimal() function" should "return number with a given scale" in {
 
@@ -260,17 +257,16 @@ class BuiltinNumberFunctionsTest
     eval(" round half down(-1.126, 2) ") should be(ValNumber(-1.13))
   }
 
-
   "A random number() function" should "return a number" in {
 
-    eval(" random number() ") shouldBe a [ValNumber]
+    eval(" random number() ") shouldBe a[ValNumber]
   }
 
   it should "return a number between 0.0 and 1.0 " in {
 
     eval(" random number() ") match {
       case ValNumber(x) => x should (be >= BigDecimal(0) and be <= BigDecimal(1))
-      case other => fail()
+      case other        => fail()
     }
   }
 }

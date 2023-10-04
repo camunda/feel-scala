@@ -26,9 +26,10 @@ import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
-  * @author Falko Menge
+/** @author
+  *   Philipp Ossler
+  * @author
+  *   Falko Menge
   */
 class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
@@ -107,19 +108,20 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
   it should "convert from List" in {
 
-    valueMapper.toVal(List(1, 2)) should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+    valueMapper.toVal(List(1, 2)) should be(ValList(List(ValNumber(1), ValNumber(2))))
   }
 
   it should "convert from java.util.List" in {
 
     valueMapper.toVal(java.util.Arrays.asList(1, 2)) should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+      ValList(List(ValNumber(1), ValNumber(2)))
+    )
   }
 
   it should "convert from Map" in {
     valueMapper.toVal(Map("a" -> 2)) should be(
-      ValContext(Context.StaticContext(Map("a" -> ValNumber(2)))))
+      ValContext(Context.StaticContext(Map("a" -> ValNumber(2))))
+    )
   }
 
   it should "convert from java.util.Map" in {
@@ -127,81 +129,78 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
     val map = new java.util.HashMap[String, Object]
     map.put("a", new java.lang.Integer(2))
 
-    valueMapper.toVal(map) should be(
-      ValContext(Context.StaticContext(Map("a" -> ValNumber(2)))))
+    valueMapper.toVal(map) should be(ValContext(Context.StaticContext(Map("a" -> ValNumber(2)))))
   }
 
   it should "convert from LocalDate" in {
 
-    valueMapper.toVal(java.time.LocalDate.parse("2017-04-02")) should be(
-      ValDate("2017-04-02"))
+    valueMapper.toVal(java.time.LocalDate.parse("2017-04-02")) should be(ValDate("2017-04-02"))
   }
 
   it should "convert from LocalTime" in {
 
-    valueMapper.toVal(java.time.LocalTime.parse("12:04:30")) should be(
-      ValLocalTime("12:04:30"))
+    valueMapper.toVal(java.time.LocalTime.parse("12:04:30")) should be(ValLocalTime("12:04:30"))
   }
 
   it should "convert from OffsetTime" in {
 
     valueMapper.toVal(java.time.OffsetTime.parse("12:04:30+01:00")) should be(
-      ValTime("12:04:30+01:00"))
+      ValTime("12:04:30+01:00")
+    )
   }
 
   it should "convert from LocalDateTime" in {
 
     valueMapper.toVal(java.time.LocalDateTime.parse("2017-04-02T12:04:30")) should be(
-      ValLocalDateTime("2017-04-02T12:04:30"))
+      ValLocalDateTime("2017-04-02T12:04:30")
+    )
   }
 
   it should "convert from OffsetDateTime" in {
 
-    valueMapper.toVal(
-      java.time.OffsetDateTime.parse("2017-04-02T12:04:30+01:00")) should be(
-      ValDateTime("2017-04-02T12:04:30+01:00"))
+    valueMapper.toVal(java.time.OffsetDateTime.parse("2017-04-02T12:04:30+01:00")) should be(
+      ValDateTime("2017-04-02T12:04:30+01:00")
+    )
   }
 
   it should "convert from ZonedDateTime with zone offset" in {
 
-    valueMapper.toVal(
-      java.time.ZonedDateTime.parse("2017-04-02T12:04:30+01:00")) should be(
-      ValDateTime("2017-04-02T12:04:30+01:00"))
+    valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30+01:00")) should be(
+      ValDateTime("2017-04-02T12:04:30+01:00")
+    )
   }
 
   it should "convert from ZonedDateTime with zone offset 'Z'" in {
 
     valueMapper.toVal(java.time.ZonedDateTime.parse("2017-04-02T12:04:30Z")) should be(
-      ValDateTime("2017-04-02T12:04:30Z"))
+      ValDateTime("2017-04-02T12:04:30Z")
+    )
   }
 
   it should "convert from ZonedDateTime with zone id" in {
 
     valueMapper.toVal(
       java.time.ZonedDateTime
-        .parse("2017-04-02T12:04:30+02:00[Europe/Paris]")) should be(
-      ValDateTime("2017-04-02T12:04:30@Europe/Paris"))
+        .parse("2017-04-02T12:04:30+02:00[Europe/Paris]")
+    ) should be(ValDateTime("2017-04-02T12:04:30@Europe/Paris"))
   }
 
   it should "convert from java.util.Date" in {
 
-    val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+    val format   = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     val dateTime = LocalDateTime.parse("2017-04-02T12:04:30")
 
-    valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(
-      ValLocalDateTime(dateTime))
+    valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(ValLocalDateTime(dateTime))
   }
 
   it should "convert from Period" in {
 
-    valueMapper.toVal(java.time.Period.parse("P2Y4M")) should be(
-      ValYearMonthDuration("P2Y4M"))
+    valueMapper.toVal(java.time.Period.parse("P2Y4M")) should be(ValYearMonthDuration("P2Y4M"))
   }
 
   it should "convert from Duration" in {
 
-    valueMapper.toVal(java.time.Duration.parse("PT4H22M")) should be(
-      ValDayTimeDuration("PT4H22M"))
+    valueMapper.toVal(java.time.Duration.parse("PT4H22M")) should be(ValDayTimeDuration("PT4H22M"))
   }
 
   it should "convert from object" in {
@@ -223,7 +222,7 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
   it should "convert from object with public getters" in {
     case class Obj(private val a: Int, private val b: String) {
-      def getA(): Int = a
+      def getA(): Int    = a
       def getB(): String = b
     }
 

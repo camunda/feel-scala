@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterNumberExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterNumberExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A number" should "add to '4'" in {
 

@@ -29,8 +29,8 @@ class CustomFunctionTest extends AnyFlatSpec with Matchers {
       "foo" ->
         ValFunction(
           params = List("x"),
-          invoke = {
-            case List(ValNumber(x)) => ValNumber(x + 1)
+          invoke = { case List(ValNumber(x)) =>
+            ValNumber(x + 1)
           }
         )
     )
@@ -41,8 +41,8 @@ class CustomFunctionTest extends AnyFlatSpec with Matchers {
       "bar" ->
         ValFunction(
           params = List("x"),
-          invoke = {
-            case List(ValNumber(x)) => ValNumber(x + 2)
+          invoke = { case List(ValNumber(x)) =>
+            ValNumber(x + 2)
           }
         )
     )
@@ -60,14 +60,14 @@ class CustomFunctionTest extends AnyFlatSpec with Matchers {
     val engine = new FeelEngine(
       FunctionProvider.CompositeFunctionProvider(
         List(functionProviderFoo, functionProviderBar)
-      ))
+      )
+    )
 
     engine.evalExpression("foo(2)") should be(Right(3))
     engine.evalExpression("bar(2)") should be(Right(4))
   }
 
-  class TestFunctionProvider(functions: Map[String, ValFunction])
-      extends CustomFunctionProvider {
+  class TestFunctionProvider(functions: Map[String, ValFunction]) extends CustomFunctionProvider {
 
     override def getFunction(name: String): Option[ValFunction] =
       functions.get(name)

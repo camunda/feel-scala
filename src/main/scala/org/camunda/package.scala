@@ -32,25 +32,18 @@ import java.util.regex.Pattern
 import org.camunda.feel.syntaxtree.ZonedTime
 
 import java.time.format.{DateTimeFormatterBuilder, SignStyle}
-import java.time.{
-  Duration,
-  LocalDate,
-  LocalDateTime,
-  LocalTime,
-  Period,
-  ZonedDateTime
-}
+import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, Period, ZonedDateTime}
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 package object feel {
 
-  //// common
+  // // common
 
   val logger = LoggerFactory.getLogger("org.camunda.feel.FeelEngine")
 
-  //// type definitions
+  // // type definitions
 
   type Number = BigDecimal
 
@@ -68,7 +61,7 @@ package object feel {
 
   type DayTimeDuration = java.time.Duration
 
-  //// string to type conversions
+  // // string to type conversions
 
   import scala.language.implicitConversions
 
@@ -94,27 +87,29 @@ package object feel {
   implicit def stringToDayTimeDuration(duration: String): DayTimeDuration =
     Duration.parse(duration)
 
-  //// date/time/duration type parsing and formatting
+  // // date/time/duration type parsing and formatting
 
   private lazy val datePatter =
     Pattern.compile("""-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\d""")
 
   def isValidDate(date: String): Boolean = datePatter.matcher(date).matches
 
-  private lazy val offsetTimePattern = Pattern.compile(
-    """T?\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
+  private lazy val offsetTimePattern =
+    Pattern.compile("""T?\d{2}:\d{2}:\d{2}(\.\d{1,9})?([+-]\d{2}:\d{2}|Z|@.*)""")
 
   def isOffsetTime(time: String): Boolean =
     offsetTimePattern.matcher(time).matches
 
   private lazy val offsetDateTimePattern = Pattern.compile(
-    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-][01][0-9]:[0-5][0-9]|Z|@.*)""")
+    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-][01][0-9]:[0-5][0-9]|Z|@.*)"""
+  )
 
   def isOffsetDateTime(dateTime: String): Boolean =
     offsetDateTimePattern.matcher(dateTime).matches
 
   private lazy val localDateTimePatter = Pattern.compile(
-    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?""")
+    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?"""
+  )
 
   def isLocalDateTime(dateTime: String): Boolean =
     localDateTimePatter.matcher(dateTime).matches

@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterBooleanExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterBooleanExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A boolean" should "compare with '='" in {
 
@@ -64,23 +61,19 @@ class InterpreterBooleanExpressionTest
   }
 
   it should "be in conjunction with some/every-expression" in {
-    eval(" (10 > 5) and (some y in [1,2,3] satisfies y > 2) ") should be(
-      ValBoolean(true))
+    eval(" (10 > 5) and (some y in [1,2,3] satisfies y > 2) ") should be(ValBoolean(true))
 
-    eval(" (some y in [1,2,3] satisfies y > 2) and (10 > 5) ") should be(
-      ValBoolean(true))
+    eval(" (some y in [1,2,3] satisfies y > 2) and (10 > 5) ") should be(ValBoolean(true))
 
     eval(
-      " (some y in [1,2,3] satisfies y > 2) and (every x in [1,2,3] satisfies x < 5) ") should be(
-      ValBoolean(true))
+      " (some y in [1,2,3] satisfies y > 2) and (every x in [1,2,3] satisfies x < 5) "
+    ) should be(ValBoolean(true))
   }
 
   it should "be in conjunction (with parentheses)" in {
-    eval("x and (y)", Map("x" -> true, "y" -> false)) should be(
-      ValBoolean(false))
+    eval("x and (y)", Map("x" -> true, "y" -> false)) should be(ValBoolean(false))
 
-    eval("(x) and y", Map("x" -> true, "y" -> false)) should be(
-      ValBoolean(false))
+    eval("(x) and y", Map("x" -> true, "y" -> false)) should be(ValBoolean(false))
   }
 
   it should "be in disjunction" in {

@@ -22,24 +22,27 @@ import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValError, ValNull, ValStrin
 object BooleanBuiltinFunctions {
 
   def functions = Map(
-    "not" -> List(notFunction),
-    "is defined" -> List(isDefinedFunction),
+    "not"         -> List(notFunction),
+    "is defined"  -> List(isDefinedFunction),
     "get or else" -> List(getOrElse),
-    "assert" -> List(assertFunction, assertFunction2)
+    "assert"      -> List(assertFunction, assertFunction2)
   )
 
   private def notFunction =
-    builtinFunction(params = List("negand"), invoke = {
-      case List(ValBoolean(negand)) => ValBoolean(!negand)
-      case List(_: Val)             => ValNull
-      case _                        => ValNull
-    })
+    builtinFunction(
+      params = List("negand"),
+      invoke = {
+        case List(ValBoolean(negand)) => ValBoolean(!negand)
+        case List(_: Val)             => ValNull
+        case _                        => ValNull
+      }
+    )
 
   private def isDefinedFunction = builtinFunction(
     params = List("value"),
     invoke = {
-      case List(ValNull)  => ValBoolean(false)
-      case _              => ValBoolean(true)
+      case List(ValNull) => ValBoolean(false)
+      case _             => ValBoolean(true)
     }
   )
 
@@ -55,7 +58,7 @@ object BooleanBuiltinFunctions {
     params = List("value", "condition"),
     invoke = {
       case List(value, ValBoolean(true)) => value
-      case _ => ValError("The condition is not fulfilled")
+      case _                             => ValError("The condition is not fulfilled")
     }
   )
 
@@ -63,7 +66,7 @@ object BooleanBuiltinFunctions {
     params = List("value", "condition", "cause"),
     invoke = {
       case List(value, ValBoolean(true), _) => value
-      case List(_, _, ValString(cause)) => ValError(cause)
+      case List(_, _, ValString(cause))     => ValError(cause)
     }
   )
 

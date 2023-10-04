@@ -51,8 +51,7 @@ object FunctionProvider {
     override def functionNames: Iterable[String] = functions.keys
   }
 
-  case class CacheFunctionProvider(provider: FunctionProvider)
-      extends FunctionProvider {
+  case class CacheFunctionProvider(provider: FunctionProvider) extends FunctionProvider {
 
     private val cache: mutable.Map[String, List[ValFunction]] =
       mutable.Map.empty
@@ -64,12 +63,12 @@ object FunctionProvider {
       cache.keys ++ provider.functionNames
   }
 
-  case class CompositeFunctionProvider(providers: List[FunctionProvider])
-      extends FunctionProvider {
+  case class CompositeFunctionProvider(providers: List[FunctionProvider]) extends FunctionProvider {
 
     override def getFunctions(name: String): List[ValFunction] =
       providers.foldLeft(List[ValFunction]())((functions, provider) =>
-        functions ++ provider.getFunctions(name))
+        functions ++ provider.getFunctions(name)
+      )
 
     override def functionNames: Iterable[String] =
       providers.flatMap(_.functionNames)

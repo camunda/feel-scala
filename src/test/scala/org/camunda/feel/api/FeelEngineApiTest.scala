@@ -143,7 +143,6 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.toEither should be(Right(evaluationResult.result))
   }
 
-
   it should "evaluate a unary-tests expression" in {
     val evaluationResult = engine.evaluateUnaryTests(
       expression = "< 3",
@@ -175,10 +174,12 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures should contain(EvaluationFailure(
-      failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-      failureMessage = "No variable found with name 'x'"
-    ))
+    evaluationResult.suppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'"
+      )
+    )
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
@@ -197,10 +198,12 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures should contain(EvaluationFailure(
-      failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-      failureMessage = "No variable found with name 'x'"
-    ))
+    evaluationResult.suppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'"
+      )
+    )
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
