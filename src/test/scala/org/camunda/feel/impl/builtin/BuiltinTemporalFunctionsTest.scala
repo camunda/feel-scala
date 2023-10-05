@@ -44,21 +44,19 @@ class BuiltinTemporalFunctionsTest
     ZoneId.of("Europe/Berlin")
   )
 
-  private val date = "date(2019,9,17)"
+  private val date          = "date(2019,9,17)"
   private val localDateTime = """date and time("2019-09-17T14:30:00")"""
-  private val dateTime =
+  private val dateTime      =
     """date and time("2019-09-17T14:30:00@Europe/Berlin")"""
 
-  "The now() function" should "return the current date-time" in withClock {
-    clock =>
-      clock.currentTime(now)
-      eval(""" now() """) should be(ValDateTime(now))
+  "The now() function" should "return the current date-time" in withClock { clock =>
+    clock.currentTime(now)
+    eval(""" now() """) should be(ValDateTime(now))
   }
 
-  "The today() function" should "return the current date" in withClock {
-    clock =>
-      clock.currentTime(now)
-      eval(""" today() """) should be(ValDate(now.toLocalDate))
+  "The today() function" should "return the current date" in withClock { clock =>
+    clock.currentTime(now)
+    eval(""" today() """) should be(ValDate(now.toLocalDate))
   }
 
   "The day of year() function" should "return the day within the year" in {
@@ -110,22 +108,22 @@ class BuiltinTemporalFunctionsTest
 
   "A last day of month() function" should "return the the last day of the month" in {
     eval(""" last day of month(date(2022,10,17)) """) should be(
-      ValDate(LocalDate.parse("2022-10-31")))
+      ValDate(LocalDate.parse("2022-10-31"))
+    )
 
-    eval(s"last day of month($date)") should be(
-      ValDate(LocalDate.parse("2019-09-30")))
-    eval(s"last day of month($localDateTime)") should be(
-      ValDate(LocalDate.parse("2019-09-30")))
-    eval(s"last day of month($dateTime)") should be(
-      ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($date)") should be(ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($localDateTime)") should be(ValDate(LocalDate.parse("2019-09-30")))
+    eval(s"last day of month($dateTime)") should be(ValDate(LocalDate.parse("2019-09-30")))
   }
 
   it should "take the leap years into account" in {
     eval(""" last day of month(date("2022-02-01")) """) should be(
-      ValDate(LocalDate.parse("2022-02-28")))
+      ValDate(LocalDate.parse("2022-02-28"))
+    )
 
     eval(""" last day of month(date("2024-02-01")) """) should be(
-      ValDate(LocalDate.parse("2024-02-29")))
+      ValDate(LocalDate.parse("2024-02-29"))
+    )
   }
 
 }

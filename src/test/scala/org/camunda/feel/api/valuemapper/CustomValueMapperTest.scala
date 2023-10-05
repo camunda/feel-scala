@@ -52,8 +52,8 @@ class CustomValueMapperTest extends AnyFlatSpec with Matchers {
   }
 
   class Person extends DomainObject {
-    val name = Property[String]("name", None)
-    val language = Property[Language]("language", None)
+    val name       = Property[String]("name", None)
+    val language   = Property[Language]("language", None)
     val properties = Map((name.name -> name), (language.name -> language))
   }
 
@@ -75,8 +75,7 @@ class CustomValueMapperTest extends AnyFlatSpec with Matchers {
         case e: Enum =>
           Some(
             ValContext(
-              Context.StaticContext(
-                e.items.map(e => e.id -> innerValueMapper(e)).toMap)
+              Context.StaticContext(e.items.map(e => e.id -> innerValueMapper(e)).toMap)
             )
           )
 
@@ -89,14 +88,12 @@ class CustomValueMapperTest extends AnyFlatSpec with Matchers {
       }
     }
 
-    override def unpackVal(value: Val,
-                           innerValueMapper: Val => Any): Option[Any] =
+    override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] =
       None
   }
 
   val valueMapper: ValueMapper =
-    ValueMapper.CompositeValueMapper(
-      List(DefaultValueMapper.instance, new MyCustomValueMapper))
+    ValueMapper.CompositeValueMapper(List(DefaultValueMapper.instance, new MyCustomValueMapper))
 
   val engine = new FeelEngine(valueMapper = valueMapper)
 
@@ -153,10 +150,8 @@ class CustomValueMapperTest extends AnyFlatSpec with Matchers {
 
     engine.evalExpression("p.name", context) should be(Right("Tom"))
     engine.evalExpression("p.language", context) should be(Right("EN"))
-    engine.evalExpression("p.language = Language.EN", context) should be(
-      Right(true))
-    engine.evalExpression("p.language = Language.DE", context) should be(
-      Right(false))
+    engine.evalExpression("p.language = Language.EN", context) should be(Right(true))
+    engine.evalExpression("p.language = Language.DE", context) should be(Right(false))
   }
 
 }

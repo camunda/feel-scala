@@ -17,18 +17,33 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
-import org.camunda.feel.context.FunctionProvider.{CompositeFunctionProvider, EmptyFunctionProvider, StaticFunctionProvider}
-import org.camunda.feel.context.VariableProvider.{CompositeVariableProvider, EmptyVariableProvider, StaticVariableProvider}
+import org.camunda.feel.context.FunctionProvider.{
+  CompositeFunctionProvider,
+  EmptyFunctionProvider,
+  StaticFunctionProvider
+}
+import org.camunda.feel.context.VariableProvider.{
+  CompositeVariableProvider,
+  EmptyVariableProvider,
+  StaticVariableProvider
+}
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
-import org.camunda.feel.impl.interpreter.EvalContext.{mergeFunctionProviders, mergeVariableProvider, toSortedVariableProvider, wrap}
+import org.camunda.feel.impl.interpreter.EvalContext.{
+  mergeFunctionProviders,
+  mergeVariableProvider,
+  toSortedVariableProvider,
+  wrap
+}
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.collection.immutable.SeqMap
 
-class EvalContext(val valueMapper: ValueMapper,
-                  val variableProvider: VariableProvider,
-                  val functionProvider: FunctionProvider) extends Context {
+class EvalContext(
+    val valueMapper: ValueMapper,
+    val variableProvider: VariableProvider,
+    val functionProvider: FunctionProvider
+) extends Context {
 
   def variable(name: String): Val = {
     variableProvider
@@ -38,14 +53,14 @@ class EvalContext(val valueMapper: ValueMapper,
   }
 
   def function(name: String, paramCount: Int): Val = {
-    val filter = (f: ValFunction) => f.params.size == paramCount ||
-      (f.params.size < paramCount && f.hasVarArgs)
+    val filter = (f: ValFunction) =>
+      f.params.size == paramCount ||
+        (f.params.size < paramCount && f.hasVarArgs)
 
     functionProvider
       .getFunctions(name)
       .find(filter)
-      .getOrElse(ValError(
-        s"no function found with name '$name' and $paramCount parameters"))
+      .getOrElse(ValError(s"no function found with name '$name' and $paramCount parameters"))
   }
 
   def function(name: String, parameters: Set[String]): Val = {
@@ -54,11 +69,8 @@ class EvalContext(val valueMapper: ValueMapper,
     functionProvider
       .getFunctions(name)
       .find(filter)
-      .getOrElse(ValError(
-        s"no function found with name '$name' and parameters: ${
-          parameters
-            .mkString(",")
-        }"))
+      .getOrElse(ValError(s"no function found with name '$name' and parameters: ${parameters
+        .mkString(",")}"))
   }
 
   def merge(otherContext: EvalContext): EvalContext = new EvalContext(
@@ -74,7 +86,7 @@ class EvalContext(val valueMapper: ValueMapper,
 
   def add(entry: (String, Val)): EvalContext = entry match {
     case (k: String, f: ValFunction) => addFunction(k, f)
-    case (k: String, v) => addVariable(k, v)
+    case (k: String, v)              => addVariable(k, v)
   }
 
   private def addVariable(key: String, variable: Val): EvalContext = new EvalContext(
@@ -113,51 +125,63 @@ object EvalContext {
     functionProvider = EmptyFunctionProvider
   )
 
-  def create(valueMapper: ValueMapper, functionProvider: FunctionProvider): EvalContext = new EvalContext(
-    valueMapper = valueMapper,
-    variableProvider = EmptyVariableProvider,
-    functionProvider = functionProvider
-  )
+  def create(valueMapper: ValueMapper, functionProvider: FunctionProvider): EvalContext =
+    new EvalContext(
+      valueMapper = valueMapper,
+      variableProvider = EmptyVariableProvider,
+      functionProvider = functionProvider
+    )
 
   def wrap(context: Context, valueMapper: ValueMapper): EvalContext =
     context match {
-      case evalContext: EvalContext => evalContext
-      case EmptyContext => empty(valueMapper)
-      case StaticContext(variables, functions) => new EvalContext(
-        valueMapper = valueMapper,
-        variableProvider = toSortedVariableProvider(variables),
-        functionProvider = StaticFunctionProvider(functions)
-      )
-      case _ => new EvalContext(
-        valueMapper = valueMapper,
-        variableProvider = context.variableProvider,
-        functionProvider = context.functionProvider
-      )
+      case evalContext: EvalContext            => evalContext
+      case EmptyContext                        => empty(valueMapper)
+      case StaticContext(variables, functions) =>
+        new EvalContext(
+          valueMapper = valueMapper,
+          variableProvider = toSortedVariableProvider(variables),
+          functionProvider = StaticFunctionProvider(functions)
+        )
+      case _                                   =>
+        new EvalContext(
+          valueMapper = valueMapper,
+          variableProvider = context.variableProvider,
+          functionProvider = context.functionProvider
+        )
     }
 
-  private def mergeVariableProvider(provider: VariableProvider, otherProvider: VariableProvider): VariableProvider = {
+  private def mergeVariableProvider(
+      provider: VariableProvider,
+      otherProvider: VariableProvider
+  ): VariableProvider = {
     (provider, otherProvider) match {
-      case (EmptyVariableProvider, EmptyVariableProvider) => EmptyVariableProvider
-      case (EmptyVariableProvider, otherProvider) => otherProvider
-      case (thisProvider, EmptyVariableProvider) => thisProvider
+      case (EmptyVariableProvider, EmptyVariableProvider)                                  => EmptyVariableProvider
+      case (EmptyVariableProvider, otherProvider)                                          => otherProvider
+      case (thisProvider, EmptyVariableProvider)                                           => thisProvider
       case (StaticVariableProvider(thisVariables), StaticVariableProvider(otherVariables)) =>
         StaticVariableProvider(thisVariables ++ otherVariables)
-      case (thisProvider, otherProvider) => CompositeVariableProvider(List(thisProvider, otherProvider))
+      case (thisProvider, otherProvider)                                                   =>
+        CompositeVariableProvider(List(thisProvider, otherProvider))
     }
   }
 
-  private def mergeFunctionProviders(provider: FunctionProvider, otherProvider: FunctionProvider): FunctionProvider = {
+  private def mergeFunctionProviders(
+      provider: FunctionProvider,
+      otherProvider: FunctionProvider
+  ): FunctionProvider = {
     (provider, otherProvider) match {
-      case (EmptyFunctionProvider, EmptyFunctionProvider) => EmptyFunctionProvider
-      case (EmptyFunctionProvider, otherProvider) => otherProvider
-      case (thisProvider, EmptyFunctionProvider) => thisProvider
+      case (EmptyFunctionProvider, EmptyFunctionProvider)                                  => EmptyFunctionProvider
+      case (EmptyFunctionProvider, otherProvider)                                          => otherProvider
+      case (thisProvider, EmptyFunctionProvider)                                           => thisProvider
       case (StaticFunctionProvider(thisFunctions), StaticFunctionProvider(otherFunctions)) => {
-        val allKeys = thisFunctions.keys ++ otherFunctions.keys
-        val functionsByKey = (key: String) => thisFunctions.getOrElse(key, List.empty) ++ otherFunctions.getOrElse(key, List.empty)
-        val allFunctions = allKeys.map(key => key -> functionsByKey(key)).toMap
+        val allKeys        = thisFunctions.keys ++ otherFunctions.keys
+        val functionsByKey = (key: String) =>
+          thisFunctions.getOrElse(key, List.empty) ++ otherFunctions.getOrElse(key, List.empty)
+        val allFunctions   = allKeys.map(key => key -> functionsByKey(key)).toMap
         StaticFunctionProvider(allFunctions)
       }
-      case (thisProvider, otherProvider) => CompositeFunctionProvider(List(thisProvider, otherProvider))
+      case (thisProvider, otherProvider)                                                   =>
+        CompositeFunctionProvider(List(thisProvider, otherProvider))
     }
   }
 

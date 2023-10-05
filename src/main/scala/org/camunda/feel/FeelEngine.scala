@@ -24,11 +24,7 @@ import org.camunda.feel.FeelEngine.{
   Failure
 }
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
-import org.camunda.feel.impl.interpreter.{
-  BuiltinFunctions,
-  EvalContext,
-  FeelInterpreter
-}
+import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
@@ -56,11 +52,11 @@ object FeelEngine {
 
   class Builder {
 
-    private var functionProvider_ : FunctionProvider = defaultFunctionProvider
-    private var valueMapper_ : ValueMapper = defaultValueMapper
+    private var functionProvider_ : FunctionProvider          = defaultFunctionProvider
+    private var valueMapper_ : ValueMapper                    = defaultValueMapper
     private var customValueMappers_ : List[CustomValueMapper] = List.empty
-    private var clock_ : FeelEngineClock = defaultClock
-    private var configuration_ : Configuration = defaultConfiguration
+    private var clock_ : FeelEngineClock                      = defaultClock
+    private var configuration_ : Configuration                = defaultConfiguration
 
     def functionProvider(functionProvider: FunctionProvider): Builder = {
       functionProvider_ = functionProvider
@@ -98,7 +94,7 @@ object FeelEngine {
   }
 
   object UnaryTests {
-    val inputVariable: String = "inputVariableName"
+    val inputVariable: String        = "inputVariableName"
     val defaultInputVariable: String = "cellInput"
   }
 
@@ -114,7 +110,8 @@ class FeelEngine(
   val interpreter = new FeelInterpreter()
 
   val validator = new ExpressionValidator(
-    externalFunctionsEnabled = configuration.externalFunctionsEnabled)
+    externalFunctionsEnabled = configuration.externalFunctionsEnabled
+  )
 
   logger.info(
     s"Engine created. [" +
@@ -126,103 +123,98 @@ class FeelEngine(
 
   private val rootContext: EvalContext = EvalContext.create(
     valueMapper = valueMapper,
-    functionProvider = FunctionProvider.CompositeFunctionProvider(List(
-      new BuiltinFunctions(clock, valueMapper),
-      functionProvider
-    ))
+    functionProvider = FunctionProvider.CompositeFunctionProvider(
+      List(
+        new BuiltinFunctions(clock, valueMapper),
+        functionProvider
+      )
+    )
   )
 
   def evalExpression(
       expression: String,
-      variables: java.util.Map[String, Object]): EvalExpressionResult =
+      variables: java.util.Map[String, Object]
+  ): EvalExpressionResult =
     evalExpression(expression, variables.asScala.toMap)
 
   def evalExpression(
       expression: String,
-      variables: Map[String, Any] = Map()): EvalExpressionResult = {
-    eval(FeelParser.parseExpression,
-         expression,
-         Context.StaticContext(variables))
+      variables: Map[String, Any] = Map()
+  ): EvalExpressionResult = {
+    eval(FeelParser.parseExpression, expression, Context.StaticContext(variables))
   }
 
-  def evalExpression(expression: String,
-                     context: Context): EvalExpressionResult = {
+  def evalExpression(expression: String, context: Context): EvalExpressionResult = {
     eval(FeelParser.parseExpression, expression, context)
   }
 
   def evalUnaryTests(
       expression: String,
-      variables: java.util.Map[String, Object]): EvalUnaryTestsResult =
+      variables: java.util.Map[String, Object]
+  ): EvalUnaryTestsResult =
     evalUnaryTests(expression, variables.asScala.toMap)
 
   def evalUnaryTests(
       expression: String,
-      variables: Map[String, Any] = Map()): EvalUnaryTestsResult = {
-    eval(FeelParser.parseUnaryTests,
-         expression,
-         Context.StaticContext(variables))
+      variables: Map[String, Any] = Map()
+  ): EvalUnaryTestsResult = {
+    eval(FeelParser.parseUnaryTests, expression, Context.StaticContext(variables))
       .map(value => value.asInstanceOf[Boolean])
   }
 
-  def evalUnaryTests(expression: String,
-                     context: Context): EvalUnaryTestsResult = {
+  def evalUnaryTests(expression: String, context: Context): EvalUnaryTestsResult = {
     eval(FeelParser.parseUnaryTests, expression, context)
       .map(value => value.asInstanceOf[Boolean])
   }
 
-  private def eval(parser: String => Parsed[Exp],
-                   expression: String,
-                   context: Context): EvalExpressionResult =
+  private def eval(
+      parser: String => Parsed[Exp],
+      expression: String,
+      context: Context
+  ): EvalExpressionResult =
     parse(parser, expression)
       .flatMap(expr => eval(expr, context))
 
-  private def parse(parser: String => Parsed[Exp],
-                    expression: String): Either[Failure, ParsedExpression] =
+  private def parse(
+      parser: String => Parsed[Exp],
+      expression: String
+  ): Either[Failure, ParsedExpression] =
     Try {
       parser(expression) match {
-        case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
+        case Parsed.Success(exp, _)      => Right(ParsedExpression(exp, expression))
         case Parsed.Failure(_, _, extra) =>
-          Left(Failure(
-            s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
+          Left(Failure(s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
       }
-    }.recover(failure =>
-        Left(Failure(s"failed to parse expression '$expression': $failure")))
-      .get
+    }.recover(failure => Left(Failure(s"failed to parse expression '$expression': $failure"))).get
 
-  private def validate(
-      exp: ParsedExpression): Either[Failure, ParsedExpression] = {
+  private def validate(exp: ParsedExpression): Either[Failure, ParsedExpression] = {
 
     validator
       .validateExpression(exp.expression)
       .map(failure =>
-        Failure(
-          s"""validation of expression '${exp.text}' failed: ${failure.message}"""))
+        Failure(s"""validation of expression '${exp.text}' failed: ${failure.message}""")
+      )
       .toLeft(exp)
   }
 
   def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
     Try {
       validate(exp).flatMap(_ => eval(exp, rootContext.merge(context)))
-    }.recover(failure =>
-        Left(
-          Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
+    }.recover(failure => Left(Failure(s"failed to evaluate expression '${exp.text}' : $failure")))
       .get
 
-  private def eval(exp: ParsedExpression,
-                   context: EvalContext): EvalExpressionResult = {
+  private def eval(exp: ParsedExpression, context: EvalContext): EvalExpressionResult = {
     interpreter.eval(exp.expression)(context) match {
       case ValError(cause) =>
         Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
-      case value => Right(valueMapper.unpackVal(value))
+      case value           => Right(valueMapper.unpackVal(value))
     }
   }
 
-  def eval(exp: ParsedExpression,
-           variables: java.util.Map[String, Object]): EvalExpressionResult =
+  def eval(exp: ParsedExpression, variables: java.util.Map[String, Object]): EvalExpressionResult =
     eval(exp, variables.asScala.toMap)
 
-  def eval(exp: ParsedExpression,
-           variables: Map[String, Any] = Map()): EvalExpressionResult = {
+  def eval(exp: ParsedExpression, variables: Map[String, Any] = Map()): EvalExpressionResult = {
     eval(exp, Context.StaticContext(variables))
   }
 

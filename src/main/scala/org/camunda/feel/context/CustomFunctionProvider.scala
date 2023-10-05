@@ -18,27 +18,29 @@ package org.camunda.feel.context
 
 import org.camunda.feel.syntaxtree.ValFunction
 
-/**
-  * Provides one or more functions which can be used in an expression.
+/** Provides one or more functions which can be used in an expression.
   */
 trait CustomFunctionProvider extends FunctionProvider {
 
-  /**
-    * Returns a list of functions for the given name. There can be multiple functions with different parameters.
+  /** Returns a list of functions for the given name. There can be multiple functions with different
+    * parameters.
     *
-    * @param name the name of the function
-    * @return a list of functions or an empty list, if no function is provided for this name
+    * @param name
+    *   the name of the function
+    * @return
+    *   a list of functions or an empty list, if no function is provided for this name
     */
   override def getFunctions(name: String): List[ValFunction] =
     getFunction(name)
       .map(List(_))
       .getOrElse(List.empty)
 
-  /**
-    * Returns the function for the given name.
+  /** Returns the function for the given name.
     *
-    * @param name the name of the function
-    * @return the function or [[None]], if no function is provided for this name
+    * @param name
+    *   the name of the function
+    * @return
+    *   the function or [[None]], if no function is provided for this name
     */
   def getFunction(name: String): Option[ValFunction]
 

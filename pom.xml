@@ -250,19 +250,11 @@
 
       <plugin>
         <groupId>org.antipathy</groupId>
-        <artifactId>mvn-scalafmt_2.12</artifactId>
-        <version>0.8_1.5.1</version>
+        <artifactId>mvn-scalafmt_2.13</artifactId>
+        <version>1.1.1684076452.9f83818</version>
         <configuration>
-          <parameters>--diff</parameters>
+          <configLocation>${project.basedir}/.scalafmt.conf</configLocation>
         </configuration>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>format</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
 
       <plugin>
@@ -400,57 +392,95 @@
         </executions>
       </plugin>
 
+      <!-- license plugin -->
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*.scala</include>
+            <include>**/*.java</include>
+          </includes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+            <scala>SLASHSTAR_STYLE</scala>
+          </mapping>
+        </configuration>
+      </plugin>
+
     </plugins>
 
   </build>
 
   <profiles>
+    <!-- profile to auto format -->
     <profile>
-      <id>license-header-check</id>
-      <properties>
-        <plugin.version.license>4.1</plugin.version.license>
-        <license.inlineHeader>
-          Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
-          under one or more contributor license agreements. See the NOTICE file
-          distributed with this work for additional information regarding copyright
-          ownership. Camunda licenses this file to you under the Apache License,
-          Version 2.0; you may not use this file except in compliance with the License.
-          You may obtain a copy of the License at
-
-          http://www.apache.org/licenses/LICENSE-2.0
-
-          Unless required by applicable law or agreed to in writing, software
-          distributed under the License is distributed on an "AS IS" BASIS,
-          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-          See the License for the specific language governing permissions and
-          limitations under the License.
-        </license.inlineHeader>
-      </properties>
+      <id>autoFormat</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
-          <!-- license plugin -->
           <plugin>
-            <groupId>com.mycila</groupId>
-            <artifactId>license-maven-plugin</artifactId>
-            <version>${plugin.version.license}</version>
-            <configuration>
-              <skipExistingHeaders>false</skipExistingHeaders>
-              <includes>
-                <include>**/*.scala</include>
-                <include>**/*.java</include>
-              </includes>
-              <mapping>
-                <java>SLASHSTAR_STYLE</java>
-                <scala>SLASHSTAR_STYLE</scala>
-              </mapping>
-            </configuration>
+            <groupId>org.antipathy</groupId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
             <executions>
               <execution>
-                <id>add-license-header</id>
-                <phase>compile</phase>
+                <id>scala-format</id>
+                <phase>validate</phase>
                 <goals>
                   <goal>format</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-license</id>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- profile to perform strict validation checks -->
+    <profile>
+      <id>checkFormat</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.antipathy</groupId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
+            <executions>
+              <execution>
+                <id>scala-format</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>check-license</id>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <phase>validate</phase>
               </execution>
             </executions>
           </plugin>
@@ -467,27 +497,10 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git@github.com:camunda/feel-scala.git</connection>
-    <url>scm:git:git@github.com:camunda/feel-scala.git</url>
-    <developerConnection>scm:git:git@github.com:camunda/feel-scala.git</developerConnection>
-    <tag>1.16.0</tag>
+    <connection>scm:git:https://${env.GITHUB_TOKEN_USR}:${env.GITHUB_TOKEN_PSW}@github.com/camunda/feel-scala.git</connection>
+    <developerConnection>scm:git:https://${env.GITHUB_TOKEN_USR}:${env.GITHUB_TOKEN_PSW}@github.com/camunda/feel-scala.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/camunda/feel-scala</url>
   </scm>
-
-  <distributionManagement>
-    <repository>
-      <id>camunda-nexus</id>
-      <name>camunda platform community extensions</name>
-      <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
-    </repository>
-    <snapshotRepository>
-      <id>camunda-nexus</id>
-      <name>camunda platform community extensions snapshots</name>
-      <url>
-        https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions-snapshots/
-      </url>
-      <!-- for maven 2 compatibility -->
-      <uniqueVersion>true</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
 
 </project>
