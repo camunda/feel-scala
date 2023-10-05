@@ -1,6 +1,7 @@
 name: Build project with Maven
 on:
   pull_request:
+  merge_group:
   schedule:
   - cron: '2 2 * * 1-5' # run nightly master builds on weekdays
 
@@ -31,4 +32,4 @@ jobs:
           ${{ runner.os }}-maven-
 
     - name: Run Maven
-      run: mvn -B clean verify com.mycila:license-maven-plugin:check
+      run: mvn -B clean -P checkFormat verify
