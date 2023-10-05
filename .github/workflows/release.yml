@@ -1,0 +1,218 @@
+name: Release a new version
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      releaseBranch:
+        description: 'The branch to perform the release on, defaults to `main`'
+        type: string
+        required: false
+        default: 'main'
+      releaseVersion:
+        description: 'The version to be build and released.'
+        type: string
+        required: true
+      nextDevelopmentVersion:
+        description: 'The next development version.'
+        type: string
+        required: true
+      dryRun:
+        description: 'Dry run? No changes will be published.'
+        type: boolean
+        default: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  RELEASE_BRANCH: ${{ inputs.releaseBranch }}
+  RELEASE_VERSION: ${{ inputs.releaseVersion }}
+
+jobs:
+  release:
+    name: Maven Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      releaseTagRevision: ${{ steps.maven-release.outputs.tagRevision }}
+    env:
+      DEVELOPMENT_VERSION: ${{ inputs.nextDevelopmentVersion }}
+      PUSH_CHANGES: ${{ inputs.dryRun == false }}
+    steps:
+      - name: Output Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+
+      - name: Import Secrets
+        id: secrets
+        uses: hashicorp/vault-action@v2.7.3
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            secret/data/github.com/organizations/camunda MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE;
+            secret/data/github.com/organizations/camunda MAVEN_CENTRAL_GPG_SIGNING_KEY_SEC;
+            secret/data/github.com/organizations/camunda MAVEN_CENTRAL_GPG_SIGNING_KEY_PUB;
+            secret/data/github.com/organizations/camunda MAVEN_CENTRAL_DEPLOYMENT_USR;
+            secret/data/github.com/organizations/camunda MAVEN_CENTRAL_DEPLOYMENT_PSW;
+            secret/data/products/zeebe/ci/zeebe ARTIFACTS_USR;
+            secret/data/products/zeebe/ci/zeebe ARTIFACTS_PSW;
+
+      - name: Git User Setup
+        run: |
+          git config --global user.email "github-actions[release]"
+          git config --global user.name "github-actions[release]@users.noreply.github.com"
+
+      - name: Install Maven Central GPG Key
+        # setup-maven supports this as well but needs the key in the armor ascii format,
+        # while we only have it plain bas64 encoded
+        # see https://github.com/actions/setup-java/issues/100#issuecomment-742679976
+        run: |
+          echo -n "${{ steps.secrets.outputs.MAVEN_CENTRAL_GPG_SIGNING_KEY_SEC }}" \
+            | base64 --decode \
+            | gpg -q --allow-secret-key-import --import --no-tty --batch --yes
+          echo -n "${{ steps.secrets.outputs.MAVEN_CENTRAL_GPG_SIGNING_KEY_PUB }}" \
+            | base64 --decode \
+            | gpg -q --import --no-tty --batch --yes
+
+      - name: Setup Github cli
+        # On non-Github hosted runners it may be missing
+        # https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian-ubuntu-linux-raspberry-pi-os-apt
+        run: |
+          type -p curl >/dev/null || sudo apt install curl -y
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y     
+
+      - name: Set up Java environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+          cache: maven
+
+      - uses: s4u/maven-settings-action@v2.8.0
+        with:
+          servers: |
+            [{
+                "id": "camunda-nexus",
+                "username": "${{ steps.secrets.outputs.ARTIFACTS_USR }}",
+                "password": "${{ steps.secrets.outputs.ARTIFACTS_PSW }}"
+            },
+            {
+                "id": "central",
+                "username": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_USR }}",
+                "password": "${{ steps.secrets.outputs.MAVEN_CENTRAL_DEPLOYMENT_PSW }}"
+            }]
+          mirrors: |
+            [{
+                "id": "camunda-nexus",
+                "name": "Camunda Nexus",
+                "mirrorOf": "camunda-nexus",
+                "url": "https://repository.nexus.camunda.cloud/content/groups/internal/"
+            }]
+
+      - name: Maven Release
+        id: maven-release
+        env:
+          SKIP_REPO_DEPLOY: ${{ inputs.dryRun }}
+        run : |
+          ./mvnw release:prepare release:perform -B \
+            -Dgpg.passphrase="${{ steps.secrets.outputs.MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE }}" \
+            -Dresume=false \
+            -Dtag=${RELEASE_VERSION} \
+            -DreleaseVersion=${RELEASE_VERSION} \
+            -DdevelopmentVersion=${DEVELOPMENT_VERSION} \
+            -DpushChanges=${PUSH_CHANGES} \
+            -DremoteTagging=${PUSH_CHANGES} \
+            -DlocalCheckout=${{ inputs.dryRun }} \
+            -P-autoFormat \
+            -Darguments='-P-autoFormat -Dskip.central.release=${SKIP_REPO_DEPLOY} -Dskip.camunda.release=${SKIP_REPO_DEPLOY} -Dgpg.passphrase="${{ steps.secrets.outputs.MAVEN_CENTRAL_GPG_SIGNING_KEY_PASSPHRASE }}"'
+
+          # switch to the directory to which maven checks out the release tag
+          # see https://maven.apache.org/maven-release/maven-release-plugin/perform-mojo.html#workingDirectory
+          pushd target/checkout
+          export TAG_REVISION=$(git log -n 1 --pretty=format:'%h')
+          echo "tagRevision=${TAG_REVISION}" >> $GITHUB_OUTPUT
+          popd
+
+      - name: Collect Release artifacts
+        id: release-artifacts
+        run: |
+          ARTIFACT_DIR=$(mktemp -d)
+          cp target/feel-engine-${RELEASE_VERSION}.jar "${ARTIFACT_DIR}/"
+          cp target/feel-engine-${RELEASE_VERSION}-complete.jar "${ARTIFACT_DIR}/"
+          cp target/dependencies.txt "${ARTIFACT_DIR}/"
+          echo "dir=${ARTIFACT_DIR}" >> $GITHUB_OUTPUT
+
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts-${{ inputs.releaseVersion }}
+          path: ${{ steps.release-artifacts.outputs.dir }}
+          retention-days: 5
+
+      - name: Push Changes to Release branch
+        if: ${{ inputs.dryRun == false }}
+        run: git push origin "${RELEASE_BRANCH}"
+
+      - name: Cleanup Maven Central GPG Key
+        # make sure we always remove the imported signing key to avoid it leaking on runners
+        if: always()
+        run: rm -rf $HOME/.gnupg
+
+  github:
+    needs: release
+    name: Github Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release-artifacts-${{ inputs.releaseVersion }}
+
+      - name: Create Artifact Checksums
+        id: checksum
+        run: |
+          for filename in *; do
+            checksumFile="${filename}.sha1sum"
+            sha1sum "${filename}" > "${checksumFile}"
+            sha1sumResult=$?
+            if [ ! -f "${checksumFile}" ]; then
+              echo "Failed to created checksum of ${filename} at ${checksumFile}; [sha1sum] exited with result ${sha1sumResult}. Check the logs for errors."
+              exit 1
+            fi
+          done
+
+      - name: Determine if Pre-Release
+        id: pre-release
+        run: |
+          shopt -s nocasematch # set matching to case insensitive
+          PRE_RELEASE=false
+          if [[ "${RELEASE_VERSION}" =~ ^.*-(alpha|rc|SNAPSHOT)[\d]*$ ]]; then
+            PRE_RELEASE=true
+          fi
+          shopt -u nocasematch # reset it
+          echo "result=${PRE_RELEASE}" >> $GITHUB_OUTPUT
+
+      - name: Create Github release
+        uses: ncipollo/release-action@v1
+        if: ${{ inputs.dryRun == false }}
+        with:
+          name: ${{ inputs.releaseVersion }}
+          artifacts: "*"
+          artifactErrorsFailBuild: true
+          draft: true
+          body: Release ${{ inputs.releaseVersion }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: ${{ steps.pre-release.result }}
+          tag: ${{ inputs.releaseVersion }}
