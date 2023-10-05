@@ -18,8 +18,8 @@ package org.camunda.feel.context
 
 import org.camunda.feel.syntaxtree.ValFunction
 
-/**
-  * A Context provides access to the variables/fields and functions/methods in the scope represented by this Context.
+/** A Context provides access to the variables/fields and functions/methods in the scope represented
+  * by this Context.
   */
 trait Context {
 

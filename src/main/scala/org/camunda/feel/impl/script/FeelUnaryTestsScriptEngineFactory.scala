@@ -19,8 +19,8 @@ package org.camunda.feel.impl.script
 import javax.script.{ScriptEngine, ScriptEngineFactory}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class FeelUnaryTestsScriptEngineFactory extends ScriptEngineFactory {
 

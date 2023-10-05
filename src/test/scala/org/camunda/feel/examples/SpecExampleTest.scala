@@ -21,13 +21,9 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-class SpecExampleTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class SpecExampleTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
-  val context: Val = eval(
-    """
+  val context: Val = eval("""
 
       {
         applicant: {
@@ -74,8 +70,8 @@ class SpecExampleTest
   it should "evaluate an if,in" in {
 
     evalWithContext(
-      """ if applicant.maritalStatus in ("M","S") then "valid" else "not valid" """) should be(
-      ValString("valid"))
+      """ if applicant.maritalStatus in ("M","S") then "valid" else "not valid" """
+    ) should be(ValString("valid"))
 
   }
 
@@ -87,8 +83,8 @@ class SpecExampleTest
 
   it should "invoke an user-defined function" in {
 
-    val rate: BigDecimal = 0.25
-    val term: BigDecimal = 36
+    val rate: BigDecimal   = 0.25
+    val term: BigDecimal   = 36
     val amount: BigDecimal = 100000
 
     evalWithContext(""" PMT(
@@ -98,23 +94,26 @@ class SpecExampleTest
                            )
 
     """) should be(
-      ValNumber((amount * rate / 12) / (1 - (1 + rate / 12)
-        .pow(-36)))) // ~ 3975.982590125562
+      ValNumber(
+        (amount * rate / 12) / (1 - (1 + rate / 12)
+          .pow(-36))
+      )
+    ) // ~ 3975.982590125562
   }
 
   it should "sum a filtered list of context" in {
 
     evalWithContext(
-      """ sum( credit_history[record_date > date("2011-01-01")].weight) """) should be(
-      ValNumber(150))
+      """ sum( credit_history[record_date > date("2011-01-01")].weight) """
+    ) should be(ValNumber(150))
 
   }
 
   it should "determine if list satisfies" in {
 
-    evalWithContext(
-      """ some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(
-      ValBoolean(false))
+    evalWithContext(""" some ch in credit_history satisfies ch.event = "bankruptcy" """) should be(
+      ValBoolean(false)
+    )
   }
 
   it should "execute nested path and filter expressions" in {
@@ -127,17 +126,17 @@ class SpecExampleTest
         Map("id" -> 7902, "deptNum" -> 20, "name" -> "Ford"),
         Map("id" -> 7900, "deptNum" -> 30, "name" -> "James")
       ),
-      "DeptTable" -> List(
-        Map("number" -> 10, "name" -> "Sales", "manager" -> "Smith"),
-        Map("number" -> 20, "name" -> "Finance", "manager" -> "Jones"),
+      "DeptTable"     -> List(
+        Map("number" -> 10, "name" -> "Sales", "manager"       -> "Smith"),
+        Map("number" -> 20, "name" -> "Finance", "manager"     -> "Jones"),
         Map("number" -> 30, "name" -> "Engineering", "manager" -> "King")
       ),
-      "LastName" -> "Clark"
+      "LastName"      -> "Clark"
     )
 
-    eval(
-      "DeptTable[number = EmployeeTable[name=LastName].deptNum[1]].manager[1]",
-      ctx) should be(ValString("Smith"))
+    eval("DeptTable[number = EmployeeTable[name=LastName].deptNum[1]].manager[1]", ctx) should be(
+      ValString("Smith")
+    )
   }
 
   private def evalWithContext(exp: String) = {

@@ -22,8 +22,7 @@ import org.camunda.feel.valuemapper.CustomValueMapper
 // DO NOT DELETE, used in ScriptEngineTest through src/test/resources/META-INF/services
 class TestValueMapper extends CustomValueMapper {
 
-  override def unpackVal(value: Val,
-                         innerValueMapper: Val => Any): Option[Any] =
+  override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] =
     value match {
       case ValNull => Some("foobar")
       case _       => None

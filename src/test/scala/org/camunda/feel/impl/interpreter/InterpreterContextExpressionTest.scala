@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterContextExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterContextExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A context" should "be accessed (variable)" in {
     eval("ctx.a", Map("ctx" -> Map("a" -> 1))) should be(ValNumber(1))
@@ -52,13 +49,13 @@ class InterpreterContextExpressionTest
 
   it should "be accessed in a list (literal)" in {
 
-    eval("[ {a:1, b:2}, {a:3, b:4} ].a") should be(
-      ValList(List(ValNumber(1), ValNumber(3))))
+    eval("[ {a:1, b:2}, {a:3, b:4} ].a") should be(ValList(List(ValNumber(1), ValNumber(3))))
   }
 
   it should "be accessed in a list (variable)" in {
     eval("a.b", Map("a" -> List(Map("b" -> 1), Map("b" -> 2)))) should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+      ValList(List(ValNumber(1), ValNumber(2)))
+    )
   }
 
   it should "be accessed in same context" in {
@@ -73,7 +70,7 @@ class InterpreterContextExpressionTest
     val list = eval("[ {a:1, b:2}, {a:3, b:4} ][a > 2]")
     list shouldBe a[ValList]
 
-    val items = list.asInstanceOf[ValList].items
+    val items   = list.asInstanceOf[ValList].items
     items should have size 1
     val context = items(0)
 
@@ -88,10 +85,8 @@ class InterpreterContextExpressionTest
 
     eval("[ {item:1}, {item:2}, {item:3} ][item >= 2]") match {
       case ValList(List(ValContext(context1), ValContext(context2))) =>
-        context1.variableProvider.getVariables should be(
-          Map("item" -> ValNumber(2)))
-        context2.variableProvider.getVariables should be(
-          Map("item" -> ValNumber(3)))
+        context1.variableProvider.getVariables should be(Map("item" -> ValNumber(2)))
+        context2.variableProvider.getVariables should be(Map("item" -> ValNumber(3)))
 
       case actual => fail(s"expected a list with two items but found '$actual'")
     }
@@ -118,8 +113,7 @@ class InterpreterContextExpressionTest
 
   it should "fail if one entry fails" in {
 
-    eval(" { a:1, b: {}.x } ") should be(
-      ValError("context contains no entry with key 'x'"))
+    eval(" { a:1, b: {}.x } ") should be(ValError("context contains no entry with key 'x'"))
   }
 
   it should "be compared with '='" in {
@@ -164,20 +158,19 @@ class InterpreterContextExpressionTest
   it should "be accessed when defined with a name having white spaces" in {
     eval("{foo bar:1}.`foo bar` = 1") should be(ValBoolean(true))
     eval("{foo   bar:1}.`foo   bar` = 1") should be(ValBoolean(true))
-    eval("{foo bar:1, fizz buzz: 30}.`fizz buzz` = 1") should be(
-      ValBoolean(false))
+    eval("{foo bar:1, fizz buzz: 30}.`fizz buzz` = 1") should be(ValBoolean(false))
   }
 
   it should "be accessed when defined with a name having special symbols" in {
     eval("{foo+bar:1}.`foo+bar` = 1") should be(ValBoolean(true))
     eval("{foo+bar:1, simple_special++char:4}.`simple_special++char` = 4") should be(
-      ValBoolean(true))
-    eval("""{\uD83D\uDC0E:"\uD83D\uDE00"}.`\uD83D\uDC0E`""") should be(
-      ValString("\uD83D\uDE00"))
+      ValBoolean(true)
+    )
+    eval("""{\uD83D\uDC0E:"\uD83D\uDE00"}.`\uD83D\uDC0E`""") should be(ValString("\uD83D\uDE00"))
 
     eval(
-      "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`") should be(
-      ValNumber(5))
+      "{ friend+of+mine:2, hello_there:{ how_are_you?:2, are_you_happy?:`friend+of+mine`+3 } }.hello_there.`are_you_happy?`"
+    ) should be(ValNumber(5))
   }
 
   it should "fail when special symbols violate context syntax" in {

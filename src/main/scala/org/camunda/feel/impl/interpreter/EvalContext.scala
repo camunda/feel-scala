@@ -22,10 +22,11 @@ import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
 import org.camunda.feel.syntaxtree.{Val, ValError, ValFunction}
 import org.camunda.feel.valuemapper.ValueMapper
 
-class EvalContext(val valueMapper: ValueMapper,
-                  val variableProvider: VariableProvider,
-                  val functionProvider: FunctionProvider)
-    extends Context {
+class EvalContext(
+    val valueMapper: ValueMapper,
+    val variableProvider: VariableProvider,
+    val functionProvider: FunctionProvider
+) extends Context {
 
   def variable(name: String): Val = {
     variableProvider
@@ -37,35 +38,32 @@ class EvalContext(val valueMapper: ValueMapper,
   def function(name: String, paramCount: Int): Val = {
     functionProvider
       .getFunctions(name)
-      .find(f =>
-        f.params.size == paramCount || (f.params.size < paramCount && f.hasVarArgs))
-      .getOrElse(ValError(
-        s"no function found with name '$name' and $paramCount parameters"))
+      .find(f => f.params.size == paramCount || (f.params.size < paramCount && f.hasVarArgs))
+      .getOrElse(ValError(s"no function found with name '$name' and $paramCount parameters"))
   }
 
   def function(name: String, parameters: Set[String]): Val = {
     functionProvider
       .getFunctions(name)
       .find(f => f.paramSet == parameters || parameters.subsetOf(f.paramSet))
-      .getOrElse(ValError(
-        s"no function found with name '$name' and parameters: ${parameters
-          .mkString(",")}"))
+      .getOrElse(ValError(s"no function found with name '$name' and parameters: ${parameters
+        .mkString(",")}"))
   }
 
   def +(context: EvalContext): EvalContext = new EvalContext(
     valueMapper = valueMapper,
-    variableProvider = VariableProvider.CompositeVariableProvider(
-      List(context.variableProvider, variableProvider)),
-    functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(context.functionProvider, functionProvider))
+    variableProvider =
+      VariableProvider.CompositeVariableProvider(List(context.variableProvider, variableProvider)),
+    functionProvider =
+      FunctionProvider.CompositeFunctionProvider(List(context.functionProvider, functionProvider))
   )
 
   def +(context: Context): EvalContext = new EvalContext(
     valueMapper = valueMapper,
-    variableProvider = VariableProvider.CompositeVariableProvider(
-      List(context.variableProvider, variableProvider)),
-    functionProvider = FunctionProvider.CompositeFunctionProvider(
-      List(context.functionProvider, functionProvider))
+    variableProvider =
+      VariableProvider.CompositeVariableProvider(List(context.variableProvider, variableProvider)),
+    functionProvider =
+      FunctionProvider.CompositeFunctionProvider(List(context.functionProvider, functionProvider))
   )
 
   def +(entry: (String, Any)): EvalContext = entry match {
@@ -76,7 +74,8 @@ class EvalContext(val valueMapper: ValueMapper,
   def addVariable(key: String, variable: Any): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = VariableProvider.CompositeVariableProvider(
-      List(StaticVariableProvider(Map(key -> variable)), variableProvider)),
+      List(StaticVariableProvider(Map(key -> variable)), variableProvider)
+    ),
     functionProvider = functionProvider
   )
 
@@ -85,15 +84,15 @@ class EvalContext(val valueMapper: ValueMapper,
       valueMapper = valueMapper,
       variableProvider = variableProvider,
       functionProvider = FunctionProvider.CompositeFunctionProvider(
-        List(StaticFunctionProvider(Map(key -> List(function))),
-             functionProvider)
+        List(StaticFunctionProvider(Map(key -> List(function))), functionProvider)
       )
     )
 
   def ++(variables: Map[String, Any]): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = VariableProvider.CompositeVariableProvider(
-      List(StaticVariableProvider(variables), variableProvider)),
+      List(StaticVariableProvider(variables), variableProvider)
+    ),
     functionProvider = functionProvider
   )
 

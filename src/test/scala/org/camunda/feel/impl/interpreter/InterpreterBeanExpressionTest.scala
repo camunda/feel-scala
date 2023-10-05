@@ -21,13 +21,10 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
-class InterpreterBeanExpressionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class InterpreterBeanExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A bean" should "access a field" in {
 
@@ -111,22 +108,14 @@ class InterpreterBeanExpressionTest
 
     class A(val a: String, val b: String)
 
-    eval(""" a.a = null """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" a.b = null """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(true))
-    eval(""" null = a.a """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" null = a.b""", Map("a" -> new A("not null", null))) should be(
-      ValBoolean(true))
-    eval(""" a.a = a.b """, Map("a" -> new A("not null", "not null"))) should be(
-      ValBoolean(true))
-    eval(""" a.a = a.b """, Map("a" -> new A("not null", null))) should be(
-      ValBoolean(false))
-    eval(""" a.a = a.b """, Map("a" -> new A(null, "not null"))) should be(
-      ValBoolean(false))
-    eval(""" a.a = a.b """, Map("a" -> new A(null, null))) should be(
-      ValBoolean(true))
+    eval(""" a.a = null """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+    eval(""" a.b = null """, Map("a" -> new A("not null", null))) should be(ValBoolean(true))
+    eval(""" null = a.a """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+    eval(""" null = a.b""", Map("a" -> new A("not null", null))) should be(ValBoolean(true))
+    eval(""" a.a = a.b """, Map("a" -> new A("not null", "not null"))) should be(ValBoolean(true))
+    eval(""" a.a = a.b """, Map("a" -> new A("not null", null))) should be(ValBoolean(false))
+    eval(""" a.a = a.b """, Map("a" -> new A(null, "not null"))) should be(ValBoolean(false))
+    eval(""" a.a = a.b """, Map("a" -> new A(null, null))) should be(ValBoolean(true))
   }
 
 }
