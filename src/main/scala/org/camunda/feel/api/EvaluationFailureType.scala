@@ -18,8 +18,7 @@ package org.camunda.feel.api
 
 sealed trait EvaluationFailureType
 
-/**
-  * Defines the type of an evaluation failure.
+/** Defines the type of an evaluation failure.
   */
 object EvaluationFailureType {
 
@@ -42,5 +41,3 @@ object EvaluationFailureType {
   case object ASSERT_FAILURE extends EvaluationFailureType
 
 }
-
-

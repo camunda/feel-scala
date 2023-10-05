@@ -19,8 +19,8 @@ package org.camunda.feel.impl.script
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class ScriptEngineFactoryTest extends AnyFlatSpec with Matchers {
 

@@ -21,8 +21,8 @@ import org.camunda.feel.impl.FeelEngineTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
 class BuiltinFunctionsTest
     extends AnyFlatSpec
@@ -103,41 +103,41 @@ class BuiltinFunctionsTest
   "A get or else(value: Any, default: Any) function" should "return the value if not null" in {
 
     evaluateExpression(
-      expression = "get or else(3, 1)",
+      expression = "get or else(3, 1)"
     ) should returnResult(3)
 
     evaluateExpression(
-      expression = """get or else("value", "default")""",
+      expression = """get or else("value", "default")"""
     ) should returnResult("value")
 
     evaluateExpression(
-      expression = "get or else(value:3, default:1)",
+      expression = "get or else(value:3, default:1)"
     ) should returnResult(3)
   }
 
   it should "return the default param if value is null" in {
 
     evaluateExpression(
-      expression = "get or else(null, 1)",
+      expression = "get or else(null, 1)"
     ) should returnResult(1)
 
     evaluateExpression(
-      expression = """get or else(null, "default")""",
+      expression = """get or else(null, "default")"""
     ) should returnResult("default")
 
     evaluateExpression(
-      expression = "get or else(value:null, default:1)",
+      expression = "get or else(value:null, default:1)"
     ) should returnResult(1)
   }
 
   it should "return null if both value and default params are null" in {
 
     evaluateExpression(
-      expression = "get or else(null, null)",
+      expression = "get or else(null, null)"
     ) should returnNull()
 
     evaluateExpression(
-      expression = "get or else(value:null, default:null)",
+      expression = "get or else(value:null, default:null)"
     ) should returnNull()
   }
 
@@ -172,7 +172,7 @@ class BuiltinFunctionsTest
     ) should failWith("The condition is not fulfilled")
 
     evaluateExpression(
-      expression = """assert(x, x != null)""",
+      expression = """assert(x, x != null)"""
     ) should failWith("The condition is not fulfilled")
 
     evaluateExpression(
@@ -187,7 +187,9 @@ class BuiltinFunctionsTest
 
     evaluateExpression(
       expression = """list contains(assert(my_list, my_list != null), 2)"""
-    ) should failWith("Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null), 2)': The condition is not fulfilled")
+    ) should failWith(
+      "Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null), 2)': The condition is not fulfilled"
+    )
   }
 
   "A assert(value: Any, condition: Any, cause: String) function" should "return the value if the condition evaluated to true" in {
@@ -221,7 +223,7 @@ class BuiltinFunctionsTest
     ) should failWith("The condition is not true")
 
     evaluateExpression(
-      expression = """assert(x, x != null, "The condition is not true")""",
+      expression = """assert(x, x != null, "The condition is not true")"""
     ) should failWith("The condition is not true")
 
     evaluateExpression(
@@ -235,7 +237,10 @@ class BuiltinFunctionsTest
     ) should failWith("The condition is not true")
 
     evaluateExpression(
-      expression = """list contains(assert(my_list, my_list != null, "The condition is not true"), 2)"""
-    ) should failWith("Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null, \"The condition is not true\"), 2)': The condition is not true")
+      expression =
+        """list contains(assert(my_list, my_list != null, "The condition is not true"), 2)"""
+    ) should failWith(
+      "Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null, \"The condition is not true\"), 2)': The condition is not true"
+    )
   }
 }

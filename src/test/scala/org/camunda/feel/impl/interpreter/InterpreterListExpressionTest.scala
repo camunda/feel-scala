@@ -24,11 +24,11 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable.ListBuffer
 
-/**
-  * @author Philipp Ossler
+/** @author
+  *   Philipp Ossler
   */
 class InterpreterListExpressionTest
-  extends AnyFlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
     with EvaluationResultMatchers {
@@ -178,23 +178,20 @@ class InterpreterListExpressionTest
     val result = evaluateExpression(
       expression = "[1,2,3,4][f(item)]",
       variables = Map(),
-      functions = Map("f" -> ValFunction(
-        params = List("x"),
-        invoke = {
-          case List(x) =>
+      functions = Map(
+        "f" -> ValFunction(
+          params = List("x"),
+          invoke = { case List(x) =>
             functionInvocations += x
             ValBoolean(x == ValNumber(3))
-        }
-      )))
+          }
+        )
+      )
+    )
 
     result should returnResult(List(3))
 
-    functionInvocations should be(List(
-      ValNumber(1),
-      ValNumber(2),
-      ValNumber(3),
-      ValNumber(4))
-    )
+    functionInvocations should be(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4)))
   }
 
   it should "be filtered via custom numeric function" in {
@@ -203,20 +200,20 @@ class InterpreterListExpressionTest
     val result = evaluateExpression(
       expression = "[1,2,3,4][f(item)]",
       variables = Map(),
-      functions = Map("f" -> ValFunction(
-        params = List("x"),
-        invoke = {
-          case List(x) =>
+      functions = Map(
+        "f" -> ValFunction(
+          params = List("x"),
+          invoke = { case List(x) =>
             functionInvocations += x
             ValNumber(3)
-        }
-      )))
+          }
+        )
+      )
+    )
 
     result should returnResult(3)
 
-    functionInvocations should be(List(
-      ValNumber(1))
-    )
+    functionInvocations should be(List(ValNumber(1)))
   }
 
   it should "be filtered multiple times (from literal)" in {
@@ -230,7 +227,9 @@ class InterpreterListExpressionTest
 
     evaluateExpression("xs[1][1]", Map("xs" -> listOfLists)) should returnResult(1)
     evaluateExpression("xs[1][1][1]", Map("xs" -> List(listOfLists))) should returnResult(1)
-    evaluateExpression("xs[1][1][1][1]", Map("xs" -> List(List(listOfLists)))) should returnResult(1)
+    evaluateExpression("xs[1][1][1][1]", Map("xs" -> List(List(listOfLists)))) should returnResult(
+      1
+    )
   }
 
   it should "be filtered multiple times (from function invocation)" in {
@@ -243,8 +242,14 @@ class InterpreterListExpressionTest
     val listOfLists = List(List(1))
 
     evaluateExpression("x.y[1][1]", Map("x" -> Map("y" -> listOfLists))) should returnResult(1)
-    evaluateExpression("x.y[1][1][1]", Map("x" -> Map("y" -> List(listOfLists)))) should returnResult(1)
-    evaluateExpression("x.y[1][1][1][1]", Map("x" -> Map("y" -> List(List(listOfLists))))) should returnResult(1)
+    evaluateExpression(
+      "x.y[1][1][1]",
+      Map("x" -> Map("y" -> List(listOfLists)))
+    ) should returnResult(1)
+    evaluateExpression(
+      "x.y[1][1][1][1]",
+      Map("x" -> Map("y" -> List(List(listOfLists))))
+    ) should returnResult(1)
   }
 
   it should "be filtered multiple times (from context projection)" in {
@@ -256,10 +261,17 @@ class InterpreterListExpressionTest
   it should "be filtered multiple times (in a context)" in {
     val listOfLists = List(List(1))
 
-    evaluateExpression("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should returnResult(1)
-    evaluateExpression("{z: x.y[1][1][1]}.z", Map("x" -> Map("y" -> List(listOfLists)))) should returnResult(1)
-    evaluateExpression("{z: x.y[1][1][1][1]}.z",
-      Map("x" -> Map("y" -> List(List(listOfLists))))) should returnResult(1)
+    evaluateExpression("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should returnResult(
+      1
+    )
+    evaluateExpression(
+      "{z: x.y[1][1][1]}.z",
+      Map("x" -> Map("y" -> List(listOfLists)))
+    ) should returnResult(1)
+    evaluateExpression(
+      "{z: x.y[1][1][1][1]}.z",
+      Map("x" -> Map("y" -> List(List(listOfLists))))
+    ) should returnResult(1)
   }
 
   it should "be filtered if the filter doesn't always return a boolean or a number" in {
@@ -306,33 +318,38 @@ class InterpreterListExpressionTest
   }
 
   it should "return null if compare to not a list" in {
-    evaluateExpression("[] = 1") should (
-      returnNull() and reportFailure(
-        failureType = EvaluationFailureType.NOT_COMPARABLE,
-        failureMessage = "Can't compare '[]' with '1'"
-      ))
+    evaluateExpression("[] = 1") should (returnNull() and reportFailure(
+      failureType = EvaluationFailureType.NOT_COMPARABLE,
+      failureMessage = "Can't compare '[]' with '1'"
+    ))
   }
 
   "A for-expression" should "iterate over a range" in {
     evaluateExpression("for x in 1..3 return x * 2") should returnResult(List(2, 4, 6))
 
-    evaluateExpression("for x in 1..n return x * 2", Map("n" -> 3)) should returnResult(List(2, 4, 6))
+    evaluateExpression("for x in 1..n return x * 2", Map("n" -> 3)) should returnResult(
+      List(2, 4, 6)
+    )
   }
 
   it should "iterate over a range in descending order" in {
     evaluateExpression("for x in 3..1 return x * 2") should returnResult(List(6, 4, 2))
 
-    evaluateExpression("for x in n..1 return x * 2", Map("n" -> 3)) should returnResult(List(6, 4, 2))
+    evaluateExpression("for x in n..1 return x * 2", Map("n" -> 3)) should returnResult(
+      List(6, 4, 2)
+    )
   }
 
   it should "access the partial result" in {
-    evaluateExpression("for x in 1..5 return if (x = 1) then 1 else x + sum(partial)") should returnResult(
+    evaluateExpression(
+      "for x in 1..5 return if (x = 1) then 1 else x + sum(partial)"
+    ) should returnResult(
       List(1, 3, 7, 15, 31)
     )
 
     evaluateExpression(
-      "for i in 1..8 return if (i <= 2) then 1 else partial[-1] + partial[-2]") should returnResult(
-      List(1, 1, 2, 3, 5, 8, 13, 21))
+      "for i in 1..8 return if (i <= 2) then 1 else partial[-1] + partial[-2]"
+    ) should returnResult(List(1, 1, 2, 3, 5, 8, 13, 21))
   }
 
   private val hugeList: List[Int] = (1 to 10000).toList
@@ -342,9 +359,15 @@ class InterpreterListExpressionTest
   }
 
   it should "be checked with 'some'" in {
-    evaluateExpression("some x in xs satisfies x >= 10000", Map("xs" -> hugeList)) should returnResult(true)
+    evaluateExpression(
+      "some x in xs satisfies x >= 10000",
+      Map("xs" -> hugeList)
+    ) should returnResult(true)
 
-    evaluateExpression("some x in xs satisfies x > 10000", Map("xs" -> hugeList)) should returnResult(false)
+    evaluateExpression(
+      "some x in xs satisfies x > 10000",
+      Map("xs" -> hugeList)
+    ) should returnResult(false)
   }
 
   it should "be checked with 'some' (invalid condition)" in {
@@ -352,7 +375,9 @@ class InterpreterListExpressionTest
   }
 
   it should "be checked with 'every'" in {
-    evaluateExpression("every x in xs satisfies x > 0", Map("xs" -> hugeList)) should returnResult(true)
+    evaluateExpression("every x in xs satisfies x > 0", Map("xs" -> hugeList)) should returnResult(
+      true
+    )
   }
 
   it should "be checked with 'every' (invalid condition)" in {

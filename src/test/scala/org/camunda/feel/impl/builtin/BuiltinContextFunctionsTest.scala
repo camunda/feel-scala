@@ -22,11 +22,11 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
 class BuiltinContextFunctionsTest
-  extends AnyFlatSpec
+    extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
     with EvaluationResultMatchers {
@@ -84,7 +84,9 @@ class BuiltinContextFunctionsTest
   }
 
   it should "return a context when a path is provided" in {
-    evaluateExpression("""get value({x: {y: {z:1}}}, ["x", "y"]) = {z:1}""") should returnResult(true)
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["x", "y"]) = {z:1}""") should returnResult(
+      true
+    )
   }
 
   it should "return null if non-existing path is provided" in {
@@ -226,7 +228,9 @@ class BuiltinContextFunctionsTest
   }
 
   it should "be invoked with named parameters (keys)" in {
-    evaluateExpression(""" context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) """) should returnResult(
+    evaluateExpression(
+      """ context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) """
+    ) should returnResult(
       Map("x" -> Map("y" -> 2))
     )
   }
@@ -246,9 +250,13 @@ class BuiltinContextFunctionsTest
   "A put function (deprecated)" should "behave as the context put function" in {
     evaluateExpression(""" put({}, "x", 1) = context put({}, "x", 1) """) should returnResult(true)
 
-    evaluateExpression(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should returnResult(true)
+    evaluateExpression(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should returnResult(
+      true
+    )
 
-    evaluateExpression(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should returnResult(true)
+    evaluateExpression(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should returnResult(
+      true
+    )
   }
 
   "A context merge function" should "return a single empty context" in {
@@ -280,11 +288,15 @@ class BuiltinContextFunctionsTest
   }
 
   it should "add all entries at the end of the context" in {
-    evaluateExpression(" get entries(context merge({a: 1, b: 2}, {c: 3, d: 4})).key ") should returnResult(
+    evaluateExpression(
+      " get entries(context merge({a: 1, b: 2}, {c: 3, d: 4})).key "
+    ) should returnResult(
       List("a", "b", "c", "d")
     )
 
-    evaluateExpression(" get entries(context merge({d: 1, c: 2}, {b: 3, a: 4})).key ") should returnResult(
+    evaluateExpression(
+      " get entries(context merge({d: 1, c: 2}, {b: 3, a: 4})).key "
+    ) should returnResult(
       List("d", "c", "b", "a")
     )
   }
@@ -296,17 +308,23 @@ class BuiltinContextFunctionsTest
   }
 
   it should "override entries in order" in {
-    evaluateExpression(""" context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should returnResult(
+    evaluateExpression(
+      """ context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """
+    ) should returnResult(
       Map("x" -> 3, "y" -> 1, "z" -> 2)
     )
   }
 
   it should "override entries and keep the original order" in {
-    evaluateExpression(" get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key ") should returnResult(
+    evaluateExpression(
+      " get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key "
+    ) should returnResult(
       List("a", "b", "c", "d")
     )
 
-    evaluateExpression(" get entries(context merge({c: 1, b: 2, a: 3}, {b: 20, d: 4})).key ") should returnResult(
+    evaluateExpression(
+      " get entries(context merge({c: 1, b: 2, a: 3}, {b: 20, d: 4})).key "
+    ) should returnResult(
       List("c", "b", "a", "d")
     )
   }
@@ -373,7 +391,8 @@ class BuiltinContextFunctionsTest
 
   it should "return a context with multiple entries" in {
     evaluateExpression(
-      """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """) should returnResult(
+      """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """
+    ) should returnResult(
       Map("a" -> 1, "b" -> true, "c" -> "ok")
     )
   }
@@ -391,25 +410,23 @@ class BuiltinContextFunctionsTest
   }
 
   it should "return a context with the same order as the given entries" in {
-    evaluateExpression(
-      """get entries(context([
+    evaluateExpression("""get entries(context([
          {"key":"a","value":1},
          {"key":"b","value":2},
          {"key":"c","value":3}
          ])).key""") should returnResult(List("a", "b", "c"))
 
-    evaluateExpression(
-      """get entries(context([
+    evaluateExpression("""get entries(context([
          {"key":"c","value":1},
          {"key":"b","value":2},
          {"key":"a","value":3}
-         ])).key""") should returnResult(List("c", "b", "a")
-    )
+         ])).key""") should returnResult(List("c", "b", "a"))
   }
 
   it should "override entries in order" in {
     evaluateExpression(
-      """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """) should returnResult(
+      """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """
+    ) should returnResult(
       Map("a" -> 2)
     )
   }
@@ -417,8 +434,12 @@ class BuiltinContextFunctionsTest
   it should "be the reverse operation to `get entries()`" in {
     evaluateExpression(""" context(get entries({})) = {} """) should returnResult(true)
     evaluateExpression(""" context(get entries({a:1})) = {a:1} """) should returnResult(true)
-    evaluateExpression(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should returnResult(true)
-    evaluateExpression(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should returnResult(true)
+    evaluateExpression(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should returnResult(
+      true
+    )
+    evaluateExpression(
+      """ context(get entries({a:1,b:2})[key="a"]) = {a:1} """
+    ) should returnResult(true)
   }
 
   it should "return null if one entry is not a context" in {
@@ -434,7 +455,9 @@ class BuiltinContextFunctionsTest
   }
 
   it should "return null if the key of one entry is not a string" in {
-    evaluateExpression(""" context([{"key":"a", "value":1}, {"key":2, "value":2}]) """) should returnNull()
+    evaluateExpression(
+      """ context([{"key":"a", "value":1}, {"key":2, "value":2}]) """
+    ) should returnNull()
   }
 
 }

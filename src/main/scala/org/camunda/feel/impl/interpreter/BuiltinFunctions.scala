@@ -18,7 +18,16 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.FeelEngineClock
 import org.camunda.feel.context.FunctionProvider
-import org.camunda.feel.impl.builtin.{BooleanBuiltinFunctions, ContextBuiltinFunctions, ConversionBuiltinFunctions, ListBuiltinFunctions, NumericBuiltinFunctions, RangeBuiltinFunction, StringBuiltinFunctions, TemporalBuiltinFunctions}
+import org.camunda.feel.impl.builtin.{
+  BooleanBuiltinFunctions,
+  ContextBuiltinFunctions,
+  ConversionBuiltinFunctions,
+  ListBuiltinFunctions,
+  NumericBuiltinFunctions,
+  RangeBuiltinFunction,
+  StringBuiltinFunctions,
+  TemporalBuiltinFunctions
+}
 import org.camunda.feel.syntaxtree.ValFunction
 import org.camunda.feel.valuemapper.ValueMapper
 

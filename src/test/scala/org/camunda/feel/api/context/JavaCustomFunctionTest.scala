@@ -28,8 +28,7 @@ class JavaCustomFunctionTest extends AnyFlatSpec with Matchers {
 
   it should "call java custom function" in {
 
-    engine.evalExpression("myCustomFunction()", context = EmptyContext) should be(
-      Right("foo"))
+    engine.evalExpression("myCustomFunction()", context = EmptyContext) should be(Right("foo"))
   }
 
 }

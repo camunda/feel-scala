@@ -18,13 +18,12 @@ package org.camunda.feel
 
 import java.time.ZonedDateTime
 
-/**
-  * The clock that is used by the engine to access the current time.
+/** The clock that is used by the engine to access the current time.
   */
 trait FeelEngineClock {
 
-  /**
-    * @return the current time of the clock
+  /** @return
+    *   the current time of the clock
     */
   def getCurrentTime: ZonedDateTime
 
@@ -32,8 +31,7 @@ trait FeelEngineClock {
 
 object FeelEngineClock {
 
-  /**
-    * Access the current time from the system clock.
+  /** Access the current time from the system clock.
     */
   object SystemClock extends FeelEngineClock {
     override def getCurrentTime: ZonedDateTime = ZonedDateTime.now()

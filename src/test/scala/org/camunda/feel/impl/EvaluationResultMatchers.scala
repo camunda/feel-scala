@@ -16,7 +16,13 @@
  */
 package org.camunda.feel.impl
 
-import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType, EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
+import org.camunda.feel.api.{
+  EvaluationFailure,
+  EvaluationFailureType,
+  EvaluationResult,
+  FailedEvaluationResult,
+  SuccessfulEvaluationResult
+}
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 trait EvaluationResultMatchers {
@@ -38,47 +44,54 @@ trait EvaluationResultMatchers {
   class EvaluationResultValueMatcher(expectedResult: Any) extends Matcher[EvaluationResult] {
     override def apply(evaluationResult: EvaluationResult): MatchResult = {
       evaluationResult match {
-        case SuccessfulEvaluationResult(result, _) => MatchResult(
-          result == expectedResult,
-          s"the evaluation didn't returned '$expectedResult' but '${evaluationResult.result}'",
-          s"The evaluation returned '${evaluationResult.result}' as expected",
-        )
-        case FailedEvaluationResult(failure, _) => MatchResult(
-          false,
-          s"the evaluation didn't returned '$expectedResult' but failed with '${failure.message}'",
-          s"the evaluation didn't returned '$expectedResult' but failed with '${failure.message}'",
-        )
+        case SuccessfulEvaluationResult(result, _) =>
+          MatchResult(
+            result == expectedResult,
+            s"the evaluation didn't returned '$expectedResult' but '${evaluationResult.result}'",
+            s"The evaluation returned '${evaluationResult.result}' as expected"
+          )
+        case FailedEvaluationResult(failure, _)    =>
+          MatchResult(
+            false,
+            s"the evaluation didn't returned '$expectedResult' but failed with '${failure.message}'",
+            s"the evaluation didn't returned '$expectedResult' but failed with '${failure.message}'"
+          )
       }
     }
   }
 
-  class SuppressedFailureMatcher(expectedFailure: EvaluationFailure) extends Matcher[EvaluationResult] {
+  class SuppressedFailureMatcher(expectedFailure: EvaluationFailure)
+      extends Matcher[EvaluationResult] {
     override def apply(evaluationResult: EvaluationResult): MatchResult = {
-      val matchResult = (suppressedFailures: List[EvaluationFailure]) => MatchResult(
-        suppressedFailures.contains(expectedFailure),
-        s"the evaluation didn't report '$expectedFailure' but '$suppressedFailures'",
-        s"the evaluation reported '$expectedFailure' as expected",
-      )
+      val matchResult = (suppressedFailures: List[EvaluationFailure]) =>
+        MatchResult(
+          suppressedFailures.contains(expectedFailure),
+          s"the evaluation didn't report '$expectedFailure' but '$suppressedFailures'",
+          s"the evaluation reported '$expectedFailure' as expected"
+        )
       evaluationResult match {
         case SuccessfulEvaluationResult(_, suppressedFailures) => matchResult(suppressedFailures)
-        case FailedEvaluationResult(_, suppressedFailures) => matchResult(suppressedFailures)
+        case FailedEvaluationResult(_, suppressedFailures)     => matchResult(suppressedFailures)
       }
     }
   }
 
-  class EvaluationResultFailureMatcher(expectedFailureMessage: String) extends Matcher[EvaluationResult] {
+  class EvaluationResultFailureMatcher(expectedFailureMessage: String)
+      extends Matcher[EvaluationResult] {
     override def apply(evaluationResult: EvaluationResult): MatchResult = {
       evaluationResult match {
-        case SuccessfulEvaluationResult(result, _) => MatchResult(
-          false,
-          s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'",
-          s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'"
-        )
-        case FailedEvaluationResult(failure, _) => MatchResult(
-          failure.message.contains(expectedFailureMessage),
-          s"the evaluation failure message didn't contain '$expectedFailureMessage' but was '${failure.message}'",
-          s"the evaluation failure message contained '${failure.message}' as expected",
-        )
+        case SuccessfulEvaluationResult(result, _) =>
+          MatchResult(
+            false,
+            s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'",
+            s"the evaluation didn't fail with '$expectedFailureMessage' but returned '${result}'"
+          )
+        case FailedEvaluationResult(failure, _)    =>
+          MatchResult(
+            failure.message.contains(expectedFailureMessage),
+            s"the evaluation failure message didn't contain '$expectedFailureMessage' but was '${failure.message}'",
+            s"the evaluation failure message contained '${failure.message}' as expected"
+          )
       }
     }
   }

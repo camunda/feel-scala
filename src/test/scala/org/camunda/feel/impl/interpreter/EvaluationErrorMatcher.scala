@@ -23,16 +23,18 @@ trait EvaluationErrorMatcher {
   class EvaluationErrorMatcher(expectedMessage: String) extends BeMatcher[Val] {
     override def apply(result: Val): MatchResult =
       result match {
-        case ValError(failure) => MatchResult(
-          failure.startsWith(expectedMessage),
-          s"$result doesn't start with '$expectedMessage'",
-          s"$result starts with '$expectedMessage'",
-        )
-        case _ => MatchResult(
-          false,
-          s"$result is not an error",
-          s"$result is an error"
-        )
+        case ValError(failure) =>
+          MatchResult(
+            failure.startsWith(expectedMessage),
+            s"$result doesn't start with '$expectedMessage'",
+            s"$result starts with '$expectedMessage'"
+          )
+        case _                 =>
+          MatchResult(
+            false,
+            s"$result is not an error",
+            s"$result is an error"
+          )
       }
   }
 

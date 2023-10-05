@@ -17,8 +17,19 @@
 package org.camunda.feel
 
 import fastparse.Parsed
-import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, Failure}
-import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType, EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
+import org.camunda.feel.FeelEngine.{
+  Configuration,
+  EvalExpressionResult,
+  EvalUnaryTestsResult,
+  Failure
+}
+import org.camunda.feel.api.{
+  EvaluationFailure,
+  EvaluationFailureType,
+  EvaluationResult,
+  FailedEvaluationResult,
+  SuccessfulEvaluationResult
+}
 import org.camunda.feel.context.{Context, FunctionProvider}
 import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
@@ -48,16 +59,16 @@ object FeelEngine {
 
   case class Failure(message: String)
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineBuilder]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineBuilder]] instead.
     */
   @deprecated class Builder {
 
-    private var functionProvider_ : FunctionProvider = defaultFunctionProvider
-    private var valueMapper_ : ValueMapper = defaultValueMapper
+    private var functionProvider_ : FunctionProvider          = defaultFunctionProvider
+    private var valueMapper_ : ValueMapper                    = defaultValueMapper
     private var customValueMappers_ : List[CustomValueMapper] = List.empty
-    private var clock_ : FeelEngineClock = defaultClock
-    private var configuration_ : Configuration = defaultConfiguration
+    private var clock_ : FeelEngineClock                      = defaultClock
+    private var configuration_ : Configuration                = defaultConfiguration
 
     def functionProvider(functionProvider: FunctionProvider): Builder = {
       functionProvider_ = functionProvider
@@ -95,7 +106,7 @@ object FeelEngine {
   }
 
   object UnaryTests {
-    val inputVariable: String = "inputVariableName"
+    val inputVariable: String        = "inputVariableName"
     val defaultInputVariable: String = "cellInput"
   }
 
@@ -111,7 +122,8 @@ class FeelEngine(
   private val interpreter = new FeelInterpreter()
 
   private val validator = new ExpressionValidator(
-    externalFunctionsEnabled = configuration.externalFunctionsEnabled)
+    externalFunctionsEnabled = configuration.externalFunctionsEnabled
+  )
 
   logger.info(
     s"Engine created. [" +
@@ -123,52 +135,53 @@ class FeelEngine(
 
   private def rootContext(): EvalContext = EvalContext.create(
     valueMapper = valueMapper,
-    functionProvider = FunctionProvider.CompositeFunctionProvider(List(
-      new BuiltinFunctions(clock, valueMapper),
-      functionProvider
-    ))
+    functionProvider = FunctionProvider.CompositeFunctionProvider(
+      List(
+        new BuiltinFunctions(clock, valueMapper),
+        functionProvider
+      )
+    )
   )
 
-  private def parse(parser: String => Parsed[Exp],
-                    expression: String): Either[Failure, ParsedExpression] =
+  private def parse(
+      parser: String => Parsed[Exp],
+      expression: String
+  ): Either[Failure, ParsedExpression] =
     Try {
       parser(expression) match {
-        case Parsed.Success(exp, _) => Right(ParsedExpression(exp, expression))
+        case Parsed.Success(exp, _)      => Right(ParsedExpression(exp, expression))
         case Parsed.Failure(_, _, extra) =>
-          Left(Failure(
-            s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
+          Left(Failure(s"failed to parse expression '$expression': ${extra.trace().aggregateMsg}"))
       }
-    }.recover(failure =>
-        Left(Failure(s"failed to parse expression '$expression': $failure")))
-      .get
+    }.recover(failure => Left(Failure(s"failed to parse expression '$expression': $failure"))).get
 
-  private def validate(
-      exp: ParsedExpression): Either[Failure, ParsedExpression] = {
+  private def validate(exp: ParsedExpression): Either[Failure, ParsedExpression] = {
 
     validator
       .validateExpression(exp.expression)
       .map(failure =>
-        Failure(
-          s"""validation of expression '${exp.text}' failed: ${failure.message}"""))
+        Failure(s"""validation of expression '${exp.text}' failed: ${failure.message}""")
+      )
       .toLeft(exp)
   }
 
-  private def eval(exp: ParsedExpression,
-                   context: EvalContext): EvaluationResult = {
+  private def eval(exp: ParsedExpression, context: EvalContext): EvaluationResult = {
     interpreter.eval(exp.expression)(context) match {
       case _ if containsAssertionError(context) => {
         val failureMessage = getAssertErrorMessage(context)
         FailedEvaluationResult(
-          failure = Failure(s"Assertion failure on evaluate the expression '${exp.text}': ${failureMessage}"),
+          failure = Failure(
+            s"Assertion failure on evaluate the expression '${exp.text}': ${failureMessage}"
+          ),
           suppressedFailures = context.failureCollector.failures
         )
       }
-      case ValError(cause) =>
+      case ValError(cause)                      =>
         FailedEvaluationResult(
           failure = Failure(s"failed to evaluate expression '${exp.text}': $cause"),
           suppressedFailures = context.failureCollector.failures
         )
-      case value =>
+      case value                                =>
         SuccessfulEvaluationResult(
           result = valueMapper.unpackVal(value),
           suppressedFailures = context.failureCollector.failures
@@ -176,135 +189,147 @@ class FeelEngine(
     }
   }
 
-  /**
-   * Check if an {@link EvaluationFailureType.ASSERT_FAILURE} error is raised during the evaluation of an expression
-   * @param context the context of the evaluation
-   * @return true if an an {@link EvaluationFailureType.ASSERT_FAILURE} is raised, false otherwise
-   */
+  /** Check if an {@link EvaluationFailureType.ASSERT_FAILURE} error is raised during the evaluation
+    * of an expression
+    * @param context
+    *   the context of the evaluation
+    * @return
+    *   true if an an {@link EvaluationFailureType.ASSERT_FAILURE} is raised, false otherwise
+    */
   private def containsAssertionError(context: EvalContext): Boolean = {
     context.failureCollector.failures.exists(_.failureType == EvaluationFailureType.ASSERT_FAILURE)
   }
 
   private def getAssertErrorMessage(context: EvalContext): String = {
-    context.failureCollector.failures.find(_.failureType == EvaluationFailureType.ASSERT_FAILURE).get.failureMessage
+    context.failureCollector.failures
+      .find(_.failureType == EvaluationFailureType.ASSERT_FAILURE)
+      .get
+      .failureMessage
   }
 
   // ============ public API ============
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def evalExpression(
       expression: String,
-      variables: java.util.Map[String, Object]): EvalExpressionResult =
+      variables: java.util.Map[String, Object]
+  ): EvalExpressionResult =
     evalExpression(
       expression = expression,
       context = Context.StaticContext(variables.asScala.toMap)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def evalExpression(
       expression: String,
-      variables: Map[String, Any] = Map()): EvalExpressionResult =
+      variables: Map[String, Any] = Map()
+  ): EvalExpressionResult =
     evalExpression(
       expression = expression,
       context = Context.StaticContext(variables)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
-  @deprecated def evalExpression(expression: String,
-                     context: Context): EvalExpressionResult =
+  @deprecated def evalExpression(expression: String, context: Context): EvalExpressionResult =
     parseExpression(expression)
       .flatMap(parsedExpression => eval(parsedExpression, context))
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def evalUnaryTests(
       expression: String,
-      variables: java.util.Map[String, Object]): EvalUnaryTestsResult =
+      variables: java.util.Map[String, Object]
+  ): EvalUnaryTestsResult =
     evalUnaryTests(
       expression = expression,
       context = Context.StaticContext(variables.asScala.toMap)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def evalUnaryTests(
       expression: String,
-      variables: Map[String, Any] = Map()): EvalUnaryTestsResult =
+      variables: Map[String, Any] = Map()
+  ): EvalUnaryTestsResult =
     evalUnaryTests(
       expression = expression,
       context = Context.StaticContext(variables)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
-  @deprecated def evalUnaryTests(expression: String,
-                     context: Context): EvalUnaryTestsResult = {
+  @deprecated def evalUnaryTests(expression: String, context: Context): EvalUnaryTestsResult = {
     parseUnaryTests(expression)
       .flatMap(parsedExpression => eval(parsedExpression, context))
       .map(value => value.asInstanceOf[Boolean])
   }
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def eval(exp: ParsedExpression, context: Context): EvalExpressionResult =
     evaluate(expression = exp, context = context).toEither
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
-  @deprecated def eval(exp: ParsedExpression,
-           variables: java.util.Map[String, Object]): EvalExpressionResult =
+  @deprecated def eval(
+      exp: ParsedExpression,
+      variables: java.util.Map[String, Object]
+  ): EvalExpressionResult =
     eval(
       exp = exp,
       context = Context.StaticContext(variables.asScala.toMap)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
-  @deprecated def eval(parsedExpression: ParsedExpression,
-           variables: Map[String, Any] = Map()): EvalExpressionResult =
+  @deprecated def eval(
+      parsedExpression: ParsedExpression,
+      variables: Map[String, Any] = Map()
+  ): EvalExpressionResult =
     eval(
       exp = parsedExpression,
       context = Context.StaticContext(variables)
     )
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def parseExpression(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseExpression, expression)
       .flatMap(validate)
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def parseUnaryTests(expression: String): Either[Failure, ParsedExpression] =
     parse(FeelParser.parseUnaryTests, expression)
       .flatMap(validate)
 
-  /**
-    * @deprecated Use [[org.camunda.feel.api.FeelEngineApi]] instead.
+  /** @deprecated
+    *   Use [[org.camunda.feel.api.FeelEngineApi]] instead.
     */
   @deprecated def evaluate(expression: ParsedExpression, context: Context): EvaluationResult =
     Try {
       validate(expression) match {
-        case Right(_) => eval(expression, rootContext().merge(context))
+        case Right(_)      => eval(expression, rootContext().merge(context))
         case Left(failure) => FailedEvaluationResult(failure = failure)
       }
     }.recover(failure =>
       FailedEvaluationResult(
-        failure = Failure(s"failed to evaluate expression '${expression.text}' : $failure")))
-      .get
+        failure = Failure(s"failed to evaluate expression '${expression.text}' : $failure")
+      )
+    ).get
 
 }

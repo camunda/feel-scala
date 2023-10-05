@@ -24,13 +24,10 @@ import org.camunda.feel.syntaxtree._
 
 import scala.math.BigDecimal.int2bigDecimal
 
-/**
-  * @author Philipp
+/** @author
+  *   Philipp
   */
-class BuiltinListFunctionsTest
-  extends AnyFlatSpec
-    with Matchers
-    with FeelIntegrationTest {
+class BuiltinListFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
 
   "A list contains() function" should "return if the list contains Number" in {
 
@@ -64,9 +61,9 @@ class BuiltinListFunctionsTest
 
   it should "return the minimum item of date" in {
 
-    eval(
-      """ min([date("2017-01-01"), date("2018-01-01"), date("2019-01-01")]) """) should be(
-      ValDate("2017-01-01"))
+    eval(""" min([date("2017-01-01"), date("2018-01-01"), date("2019-01-01")]) """) should be(
+      ValDate("2017-01-01")
+    )
   }
 
   it should "return null if value is not comparable" in {
@@ -87,9 +84,9 @@ class BuiltinListFunctionsTest
 
   it should "return the maximum item of date" in {
 
-    eval(
-      """ max([date("2017-01-01"), date("2018-01-01"), date("2019-01-01")]) """) should be(
-      ValDate("2019-01-01"))
+    eval(""" max([date("2017-01-01"), date("2018-01-01"), date("2019-01-01")]) """) should be(
+      ValDate("2019-01-01")
+    )
   }
 
   it should "return null if value is not comparable" in {
@@ -149,8 +146,7 @@ class BuiltinListFunctionsTest
   it should "return the mode of the list" in {
 
     eval(" mode(6, 3, 9, 6, 6) ") should be(ValList(List(ValNumber(6))))
-    eval(" mode([6, 1, 9, 6, 1]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(6))))
+    eval(" mode([6, 1, 9, 6, 1]) ") should be(ValList(List(ValNumber(1), ValNumber(6))))
   }
 
   "A and() / all() function" should "return true if empty list" in {
@@ -245,48 +241,45 @@ class BuiltinListFunctionsTest
 
   "A sublist() function" should "return list starting with _" in {
 
-    eval(" sublist([1,2,3], 2) ") should be(
-      ValList(List(ValNumber(2), ValNumber(3))))
+    eval(" sublist([1,2,3], 2) ") should be(ValList(List(ValNumber(2), ValNumber(3))))
   }
 
   it should "return list starting with _ and length _" in {
 
-    eval(" sublist([1,2,3], 1, 2) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+    eval(" sublist([1,2,3], 1, 2) ") should be(ValList(List(ValNumber(1), ValNumber(2))))
   }
 
   "A append() function" should "return list with item appended" in {
 
-    eval(" append([1,2], 3) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
-    eval(" append([1], 2, 3) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    eval(" append([1,2], 3) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    eval(" append([1], 2, 3) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
   }
 
   "A concatenate() function" should "return list with item appended" in {
 
     eval(" concatenate([1,2],[3]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+    )
     eval(" concatenate([1],[2],[3]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+    )
   }
 
   "A insert before() function" should "return list with new item at _" in {
 
     eval(" insert before([1,3],2,2) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+    )
   }
 
   "A remove() function" should "return list with item at _ removed" in {
 
-    eval(" remove([1,1,3],2) ") should be(
-      ValList(List(ValNumber(1), ValNumber(3))))
+    eval(" remove([1,1,3],2) ") should be(ValList(List(ValNumber(1), ValNumber(3))))
   }
 
   "A reverse() function" should "reverse the list" in {
 
-    eval(" reverse([1,2,3]) ") should be(
-      ValList(List(ValNumber(3), ValNumber(2), ValNumber(1))))
+    eval(" reverse([1,2,3]) ") should be(ValList(List(ValNumber(3), ValNumber(2), ValNumber(1))))
   }
 
   "A index of() function" should "return empty list if no match" in {
@@ -297,47 +290,47 @@ class BuiltinListFunctionsTest
   it should "return list of positions containing the match" in {
 
     eval(" index of([1,2,3,2], 1) ") should be(ValList(List(ValNumber(1))))
-    eval(" index of([1,2,3,2], 2) ") should be(
-      ValList(List(ValNumber(2), ValNumber(4))))
+    eval(" index of([1,2,3,2], 2) ") should be(ValList(List(ValNumber(2), ValNumber(4))))
     eval(" index of([1,2,3,2], 3) ") should be(ValList(List(ValNumber(3))))
   }
 
   "A union() function" should "concatenate with duplicate removal" in {
 
-    eval(" union([1,2],[2,3]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    eval(" union([1,2],[2,3]) ") should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
     eval(" union([1,2],[2,3], [4]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4)))
+    )
   }
 
   "A distinct values() function" should "remove duplicates" in {
 
     eval(" distinct values([1,2,3,2,1]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
+    )
   }
 
   "A duplicate values() function" should "return duplicate values" in {
 
-    eval(" duplicate values([1,2,3,2,1]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+    eval(" duplicate values([1,2,3,2,1]) ") should be(ValList(List(ValNumber(1), ValNumber(2))))
   }
 
   it should "return null duplicate values" in {
 
-    eval(" duplicate values([1,2,1,null,null]) ") should be(
-      ValList(List(ValNumber(1), ValNull)))
+    eval(" duplicate values([1,2,1,null,null]) ") should be(ValList(List(ValNumber(1), ValNull)))
   }
 
   it should "return duplicate values for named parameters" in {
 
     eval(" duplicate values(list: [1,2,3,2,1]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2))))
+      ValList(List(ValNumber(1), ValNumber(2)))
+    )
   }
 
   "A flatten() function" should "flatten nested lists" in {
 
     eval(" flatten([[1,2],[[3]], 4]) ") should be(
-      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4)))
+    )
   }
 
   it should "flatten a huge list of lists" in {
@@ -353,12 +346,8 @@ class BuiltinListFunctionsTest
   "A sort() function" should "sort list of numbers" in {
 
     eval(" sort(list: [3,1,4,5,2], precedes: function(x,y) x < y) ") should be(
-      ValList(
-        List(ValNumber(1),
-          ValNumber(2),
-          ValNumber(3),
-          ValNumber(4),
-          ValNumber(5))))
+      ValList(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4), ValNumber(5)))
+    )
   }
 
   "A product() function" should "return null if empty list" in {
@@ -401,13 +390,13 @@ class BuiltinListFunctionsTest
   }
 
   it should "return joined strings with custom separator" in {
-    eval(""" string join(["foo","bar","baz"], "::") """) should be(
-      ValString("foo::bar::baz"))
+    eval(""" string join(["foo","bar","baz"], "::") """) should be(ValString("foo::bar::baz"))
   }
 
   it should "return joined strings with custom separator, a prefix and a suffix" in {
     eval(""" string join(["foo","bar","baz"], "::", "hello-", "-goodbye")  """) should be(
-      ValString("hello-foo::bar::baz-goodbye"))
+      ValString("hello-foo::bar::baz-goodbye")
+    )
   }
 
   it should "return null if the list contains other values than strings" in {

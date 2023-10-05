@@ -20,10 +20,11 @@ import org.camunda.feel.api.{EvaluationFailureType, EvaluationFailure}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class SuppressedFailuresTest extends AnyFlatSpec
-  with FeelEngineTest
-  with Matchers
-  with EvaluationResultMatchers {
+class SuppressedFailuresTest
+    extends AnyFlatSpec
+    with FeelEngineTest
+    with Matchers
+    with EvaluationResultMatchers {
 
   "The engine" should "report a suppressed failure for a non-existing variable" in {
     evaluateExpression("x + 1") should reportFailure(
@@ -42,7 +43,8 @@ class SuppressedFailuresTest extends AnyFlatSpec
   it should "report a suppressed failure for a non-existing property" in {
     evaluateExpression(""" @"P1Y".days """) should reportFailure(
       failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
-      failureMessage = "No property found with name 'days' of value 'P1Y'. Available properties: 'years', 'months'"
+      failureMessage =
+        "No property found with name 'days' of value 'P1Y'. Available properties: 'years', 'months'"
     )
   }
 
@@ -97,10 +99,10 @@ class SuppressedFailuresTest extends AnyFlatSpec
   it should "report a suppressed failure only once" in {
     val evaluationResult = evaluateExpression("1 + x")
 
-    evaluationResult.hasSuppressedFailures should be (true)
-    evaluationResult.suppressedFailures should have size(2)
+    evaluationResult.hasSuppressedFailures should be(true)
+    evaluationResult.suppressedFailures should have size (2)
 
-    evaluationResult.suppressedFailures should contain inOrder(
+    evaluationResult.suppressedFailures should contain inOrder (
       EvaluationFailure(
         failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
         failureMessage = "No variable found with name 'x'"

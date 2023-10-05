@@ -17,13 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  ValBoolean,
-  ValError,
-  ValList,
-  ValNumber,
-  ValString
-}
+import org.camunda.feel.syntaxtree.{ValBoolean, ValError, ValList, ValNumber, ValString}
 
 import java.util.regex.Pattern
 import scala.util.Try
@@ -31,37 +25,37 @@ import scala.util.Try
 object StringBuiltinFunctions {
 
   def functions = Map(
-    "substring" -> List(substringFunction, substringFunction3),
-    "string length" -> List(stringLengthFunction),
-    "upper case" -> List(upperCaseFunction),
-    "lower case" -> List(lowerCaseFunction),
+    "substring"        -> List(substringFunction, substringFunction3),
+    "string length"    -> List(stringLengthFunction),
+    "upper case"       -> List(upperCaseFunction),
+    "lower case"       -> List(lowerCaseFunction),
     "substring before" -> List(substringBeforeFunction),
-    "substring after" -> List(substringAfterFunction),
-    "replace" -> List(replaceFunction, replaceFunction4),
-    "contains" -> List(containsFunction),
-    "starts with" -> List(startsWithFunction),
-    "ends with" -> List(endsWithFunction),
-    "matches" -> List(matchesFunction, matchesFunction3),
-    "split" -> List(splitFunction),
-    "extract" -> List(extractFunction)
+    "substring after"  -> List(substringAfterFunction),
+    "replace"          -> List(replaceFunction, replaceFunction4),
+    "contains"         -> List(containsFunction),
+    "starts with"      -> List(startsWithFunction),
+    "ends with"        -> List(endsWithFunction),
+    "matches"          -> List(matchesFunction, matchesFunction3),
+    "split"            -> List(splitFunction),
+    "extract"          -> List(extractFunction)
   )
 
   private def substringFunction = builtinFunction(
     params = List("string", "start position"),
-    invoke = {
-      case List(ValString(string), ValNumber(start)) =>
-        ValString(string.substring(stringIndex(string, start.intValue)))
+    invoke = { case List(ValString(string), ValNumber(start)) =>
+      ValString(string.substring(stringIndex(string, start.intValue)))
     }
   )
 
   private def substringFunction3 = builtinFunction(
     params = List("string", "start position", "length"),
-    invoke = {
-      case List(ValString(string), ValNumber(start), ValNumber(length)) =>
-        ValString(
-          string.substring(
-            stringIndex(string, start.intValue),
-            stringIndex(string, start.intValue) + length.intValue))
+    invoke = { case List(ValString(string), ValNumber(start), ValNumber(length)) =>
+      ValString(
+        string.substring(
+          stringIndex(string, start.intValue),
+          stringIndex(string, start.intValue) + length.intValue
+        )
+      )
     }
   )
 
@@ -73,19 +67,28 @@ object StringBuiltinFunctions {
     }
 
   private def stringLengthFunction =
-    builtinFunction(params = List("string"), invoke = {
-      case List(ValString(string)) => ValNumber(string.length)
-    })
+    builtinFunction(
+      params = List("string"),
+      invoke = { case List(ValString(string)) =>
+        ValNumber(string.length)
+      }
+    )
 
   private def upperCaseFunction =
-    builtinFunction(params = List("string"), invoke = {
-      case List(ValString(string)) => ValString(string.toUpperCase)
-    })
+    builtinFunction(
+      params = List("string"),
+      invoke = { case List(ValString(string)) =>
+        ValString(string.toUpperCase)
+      }
+    )
 
   private def lowerCaseFunction =
-    builtinFunction(params = List("string"), invoke = {
-      case List(ValString(string)) => ValString(string.toLowerCase)
-    })
+    builtinFunction(
+      params = List("string"),
+      invoke = { case List(ValString(string)) =>
+        ValString(string.toLowerCase)
+      }
+    )
 
   private def substringBeforeFunction = builtinFunction(
     params = List("string", "match"),
@@ -117,27 +120,23 @@ object StringBuiltinFunctions {
 
   private def replaceFunction = builtinFunction(
     params = List("input", "pattern", "replacement"),
-    invoke = {
-      case List(ValString(input), ValString(pattern), ValString(replacement)) =>
-        Try(Pattern.compile(pattern))
-          .map { pattern =>
-            val m = pattern.matcher(input)
-            ValString(m.replaceAll(replacement))
-          }
-          .recover { _ =>
-            ValError(s"Invalid pattern '$pattern'")
-          }
-          .get
+    invoke = { case List(ValString(input), ValString(pattern), ValString(replacement)) =>
+      Try(Pattern.compile(pattern))
+        .map { pattern =>
+          val m = pattern.matcher(input)
+          ValString(m.replaceAll(replacement))
+        }
+        .recover { _ =>
+          ValError(s"Invalid pattern '$pattern'")
+        }
+        .get
     }
   )
 
   private def replaceFunction4 = builtinFunction(
     params = List("input", "pattern", "replacement", "flags"),
     invoke = {
-      case List(ValString(input),
-                ValString(pattern),
-                ValString(replacement),
-                ValString(flags)) =>
+      case List(ValString(input), ValString(pattern), ValString(replacement), ValString(flags)) =>
         Try(Pattern.compile(pattern, patternFlags(flags)))
           .map { pattern =>
             val m = pattern.matcher(input)
@@ -170,22 +169,28 @@ object StringBuiltinFunctions {
   }
 
   private def containsFunction =
-    builtinFunction(params = List("string", "match"), invoke = {
-      case List(ValString(string), ValString(m)) =>
+    builtinFunction(
+      params = List("string", "match"),
+      invoke = { case List(ValString(string), ValString(m)) =>
         ValBoolean(string.contains(m))
-    })
+      }
+    )
 
   private def startsWithFunction =
-    builtinFunction(params = List("string", "match"), invoke = {
-      case List(ValString(string), ValString(m)) =>
+    builtinFunction(
+      params = List("string", "match"),
+      invoke = { case List(ValString(string), ValString(m)) =>
         ValBoolean(string.startsWith(m))
-    })
+      }
+    )
 
   private def endsWithFunction =
-    builtinFunction(params = List("string", "match"), invoke = {
-      case List(ValString(string), ValString(m)) =>
+    builtinFunction(
+      params = List("string", "match"),
+      invoke = { case List(ValString(string), ValString(m)) =>
         ValBoolean(string.endsWith(m))
-    })
+      }
+    )
 
   private def matchesFunction = builtinFunction(
     params = List("input", "pattern"),
@@ -206,49 +211,46 @@ object StringBuiltinFunctions {
 
   private def matchesFunction3 = builtinFunction(
     params = List("input", "pattern", "flags"),
-    invoke = {
-      case List(ValString(input), ValString(pattern), ValString(flags)) =>
-        Try(Pattern.compile(pattern, patternFlags(flags)))
-          .map { pattern =>
-            val m = pattern.matcher(input)
-            ValBoolean(m.find)
-          }
-          .recover { _ =>
-            ValError(s"Invalid pattern '$pattern'")
-          }
-          .get
+    invoke = { case List(ValString(input), ValString(pattern), ValString(flags)) =>
+      Try(Pattern.compile(pattern, patternFlags(flags)))
+        .map { pattern =>
+          val m = pattern.matcher(input)
+          ValBoolean(m.find)
+        }
+        .recover { _ =>
+          ValError(s"Invalid pattern '$pattern'")
+        }
+        .get
     }
   )
 
   private def splitFunction = builtinFunction(
     params = List("string", "delimiter"),
-    invoke = {
-      case List(ValString(string), ValString(delimiter)) =>
-        Try(Pattern.compile(delimiter))
-          .map { pattern =>
-            val r = pattern.split(string, -1)
-            ValList(r.map(ValString).toList)
-          }
-          .recover { _ =>
-            ValError(s"Invalid pattern for delimiter '$delimiter'")
-          }
-          .get
+    invoke = { case List(ValString(string), ValString(delimiter)) =>
+      Try(Pattern.compile(delimiter))
+        .map { pattern =>
+          val r = pattern.split(string, -1)
+          ValList(r.map(ValString).toList)
+        }
+        .recover { _ =>
+          ValError(s"Invalid pattern for delimiter '$delimiter'")
+        }
+        .get
     }
   )
 
   private def extractFunction = builtinFunction(
     params = List("input", "pattern"),
-    invoke = {
-      case List(ValString(input), ValString(pattern)) =>
-        Try(pattern.r)
-          .map { regex =>
-            val matches = regex.findAllIn(input).map(ValString)
-            ValList(matches.toList)
-          }
-          .recover { _ =>
-            ValError(s"Invalid pattern '$pattern'")
-          }
-          .get
+    invoke = { case List(ValString(input), ValString(pattern)) =>
+      Try(pattern.r)
+        .map { regex =>
+          val matches = regex.findAllIn(input).map(ValString)
+          ValList(matches.toList)
+        }
+        .recover { _ =>
+          ValError(s"Invalid pattern '$pattern'")
+        }
+        .get
     }
   )
 

@@ -20,8 +20,7 @@ import org.camunda.feel.impl.parser.FeelParser
 
 import javax.script.ScriptEngineFactory
 
-class FeelExpressionScriptEngine(val factory: ScriptEngineFactory)
-    extends FeelScriptEngine {
+class FeelExpressionScriptEngine(val factory: ScriptEngineFactory) extends FeelScriptEngine {
 
   val eval = (expression: String, context: Map[String, Any]) =>
     engine.evalExpression(expression, context)
