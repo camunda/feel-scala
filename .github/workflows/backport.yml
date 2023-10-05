@@ -20,9 +20,9 @@ jobs:
         contains(github.event.comment.body, '/backport')
       )
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Create backport PRs
-        uses: zeebe-io/backport-action@v0.0.8
+        uses: zeebe-io/backport-action@v1.4.0
         with:
           # Required
           # Token to authenticate requests to GitHub

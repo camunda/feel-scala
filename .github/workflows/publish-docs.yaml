@@ -2,7 +2,7 @@ name: publish-docs
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 env:
   # Used by docusaurus publish-site command
@@ -14,10 +14,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 18
       - name: Install Dependencies
         run: |
           cd docs
