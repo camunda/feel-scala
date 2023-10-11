@@ -12,7 +12,7 @@ The FEEL engine can be integrated in two different ways
 
 :::tip
 
-Have a look at the [FEEL REPL](../get-started.md#feel-repl) for trying out FEEL expressions quickly in
+Have a look at the [FEEL Playground](/playground/playground.mdx) for trying out FEEL expressions quickly in
 development.
 
 :::
