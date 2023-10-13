@@ -1,65 +1,8 @@
 {
   "version-1.10/Reference": [
     {
-      "collapsed": true,
-      "type": "category",
-      "label": "Introduction",
-      "items": [
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/what-is-feel"
-        }
-      ]
-    },
-    {
-      "collapsed": true,
-      "type": "category",
-      "label": "Language Guide",
-      "items": [
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/language-guide/feel-data-types"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/language-guide/feel-unary-tests"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/language-guide/feel-expression"
-        }
-      ]
-    },
-    {
-      "collapsed": true,
-      "type": "category",
-      "label": "Built-in Functions",
-      "items": [
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-conversion"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-boolean"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-string"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-numeric"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-list"
-        },
-        {
-          "type": "doc",
-          "id": "version-1.10/reference/builtin-functions/feel-built-in-functions-context"
-        }
-      ]
+      "type": "doc",
+      "id": "version-1.10/reference/get-started"
     },
     {
       "collapsed": true,
