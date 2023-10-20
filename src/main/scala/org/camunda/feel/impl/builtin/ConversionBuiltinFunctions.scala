@@ -231,8 +231,10 @@ object ConversionBuiltinFunctions {
 
   private def stringFunction = builtinFunction(
     params = List("from"),
-    invoke = { case List(from) =>
-      ValString(from.toString)
+    invoke = {
+      case List(ValNull)         => ValNull
+      case List(from: ValString) => from
+      case List(from)            => ValString(from.toString)
     }
   )
 
