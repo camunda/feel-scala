@@ -184,6 +184,10 @@ class BuiltinConversionFunctionsTest extends AnyFlatSpec with Matchers with Feel
     eval(""" string(1.1) """) should be(ValString("1.1"))
   }
 
+  it should "convert a string" in {
+    eval(""" string("hello") """) should be (ValString("hello"))
+  }
+
   it should "convert Boolean" in {
 
     eval(""" string(true) """) should be(ValString("true"))
@@ -248,6 +252,10 @@ class BuiltinConversionFunctionsTest extends AnyFlatSpec with Matchers with Feel
     eval(""" string(@"P1Y") """) should be(ValString("P1Y"))
     eval(""" string(@"P2M") """) should be(ValString("P2M"))
     eval(""" string(@"P1Y2M") """) should be(ValString("P1Y2M"))
+  }
+
+  it should "return null if the argument is null" in {
+    eval(""" string(null) """) should be (ValNull)
   }
 
   "A duration() function" should "convert day-time-String" in {
