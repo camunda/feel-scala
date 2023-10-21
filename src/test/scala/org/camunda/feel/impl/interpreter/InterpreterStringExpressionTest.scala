@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -24,71 +24,64 @@ import org.scalatest.flatspec.AnyFlatSpec
 /** @author
   *   Philipp Ossler
   */
-class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
+class InterpreterStringExpressionTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A string" should "concatenates to another String" in {
 
-    eval(""" "a" + "b" """) should be(ValString("ab"))
+    evaluateExpression(""" "a" + "b" """) should returnResult("ab")
   }
 
   it should "compare with '='" in {
 
-    eval(""" "a" = "a" """) should be(ValBoolean(true))
-    eval(""" "a" = "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" = "a" """) should returnResult(true)
+    evaluateExpression(""" "a" = "b" """) should returnResult(false)
   }
 
   it should "compare with '!='" in {
 
-    eval(""" "a" != "a" """) should be(ValBoolean(false))
-    eval(""" "a" != "b" """) should be(ValBoolean(true))
+    evaluateExpression(""" "a" != "a" """) should returnResult(false)
+    evaluateExpression(""" "a" != "b" """) should returnResult(true)
   }
 
   it should "compare with '<'" in {
 
-    eval(""" "a" < "b" """) should be(ValBoolean(true))
-    eval(""" "b" < "a" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" < "b" """) should returnResult(true)
+    evaluateExpression(""" "b" < "a" """) should returnResult(false)
   }
 
   it should "compare with '<='" in {
 
-    eval(""" "a" <= "a" """) should be(ValBoolean(true))
-    eval(""" "b" <= "a" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" <= "a" """) should returnResult(true)
+    evaluateExpression(""" "b" <= "a" """) should returnResult(false)
   }
 
   it should "compare with '>'" in {
 
-    eval(""" "b" > "a" """) should be(ValBoolean(true))
-    eval(""" "a" > "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "b" > "a" """) should returnResult(true)
+    evaluateExpression(""" "a" > "b" """) should returnResult(false)
   }
 
   it should "compare with '>='" in {
 
-    eval(""" "b" >= "b" """) should be(ValBoolean(true))
-    eval(""" "a" >= "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "b" >= "b" """) should returnResult(true)
+    evaluateExpression(""" "a" >= "b" """) should returnResult(false)
   }
 
   it should "compare with null" in {
 
-    eval(""" "a" = null """) should be(ValBoolean(false))
-    eval(""" null = "a" """) should be(ValBoolean(false))
-    eval(""" "a" != null """) should be(ValBoolean(true))
+    evaluateExpression(""" "a" = null """) should returnResult(false)
+    evaluateExpression(""" null = "a" """) should returnResult(false)
+    evaluateExpression(""" "a" != null """) should returnResult(true)
   }
 
-  List(
-    """ \' """,
-    """ \" """,
-    """ \\ """,
-    """ \n """,
-    """ \r """,
-    """ \t """,
-    """ \u269D """,
-    """ \U101EF """
-  )
-    .foreach { escapeChar =>
-      it should s"contains an escape sequence ($escapeChar)" in {
+  it should "return escaped characters" in {
 
-        eval(s""" "a $escapeChar b" """) should be(ValString(s"""a $escapeChar b"""))
-      }
-    }
+    evaluateExpression(""" "Hello\nWorld" """) should returnResult("Hello\nWorld")
+    evaluateExpression(" x ", Map("x" -> "Hello\nWorld")) should returnResult("Hello\nWorld")
+  }
 
 }
