@@ -123,7 +123,7 @@ import scala.util.Try
 object FeelParser {
 
   def parseExpression(expression: String): Parsed[Exp] =
-    parse(expression, fullExpression(_))
+    parse(translateEscapes(expression), fullExpression(_))
 
   def parseUnaryTests(expression: String): Parsed[Exp] =
     parse(expression, fullUnaryExpression(_))
@@ -687,5 +687,26 @@ object FeelParser {
         ConstLocalTime(value)
       }
     }.getOrElse(ConstNull)
+  }
+
+  private def translateEscapes(input: String): String = {
+    val escapeMap = Map(
+      "\\b"  -> "\b", // backspace
+      "\\t"  -> "\t", // tab
+      "\\n"  -> "\n", // newline
+      "\\f"  -> "\f", // form feed
+      "\\r"  -> "\r", // carriage return
+      "\\\"" -> "\"", // double quote
+      "\\'"  -> "'",  // single quote
+      "\\s"  -> " "   // Space character
+      // Add more escape sequences as needed
+    )
+
+    var result = input
+    escapeMap.foreach { case (escape, replacement) =>
+      result = result.replace(escape, replacement)
+    }
+
+    result
   }
 }

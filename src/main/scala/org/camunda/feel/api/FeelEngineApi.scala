@@ -197,7 +197,7 @@ class FeelEngineApi(engine: FeelEngine) {
     *   the result of the evaluation as [[EvaluationResult]]
     */
   def evaluateExpression(expression: String, context: Context): EvaluationResult =
-    engine.parseExpression(expression = StringContext.processEscapes(expression)) match {
+    engine.parseExpression(expression = expression) match {
       case Right(parsedExpression) =>
         evaluate(
           expression = parsedExpression,
