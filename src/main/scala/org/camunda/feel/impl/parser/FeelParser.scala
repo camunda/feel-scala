@@ -689,16 +689,17 @@ object FeelParser {
     }.getOrElse(ConstNull)
   }
 
+  // replace escaped character with the provided replacement
   private def translateEscapes(input: String): String = {
     val escapeMap = Map(
-      "\\b"  -> "\b", // backspace
-      "\\t"  -> "\t", // tab
-      "\\n"  -> "\n", // newline
-      "\\f"  -> "\f", // form feed
-      "\\r"  -> "\r", // carriage return
-      "\\\"" -> "\"", // double quote
-      "\\'"  -> "'",  // single quote
-      "\\s"  -> " "   // Space character
+      "\\b" -> "\b",
+      "\\t" -> "\t",
+      "\\n" -> "\n",
+      "\\f" -> "\f",
+      "\\r" -> "\r",
+      "\""  -> "\"",
+      "\\'" -> "'",
+      "\\s" -> " "
       // Add more escape sequences as needed
     )
 
