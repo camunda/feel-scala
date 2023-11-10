@@ -21,6 +21,8 @@ import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
+import scala.collection.immutable.Map
+
 /** @author
   *   Philipp Ossler
   */
@@ -78,10 +80,38 @@ class InterpreterStringExpressionTest
     evaluateExpression(""" "a" != null """) should returnResult(true)
   }
 
-  it should "return escaped characters" in {
+  it should "return not escaped characters" in {
 
     evaluateExpression(""" "Hello\nWorld" """) should returnResult("Hello\nWorld")
     evaluateExpression(" x ", Map("x" -> "Hello\nWorld")) should returnResult("Hello\nWorld")
+
+    evaluateExpression(""" "Hello\rWorld" """) should returnResult("Hello\rWorld")
+    evaluateExpression(" x ", Map("x" -> "Hello\rWorld")) should returnResult("Hello\rWorld")
+
+    evaluateExpression(""" "Hello\'World" """) should returnResult("Hello\'World")
+    evaluateExpression(" x ", Map("x" -> "Hello\'World")) should returnResult("Hello\'World")
+
+    evaluateExpression(""" "Hello\tWorld" """) should returnResult("Hello\tWorld")
+    evaluateExpression(" x ", Map("x" -> "Hello\tWorld")) should returnResult("Hello\tWorld")
   }
+
+  List(
+    " \' ",
+    " \\\" ",
+    " \\ ",
+    " \n ",
+    " \r ",
+    " \t ",
+    """ \u269D """,
+    """ \U101EF """
+  )
+    .foreach { notEscapeChar =>
+      it should s"contains a not escape sequence ($notEscapeChar)" in {
+
+        evaluateExpression(s""" "a $notEscapeChar b" """) should returnResult(
+          s"""a $notEscapeChar b"""
+        )
+      }
+    }
 
 }
