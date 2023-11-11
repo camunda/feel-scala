@@ -15,7 +15,7 @@
     "@docusaurus/core": "2.0.1",
     "@docusaurus/preset-classic": "2.0.1",
     "@mdx-js/react": "^1.6.21",
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "clsx": "^1.1.1",
     "dedent": "^0.7.0",
     "react": "^16.8.4",
