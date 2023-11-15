@@ -126,7 +126,7 @@ object FeelParser {
     parse(translateEscapes(expression), fullExpression(_))
 
   def parseUnaryTests(expression: String): Parsed[Exp] =
-    parse(expression, fullUnaryExpression(_))
+    parse(translateEscapes(expression), fullUnaryExpression(_))
 
   // --------------- entry parsers ---------------
 
@@ -703,11 +703,8 @@ object FeelParser {
       // Add more escape sequences as needed
     )
 
-    var result = input
-    escapeMap.foreach { case (escape, replacement) =>
-      result = result.replace(escape, replacement)
+    escapeMap.foldLeft(input) { case (result, (escape, replacement)) =>
+      result.replace(escape, replacement)
     }
-
-    result
   }
 }
