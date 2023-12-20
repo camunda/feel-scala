@@ -123,10 +123,10 @@ import scala.util.Try
 object FeelParser {
 
   def parseExpression(expression: String): Parsed[Exp] =
-    parse(translateEscapes(expression), fullExpression(_))
+    parse(expression, fullExpression(_))
 
   def parseUnaryTests(expression: String): Parsed[Exp] =
-    parse(translateEscapes(expression), fullUnaryExpression(_))
+    parse(expression, fullUnaryExpression(_))
 
   // --------------- entry parsers ---------------
 
@@ -391,7 +391,7 @@ object FeelParser {
   private def string[_: P]: P[Exp] =
     P(
       stringWithQuotes
-    ).map(ConstString)
+    ).map(translateEscapes).map(ConstString)
 
   private def number[_: P]: P[Exp] =
     P(
@@ -697,7 +697,7 @@ object FeelParser {
       "\\n" -> "\n",
       "\\f" -> "\f",
       "\\r" -> "\r",
-      "\""  -> "\"",
+      "\\\""  -> "\"",
       "\\'" -> "'",
       "\\s" -> " "
       // Add more escape sequences as needed

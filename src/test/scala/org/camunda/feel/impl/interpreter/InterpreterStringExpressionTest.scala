@@ -93,11 +93,13 @@ class InterpreterStringExpressionTest
 
     evaluateExpression(""" "Hello\tWorld" """) should returnResult("Hello\tWorld")
     evaluateExpression(" x ", Map("x" -> "Hello\tWorld")) should returnResult("Hello\tWorld")
+
+    evaluateExpression(""" "Hello\"World" """) should returnResult("Hello\"World")
+    evaluateExpression(" x ", Map("x" -> "Hello\"World")) should returnResult("Hello\"World")
   }
 
   List(
     " \' ",
-    " \\\" ",
     " \\ ",
     " \n ",
     " \r ",
