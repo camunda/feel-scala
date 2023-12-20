@@ -74,20 +74,37 @@ class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with Fee
     eval(""" "a" != null """) should be(ValBoolean(true))
   }
 
+  it should "return not escaped characters" in {
+
+    eval(""" "Hello\nWorld" """) should be (ValString("Hello\nWorld"))
+    eval(" x ", Map("x" -> "Hello\nWorld")) should be (ValString("Hello\nWorld"))
+
+    eval(""" "Hello\rWorld" """) should be (ValString("Hello\rWorld"))
+    eval(" x ", Map("x" -> "Hello\rWorld")) should be (ValString("Hello\rWorld"))
+
+    eval(""" "Hello\'World" """) should be (ValString("Hello\'World"))
+    eval(" x ", Map("x" -> "Hello\'World")) should be (ValString("Hello\'World"))
+
+    eval(""" "Hello\tWorld" """) should be (ValString("Hello\tWorld"))
+    eval(" x ", Map("x" -> "Hello\tWorld")) should be (ValString("Hello\tWorld"))
+  }
+
   List(
-    """ \' """,
-    """ \" """,
-    """ \\ """,
-    """ \n """,
-    """ \r """,
-    """ \t """,
+    " \' ",
+    " \\\" ",
+    " \\ ",
+    " \n ",
+    " \r ",
+    " \t ",
     """ \u269D """,
     """ \U101EF """
   )
-    .foreach { escapeChar =>
-      it should s"contains an escape sequence ($escapeChar)" in {
+    .foreach { notEscapeChar =>
+      it should s"contains a not escape sequence ($notEscapeChar)" in {
 
-        eval(s""" "a $escapeChar b" """) should be(ValString(s"""a $escapeChar b"""))
+        eval(s""" "a $notEscapeChar b" """) should be (ValString(
+          s"""a $notEscapeChar b"""
+        ))
       }
     }
 
