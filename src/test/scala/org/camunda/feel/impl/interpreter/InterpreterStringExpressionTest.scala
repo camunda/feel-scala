@@ -76,22 +76,24 @@ class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with Fee
 
   it should "return not escaped characters" in {
 
-    eval(""" "Hello\nWorld" """) should be (ValString("Hello\nWorld"))
-    eval(" x ", Map("x" -> "Hello\nWorld")) should be (ValString("Hello\nWorld"))
+    eval(""" "Hello\nWorld" """) should be(ValString("Hello\nWorld"))
+    eval(" x ", Map("x" -> "Hello\nWorld")) should be(ValString("Hello\nWorld"))
 
-    eval(""" "Hello\rWorld" """) should be (ValString("Hello\rWorld"))
-    eval(" x ", Map("x" -> "Hello\rWorld")) should be (ValString("Hello\rWorld"))
+    eval(""" "Hello\rWorld" """) should be(ValString("Hello\rWorld"))
+    eval(" x ", Map("x" -> "Hello\rWorld")) should be(ValString("Hello\rWorld"))
 
-    eval(""" "Hello\'World" """) should be (ValString("Hello\'World"))
-    eval(" x ", Map("x" -> "Hello\'World")) should be (ValString("Hello\'World"))
+    eval(""" "Hello\'World" """) should be(ValString("Hello\'World"))
+    eval(" x ", Map("x" -> "Hello\'World")) should be(ValString("Hello\'World"))
 
-    eval(""" "Hello\tWorld" """) should be (ValString("Hello\tWorld"))
-    eval(" x ", Map("x" -> "Hello\tWorld")) should be (ValString("Hello\tWorld"))
+    eval(""" "Hello\tWorld" """) should be(ValString("Hello\tWorld"))
+    eval(" x ", Map("x" -> "Hello\tWorld")) should be(ValString("Hello\tWorld"))
+
+    eval(""" "Hello\"World" """) should be(ValString("Hello\"World"))
+    eval(" x ", Map("x" -> "Hello\"World")) should be(ValString("Hello\"World"))
   }
 
   List(
     " \' ",
-    " \\\" ",
     " \\ ",
     " \n ",
     " \r ",
@@ -102,9 +104,11 @@ class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with Fee
     .foreach { notEscapeChar =>
       it should s"contains a not escape sequence ($notEscapeChar)" in {
 
-        eval(s""" "a $notEscapeChar b" """) should be (ValString(
-          s"""a $notEscapeChar b"""
-        ))
+        eval(s""" "a $notEscapeChar b" """) should be(
+          ValString(
+            s"""a $notEscapeChar b"""
+          )
+        )
       }
     }
 
