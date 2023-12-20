@@ -253,6 +253,7 @@ class BuiltinConversionFunctionsTest
       "2012-12-25T11:00:00+02:00"
     )
   }
+
   it should "convert zero-length days-time-duration" in {
     evaluateExpression(""" string(@"-PT0S") """) should returnResult("P0D")
     evaluateExpression(""" string(@"P0D") """) should returnResult("P0D")
@@ -261,6 +262,7 @@ class BuiltinConversionFunctionsTest
     evaluateExpression(""" string(@"PT0H0M0S") """) should returnResult("P0D")
     evaluateExpression(""" string(@"P0DT0H0M0S") """) should returnResult("P0D")
   }
+
   it should "convert negative days-time-duration" in {
 
     evaluateExpression(""" string(@"-PT1S") """) should returnResult("-PT1S")
@@ -268,6 +270,7 @@ class BuiltinConversionFunctionsTest
     evaluateExpression(""" string(@"-PT2M30S") """) should returnResult("-PT2M30S")
     evaluateExpression(""" string(@"-P1DT2H3M4S") """) should returnResult("-P1DT2H3M4S")
   }
+
   it should "convert days-time-duration" in {
 
     evaluateExpression(""" string(@"PT1H") """) should returnResult("PT1H")
@@ -296,6 +299,16 @@ class BuiltinConversionFunctionsTest
 
   it should "return null if the argument is null" in {
     evaluateExpression(""" string(null) """) should returnNull()
+  }
+
+  it should "convert a list" in {
+    evaluateExpression(" string([]) ") should returnResult("[]")
+    evaluateExpression(" string([1,2,3]) ") should returnResult("[1, 2, 3]")
+  }
+
+  it should "convert a context" in {
+    evaluateExpression(" string({}) ") should returnResult("{}")
+    evaluateExpression(" string({a:1,b:2}) ") should returnResult("{a:1, b:2}")
   }
 
   "A duration() function" should "convert day-time-String" in {
