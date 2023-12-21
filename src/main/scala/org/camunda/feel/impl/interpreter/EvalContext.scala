@@ -161,7 +161,7 @@ object EvalContext {
       case (StaticVariableProvider(thisVariables), StaticVariableProvider(otherVariables)) =>
         StaticVariableProvider(thisVariables ++ otherVariables)
       case (thisProvider, otherProvider)                                                   =>
-        CompositeVariableProvider(List(thisProvider, otherProvider))
+        CompositeVariableProvider(List(otherProvider, thisProvider))
     }
   }
 
@@ -181,7 +181,7 @@ object EvalContext {
         StaticFunctionProvider(allFunctions)
       }
       case (thisProvider, otherProvider)                                                   =>
-        CompositeFunctionProvider(List(thisProvider, otherProvider))
+        CompositeFunctionProvider(List(otherProvider, thisProvider))
     }
   }
 
