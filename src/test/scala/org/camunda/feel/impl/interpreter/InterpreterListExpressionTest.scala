@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -398,6 +399,38 @@ class InterpreterListExpressionTest
     evaluateExpression("xs[-1]", Map("xs" -> hugeList)) should returnResult(
       hugeList.last
     )
+  }
+
+  "A filter expression" should "access an item property if the context contains a variable with the same name" in {
+    evaluateExpression(
+      expression =
+        """sum({"loans" : [
+                           {"loanId" : "AAA001", "amount" : 10},
+                           {"loanId" : "AAA002", "amount" : 20},
+                           {"loanId" : "AAA001", "amount" : 50}
+                         ]}.loans[loanId = id].amount)""",
+      variables = Map("id" -> "AAA002", "loanId" -> "AAA002")
+    ) should returnResult(20)
+  }
+
+  it should "access an item property if the custom context contains a variable with the same name" in {
+    evaluateExpression(
+      expression =
+        """sum({"loans" : [
+                           {"loanId" : "AAA001", "amount" : 10},
+                           {"loanId" : "AAA002", "amount" : 20},
+                           {"loanId" : "AAA001", "amount" : 50}
+                         ]}.loans[loanId = id].amount)""",
+      context = new MyContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
+    ) should returnResult(20)
+  }
+
+  class MyContext(val vars: Map[String, Any]) extends CustomContext {
+    override def variableProvider: VariableProvider = new VariableProvider {
+      override def getVariable(name: String): Option[Any] = vars.get(name)
+
+      override def keys: Iterable[String] = vars.keys
+    }
   }
 
 }
