@@ -421,17 +421,8 @@ class InterpreterListExpressionTest
                            {"loanId" : "AAA002", "amount" : 20},
                            {"loanId" : "AAA001", "amount" : 50}
                          ]}.loans[loanId = id].amount)""",
-      context = new MyContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
+      context = new MyCustomContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
     ) should returnResult(20)
-  }
-
-
-  class MyContext(val vars: Map[String, Any]) extends CustomContext {
-    override def variableProvider: VariableProvider = new VariableProvider {
-      override def getVariable(name: String): Option[Any] = vars.get(name)
-
-      override def keys: Iterable[String] = vars.keys
-    }
   }
 
 }
