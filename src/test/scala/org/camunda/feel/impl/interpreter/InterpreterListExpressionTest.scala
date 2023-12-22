@@ -403,8 +403,7 @@ class InterpreterListExpressionTest
 
   it should "access an item property if the context contains a variable with the same name" in {
     evaluateExpression(
-      expression =
-        """sum({"loans" : [
+      expression = """sum({"loans" : [
                            {"loanId" : "AAA001", "amount" : 10},
                            {"loanId" : "AAA002", "amount" : 20},
                            {"loanId" : "AAA001", "amount" : 50}
@@ -415,8 +414,7 @@ class InterpreterListExpressionTest
 
   it should "access an item property if the custom context contains a variable with the same name" in {
     evaluateExpression(
-      expression =
-        """sum({"loans" : [
+      expression = """sum({"loans" : [
                            {"loanId" : "AAA001", "amount" : 10},
                            {"loanId" : "AAA002", "amount" : 20},
                            {"loanId" : "AAA001", "amount" : 50}
