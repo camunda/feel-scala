@@ -61,18 +61,10 @@ class InterpreterContextExpressionTest
   it should "access a previous entry if there is a variable with the same name (custom context)" in {
     evaluateExpression(
       expression = "{a:1, b:a+1}",
-      context = new MyContext(Map("a" -> 0))
+      context = new MyCustomContext(Map("a" -> 0))
     ) should returnResult(
       Map("a" -> 1, "b" -> 2)
     )
-  }
-
-  class MyContext(val vars: Map[String, Any]) extends CustomContext {
-    override def variableProvider: VariableProvider = new VariableProvider {
-      override def getVariable(name: String): Option[Any] = vars.get(name)
-
-      override def keys: Iterable[String] = vars.keys
-    }
   }
 
   it should "be compared with '='" in {
