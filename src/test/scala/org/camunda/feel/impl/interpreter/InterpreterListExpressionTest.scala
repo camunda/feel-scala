@@ -16,7 +16,6 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
@@ -112,8 +111,8 @@ class InterpreterListExpressionTest
     )
   }
 
-  it should "contain null if a variable doesn't exist" in {
-    evaluateExpression("[1, x]") should returnResult(List(1, null))
+  it should "fail if a variable doesn't exist" in {
+    evaluateExpression("[1, x]") should failWith("no variable found for name 'x'")
   }
 
   it should "be compared with '='" in {
@@ -150,11 +149,8 @@ class InterpreterListExpressionTest
     evaluateExpression("[1][1] = 1") should returnResult(true)
   }
 
-  it should "return null if compare to not a list" in {
-    evaluateExpression("[] = 1") should (returnNull() and reportFailure(
-      failureType = EvaluationFailureType.NOT_COMPARABLE,
-      failureMessage = "Can't compare '[]' with '1'"
-    ))
+  it should "fail if compare to not a list" in {
+    evaluateExpression("[] = 1") should failWith("expect List but found 'ValNumber(1)'")
   }
 
   "A for-expression" should "iterate over a range" in {
@@ -260,12 +256,8 @@ class InterpreterListExpressionTest
     evaluateExpression("[1,2,null,4][item = null]") should returnResult(List(null))
   }
 
-  it should "compare the item if the item is a missing variable" in {
-    // null is the only item for which the comparison returns true
-    evaluateExpression("[1,2,x,4][item = null]") should returnResult(List(null))
-
-    // missing variable becomes null, so same as direct null item
-    evaluateExpression("[1,2,x,4][item > 2]") should returnResult(List(4))
+  it should "fail if the item is a missing variable" in {
+    evaluateExpression("[1,2,x,4][item = null]") should failWith("no variable found for name 'x'")
   }
 
   it should "access an item by index" in {
@@ -396,9 +388,9 @@ class InterpreterListExpressionTest
     ) should returnResult(1)
   }
 
-  it should "ignore items if the filter doesn't return a boolean or a number" in {
-    evaluateExpression(""" [1,2,3,4]["not a valid filter"] """) should returnResult(List.empty)
-    evaluateExpression("[1,2,3,4][if item < 3 then true else null]") should returnResult(List(1, 2))
+  it should "fail if the filter doesn't return a boolean or a number" in {
+    evaluateExpression(""" [1,2,3,4]["not a valid filter"] """) should
+      failWith("Expected boolean filter or number but found 'ValString(not a valid filter)'")
   }
 
   it should "access an item property if the context contains a variable with the same name" in {

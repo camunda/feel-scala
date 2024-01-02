@@ -16,8 +16,6 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.api.EvaluationFailureType
-import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -97,13 +95,8 @@ class InterpreterContextExpressionTest
     evaluateExpression("{x:1}.x = 1") should returnResult(true)
   }
 
-  it should "return null if compare to not a context" in {
-    evaluateExpression("{} = 1") should (
-      returnNull() and reportFailure(
-        failureType = EvaluationFailureType.NOT_COMPARABLE,
-        failureMessage = "Can't compare '{}' with '1'"
-      )
-    )
+  it should "fail if compare to not a context" in {
+    evaluateExpression("{} = 1") should failWith("expect Context but found 'ValNumber(1)'")
   }
 
   it should "fail when special symbols violate context syntax" in {
@@ -141,61 +134,27 @@ class InterpreterContextExpressionTest
     )
   }
 
-  it should "return null if the context is empty" in {
-    evaluateExpression("{}.x") should (
-      returnNull() and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'x'. The context is empty"
-        )
-    )
+  it should "fail if the context is empty" in {
+    evaluateExpression("{}.x") should failWith("context contains no entry with key 'x'")
   }
 
-  it should "return null if no entry exists with the key" in {
-    evaluateExpression("{x:1, y:2}.z") should (
-      returnNull() and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'z'. Available keys: 'x', 'y'"
-        )
-    )
+  it should "fail if no entry exists with the key" in {
+    evaluateExpression("{x:1, y:2}.z") should failWith("context contains no entry with key 'z'")
   }
 
-  it should "return null if the context is null" in {
+  it should "return fail if the context is null" in {
     evaluateExpression(
       expression = "a.b",
       variables = Map("a" -> null)
-    ) should (
-      returnNull() and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. The context is null"
-        )
-    )
+    ) should failWith("No property found with name 'b' of value 'ValNull'")
   }
 
-  it should "return null if the chained context is null" in {
-    evaluateExpression("{a:1}.b.c") should (
-      returnNull() and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: 'a'"
-        ) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. The context is null"
-        )
-    )
+  it should "fail if the chained context is null" in {
+    evaluateExpression("{a:1}.b.c") should failWith("context contains no entry with key 'b'")
   }
 
-  it should "return null if the context is empty (inside a context)" in {
-    evaluateExpression("{x:1, y:{}.z}") should (
-      returnResult(Map("x" -> 1, "y" -> null)) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'z'. The context is empty"
-        )
-    )
+  it should "fail if the context is empty (inside a context)" in {
+    evaluateExpression("{x:1, y:{}.z}") should failWith("context contains no entry with key 'z'")
   }
 
   it should "return the value of a key with whitespaces" in {
@@ -238,36 +197,6 @@ class InterpreterContextExpressionTest
     ) should returnResult(List(1, 2))
   }
 
-  it should "contain null if a context doesn't have the given key" in {
-    evaluateExpression("[ {a:1}, {b:2} ].a") should (
-      returnResult(List(1, null)) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'a'. Available keys: 'b'"
-        )
-    )
-
-    evaluateExpression("[ {a:1}, {b:2} ].b") should (
-      returnResult(List(null, 2)) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'b'. Available keys: 'a'"
-        )
-    )
-
-    evaluateExpression("[ {a:1}, {b:2} ].c") should (
-      returnResult(List(null, null)) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: 'a'"
-        ) and
-        reportFailure(
-          failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = "No context entry found with key 'c'. Available keys: 'b'"
-        )
-    )
-  }
-
   "A context filter" should "access a context entry by key" in {
     evaluateExpression("[ {a:1, b:2}, {a:3, b:4} ][a > 2]") should returnResult(
       List(Map("a" -> 3, "b" -> 4))
@@ -288,10 +217,8 @@ class InterpreterContextExpressionTest
     evaluateExpression("[ {a:1, b:2}, {a:3, b:4} ].a[1]") should returnResult(1)
   }
 
-  it should "not contain an entry if it doesn't have the given key" in {
-    evaluateExpression("[{x: 1, y: 2}, {x: 3}][y > 1]") should returnResult(
-      List(Map("x" -> 1, "y" -> 2))
-    )
+  it should "fail if it doesn't have the given key" in {
+    evaluateExpression("[{x: 1, y: 2}, {x: 3}][y > 1]") should failWith("no variable found for name 'y'")
   }
 
   it should "not contain an entry if it the value is null" in {
