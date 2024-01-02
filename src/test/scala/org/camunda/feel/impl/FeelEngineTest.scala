@@ -81,7 +81,7 @@ trait FeelEngineTest {
       case Right(result: ValFunction) => result
       case Right(result)              =>
         throw new AssertionError(s"Expected to return a function but was '$result'")
-      case Left(failure)                 =>
+      case Left(failure)              =>
         throw new AssertionError(
           s"Expected to return a function but failed with '${failure.message}'"
         )

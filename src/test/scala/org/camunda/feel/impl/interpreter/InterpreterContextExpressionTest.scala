@@ -218,7 +218,9 @@ class InterpreterContextExpressionTest
   }
 
   it should "fail if it doesn't have the given key" in {
-    evaluateExpression("[{x: 1, y: 2}, {x: 3}][y > 1]") should failWith("no variable found for name 'y'")
+    evaluateExpression("[{x: 1, y: 2}, {x: 3}][y > 1]") should failWith(
+      "no variable found for name 'y'"
+    )
   }
 
   it should "not contain an entry if it the value is null" in {

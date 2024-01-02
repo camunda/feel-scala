@@ -41,7 +41,7 @@ trait EvaluationResultMatchers {
             s"the evaluation didn't returned '$expectedResult' but '$evaluationResult'",
             s"The evaluation returned '$evaluationResult' as expected"
           )
-        case Left(failure)    =>
+        case Left(failure) =>
           MatchResult(
             false,
             s"the evaluation didn't returned '$expectedResult' but failed with '${failure.message}'",
@@ -61,7 +61,7 @@ trait EvaluationResultMatchers {
             s"the evaluation didn't fail with '$expectedFailureMessage' but returned '$result'",
             s"the evaluation didn't fail with '$expectedFailureMessage' but returned '$result'"
           )
-        case Left(failure)    =>
+        case Left(failure) =>
           MatchResult(
             failure.message.contains(expectedFailureMessage),
             s"the evaluation failure message didn't contain '$expectedFailureMessage' but was '${failure.message}'",
