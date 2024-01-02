@@ -26,7 +26,7 @@ jobs:
         with:
           # Required
           # Token to authenticate requests to GitHub
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BACKPORT_ACTION_PAT }}
 
           # Required
           # Working directory for the backport action
@@ -47,3 +47,4 @@ jobs:
             Backport of #${pull_number} to `${target_branch}`.
             
             relates to ${issue_refs}
+            original author: @${pull_author}
