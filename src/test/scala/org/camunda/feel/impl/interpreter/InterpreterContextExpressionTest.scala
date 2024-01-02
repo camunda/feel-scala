@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -45,6 +46,24 @@ class InterpreterContextExpressionTest
   it should "not override variables of nested context" in {
     evaluateExpression("{ a:1, b:{ a:2, c:a+3 } }") should returnResult(
       Map("a" -> 1, "b" -> Map("a" -> 2, "c" -> 5))
+    )
+  }
+
+  it should "access a previous entry if there is a variable with the same name (static context)" in {
+    evaluateExpression(
+      expression = "{a:1, b:a+1}",
+      variables = Map("a" -> 0)
+    ) should returnResult(
+      Map("a" -> 1, "b" -> 2)
+    )
+  }
+
+  it should "access a previous entry if there is a variable with the same name (custom context)" in {
+    evaluateExpression(
+      expression = "{a:1, b:a+1}",
+      context = new MyCustomContext(Map("a" -> 0))
+    ) should returnResult(
+      Map("a" -> 1, "b" -> 2)
     )
   }
 

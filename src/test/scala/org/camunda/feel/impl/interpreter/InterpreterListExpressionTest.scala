@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -109,174 +110,6 @@ class InterpreterListExpressionTest
     evaluateExpression("for x in 1..3 return x") should returnResult(
       List(1, 2, 3)
     )
-  }
-
-  it should "be filtered via comparison" in {
-    evaluateExpression("[1,2,3,4][item > 2]") should returnResult(
-      List(3, 4)
-    )
-
-    evaluateExpression(
-      expression = "xs [item > 2]",
-      variables = Map("xs" -> List(1, 2, 3, 4))
-    ) should returnResult(List(3, 4))
-  }
-
-  it should "be filtered via comparison with null" in {
-    // items that are not comparable to null are ignored
-    evaluateExpression("[1,2,3,4][item > null]") should returnResult(List.empty)
-
-    // items that are not comparable to null are ignored
-    evaluateExpression("[1,2,3,4][item < null]") should returnResult(List.empty)
-  }
-
-  it should "be filtered via comparison with null elements" in {
-    // null is not comparable to 2, so it's ignored
-    evaluateExpression("[1,2,null,4][item > 2]") should returnResult(List(4))
-
-    // null is the only item for which the comparison returns true
-    evaluateExpression("[1,2,null,4][item = null]") should returnResult(List(null))
-  }
-
-  it should "be filtered via comparison with missing variable" in {
-    // null is the only item for which the comparison returns true
-    evaluateExpression("[1,2,x,4][item = null]") should returnResult(List(null))
-
-    // missing variable becomes null, so same as direct null item
-    evaluateExpression("[1,2,x,4][item > 2]") should returnResult(List(4))
-  }
-
-  it should "be filtered via index" in {
-    evaluateExpression("[1,2,3,4][1]") should returnResult(1)
-    evaluateExpression("[1,2,3,4][2]") should returnResult(2)
-
-    evaluateExpression("[1,2,3,4][-1]") should returnResult(4)
-    evaluateExpression("[1,2,3,4][-2]") should returnResult(3)
-
-    evaluateExpression("[1,2,3,4][5]") should returnNull()
-    evaluateExpression("[1,2,3,4][-5]") should returnNull()
-
-    evaluateExpression("[1,2,3,4][i]", Map("i" -> 2)) should returnResult(2)
-    evaluateExpression("[1,2,3,4][i]", Map("i" -> -2)) should returnResult(3)
-  }
-
-  it should "be filtered via boolean expression" in {
-    evaluateExpression("[1,2,3,4][odd(item)]") should returnResult(List(1, 3))
-
-    evaluateExpression("[1,2,3,4][even(item)]") should returnResult(List(2, 4))
-  }
-
-  it should "be filtered via numeric function" in {
-    evaluateExpression("[1,2,3,4][abs(1)]") should returnResult(1)
-
-    evaluateExpression("[1,2,3,4][modulo(2,4)]") should returnResult(2)
-  }
-
-  it should "be filtered via custom boolean function" in {
-    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
-
-    val result = evaluateExpression(
-      expression = "[1,2,3,4][f(item)]",
-      variables = Map(),
-      functions = Map(
-        "f" -> ValFunction(
-          params = List("x"),
-          invoke = { case List(x) =>
-            functionInvocations += x
-            ValBoolean(x == ValNumber(3))
-          }
-        )
-      )
-    )
-
-    result should returnResult(List(3))
-
-    functionInvocations should be(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4)))
-  }
-
-  it should "be filtered via custom numeric function" in {
-    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
-
-    val result = evaluateExpression(
-      expression = "[1,2,3,4][f(item)]",
-      variables = Map(),
-      functions = Map(
-        "f" -> ValFunction(
-          params = List("x"),
-          invoke = { case List(x) =>
-            functionInvocations += x
-            ValNumber(3)
-          }
-        )
-      )
-    )
-
-    result should returnResult(3)
-
-    functionInvocations should be(List(ValNumber(1)))
-  }
-
-  it should "be filtered multiple times (from literal)" in {
-    evaluateExpression("[[1]][1][1]") should returnResult(1)
-    evaluateExpression("[[[1]]][1][1][1]") should returnResult(1)
-    evaluateExpression("[[[[1]]]][1][1][1][1]") should returnResult(1)
-  }
-
-  it should "be filtered multiple times (from variable)" in {
-    val listOfLists = List(List(1))
-
-    evaluateExpression("xs[1][1]", Map("xs" -> listOfLists)) should returnResult(1)
-    evaluateExpression("xs[1][1][1]", Map("xs" -> List(listOfLists))) should returnResult(1)
-    evaluateExpression("xs[1][1][1][1]", Map("xs" -> List(List(listOfLists)))) should returnResult(
-      1
-    )
-  }
-
-  it should "be filtered multiple times (from function invocation)" in {
-    evaluateExpression("append([], [1])[1][1]") should returnResult(1)
-    evaluateExpression("append([], [[1]])[1][1][1]") should returnResult(1)
-    evaluateExpression("append([], [[[1]]])[1][1][1][1]") should returnResult(1)
-  }
-
-  it should "be filtered multiple times (from path)" in {
-    val listOfLists = List(List(1))
-
-    evaluateExpression("x.y[1][1]", Map("x" -> Map("y" -> listOfLists))) should returnResult(1)
-    evaluateExpression(
-      "x.y[1][1][1]",
-      Map("x" -> Map("y" -> List(listOfLists)))
-    ) should returnResult(1)
-    evaluateExpression(
-      "x.y[1][1][1][1]",
-      Map("x" -> Map("y" -> List(List(listOfLists))))
-    ) should returnResult(1)
-  }
-
-  it should "be filtered multiple times (from context projection)" in {
-    evaluateExpression("{x:[[1]]}.x[1][1]") should returnResult(1)
-    evaluateExpression("{x:[[[1]]]}.x[1][1][1]") should returnResult(1)
-    evaluateExpression("{x:[[[[1]]]]}.x[1][1][1][1]") should returnResult(1)
-  }
-
-  it should "be filtered multiple times (in a context)" in {
-    val listOfLists = List(List(1))
-
-    evaluateExpression("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should returnResult(
-      1
-    )
-    evaluateExpression(
-      "{z: x.y[1][1][1]}.z",
-      Map("x" -> Map("y" -> List(listOfLists)))
-    ) should returnResult(1)
-    evaluateExpression(
-      "{z: x.y[1][1][1][1]}.z",
-      Map("x" -> Map("y" -> List(List(listOfLists))))
-    ) should returnResult(1)
-  }
-
-  it should "be filtered if the filter doesn't always return a boolean or a number" in {
-    evaluateExpression(""" [1,2,3,4]["not a valid filter"] """) should returnResult(List.empty)
-    evaluateExpression("[1,2,3,4][if item < 3 then true else null]") should returnResult(List(1, 2))
   }
 
   it should "contain null if a variable doesn't exist" in {
@@ -398,6 +231,196 @@ class InterpreterListExpressionTest
     evaluateExpression("xs[-1]", Map("xs" -> hugeList)) should returnResult(
       hugeList.last
     )
+  }
+
+  "A filter expression" should "access the item" in {
+    evaluateExpression("[1,2,3,4][item > 2]") should returnResult(
+      List(3, 4)
+    )
+
+    evaluateExpression(
+      expression = "xs [item > 2]",
+      variables = Map("xs" -> List(1, 2, 3, 4))
+    ) should returnResult(List(3, 4))
+  }
+
+  it should "compare the item with null" in {
+    // items that are not comparable to null are ignored
+    evaluateExpression("[1,2,3,4][item > null]") should returnResult(List.empty)
+
+    // items that are not comparable to null are ignored
+    evaluateExpression("[1,2,3,4][item < null]") should returnResult(List.empty)
+  }
+
+  it should "compare the item if the item is null" in {
+    // null is not comparable to 2, so it's ignored
+    evaluateExpression("[1,2,null,4][item > 2]") should returnResult(List(4))
+
+    // null is the only item for which the comparison returns true
+    evaluateExpression("[1,2,null,4][item = null]") should returnResult(List(null))
+  }
+
+  it should "compare the item if the item is a missing variable" in {
+    // null is the only item for which the comparison returns true
+    evaluateExpression("[1,2,x,4][item = null]") should returnResult(List(null))
+
+    // missing variable becomes null, so same as direct null item
+    evaluateExpression("[1,2,x,4][item > 2]") should returnResult(List(4))
+  }
+
+  it should "access an item by index" in {
+    evaluateExpression("[1,2,3,4][1]") should returnResult(1)
+    evaluateExpression("[1,2,3,4][2]") should returnResult(2)
+
+    evaluateExpression("[1,2,3,4][-1]") should returnResult(4)
+    evaluateExpression("[1,2,3,4][-2]") should returnResult(3)
+
+    evaluateExpression("[1,2,3,4][5]") should returnNull()
+    evaluateExpression("[1,2,3,4][-5]") should returnNull()
+
+    evaluateExpression("[1,2,3,4][i]", Map("i" -> 2)) should returnResult(2)
+    evaluateExpression("[1,2,3,4][i]", Map("i" -> -2)) should returnResult(3)
+  }
+
+  it should "compare the item with a boolean expression" in {
+    evaluateExpression("[1,2,3,4][odd(item)]") should returnResult(List(1, 3))
+
+    evaluateExpression("[1,2,3,4][even(item)]") should returnResult(List(2, 4))
+  }
+
+  it should "access an item by a numeric function" in {
+    evaluateExpression("[1,2,3,4][abs(1)]") should returnResult(1)
+
+    evaluateExpression("[1,2,3,4][modulo(2,4)]") should returnResult(2)
+  }
+
+  it should "compare the item with a custom boolean function" in {
+    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
+
+    val result = evaluateExpression(
+      expression = "[1,2,3,4][f(item)]",
+      variables = Map(),
+      functions = Map(
+        "f" -> ValFunction(
+          params = List("x"),
+          invoke = { case List(x) =>
+            functionInvocations += x
+            ValBoolean(x == ValNumber(3))
+          }
+        )
+      )
+    )
+
+    result should returnResult(List(3))
+
+    functionInvocations should be(List(ValNumber(1), ValNumber(2), ValNumber(3), ValNumber(4)))
+  }
+
+  it should "access the item with a custom numeric function" in {
+    val functionInvocations: ListBuffer[Val] = ListBuffer.empty
+
+    val result = evaluateExpression(
+      expression = "[1,2,3,4][f(item)]",
+      variables = Map(),
+      functions = Map(
+        "f" -> ValFunction(
+          params = List("x"),
+          invoke = { case List(x) =>
+            functionInvocations += x
+            ValNumber(3)
+          }
+        )
+      )
+    )
+
+    result should returnResult(3)
+
+    functionInvocations should be(List(ValNumber(1)))
+  }
+
+  it should "access a nested item by index (from literal)" in {
+    evaluateExpression("[[1]][1][1]") should returnResult(1)
+    evaluateExpression("[[[1]]][1][1][1]") should returnResult(1)
+    evaluateExpression("[[[[1]]]][1][1][1][1]") should returnResult(1)
+  }
+
+  it should "access a nested item by index (from variable)" in {
+    val listOfLists = List(List(1))
+
+    evaluateExpression("xs[1][1]", Map("xs" -> listOfLists)) should returnResult(1)
+    evaluateExpression("xs[1][1][1]", Map("xs" -> List(listOfLists))) should returnResult(1)
+    evaluateExpression("xs[1][1][1][1]", Map("xs" -> List(List(listOfLists)))) should returnResult(
+      1
+    )
+  }
+
+  it should "access a nested item by index (from function invocation)" in {
+    evaluateExpression("append([], [1])[1][1]") should returnResult(1)
+    evaluateExpression("append([], [[1]])[1][1][1]") should returnResult(1)
+    evaluateExpression("append([], [[[1]]])[1][1][1][1]") should returnResult(1)
+  }
+
+  it should "access a nested item by index (from path)" in {
+    val listOfLists = List(List(1))
+
+    evaluateExpression("x.y[1][1]", Map("x" -> Map("y" -> listOfLists))) should returnResult(1)
+    evaluateExpression(
+      "x.y[1][1][1]",
+      Map("x" -> Map("y" -> List(listOfLists)))
+    ) should returnResult(1)
+    evaluateExpression(
+      "x.y[1][1][1][1]",
+      Map("x" -> Map("y" -> List(List(listOfLists))))
+    ) should returnResult(1)
+  }
+
+  it should "access a nested item by index (from context projection)" in {
+    evaluateExpression("{x:[[1]]}.x[1][1]") should returnResult(1)
+    evaluateExpression("{x:[[[1]]]}.x[1][1][1]") should returnResult(1)
+    evaluateExpression("{x:[[[[1]]]]}.x[1][1][1][1]") should returnResult(1)
+  }
+
+  it should "access a nested item by index (in a context)" in {
+    val listOfLists = List(List(1))
+
+    evaluateExpression("{z: x.y[1][1]}.z", Map("x" -> Map("y" -> listOfLists))) should returnResult(
+      1
+    )
+    evaluateExpression(
+      "{z: x.y[1][1][1]}.z",
+      Map("x" -> Map("y" -> List(listOfLists)))
+    ) should returnResult(1)
+    evaluateExpression(
+      "{z: x.y[1][1][1][1]}.z",
+      Map("x" -> Map("y" -> List(List(listOfLists))))
+    ) should returnResult(1)
+  }
+
+  it should "ignore items if the filter doesn't return a boolean or a number" in {
+    evaluateExpression(""" [1,2,3,4]["not a valid filter"] """) should returnResult(List.empty)
+    evaluateExpression("[1,2,3,4][if item < 3 then true else null]") should returnResult(List(1, 2))
+  }
+
+  it should "access an item property if the context contains a variable with the same name" in {
+    evaluateExpression(
+      expression = """sum({"loans" : [
+                           {"loanId" : "AAA001", "amount" : 10},
+                           {"loanId" : "AAA002", "amount" : 20},
+                           {"loanId" : "AAA001", "amount" : 50}
+                         ]}.loans[loanId = id].amount)""",
+      variables = Map("id" -> "AAA002", "loanId" -> "AAA002")
+    ) should returnResult(20)
+  }
+
+  it should "access an item property if the custom context contains a variable with the same name" in {
+    evaluateExpression(
+      expression = """sum({"loans" : [
+                           {"loanId" : "AAA001", "amount" : 10},
+                           {"loanId" : "AAA002", "amount" : 20},
+                           {"loanId" : "AAA001", "amount" : 50}
+                         ]}.loans[loanId = id].amount)""",
+      context = new MyCustomContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
+    ) should returnResult(20)
   }
 
 }
