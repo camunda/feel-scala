@@ -87,7 +87,7 @@ public class CustomJavaFunctionProvider extends JavaFunctionProvider
 
 ## Register the Function
 
-Depending how the FEEL engine is used, the function provider can be passed directly on creation, or is loaded via Java ServiceLoader mechanism. 
+Depending how the FEEL engine is used, the function provider can be passed directly on creation, or is loaded via Java ServiceLoader mechanism (by using the `SpiServiceLoader.loadFunctionProvider()` as function provider). 
 
 In the second case, create a new file `org.camunda.feel.context.CustomFunctionProvider` in the folder `META-INF/services/`. It must contain all function providers by their full qualified name.
 
