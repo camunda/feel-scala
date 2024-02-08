@@ -20,7 +20,10 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel._
+import org.camunda.feel.api.{FeelEngineApi, FeelEngineBuilder}
+import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
+import org.camunda.feel.valuemapper.CustomValueMapper
 
 import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, OffsetTime, Period, ZonedDateTime}
 import scala.math.BigDecimal.double2bigDecimal
@@ -311,6 +314,34 @@ class BuiltinConversionFunctionsTest
     evaluateExpression(" string({a:1,b:2}) ") should returnResult("{a:1, b:2}")
   }
 
+  case class CustomValue(value: Int)
+
+  class MyCustomValueMapper extends CustomValueMapper {
+    def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
+      case CustomValue(value) => Some(ValNumber(value))
+      case _              => None
+    }
+
+    override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] = None
+  }
+
+  it should "convert a custom context" in {
+
+    val engine = FeelEngineBuilder()
+      .withCustomValueMapper(new MyCustomValueMapper())
+      .build()
+
+    engine.evaluateExpression(
+      expression =  " string(context) ",
+      variables = Map("context" -> Map("a" -> CustomValue(1)))
+    ) should returnResult("{a:1}") // --> works
+
+    engine.evaluateExpression(
+      expression =  " string(context) ",
+      variables = Map("context" -> ValContext(new MyCustomContext(Map("a" -> CustomValue(1)))))
+    ) should returnResult("{a:1}") // --> fails with "the evaluation didn't returned '{a:1}' but '{a:CustomValue(1)}'"
+  }
+
   "A duration() function" should "convert day-time-String" in {
 
     evaluateExpression(""" duration(x) """, Map("x" -> "P2DT20H14M")) should returnResult(
@@ -379,5 +410,4 @@ class BuiltinConversionFunctionsTest
       """ years and months duration( date and time("2011-12-22T10:00:00+01:00"), date and time("2013-08-24T10:00:00+01:00") ) """
     ) should returnResult(Period.parse("P1Y8M"))
   }
-
 }

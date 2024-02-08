@@ -17,50 +17,16 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValBoolean,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
-import org.camunda.feel.{
-  Date,
-  YearMonthDuration,
-  dateFormatter,
-  dateTimeFormatter,
-  isDayTimeDuration,
-  isLocalDateTime,
-  isOffsetDateTime,
-  isOffsetTime,
-  isValidDate,
-  isYearMonthDuration,
-  localDateTimeFormatter,
-  localTimeFormatter,
-  stringToDate,
-  stringToDateTime,
-  stringToDayTimeDuration,
-  stringToLocalDateTime,
-  stringToLocalTime,
-  stringToNumber,
-  stringToYearMonthDuration
-}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValContext, ValDate, ValDateTime, ValDayTimeDuration, ValError, ValLocalDateTime, ValLocalTime, ValNull, ValNumber, ValString, ValTime, ValYearMonthDuration, ZonedTime}
+import org.camunda.feel.valuemapper.ValueMapper
+import org.camunda.feel.{Date, YearMonthDuration, dateFormatter, dateTimeFormatter, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, localDateTimeFormatter, localTimeFormatter, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
 
 import java.math.BigDecimal
 import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
 import java.util.regex.Pattern
 import scala.util.Try
 
-object ConversionBuiltinFunctions {
+class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
 
   def functions = Map(
     "date"                      -> List(dateFunction, dateFunction3),
@@ -234,6 +200,9 @@ object ConversionBuiltinFunctions {
     invoke = {
       case List(ValNull)         => ValNull
       case List(from: ValString) => from
+      case List(ValContext(context)) => ValString(context.variableProvider.getVariables
+        .map { case (key, value) => s"$key:${valueMapper.toVal(value)}" }
+        .mkString(start = "{", sep = ", ", end = "}"))
       case List(from)            => ValString(from.toString)
     }
   )
