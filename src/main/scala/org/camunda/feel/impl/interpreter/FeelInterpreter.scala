@@ -39,7 +39,11 @@ import java.time.{Duration, Period}
   */
 class FeelInterpreter {
 
-  def eval(expression: Exp)(implicit context: EvalContext): Val =
+  def eval(expression: Exp)(implicit context: EvalContext): Val = {
+    if (Thread.interrupted()) {
+      throw new InterruptedException()
+    }
+
     expression match {
 
       // literals
@@ -269,6 +273,7 @@ class FeelInterpreter {
       case exp => error(EvaluationFailureType.UNKNOWN, s"Unsupported expression '$exp'")
 
     }
+  }
 
   private def mapEither[T, R](
       it: Iterable[T],
