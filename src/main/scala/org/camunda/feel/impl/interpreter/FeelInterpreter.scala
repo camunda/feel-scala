@@ -40,6 +40,7 @@ import java.time.{Duration, Period}
 class FeelInterpreter {
 
   def eval(expression: Exp)(implicit context: EvalContext): Val = {
+    // Check if the current thread was interrupted, otherwise long-running evaluations can not be interrupted and fully block the thread
     if (Thread.interrupted()) {
       throw new InterruptedException()
     }
