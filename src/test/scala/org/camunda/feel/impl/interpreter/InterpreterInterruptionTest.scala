@@ -16,22 +16,17 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
+import org.camunda.feel.impl.FeelEngineTest
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import java.lang.management.{ManagementFactory, ThreadInfo}
-import java.util.concurrent.{Executors}
-import concurrent.{ExecutionContext}
+import java.util.concurrent.{Executors, TimeUnit}
+import concurrent.ExecutionContext
 
 /** @author
   *   Victor Mosin
   */
-class InterpreterInterruptionTest
-    extends AnyFlatSpec
-    with Matchers
-    with FeelEngineTest
-    with EvaluationResultMatchers {
+class InterpreterInterruptionTest extends AnyFlatSpec with Matchers with FeelEngineTest {
 
   protected implicit val context =
     ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
@@ -52,35 +47,10 @@ class InterpreterInterruptionTest
     }
 
     thread.start()
-    Thread.sleep(1000) // Let evaluation start
+    Thread.sleep(100) // Let evaluation start
     thread.interrupt()
-    countDownLatch.await()
+    val wasInterrupted = countDownLatch.await(1, TimeUnit.SECONDS)
 
-    assert(!threadDump.contains("FeelInterpreter"))
-  }
-
-  /** Dumps all threads to a string Adapted from
-    * https://crunchify.com/how-to-generate-java-thread-dump-programmatically/
-    */
-  private def threadDump: String = {
-    val dump                           = new StringBuilder
-    val threadMXBean                   = ManagementFactory.getThreadMXBean
-    val threadInfos: Array[ThreadInfo] =
-      threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds, 100)
-    for (threadInfo <- threadInfos) {
-      dump.append('"')
-      dump.append(threadInfo.getThreadName)
-      dump.append("\" ")
-      val state: Thread.State                          = threadInfo.getThreadState
-      dump.append("\n   java.lang.Thread.State: ")
-      dump.append(state)
-      val stackTraceElements: Array[StackTraceElement] = threadInfo.getStackTrace
-      for (stackTraceElement <- stackTraceElements) {
-        dump.append("\n        at ")
-        dump.append(stackTraceElement)
-      }
-      dump.append("\n\n")
-    }
-    dump.toString
+    wasInterrupted should be(true)
   }
 }
