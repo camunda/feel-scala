@@ -33,14 +33,14 @@ const LiveFeelUnaryTests = ({
   const contextErrorPattern = /^.+at position (?<position>\d+)$/gm;
 
   const parseContext = () => {
-    if (!feelContext) {
+    if (!feelContext  || context.trim().length === 0) {
       return {};
     }
     return JSON.parse(context);
   };
 
   const parseInputValue = () => {
-    if (!feelInputValue) {
+    if (!feelInputValue || inputValue.trim().length === 0) {
       return null;
     }
     return JSON.parse(inputValue);
