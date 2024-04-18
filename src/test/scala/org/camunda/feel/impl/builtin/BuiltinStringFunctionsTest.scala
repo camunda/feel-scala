@@ -150,4 +150,17 @@ class BuiltinStringFunctionsTest extends AnyFlatSpec with Matchers with FeelInte
   it should "return null if the pattern is invalid" in {
     eval(""" extract("abc", "[a-z") """) should be(ValNull)
   }
+
+  "A trim() function" should "return the eliminates leading and trailing spaces of a String" in {
+
+    eval(""" trim("hello world") """) should be(ValString("hello world"))
+
+    eval(""" trim("hello world  ") """) should be(ValString("hello world"))
+
+    eval(""" trim("  hello world") """) should be(ValString("hello world"))
+
+    eval(""" trim("  hello world  ") """) should be(ValString("hello world"))
+
+    eval(""" trim(" hello   world ") """) should be(ValString("hello   world"))
+  }
 }

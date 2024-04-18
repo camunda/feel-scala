@@ -37,7 +37,8 @@ object StringBuiltinFunctions {
     "ends with"        -> List(endsWithFunction),
     "matches"          -> List(matchesFunction, matchesFunction3),
     "split"            -> List(splitFunction),
-    "extract"          -> List(extractFunction)
+    "extract"          -> List(extractFunction),
+    "trim"             -> List(trimFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -254,4 +255,11 @@ object StringBuiltinFunctions {
     }
   )
 
+  private def trimFunction =
+    builtinFunction(
+      params = List("string"),
+      invoke = { case List(ValString(string)) =>
+        ValString(string.trim)
+      }
+    )
 }
