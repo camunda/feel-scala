@@ -24,40 +24,58 @@ import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 
 /** Builds a new instance of the FEEL engine. Use the setters to customize the engine.
   */
-case class FeelEngineBuilder private (
-    functionProvider: FunctionProvider = defaultFunctionProvider,
-    valueMapper: ValueMapper = FeelEngine.defaultValueMapper,
-    customValueMappers: List[CustomValueMapper] = List.empty,
-    clock: FeelEngineClock = FeelEngine.defaultClock,
-    configuration: Configuration = FeelEngine.defaultConfiguration
-) {
+case class FeelEngineBuilder() {
+
+  private var functionProvider: FunctionProvider          = defaultFunctionProvider
+  private var valueMapper: ValueMapper                    = FeelEngine.defaultValueMapper
+  private var customValueMappers: List[CustomValueMapper] = List.empty
+  private var clock: FeelEngineClock                      = FeelEngine.defaultClock
+  private var configuration: Configuration                = FeelEngine.defaultConfiguration
 
   /** Sets the given [[FunctionProvider]] for the engine.
     */
-  def withFunctionProvider(functionProvider: FunctionProvider): FeelEngineBuilder =
-    copy(functionProvider = functionProvider)
+  def withFunctionProvider(functionProvider: FunctionProvider): FeelEngineBuilder = {
+    this.functionProvider = functionProvider
+    this
+  }
 
   /** Sets the given [[CustomValueMapper]] for the engine. Can be called multiple times to chain the
     * value mappers.
     */
-  def withCustomValueMapper(customValueMapper: CustomValueMapper): FeelEngineBuilder =
-    copy(valueMapper = CompositeValueMapper(customValueMapper :: customValueMappers))
+  def withCustomValueMapper(customValueMapper: CustomValueMapper): FeelEngineBuilder = {
+    this.valueMapper = CompositeValueMapper(customValueMapper :: customValueMappers)
+    this
+  }
+
+  /** Sets the given [[CustomValueMapper]] for the engine. Can be called multiple times to chain the
+    * value mappers.
+    */
+  def withCustomValueMappers(customValueMappers: List[CustomValueMapper]): FeelEngineBuilder = {
+    this.customValueMappers = customValueMappers
+    this
+  }
 
   /** Sets the given [[ValueMapper]] for the engine. Overwrites the [[CustomValueMapper]]s that were
     * set before.
     */
-  def withValueMapper(valueMapper: ValueMapper): FeelEngineBuilder =
-    copy(valueMapper = valueMapper)
+  def withValueMapper(valueMapper: ValueMapper): FeelEngineBuilder = {
+    this.valueMapper = valueMapper
+    this
+  }
 
   /** Sets the given [[FeelEngineClock]] for the engine.
     */
-  def withClock(clock: FeelEngineClock): FeelEngineBuilder =
-    copy(clock = clock)
+  def withClock(clock: FeelEngineClock): FeelEngineBuilder = {
+    this.clock = clock
+    this
+  }
 
   /** Enables/disables external FEEL functions for the engine.
     */
-  def withEnabledExternalFunctions(enabled: Boolean): FeelEngineBuilder =
-    copy(configuration = configuration.copy(externalFunctionsEnabled = enabled))
+  def withEnabledExternalFunctions(enabled: Boolean): FeelEngineBuilder = {
+    configuration = configuration.copy(externalFunctionsEnabled = enabled)
+    this
+  }
 
   /** Creates a new engine with the given configuration.
     *
