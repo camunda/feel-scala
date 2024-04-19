@@ -21,6 +21,9 @@ import org.camunda.feel.FeelEngine.{Configuration, defaultFunctionProvider}
 import org.camunda.feel.context.FunctionProvider
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
+import scala.annotation.StaticAnnotation
+
+class javaStatic extends StaticAnnotation
 
 /** Builds a new instance of the FEEL engine. Use the setters to customize the engine.
   */
@@ -91,4 +94,10 @@ case class FeelEngineBuilder() {
     )
   )
 
+}
+
+object FeelEngineBuilder {
+
+  @javaStatic
+  def create(): FeelEngineBuilder = FeelEngineBuilder()
 }

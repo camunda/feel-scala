@@ -19,6 +19,6 @@ package org.camunda.feel.api;
 public class FeelEngineBuilderTest {
 
     public void build() {
-        FeelEngineApi engine = new FeelEngineBuilder().build();
+        FeelEngineApi engine = FeelEngineBuilder.create().build();
     }
 }
