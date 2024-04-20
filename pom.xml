@@ -18,6 +18,7 @@
     <scala.version>2.13.13</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.23.1</version.log4j>
+    <version.uuid>5.0.0</version.uuid>
 
     <plugin.version.shade>3.5.2</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
@@ -88,6 +89,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.uuid</groupId>
+      <artifactId>java-uuid-generator</artifactId>
+      <version>${version.uuid}</version>
     </dependency>
 
     <dependency>
