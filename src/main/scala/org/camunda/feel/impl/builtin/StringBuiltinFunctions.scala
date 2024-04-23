@@ -25,6 +25,8 @@ import scala.util.Try
 
 object StringBuiltinFunctions {
 
+  private lazy val generator = Generators.timeBasedGenerator(EthernetAddress.fromInterface())
+
   def functions = Map(
     "substring"        -> List(substringFunction, substringFunction3),
     "string length"    -> List(stringLengthFunction),
@@ -269,8 +271,7 @@ object StringBuiltinFunctions {
     builtinFunction(
       params = List(),
       invoke = { case List() =>
-        val uuid  = Generators.timeBasedGenerator.generate()
-        ValString(uuid.toString)
+        ValString(generator.generate.toString())
       }
     )
 }
