@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
+import com.fasterxml.uuid.{EthernetAddress, Generators}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{ValBoolean, ValError, ValList, ValNumber, ValString}
 
@@ -23,6 +24,8 @@ import java.util.regex.Pattern
 import scala.util.Try
 
 object StringBuiltinFunctions {
+
+  private lazy val generator = Generators.timeBasedGenerator(EthernetAddress.fromInterface())
 
   def functions = Map(
     "substring"        -> List(substringFunction, substringFunction3),
@@ -38,7 +41,8 @@ object StringBuiltinFunctions {
     "matches"          -> List(matchesFunction, matchesFunction3),
     "split"            -> List(splitFunction),
     "extract"          -> List(extractFunction),
-    "trim"             -> List(trimFunction)
+    "trim"             -> List(trimFunction),
+    "uuid"             -> List(uuidFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -260,6 +264,14 @@ object StringBuiltinFunctions {
       params = List("string"),
       invoke = { case List(ValString(string)) =>
         ValString(string.trim)
+      }
+    )
+
+  private def uuidFunction =
+    builtinFunction(
+      params = List(),
+      invoke = { case List() =>
+        ValString(generator.generate.toString())
       }
     )
 }

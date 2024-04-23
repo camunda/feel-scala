@@ -17,9 +17,9 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.FeelIntegrationTest
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.flatspec.AnyFlatSpec
 import org.camunda.feel.syntaxtree._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.math.BigDecimal.int2bigDecimal
 
@@ -162,5 +162,15 @@ class BuiltinStringFunctionsTest extends AnyFlatSpec with Matchers with FeelInte
     eval(""" trim("  hello world  ") """) should be(ValString("hello world"))
 
     eval(""" trim(" hello   world ") """) should be(ValString("hello   world"))
+  }
+
+  "A uuid() function" should "return a string" in {
+
+    eval(" uuid() ") shouldBe a[ValString]
+  }
+
+  it should "return a string of length 36" in {
+
+    eval(" string length(uuid()) ") should be(ValNumber(36))
   }
 }
