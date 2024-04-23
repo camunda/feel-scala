@@ -348,12 +348,12 @@
             <ignored>
               <className>org/camunda/feel/api/FeelEngineBuilder</className>
               <differenceType>7002</differenceType>
-              <method>public scala.Function1 curried()</method>
+              <method>scala.Function1 curried()</method>
             </ignored>
             <ignored>
               <className>org/camunda/feel/api/FeelEngineBuilder</className>
               <differenceType>7002</differenceType>
-              <method>public scala.Function1 tupled()</method>
+              <method>scala.Function1 tupled()</method>
             </ignored>
           </ignored>
         </configuration>
