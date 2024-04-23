@@ -215,20 +215,23 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     invoke = {
       case List(ValNull)         => ValNull
       case List(from: ValString) => from
-      case List(from)            => ValString(map(from))
+      case List(from)            => ValString(toString(from))
     }
   )
 
-  private def map(from: Val): String = {
+  private def toString(from: Val): String = {
     from match {
-      case ValNull             => ValNull.toString
       case ValContext(context) =>
         context.variableProvider.getVariables
-          .map { case (key, value) => s"$key:${map(valueMapper.toVal(value))}" }
+          .map { case (key, value) =>
+            val asVal    = valueMapper.toVal(value)
+            val asString = toString(asVal)
+            s"$key:$asString"
+          }
           .mkString(start = "{", sep = ", ", end = "}")
       case ValList(items)      =>
         items
-          .map(item => map(item))
+          .map(toString)
           .mkString(start = "[", sep = ", ", end = "]")
       case from                => from.toString
     }
