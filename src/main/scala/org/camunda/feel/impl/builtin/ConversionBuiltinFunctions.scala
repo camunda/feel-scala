@@ -17,35 +17,17 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValBoolean,
-  ValDate,
-  ValDateTime,
-  ValDayTimeDuration,
-  ValError,
-  ValLocalDateTime,
-  ValLocalTime,
-  ValNull,
-  ValNumber,
-  ValString,
-  ValTime,
-  ValYearMonthDuration,
-  ZonedTime
-}
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.ValueMapper
 import org.camunda.feel.{
   Date,
   YearMonthDuration,
-  dateFormatter,
-  dateTimeFormatter,
   isDayTimeDuration,
   isLocalDateTime,
   isOffsetDateTime,
   isOffsetTime,
   isValidDate,
   isYearMonthDuration,
-  localDateTimeFormatter,
-  localTimeFormatter,
   stringToDate,
   stringToDateTime,
   stringToDayTimeDuration,
@@ -56,11 +38,10 @@ import org.camunda.feel.{
 }
 
 import java.math.BigDecimal
-import java.time.{LocalDate, LocalTime, Period, ZoneId, ZoneOffset}
-import java.util.regex.Pattern
+import java.time._
 import scala.util.Try
 
-object ConversionBuiltinFunctions {
+class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
 
   def functions = Map(
     "date"                      -> List(dateFunction, dateFunction3),
@@ -234,9 +215,27 @@ object ConversionBuiltinFunctions {
     invoke = {
       case List(ValNull)         => ValNull
       case List(from: ValString) => from
-      case List(from)            => ValString(from.toString)
+      case List(from)            => ValString(toString(from))
     }
   )
+
+  private def toString(from: Val): String = {
+    from match {
+      case ValContext(context) =>
+        context.variableProvider.getVariables
+          .map { case (key, value) =>
+            val asVal    = valueMapper.toVal(value)
+            val asString = toString(asVal)
+            s"$key:$asString"
+          }
+          .mkString(start = "{", sep = ", ", end = "}")
+      case ValList(items)      =>
+        items
+          .map(toString)
+          .mkString(start = "[", sep = ", ", end = "]")
+      case from                => from.toString
+    }
+  }
 
   private def durationFunction =
     builtinFunction(

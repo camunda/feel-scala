@@ -39,7 +39,7 @@ class BuiltinFunctions(clock: FeelEngineClock, valueMapper: ValueMapper) extends
   override def functionNames: Iterable[String] = functions.keys
 
   val functions: Map[String, List[ValFunction]] =
-    ConversionBuiltinFunctions.functions ++
+    new ConversionBuiltinFunctions(valueMapper).functions ++
       BooleanBuiltinFunctions.functions ++
       StringBuiltinFunctions.functions ++
       ListBuiltinFunctions.functions ++

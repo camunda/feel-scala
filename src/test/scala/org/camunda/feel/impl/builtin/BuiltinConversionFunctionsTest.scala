@@ -16,14 +16,15 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.flatspec.AnyFlatSpec
+import org.camunda.feel.api.FeelEngineBuilder
+import org.camunda.feel.impl.interpreter.MyCustomContext
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
-import org.camunda.feel._
-import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
+import org.camunda.feel.valuemapper.CustomValueMapper
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, OffsetTime, Period, ZonedDateTime}
-import scala.math.BigDecimal.double2bigDecimal
+import java.time._
 import scala.math.BigDecimal.int2bigDecimal
 
 /** @author
@@ -309,6 +310,90 @@ class BuiltinConversionFunctionsTest
   it should "convert a context" in {
     evaluateExpression(" string({}) ") should returnResult("{}")
     evaluateExpression(" string({a:1,b:2}) ") should returnResult("{a:1, b:2}")
+  }
+
+  case class CustomValue(value: Int)
+
+  class MyCustomValueMapper extends CustomValueMapper {
+    def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
+      case CustomValue(value) => Some(ValNumber(value))
+      case _                  => None
+    }
+
+    override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] = None
+  }
+
+  it should "convert a custom context" in {
+
+    val engine = FeelEngineBuilder()
+      .withCustomValueMapper(new MyCustomValueMapper())
+      .build()
+
+    engine.evaluateExpression(
+      expression = " string(context) ",
+      variables = Map("context" -> Map("a" -> CustomValue(1)))
+    ) should returnResult("{a:1}")
+
+    engine.evaluateExpression(
+      expression = " string(context) ",
+      variables = Map("context" -> ValContext(new MyCustomContext(Map("a" -> CustomValue(1)))))
+    ) should returnResult(
+      "{a:1}"
+    )
+  }
+
+  it should "convert a list containing a custom context" in {
+
+    val engine = FeelEngineBuilder()
+      .withCustomValueMapper(new MyCustomValueMapper())
+      .build()
+
+    engine.evaluateExpression(
+      expression = " string(list) ",
+      variables = Map("list" -> List(Map("a" -> CustomValue(1)), CustomValue(2)))
+    ) should returnResult("[{a:1}, 2]")
+
+    engine.evaluateExpression(
+      expression = " string(list) ",
+      variables =
+        Map("list" -> List(Map("l" -> List(CustomValue(1), CustomValue(2))), CustomValue(3)))
+    ) should returnResult("[{l:[1, 2]}, 3]")
+
+    engine.evaluateExpression(
+      expression = " string(list) ",
+      variables = Map(
+        "list" -> List(ValContext(new MyCustomContext(Map("a" -> CustomValue(1)))), CustomValue(2))
+      )
+    ) should returnResult("[{a:1}, 2]")
+
+    engine.evaluateExpression(
+      expression = " string(list) ",
+      variables = Map(
+        "list" -> List(
+          ValContext(new MyCustomContext(Map("l" -> List(CustomValue(1), CustomValue(2))))),
+          CustomValue(3)
+        )
+      )
+    ) should returnResult("[{l:[1, 2]}, 3]")
+  }
+
+  it should "convert a nested custom context" in {
+
+    val engine = FeelEngineBuilder()
+      .withCustomValueMapper(new MyCustomValueMapper())
+      .build()
+
+    engine.evaluateExpression(
+      expression = " string(context) ",
+      variables = Map(
+        "context" ->
+          ValContext(
+            new MyCustomContext(
+              Map("ctx" -> ValContext(new MyCustomContext(Map("a" -> CustomValue(1)))))
+            )
+          )
+      )
+    ) should returnResult("{ctx:{a:1}}")
   }
 
   "A duration() function" should "convert day-time-String" in {
