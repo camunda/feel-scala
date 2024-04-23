@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.feel.api;
+package org.camunda.feel.api
 
-public class FeelEngineBuilderTest {
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-    public void build() {
-        FeelEngineApi engine = FeelEngineBuilder.create().build();
-    }
+class FeelEngineBuilderTest extends AnyFlatSpec with Matchers {
+
+  "A FeelEngineBuilder" should "successfully build a FeelEngineApi instance" in {
+    val engine: FeelEngineApi = FeelEngineBuilder.create().build()
+    engine should not be null
+  }
 }
