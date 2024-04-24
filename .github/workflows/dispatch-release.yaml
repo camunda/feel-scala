@@ -1,0 +1,19 @@
+# This workflow builds the release, triggered from outside by an automated process. 
+# It creates the release based on the given input.
+name: Repository dispatch Release
+
+on:
+  repository_dispatch:
+    types: [ build_release ]
+
+jobs:
+  run-release:
+    name: "Release ${{ github.event.client_payload.releaseVersion }}"
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
+    with:
+      releaseBranch: ${{ github.event.client_payload.releaseBranch }}
+      releaseVersion: ${{ github.event.client_payload.releaseVersion }}
+      nextDevelopmentVersion: ${{ github.event.client_payload.nextDevelopmentVersion }}
+      dryRun: ${{ github.event.client_payload.dryRun }}
+      
