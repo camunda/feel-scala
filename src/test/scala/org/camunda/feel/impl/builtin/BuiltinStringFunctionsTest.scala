@@ -174,7 +174,7 @@ class BuiltinStringFunctionsTest extends AnyFlatSpec with Matchers with FeelInte
     eval(" string length(uuid()) ") should be(ValNumber(36))
   }
 
-  it should "return a string encoded as base64" in {
+  "A encode base64() function" should "return a string encoded as base64" in {
 
     eval(""" encode base64("FEEL") """) should be(ValString("RkVFTA=="))
 
