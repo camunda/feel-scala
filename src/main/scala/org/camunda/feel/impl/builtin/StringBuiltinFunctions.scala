@@ -44,7 +44,7 @@ object StringBuiltinFunctions {
     "extract"          -> List(extractFunction),
     "trim"             -> List(trimFunction),
     "uuid"             -> List(uuidFunction),
-    "encode base64"    -> List(encodeBase64Function)
+    "to base64"        -> List(toBase64Function)
   )
 
   private def substringFunction = builtinFunction(
@@ -277,11 +277,11 @@ object StringBuiltinFunctions {
       }
     )
 
-  private def encodeBase64Function =
+  private def toBase64Function =
     builtinFunction(
-      params = List("string"),
-      invoke = { case List(ValString(string)) =>
-        val bytes = string.getBytes(StandardCharsets.UTF_8)
+      params = List("value"),
+      invoke = { case List(ValString(value)) =>
+        val bytes = value.getBytes(StandardCharsets.UTF_8)
         ValString(Base64.getEncoder.encodeToString(bytes))
       }
     )
