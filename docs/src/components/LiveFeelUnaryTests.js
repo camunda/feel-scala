@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from "@theme/CodeBlock";
-
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
 const LiveFeelUnaryTests = ({
   defaultExpression,
@@ -136,17 +136,20 @@ const LiveFeelUnaryTests = ({
   function decodeFromUrl() {
     let decoded = {};
 
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
+    if (useIsBrowser()) {
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
 
-    if (urlParams.has("expression")) {
-      decoded["expression"] = decodeUrlParameter(urlParams.get("expression"));
-    }
-    if (urlParams.has("context")) {
-      decoded["context"] = decodeUrlParameter(urlParams.get("context"));
-    }
-    if (urlParams.has("input-value")) {
-      decoded["inputValue"] = decodeUrlParameter(urlParams.get("input-value"));
+      if (urlParams.has("expression")) {
+        decoded["expression"] = decodeUrlParameter(urlParams.get("expression"));
+      }
+      if (urlParams.has("context")) {
+        decoded["context"] = decodeUrlParameter(urlParams.get("context"));
+      }
+      if (urlParams.has("input-value")) {
+        decoded["inputValue"] = decodeUrlParameter(
+            urlParams.get("input-value"));
+      }
     }
 
     return decoded;
