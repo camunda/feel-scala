@@ -12,14 +12,17 @@ const LiveFeelUnaryTests = ({
   onResultCallback,
   onErrorCallback,
 }) => {
-  if (feelContext) {
+  const fromUrl = decodeFromUrl();
+
+  let expressionContext = fromUrl.context ?? feelContext;
+  if (expressionContext) {
     // format the context
-    feelContext = JSON.stringify(JSON.parse(feelContext), null, 2);
+    expressionContext = JSON.stringify(JSON.parse(expressionContext), null, 2);
   }
 
-  const [expression, setExpression] = React.useState(defaultExpression);
-  const [inputValue, setInputValue] = React.useState(feelInputValue);
-  const [context, setContext] = React.useState(feelContext);
+  const [expression, setExpression] = React.useState(fromUrl.expression ?? defaultExpression);
+  const [inputValue, setInputValue] = React.useState(fromUrl.inputValue ?? feelInputValue);
+  const [context, setContext] = React.useState(expressionContext);
   const [result, setResult] = React.useState(
     "<click 'Evaluate' to see the result of the expression>"
   );
@@ -130,52 +133,112 @@ const LiveFeelUnaryTests = ({
     return error && `Error${onLine}${atPosition}`;
   };
 
+  function decodeFromUrl() {
+    let decoded = {};
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    if (urlParams.has("expression")) {
+      decoded["expression"] = decodeUrlParameter(urlParams.get("expression"));
+    }
+    if (urlParams.has("context")) {
+      decoded["context"] = decodeUrlParameter(urlParams.get("context"));
+    }
+    if (urlParams.has("input-value")) {
+      decoded["inputValue"] = decodeUrlParameter(urlParams.get("input-value"));
+    }
+
+    return decoded;
+  }
+
+  function encodeToUrl() {
+    const path = window.location.href.split('?')[0];
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    urlParams.set("expression", encodeUrlParameter(expression));
+    if (context) {
+      urlParams.set("context", encodeUrlParameter(context));
+    }
+    if (inputValue) {
+      urlParams.set("input-value", encodeUrlParameter(inputValue));
+    }
+    urlParams.set("expression-type", "unary-tests");
+
+    return path + "?" + urlParams;
+  }
+
+  function encodeUrlParameter(parameter) {
+    // parameter.toString("base64");
+    return btoa(parameter);
+  }
+
+  function decodeUrlParameter(parameter) {
+    // Buffer.from(parameter, "base64") - But no Buffer module available!?
+    return atob(parameter);
+  }
+
+  function copyToClipboard() {
+    navigator.clipboard.writeText(encodeToUrl());
+  }
+
   return (
-    <div>
-      <h2>Expression</h2>
-      <Editor onChange={setExpression} language="js">
-        {expression}
-      </Editor>
+      <div>
+        <h2>Expression</h2>
+        <Editor onChange={setExpression} language="js">
+          {expression}
+        </Editor>
 
-      <h2>Input value</h2>
-      <Editor onChange={setInputValue} language="json">
-        {inputValue}
-      </Editor>
+        <h2>Input value</h2>
+        <Editor onChange={setInputValue} language="json">
+          {inputValue}
+        </Editor>
 
-      {feelContext && (
-        <div>
-          <h2>Context</h2>
-          <i>
-            A JSON document that is used to resolve <strong>variables</strong>{" "}
-            in the expression.
-          </i>
-          <Editor onChange={setContext} language="json">
-            {context}
-          </Editor>
-        </div>
-      )}
+        {feelContext && (
+            <div>
+              <h2>Context</h2>
+              <i>
+                A JSON document that is used to
+                resolve <strong>variables</strong>{" "}
+                in the expression.
+              </i>
+              <Editor onChange={setContext} language="json">
+                {context}
+              </Editor>
+            </div>
+        )}
 
-      <button
-        onClick={tryEvaluate}
-        className="button button--primary button--lg"
-      >
-        Evaluate
-      </button>
+        <button
+            onClick={tryEvaluate}
+            className="button button--primary button--lg"
+        >
+          Evaluate
+        </button>
 
-      <br />
-      <br />
-      <h2>Result</h2>
-      <CodeBlock title={resultTitle()} language="json">
-        {result || error?.message}
-      </CodeBlock>
-      <br />
-      <h2>Warnings</h2>
-      <CodeBlock>
-        {warnings?.map((item,i) =>
-          <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
-      </CodeBlock>
+        <button
+            onClick={copyToClipboard}
+            className="button button--secondary button--lg"
+            title="Copy an URL to the clipboard for sharing the expression"
+            style={{"margin-left": "10px"}}
+        >
+          Share
+        </button>
 
-    </div>
+        <br/>
+        <br/>
+        <h2>Result</h2>
+        <CodeBlock title={resultTitle()} language="json">
+          {result || error?.message}
+        </CodeBlock>
+        <br/>
+        <h2>Warnings</h2>
+        <CodeBlock>
+          {warnings?.map((item, i) =>
+              <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
+        </CodeBlock>
+
+      </div>
   );
 };
 
