@@ -2,6 +2,7 @@ import React from "react";
 import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from "@theme/CodeBlock";
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 
 const LiveFeel = ({
@@ -166,56 +167,60 @@ const LiveFeel = ({
   }
 
   return (
-      <div>
-        <h2>Expression</h2>
-        <Editor onChange={setExpression} language="js">
-          {expression}
-        </Editor>
+      <BrowserOnly>
+        { () =>
+          <div>
+            <h2>Expression</h2>
+            <Editor onChange={setExpression} language="js">
+              {expression}
+            </Editor>
 
-        {feelContext && (
-            <div>
-              <h2>Context</h2>
-              <i>
-                A JSON document that is used to
-                resolve <strong>variables</strong>{" "}
-                in the expression.
-              </i>
-              <Editor onChange={setContext} language="json">
-                {context}
-              </Editor>
-            </div>
-        )}
+            {feelContext && (
+                <div>
+                  <h2>Context</h2>
+                  <i>
+                    A JSON document that is used to
+                    resolve <strong>variables</strong>{" "}
+                    in the expression.
+                  </i>
+                  <Editor onChange={setContext} language="json">
+                    {context}
+                  </Editor>
+                </div>
+            )}
 
-        <button
-            onClick={tryEvaluate}
-            className="button button--primary button--lg"
-        >
-          Evaluate
-        </button>
+            <button
+                onClick={tryEvaluate}
+                className="button button--primary button--lg"
+            >
+              Evaluate
+            </button>
 
-        <button
-            onClick={copyToClipboard}
-            className="button button--secondary button--lg"
-            title="Copy an URL to the clipboard for sharing the expression"
-            style={{ "margin-left": "10px"}}
-        >
-          Share
-        </button>
+            <button
+                onClick={copyToClipboard}
+                className="button button--secondary button--lg"
+                title="Copy an URL to the clipboard for sharing the expression"
+                style={{ "margin-left": "10px"}}
+            >
+              Share
+            </button>
 
-        <br/>
-        <br/>
-        <h2>Result</h2>
-        <CodeBlock title={resultTitle()} language="json">
-          {result || error?.message}
-        </CodeBlock>
-        <br/>
-        <h2>Warnings</h2>
-        <CodeBlock>
-          {warnings?.map((item, i) =>
-              <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
-        </CodeBlock>
+            <br/>
+            <br/>
+            <h2>Result</h2>
+            <CodeBlock title={resultTitle()} language="json">
+              {result || error?.message}
+            </CodeBlock>
+            <br/>
+            <h2>Warnings</h2>
+            <CodeBlock>
+              {warnings?.map((item, i) =>
+                  <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
+            </CodeBlock>
 
-      </div>
+          </div>
+        }
+      </BrowserOnly>
   );
 };
 
