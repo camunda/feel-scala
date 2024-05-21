@@ -64,7 +64,8 @@ object ListBuiltinFunctions {
       joinFunction,
       joinWithDelimiterFunction,
       joinWithDelimiterAndPrefixAndSuffixFunction
-    )
+    ),
+    "is empty"    -> List(emptyFunction)
   )
 
   private def listContainsFunction =
@@ -496,5 +497,13 @@ object ListBuiltinFunctions {
       ValString(stringList.mkString(start = prefix, sep = delimiter, end = suffix))
     }
   }
+
+  private def emptyFunction =
+    builtinFunction(
+      params = List("list"),
+      invoke = { case List(ValList(list)) =>
+        ValBoolean(list.isEmpty)
+      }
+    )
 
 }
