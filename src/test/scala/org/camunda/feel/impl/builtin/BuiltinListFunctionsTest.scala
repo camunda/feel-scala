@@ -403,11 +403,11 @@ class BuiltinListFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegr
     eval(""" string join(["foo", 123, "bar"]) """) should be(ValNull)
   }
 
-  "A list is empty() function" should "return if the list is or not empty" in {
+  "A list is empty() function" should "return if the list is empty" in {
 
     eval(" is empty([]) ") should be(ValBoolean(true))
-    eval(" is empty([ ]) ") should be(ValBoolean(true))
     eval(" is empty([1]) ") should be(ValBoolean(false))
     eval(" is empty([1,2,3]) ") should be(ValBoolean(false))
+    eval(" is empty(list: [1]) ") should be(ValBoolean(false))
   }
 }
