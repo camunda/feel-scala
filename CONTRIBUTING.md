@@ -53,7 +53,10 @@ The documentation is published using GitHub actions.
 
 ## Building a new Release
 
-As a Camunda developer, create a [new issue](https://github.com/camunda/feel-scala/issues/new/choose) of the type `New Release`. Follow all steps in the issue to build and publish a new release 🏗️
+> [!NOTE]
+> Only for Camunda developers. 
+
+Open the Camunda Slack channel [#ask-dmn-feel](https://camunda.slack.com/archives/C01QYD808A3). Click on the bookmark "Release FEEL-Scala" and follow the instructions. 🏗️
 
 ## Styleguides
 
@@ -68,7 +71,7 @@ Commit messages should follow the [Conventional Commits](https://www.conventiona
 For example:
 
 ```
-feat(builtin-function): add random() function
+feat: add random() function
 
 * add new built-in function random()
 * it returns a random number between 0.0 and 1.0
