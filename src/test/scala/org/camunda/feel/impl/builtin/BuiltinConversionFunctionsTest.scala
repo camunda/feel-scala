@@ -218,6 +218,22 @@ class BuiltinConversionFunctionsTest
     )
   }
 
+  it should "return null if the string is not a valid number" in {
+
+    evaluateExpression(""" number("x") """) should returnNull()
+    evaluateExpression(""" number("1 5.x") """) should returnNull()
+    evaluateExpression(""" number("1 500.5x", " ") """) should returnNull
+    evaluateExpression(""" number("1,500x", ",") """) should returnNull
+    evaluateExpression(""" number("1.50x0", ".") """) should returnNull
+    evaluateExpression(""" number("1 50x0.5", " ", ".") """) should returnNull
+    evaluateExpression(""" number("1 50x0,5", " ", ",") """) should returnNull
+    evaluateExpression(""" number("150x0,5", null, ",") """) should returnNull
+    evaluateExpression(""" number("1.5x00", ".", null) """) should returnNull
+    evaluateExpression(
+      """ number(from: "1.5x00", grouping separator: ".", decimal separator: null) """
+      ) should returnNull
+  }
+
   "A string() function" should "convert Number" in {
 
     evaluateExpression(""" string(1.1) """) should returnResult("1.1")
