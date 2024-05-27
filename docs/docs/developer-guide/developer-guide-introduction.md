@@ -4,11 +4,11 @@ title: Introduction
 ---
 
 You can embed the FEEL engine in your application in different ways. Have a look
-at [Bootstrapping](./bootstrapping.md) to see how.
+at [Bootstrapping](bootstrapping.md) to see how.
 
 Afterward, you can extend and customize the FEEL engine by implementing one of the following
 SPIs (Service Provider Interface):
 
-* [Function Provider SPI](./function-provider-spi.md)
-* [Value Mapper SPI](./value-mapper-spi.md)
-* [Clock SPI](./feel-engine-clock-spi.md)
+* [Function Provider SPI](function-provider-spi.md)
+* [Value Mapper SPI](value-mapper-spi.md)
+* [Clock SPI](feel-engine-clock-spi.md)

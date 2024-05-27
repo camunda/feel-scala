@@ -17,7 +17,7 @@ the following pages of the language guide:
 - [Built-in functions](https://docs.camunda.io/docs/components/modeler/feel/builtin-functions/feel-built-in-functions-introduction/)
 
 If you want to **integrate** the FEEL engine in your application then have a look at
-the [Developer Guide](./developer-guide/developer-guide-introduction.md).
+the [Developer Guide](../developer-guide/developer-guide-introduction.md).
 
 If you want to **try out** your FEEL expressions in development then check out the
 [Playground](/playground/playground.mdx) (online or local).
