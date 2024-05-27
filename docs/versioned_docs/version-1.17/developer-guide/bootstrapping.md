@@ -113,7 +113,7 @@ new FeelEngine.Builder().enableExternalFunctions(true).build()
 :::danger Security
 External functions are disabled by default. They would allow calling arbitrary
 code or accessing sensitive data. It is recommended to use the
-[FunctionProvider API](../developer-guide/function-provider-spi.md) instead.
+[FunctionProvider API](function-provider-spi.md) instead.
 :::
 
 ### Use as script engine

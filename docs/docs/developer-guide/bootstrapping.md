@@ -12,7 +12,7 @@ The FEEL engine can be integrated in two different ways
 
 :::tip
 
-Have a look at the [FEEL REPL](../get-started.md#feel-repl) for trying out FEEL expressions quickly in
+Have a look at the [FEEL Playground](/playground/playground.mdx) for trying out FEEL expressions quickly in
 development.
 
 :::
@@ -113,7 +113,7 @@ new FeelEngine.Builder().enableExternalFunctions(true).build()
 :::danger Security
 External functions are disabled by default. They would allow calling arbitrary
 code or accessing sensitive data. It is recommended to use the
-[FunctionProvider API](../developer-guide/function-provider-spi.md) instead.
+[FunctionProvider API](function-provider-spi.md) instead.
 :::
 
 ### Use as script engine

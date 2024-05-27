@@ -1,15 +1,14 @@
 module.exports = {
-  Reference: [
-    'reference/get-started',
-    {
-      "Developer Guide": [
-        'reference/developer-guide/developer-guide-introduction',
-        'reference/developer-guide/bootstrapping',
-        'reference/developer-guide/function-provider-spi',
-        'reference/developer-guide/value-mapper-spi',
-        'reference/developer-guide/clock-spi'
-      ],
-    }],
+  "Get Started": [
+    'get-started/get-started'
+  ],
+  "Developer Guide": [
+    'developer-guide/developer-guide-introduction',
+    'developer-guide/bootstrapping',
+    'developer-guide/function-provider-spi',
+    'developer-guide/value-mapper-spi',
+    'developer-guide/clock-spi'
+  ],
   "Learn": [
     'learn/learn',
     {

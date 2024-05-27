@@ -17,30 +17,32 @@ module.exports = {
       },
       items: [
         {
-          // type: 'doc',
-          // docId: 'introduction/what-is-feel',
           to: 'docs/reference/',
-          activeBasePath: 'docs/docs',
-          label: 'Reference',
+          label: 'Get Started',
           position: 'left',
         },
         {
-          // type: 'doc',
-          // docId: 'samples/samples',
+          href: 'https://docs.camunda.io/docs/components/modeler/feel/language-guide/feel-expressions-introduction/',
+          label: 'Language Guide',
+          position: 'left',
+        },
+        {
+          to: "docs/developer-guide/",
+          label: "Developer Guide",
+          position: "left",
+        },
+        {
           to: "docs/learn/",
-          activeBasePath: "docs/learn",
           label: "Learn",
           position: "left",
         },
         {
           to: "docs/playground/",
-          activeBasePath: "docs/playground",
           label: "Playground",
           position: "left",
         },
         {
           to: "docs/changelog/",
-          activeBasePath: "docs/changelog",
           label: "Changelog",
           position: "left",
         },
