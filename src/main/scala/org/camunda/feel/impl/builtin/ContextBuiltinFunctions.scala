@@ -189,7 +189,8 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     invoke = {
       case List(ValList(entries)) if isListOfKeyValuePairs(entries) =>
         ValContext(StaticContext(variables = entries.flatMap { case ValContext(context) =>
-          val getValue = context.variableProvider.getVariable(_)
+          val getValue: String => Option[Val] =
+            context.variableProvider.getVariable(_).map(valueMapper.toVal)
           getValue("key")
             .map { case ValString(key) => key }
             .flatMap(key => getValue("value").map(value => key -> value))
@@ -204,6 +205,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
         val keys = context.variableProvider.keys.toList
         keys.contains("value") && context.variableProvider
           .getVariable("key")
+          .map(valueMapper.toVal)
           .exists(_.isInstanceOf[ValString])
       case _                   => false
     }
