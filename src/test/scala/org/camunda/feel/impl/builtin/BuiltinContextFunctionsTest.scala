@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.context.{CustomContext, VariableProvider}
+import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -458,6 +459,25 @@ class BuiltinContextFunctionsTest
     evaluateExpression(
       """ context([{"key":"a", "value":1}, {"key":2, "value":2}]) """
     ) should returnNull()
+  }
+
+  it should "return a context with entries from a custom context" in {
+
+    evaluateExpression(
+      expression = """context(list)""",
+      variables = Map(
+        "list" -> List(
+          ValContext(
+            new MyCustomContext(
+              Map(
+                "key"   -> "a",
+                "value" -> 1
+              )
+            )
+          )
+        )
+      )
+    ) should returnResult(Map("a" -> 1))
   }
 
 }
