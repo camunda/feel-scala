@@ -118,23 +118,17 @@ class BuiltinContextFunctionsTest
 
   it should "return a value from a custom context" in {
 
-    class MyCustomContext extends CustomContext {
-      class MyVariableProvider extends VariableProvider {
-        private val entries = Map(
-          "x" -> Map("y" -> 1)
-        )
-
-        override def getVariable(name: String): Option[Any] = entries.get(name)
-
-        override def keys: Iterable[String] = entries.keys
-      }
-
-      override def variableProvider: VariableProvider = new MyVariableProvider
-    }
-
     evaluateExpression(
       expression = """get value(context, ["x", "y"])""",
-      variables = Map("context" -> ValContext(new MyCustomContext))
+      variables = Map(
+        "context" -> ValContext(
+          new MyCustomContext(
+            Map(
+              "x" -> Map("y" -> 1)
+            )
+          )
+        )
+      )
     ) should returnResult(1)
   }
 
