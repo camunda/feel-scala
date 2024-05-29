@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.context.{CustomContext, VariableProvider}
+import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -117,23 +118,17 @@ class BuiltinContextFunctionsTest
 
   it should "return a value from a custom context" in {
 
-    class MyCustomContext extends CustomContext {
-      class MyVariableProvider extends VariableProvider {
-        private val entries = Map(
-          "x" -> Map("y" -> 1)
-        )
-
-        override def getVariable(name: String): Option[Any] = entries.get(name)
-
-        override def keys: Iterable[String] = entries.keys
-      }
-
-      override def variableProvider: VariableProvider = new MyVariableProvider
-    }
-
     evaluateExpression(
       expression = """get value(context, ["x", "y"])""",
-      variables = Map("context" -> ValContext(new MyCustomContext))
+      variables = Map(
+        "context" -> ValContext(
+          new MyCustomContext(
+            Map(
+              "x" -> Map("y" -> 1)
+            )
+          )
+        )
+      )
     ) should returnResult(1)
   }
 
@@ -458,6 +453,25 @@ class BuiltinContextFunctionsTest
     evaluateExpression(
       """ context([{"key":"a", "value":1}, {"key":2, "value":2}]) """
     ) should returnNull()
+  }
+
+  it should "return a context with entries from a custom context" in {
+
+    evaluateExpression(
+      expression = """context(list)""",
+      variables = Map(
+        "list" -> List(
+          ValContext(
+            new MyCustomContext(
+              Map(
+                "key"   -> "a",
+                "value" -> 1
+              )
+            )
+          )
+        )
+      )
+    ) should returnResult(Map("a" -> 1))
   }
 
 }

@@ -65,7 +65,7 @@ object ListBuiltinFunctions {
       joinWithDelimiterFunction,
       joinWithDelimiterAndPrefixAndSuffixFunction
     ),
-    "is empty"    -> List(emptyFunction)
+    "is empty"         -> List(emptyFunction)
   )
 
   private def listContainsFunction =
