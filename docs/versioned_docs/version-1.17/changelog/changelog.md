@@ -12,7 +12,7 @@ versions, can be found on the [GitHub release page](https://github.com/camunda/f
 
 ## 1.17
 
-<MarkerChangelogVersion versionZeebe="8.3.0" versionC7="not yet" />
+<MarkerChangelogVersion versionZeebe="8.3.0" versionC7="7.21.0" />
 
 **Expressions:**
 
@@ -35,7 +35,7 @@ See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag
 
 ## 1.16
 
-<MarkerChangelogVersion versionZeebe="8.2.0" versionC7="not yet" />
+<MarkerChangelogVersion versionZeebe="8.2.0" versionC7="7.20.0" />
 
 
 **Built-in functions:**
