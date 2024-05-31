@@ -20,7 +20,7 @@
     <version.log4j>2.23.1</version.log4j>
     <version.uuid>5.0.0</version.uuid>
 
-    <plugin.version.shade>3.5.3</plugin.version.shade>
+    <plugin.version.shade>3.6.0</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
     <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
 
