@@ -16,547 +16,460 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.context.{CustomContext, VariableProvider}
-import org.camunda.feel.impl.FeelIntegrationTest
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.flatspec.AnyFlatSpec
+import org.camunda.feel.impl.interpreter.MyCustomContext
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
-
-import scala.math.BigDecimal.int2bigDecimal
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /** @author
   *   Philipp
   */
-class BuiltinContextFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
+class BuiltinContextFunctionsTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A get entries function" should "return all entries (when invoked with 'context' argument)" in {
-
-    val list = eval(""" get entries(context:{foo: 123}) """)
-    list match {
-      case ValList(List(ValContext(context))) =>
-        context.variableProvider.getVariables should be(
-          Map("key" -> ValString("foo"), "value" -> ValNumber(123))
-        )
-      case other                              => fail(s"Expected list with one context but found '$other'")
-    }
+    evaluateExpression("get entries(context:{foo: 123})") should returnResult(
+      List(Map("key" -> "foo", "value" -> 123))
+    )
   }
 
   it should "return all entries (when invoked with 'm' argument)" in {
-
-    val list = eval(""" get entries(m:{foo: 123}) """)
-    list match {
-      case ValList(List(ValContext(context))) =>
-        context.variableProvider.getVariables should be(
-          Map("key" -> ValString("foo"), "value" -> ValNumber(123))
-        )
-      case other                              => fail(s"Expected list with one context but found '$other'")
-    }
+    evaluateExpression(""" get entries(m:{foo: 123}) """) should returnResult(
+      List(Map("key" -> "foo", "value" -> 123))
+    )
   }
 
   it should "return empty list if empty" in {
-
-    eval(""" get entries({}) """) should be(ValList(List()))
+    evaluateExpression(""" get entries({}) """) should returnResult(List.empty)
   }
 
   it should "return all entries in the same order as in the context" in {
-    eval("get entries({a: 1, b: 2, c: 3}).key") should be(
-      ValList(
-        List(ValString("a"), ValString("b"), ValString("c"))
-      )
+    evaluateExpression("get entries({a: 1, b: 2, c: 3}).key") should returnResult(
+      List("a", "b", "c")
     )
 
-    eval("""get entries({a: "foo", b: "bar"}).key""") should be(
-      ValList(
-        List(ValString("a"), ValString("b"))
-      )
+    evaluateExpression("""get entries({a: "foo", b: "bar"}).key""") should returnResult(
+      List("a", "b")
     )
 
-    eval("get entries({c: 1, b: 2, a: 3}).key") should be(
-      ValList(
-        List(ValString("c"), ValString("b"), ValString("a"))
-      )
+    evaluateExpression("get entries({c: 1, b: 2, a: 3}).key") should returnResult(
+      List("c", "b", "a")
     )
   }
 
   "A get value function" should "return the value" in {
-    eval(""" get value({foo: 123}, "foo") """) should be(ValNumber(123))
+    evaluateExpression(""" get value({foo: 123}, "foo") """) should returnResult(123)
   }
 
   it should "return the value when arguments are named 'm' and 'key'" in {
-    eval(""" get value(m:{foo: 123}, key:"foo") """) should be(ValNumber(123))
+    evaluateExpression(""" get value(m:{foo: 123}, key:"foo") """) should returnResult(123)
   }
 
   it should "return the value when arguments are named 'context' and 'key'" in {
-    eval(""" get value(context:{foo: 123}, key:"foo") """) should be(ValNumber(123))
+    evaluateExpression(
+      """ get value(context:{foo: 123}, key:"foo") """
+    ) should returnResult(123)
   }
 
   it should "return null if not contains" in {
-    eval(""" get value({}, "foo") """) should be(ValNull)
+    evaluateExpression(""" get value({}, "foo") """) should returnNull()
   }
 
   "A get value with path function" should "return the value when a path is provided" in {
-    eval("""get value({x: {y: {z:1}}}, ["x", "y", "z"])""") should be(ValNumber(1))
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["x", "y", "z"])""") should returnResult(1)
   }
 
   it should "return a context when a path is provided" in {
-    eval("""get value({x: {y: {z:1}}}, ["x", "y"]) = {z:1}""") should be(ValBoolean(true))
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["x", "y"]) = {z:1}""") should returnResult(
+      true
+    )
   }
 
   it should "return null if non-existing path is provided" in {
-    eval("""get value({x: {y: {z:1}}}, ["z"])""") should be(ValNull)
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["z"])""") should returnNull()
   }
 
   it should "return null if non-existing nested path is provided" in {
-    eval("""get value({x: {y: {z:1}}}, ["x", "z"])""") should be(ValNull)
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["x", "z"])""") should returnNull()
   }
 
   it should "return null if non-String list of keys is provided" in {
-    eval("""get value({x: {y: {z:1}}}, ["1", 2])""") should be(ValNull)
+    evaluateExpression("""get value({x: {y: {z:1}}}, ["1", 2])""") should returnNull()
   }
 
   it should "return null if an empty context is provided" in {
-    eval("""get value({}, ["z"])""") should be(ValNull)
+    evaluateExpression("""get value({}, ["z"])""") should returnNull()
   }
 
   it should "return null if an empty list is provided as a path" in {
-    eval("""get value({x: {y: {z:1}}}, [])""") should be(ValNull)
+    evaluateExpression("""get value({x: {y: {z:1}}}, [])""") should returnNull()
   }
 
   it should "return a value if named arguments are used" in {
-    eval("""get value(context: {x: {y: {z:1}}}, keys: ["x"]) = {y: {z:1}}""") should be(
-      ValBoolean(true)
-    )
+    evaluateExpression(
+      """get value(context: {x: {y: {z:1}}}, keys: ["x"]) = {y: {z:1}}"""
+    ) should returnResult(true)
   }
 
   it should "return a value from a custom context" in {
 
-    class MyCustomContext extends CustomContext {
-      class MyVariableProvider extends VariableProvider {
-        private val entries = Map(
-          "x" -> Map("y" -> 1)
+    evaluateExpression(
+      expression = """get value(context, ["x", "y"])""",
+      variables = Map(
+        "context" -> ValContext(
+          new MyCustomContext(
+            Map(
+              "x" -> Map("y" -> 1)
+            )
+          )
         )
-
-        override def getVariable(name: String): Option[Any] = entries.get(name)
-
-        override def keys: Iterable[String] = entries.keys
-      }
-
-      override def variableProvider: VariableProvider = new MyVariableProvider
-    }
-
-    eval(
-      """get value(context, ["x", "y"])""",
-      Map("context" -> ValContext(new MyCustomContext))
-    ) should be(ValNumber(1))
+      )
+    ) should returnResult(1)
   }
 
   "A context put function" should "add an entry to an empty context" in {
-
-    eval(""" context put({}, "x", 1) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(1)))
-      )
+    evaluateExpression(""" context put({}, "x", 1) """) should returnResult(
+      Map("x" -> 1)
     )
   }
 
   it should "add an entry to an existing context" in {
-
-    eval(""" context put({x:1}, "y", 2) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
-      )
+    evaluateExpression(""" context put({x:1}, "y", 2) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   it should "add a new entry at the end of the context" in {
-    eval(""" get entries(context put({a: 1, b: 2, c: 3}, "d", 4)).key """) should be(
-      ValList(
-        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
-      )
-    )
+    evaluateExpression(
+      """ get entries(context put({a: 1, b: 2, c: 3}, "d", 4)).key """
+    ) should returnResult(List("a", "b", "c", "d"))
 
-    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "d", 4)).key """) should be(
-      ValList(
-        List(ValString("c"), ValString("b"), ValString("a"), ValString("d"))
-      )
-    )
+    evaluateExpression(
+      """ get entries(context put({c: 1, b: 2, a: 3}, "d", 4)).key """
+    ) should returnResult(List("c", "b", "a", "d"))
   }
 
   it should "override an entry of an existing context" in {
-
-    eval(""" context put({x:1}, "x", 2) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(2)))
-      )
+    evaluateExpression(""" context put({x:1}, "x", 2) """) should returnResult(
+      Map("x" -> 2)
     )
   }
 
   it should "override an entry and keep the original order" in {
-    eval(""" get entries(context put({a: 1, b: 2, c: 3}, "b", 20)).key """) should be(
-      ValList(
-        List(ValString("a"), ValString("b"), ValString("c"))
-      )
-    )
+    evaluateExpression(
+      """ get entries(context put({a: 1, b: 2, c: 3}, "b", 20)).key """
+    ) should returnResult(List("a", "b", "c"))
 
-    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "c", 10)).key """) should be(
-      ValList(
-        List(ValString("c"), ValString("b"), ValString("a"))
-      )
-    )
+    evaluateExpression(
+      """ get entries(context put({c: 1, b: 2, a: 3}, "c", 10)).key """
+    ) should returnResult(List("c", "b", "a"))
 
-    eval(""" get entries(context put({c: 1, b: 2, a: 3}, "a", 30)).key """) should be(
-      ValList(
-        List(ValString("c"), ValString("b"), ValString("a"))
-      )
-    )
+    evaluateExpression(
+      """ get entries(context put({c: 1, b: 2, a: 3}, "a", 30)).key """
+    ) should returnResult(List("c", "b", "a"))
   }
 
   it should "add a context entry to an existing context" in {
-
-    eval(""" context put({x:1}, "y", {"z":2}) = {x:1, y:{z:2} } """) should be(ValBoolean(true))
+    evaluateExpression(""" context put({x:1}, "y", {"z":2}) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("z" -> 2))
+    )
   }
 
   it should "return null if the value is not present" in {
-
-    eval(""" context put({}, "x", notExisting) """) should be(ValNull)
+    evaluateExpression(""" context put({}, "x", notExisting) """) should returnNull()
   }
 
   it should "be invoked with named parameters (key)" in {
-    eval(""" context put(context: {x:1}, key: "y", value: 2) = {x:1, y:2} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put(context: {x:1}, key: "y", value: 2) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   it should "add a context entry with list argument" in {
-    eval(""" context put({x:1}, ["y"], 2) = {x:1, y:2} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put({x:1}, ["y"], 2) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   it should "add nested context entry" in {
-    eval(""" context put({x:1, y:{a:1}}, ["y", "b"], 2) = {x:1, y:{a:1, b:2}} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put({x:1, y:{a:1}}, ["y", "b"], 2) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("a" -> 1, "b" -> 2))
     )
   }
 
   it should "override nested context entry" in {
-    eval(""" context put({x:1, y:{a:1}}, ["y", "a"], 2) = {x:1, y:{a:2}} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put({x:1, y:{a:1}}, ["y", "a"], 2) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("a" -> 2))
     )
   }
 
   it should "add nested context entry if key doesn't exist" in {
-    eval(""" context put({x:1}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put({x:1}, ["y", "z"], 2) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("z" -> 2))
     )
   }
 
   it should "override nested context entry if existing value is not a context" in {
-    eval(""" context put({x:1, y:2}, ["y", "z"], 2) = {x:1, y:{z:2}} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context put({x:1, y:2}, ["y", "z"], 2) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("z" -> 2))
     )
   }
 
   it should "be invoked with named parameters (keys)" in {
-    eval(""" context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) = {x:{y:2}} """) should be(
-      ValBoolean(true)
+    evaluateExpression(
+      """ context put(context: {x:{y:1}}, keys: ["x","y"], value: 2) """
+    ) should returnResult(
+      Map("x" -> Map("y" -> 2))
     )
   }
 
   it should "return null if keys are empty" in {
-    eval(""" context put({x:1}, [], 2) """) should be(ValNull)
+    evaluateExpression(""" context put({x:1}, [], 2) """) should returnNull()
   }
 
   it should "return null if keys are null" in {
-    eval(""" context put({x:1}, null, 2) """) should be(ValNull)
+    evaluateExpression(""" context put({x:1}, null, 2) """) should returnNull()
   }
 
   it should "return null if keys are not a list of strings" in {
-    eval(""" context put({x:1}, [1,2,3], 2) """) should be(ValNull)
+    evaluateExpression(""" context put({x:1}, [1,2,3], 2) """) should returnNull()
   }
 
   "A put function (deprecated)" should "behave as the context put function" in {
-    eval(""" put({}, "x", 1) = context put({}, "x", 1) """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" put({}, "x", 1) = context put({}, "x", 1) """) should returnResult(true)
+
+    evaluateExpression(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should returnResult(
+      true
     )
 
-    eval(""" put({x:1}, "y", 2) = context put({x:1}, "y", 2) """) should be(
-      ValBoolean(true)
-    )
-
-    eval(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" put({x:1}, "x", 2) = context put({x:1}, "x", 2) """) should returnResult(
+      true
     )
   }
 
   "A context merge function" should "return a single empty context" in {
-
-    eval(""" context merge({}) """) should be(
-      ValContext(
-        StaticContext(variables = Map.empty)
-      )
-    )
+    evaluateExpression(""" context merge({}) """) should returnResult(Map.empty)
   }
 
   it should "return a single context" in {
-
-    eval(""" context merge({x:1}) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(1)))
-      )
-    )
+    evaluateExpression(""" context merge({x:1}) """) should returnResult(Map("x" -> 1))
   }
 
   it should "combine empty contexts" in {
-
-    eval(""" context merge({}, {}) """) should be(
-      ValContext(
-        StaticContext(variables = Map.empty)
-      )
-    )
+    evaluateExpression(""" context merge({}, {}) """) should returnResult(Map.empty)
   }
 
   it should "add all entries to an empty context" in {
-
-    eval(""" context merge({}, {x:1}) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(1)))
-      )
-    )
+    evaluateExpression(""" context merge({}, {x:1}) """) should returnResult(Map("x" -> 1))
   }
 
   it should "add an entry to an context" in {
-
-    eval(""" context merge({x:1}, {y:2}) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(1), "y" -> ValNumber(2)))
-      )
+    evaluateExpression(""" context merge({x:1}, {y:2}) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   it should "add all entries to an context" in {
-
-    eval(""" context merge({x:1}, {y:2, z:3}) """) should be(
-      ValContext(
-        StaticContext(variables =
-          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3))
-        )
-      )
+    evaluateExpression(""" context merge({x:1}, {y:2, z:3}) """) should returnResult(
+      Map("x" -> 1, "y" -> 2, "z" -> 3)
     )
   }
 
   it should "add all entries at the end of the context" in {
-    eval(" get entries(context merge({a: 1, b: 2}, {c: 3, d: 4})).key ") should be(
-      ValList(
-        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
-      )
+    evaluateExpression(
+      " get entries(context merge({a: 1, b: 2}, {c: 3, d: 4})).key "
+    ) should returnResult(
+      List("a", "b", "c", "d")
     )
 
-    eval(" get entries(context merge({d: 1, c: 2}, {b: 3, a: 4})).key ") should be(
-      ValList(
-        List(ValString("d"), ValString("c"), ValString("b"), ValString("a"))
-      )
+    evaluateExpression(
+      " get entries(context merge({d: 1, c: 2}, {b: 3, a: 4})).key "
+    ) should returnResult(
+      List("d", "c", "b", "a")
     )
   }
 
   it should "override an entry of the existing context" in {
-
-    eval(""" context merge({x:1}, {x:2}) """) should be(
-      ValContext(
-        StaticContext(variables = Map("x" -> ValNumber(2)))
-      )
+    evaluateExpression(""" context merge({x:1}, {x:2}) """) should returnResult(
+      Map("x" -> 2)
     )
   }
 
   it should "override entries in order" in {
-
-    eval(""" context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """) should be(
-      ValContext(
-        StaticContext(variables =
-          Map("x" -> ValNumber(3), "y" -> ValNumber(1), "z" -> ValNumber(2))
-        )
-      )
+    evaluateExpression(
+      """ context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """
+    ) should returnResult(
+      Map("x" -> 3, "y" -> 1, "z" -> 2)
     )
   }
 
   it should "override entries and keep the original order" in {
-    eval(" get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key ") should be(
-      ValList(
-        List(ValString("a"), ValString("b"), ValString("c"), ValString("d"))
-      )
+    evaluateExpression(
+      " get entries(context merge({a: 1, b: 2, c: 3}, {b: 20, d: 4})).key "
+    ) should returnResult(
+      List("a", "b", "c", "d")
     )
 
-    eval(" get entries(context merge({c: 1, b: 2, a: 3}, {b: 20, d: 4})).key ") should be(
-      ValList(
-        List(ValString("c"), ValString("b"), ValString("a"), ValString("d"))
-      )
+    evaluateExpression(
+      " get entries(context merge({c: 1, b: 2, a: 3}, {b: 20, d: 4})).key "
+    ) should returnResult(
+      List("c", "b", "a", "d")
     )
   }
 
   it should "combine three contexts" in {
-
-    eval(""" context merge({x:1}, {y:2}, {z:3}) """) should be(
-      ValContext(
-        StaticContext(variables =
-          Map("x" -> ValNumber(1), "y" -> ValNumber(2), "z" -> ValNumber(3))
-        )
-      )
+    evaluateExpression(""" context merge({x:1}, {y:2}, {z:3}) """) should returnResult(
+      Map("x" -> 1, "y" -> 2, "z" -> 3)
     )
   }
 
   it should "add a nested context" in {
-
-    eval(""" context merge({x:1}, {y:{z:2}}) = {x:1, y:{z:2} } """) should be(ValBoolean(true))
+    evaluateExpression(""" context merge({x:1}, {y:{z:2}}) """) should returnResult(
+      Map("x" -> 1, "y" -> Map("z" -> 2))
+    )
   }
 
   it should "return null if one entry is not a context" in {
-
-    eval(""" context merge({}, 1) """) should be(ValNull)
+    evaluateExpression(""" context merge({}, 1) """) should returnNull()
   }
 
   it should "be invoked with a list of contexts" in {
-    eval(""" context merge([{x:1}, {y:2}]) = {x:1, y: 2} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context merge([{x:1}, {y:2}]) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   it should "be invoked with named parameters" in {
-    eval(""" context merge(contexts: [{x:1}, {y:2}]) = {x:1, y:2} """) should be(
-      ValBoolean(true)
+    evaluateExpression(""" context merge(contexts: [{x:1}, {y:2}]) """) should returnResult(
+      Map("x" -> 1, "y" -> 2)
     )
   }
 
   "A put all function (deprecated)" should "behave as the context merge function" in {
-    eval(""" put all({}) = context merge({}) """) should be(ValBoolean(true))
+    evaluateExpression(
+      """ put all({}) = context merge({}) """
+    ) should returnResult(true)
 
-    eval(""" put all({x:1}) = context merge({x:1}) """) should be(ValBoolean(true))
+    evaluateExpression(
+      """ put all({x:1}) = context merge({x:1}) """
+    ) should returnResult(true)
 
-    eval(""" put all({x:1}, {y:2}) = context merge({x:1}, {y:2}) """) should be(ValBoolean(true))
+    evaluateExpression(
+      """ put all({x:1}, {y:2}) = context merge({x:1}, {y:2}) """
+    ) should returnResult(true)
 
-    eval(
+    evaluateExpression(
       """ put all({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) = context merge({x:1,y:3,z:1}, {x:2,y:2,z:3}, {x:3,y:1,z:2}) """
-    ) should be(
-      ValBoolean(true)
-    )
+    ) should returnResult(true)
 
-    eval(""" put all({x:1}, {y:{z:2}}) = context merge({x:1}, {y:{z:2}}) """) should be(
-      ValBoolean(true)
-    )
+    evaluateExpression(
+      """ put all({x:1}, {y:{z:2}}) = context merge({x:1}, {y:{z:2}}) """
+    ) should returnResult(true)
   }
 
   "A context function" should "return an empty context" in {
-
-    eval(""" context([]) """) should be(ValContext(StaticContext(Map.empty)))
+    evaluateExpression(""" context([]) """) should returnResult(Map.empty)
   }
 
   it should "return a context with one entry" in {
-
-    eval(""" context([{"key":"a", "value":1}]) """) should be(
-      ValContext(
-        StaticContext(
-          Map(
-            "a" -> ValNumber(1)
-          )
-        )
-      )
+    evaluateExpression(""" context([{"key":"a", "value":1}]) """) should returnResult(
+      Map("a" -> 1)
     )
   }
 
   it should "return a context with multiple entries" in {
-
-    eval(
+    evaluateExpression(
       """ context([{"key":"a", "value":1}, {"key":"b", "value":true}, {"key":"c", "value":"ok"}]) """
-    ) should be(
-      ValContext(
-        StaticContext(
-          Map(
-            "a" -> ValNumber(1),
-            "b" -> ValBoolean(true),
-            "c" -> ValString("ok")
-          )
-        )
-      )
+    ) should returnResult(
+      Map("a" -> 1, "b" -> true, "c" -> "ok")
     )
   }
 
   it should "return a context with a nested list" in {
-
-    eval(""" context([{"key":"a", "value":[1,2,3]}]) """) should be(
-      ValContext(
-        StaticContext(
-          Map(
-            "a" -> ValList(List(ValNumber(1), ValNumber(2), ValNumber(3)))
-          )
-        )
-      )
+    evaluateExpression(""" context([{"key":"a", "value":[1,2,3]}]) """) should returnResult(
+      Map("a" -> List(1, 2, 3))
     )
   }
 
   it should "return a context with a nested context" in {
-
-    eval(""" context([{"key":"a", "value": {x:1} }]) = {a: {x:1}} """) should be(ValBoolean(true))
+    evaluateExpression(""" context([{"key":"a", "value": {x:1} }]) """) should returnResult(
+      Map("a" -> Map("x" -> 1))
+    )
   }
 
   it should "return a context with the same order as the given entries" in {
-    eval("""get entries(context([
+    evaluateExpression("""get entries(context([
          {"key":"a","value":1},
          {"key":"b","value":2},
          {"key":"c","value":3}
-         ])).key""") should be(
-      ValList(List(ValString("a"), ValString("b"), ValString("c")))
-    )
+         ])).key""") should returnResult(List("a", "b", "c"))
 
-    eval("""get entries(context([
+    evaluateExpression("""get entries(context([
          {"key":"c","value":1},
          {"key":"b","value":2},
          {"key":"a","value":3}
-         ])).key""") should be(
-      ValList(List(ValString("c"), ValString("b"), ValString("a")))
-    )
+         ])).key""") should returnResult(List("c", "b", "a"))
   }
 
   it should "override entries in order" in {
-
-    eval(
+    evaluateExpression(
       """ context([{"key":"a", "value":1}, {"key":"a", "value":3}, {"key":"a", "value":2}]) """
-    ) should be(
-      ValContext(
-        StaticContext(
-          Map(
-            "a" -> ValNumber(2)
-          )
-        )
-      )
+    ) should returnResult(
+      Map("a" -> 2)
     )
   }
 
   it should "be the reverse operation to `get entries()`" in {
-
-    eval(""" context(get entries({})) = {} """) should be(ValBoolean(true))
-    eval(""" context(get entries({a:1})) = {a:1} """) should be(ValBoolean(true))
-    eval(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should be(ValBoolean(true))
-    eval(""" context(get entries({a:1,b:2})[key="a"]) = {a:1} """) should be(ValBoolean(true))
+    evaluateExpression(""" context(get entries({})) = {} """) should returnResult(true)
+    evaluateExpression(""" context(get entries({a:1})) = {a:1} """) should returnResult(true)
+    evaluateExpression(""" context(get entries({a:1,b:2})) = {a:1, b:2} """) should returnResult(
+      true
+    )
+    evaluateExpression(
+      """ context(get entries({a:1,b:2})[key="a"]) = {a:1} """
+    ) should returnResult(true)
   }
 
   it should "return null if one entry is not a context" in {
-
-    eval(""" context([{"key":"a", "value":1}, "x"]) """) should be(ValNull)
+    evaluateExpression(""" context([{"key":"a", "value":1}, "x"]) """) should returnNull()
   }
 
   it should "return null if one entry doesn't contain a key" in {
-
-    eval(""" context([{"key":"a", "value":1}, {"value":2}]) """) should be(ValNull)
+    evaluateExpression(""" context([{"key":"a", "value":1}, {"value":2}]) """) should returnNull()
   }
 
   it should "return null if one entry doesn't contain a value" in {
-
-    eval(""" context([{"key":"a", "value":1}, {"key":"b"}]) """) should be(ValNull)
+    evaluateExpression(""" context([{"key":"a", "value":1}, {"key":"b"}]) """) should returnNull()
   }
 
   it should "return null if the key of one entry is not a string" in {
+    evaluateExpression(
+      """ context([{"key":"a", "value":1}, {"key":2, "value":2}]) """
+    ) should returnNull()
+  }
 
-    eval(""" context([{"key":"a", "value":1}, {"key":2, "value":2}]) """) should be(ValNull)
+  it should "return a context with entries from a custom context" in {
+
+    evaluateExpression(
+      expression = """context(list)""",
+      variables = Map(
+        "list" -> List(
+          ValContext(
+            new MyCustomContext(
+              Map(
+                "key"   -> "a",
+                "value" -> 1
+              )
+            )
+          )
+        )
+      )
+    ) should returnResult(Map("a" -> 1))
   }
 
 }
