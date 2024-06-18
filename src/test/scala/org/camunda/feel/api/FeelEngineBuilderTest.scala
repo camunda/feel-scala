@@ -22,7 +22,8 @@ import org.scalatest.matchers.should.Matchers
 class FeelEngineBuilderTest extends AnyFlatSpec with Matchers {
 
   "A FeelEngineBuilder" should "successfully build a FeelEngineApi instance" in {
-    val engine: FeelEngineApi = FeelEngineBuilder.create().build()
+    val javaBuilder = new FeelEngineBuilderJava()
+    val engine: FeelEngineApi = javaBuilder.buildEngine()
     engine should not be null
   }
 }
