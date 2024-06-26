@@ -19,6 +19,7 @@ package org.camunda.feel.api
 import org.camunda.feel.{FeelEngine, FeelEngineClock}
 import org.camunda.feel.FeelEngine.{Configuration, defaultFunctionProvider}
 import org.camunda.feel.context.FunctionProvider
+import org.camunda.feel.impl.JavaValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 
@@ -59,6 +60,10 @@ case class FeelEngineBuilder private (
   def withEnabledExternalFunctions(enabled: Boolean): FeelEngineBuilder =
     copy(configuration = configuration.copy(externalFunctionsEnabled = enabled))
 
+  /** Java-compatibility method to create a builder instance.
+   */
+  def forJava(): FeelEngineBuilder = FeelEngineBuilder().withCustomValueMapper(new JavaValueMapper)
+
   /** Creates a new engine with the given configuration.
     *
     * @return
@@ -73,4 +78,9 @@ case class FeelEngineBuilder private (
     )
   )
 
+}
+
+object FeelEngineBuilder {
+
+  def create(): FeelEngineBuilder = FeelEngineBuilder()
 }
