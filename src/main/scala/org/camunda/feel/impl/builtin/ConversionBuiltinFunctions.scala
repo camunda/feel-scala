@@ -19,26 +19,11 @@ package org.camunda.feel.impl.builtin
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
-import org.camunda.feel.{
-  Date,
-  YearMonthDuration,
-  isDayTimeDuration,
-  isLocalDateTime,
-  isOffsetDateTime,
-  isOffsetTime,
-  isValidDate,
-  isYearMonthDuration,
-  stringToDate,
-  stringToDateTime,
-  stringToDayTimeDuration,
-  stringToLocalDateTime,
-  stringToLocalTime,
-  stringToNumber,
-  stringToYearMonthDuration
-}
+import org.camunda.feel.{Date, YearMonthDuration, isDayTimeDuration, isLocalDateTime, isOffsetDateTime, isOffsetTime, isValidDate, isYearMonthDuration, stringToDate, stringToDateTime, stringToDayTimeDuration, stringToLocalDateTime, stringToLocalTime, stringToNumber, stringToYearMonthDuration}
 
 import java.math.BigDecimal
 import java.time._
+import java.util.regex.Pattern
 import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
@@ -169,14 +154,17 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
   private def numberFunction =
     builtinFunction(
       params = List("from"),
-      invoke = { case List(ValString(from)) =>
-        ValNumber(from)
+      invoke = {
+        case List(ValString(from)) if !isNumeric(from) => ValNull
+        case List(ValString(from))                     => ValNumber(from)
       }
     )
 
   private def numberFunction2 = builtinFunction(
     params = List("from", "grouping separator"),
     invoke = {
+      case List(ValString(from), ValString(grouping)) if !isNumeric(from)                     =>
+        ValNull
       case List(ValString(from), ValString(grouping)) if (isValidGroupingSeparator(grouping)) =>
         ValNumber(from.replace(grouping, ""))
       case List(ValString(from), ValString(grouping))                                         =>
@@ -187,6 +175,12 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
   private def numberFunction3 = builtinFunction(
     params = List("from", "grouping separator", "decimal separator"),
     invoke = {
+      case List(ValString(from), ValString(grouping), ValString(decimal)) if !isNumeric(from)     =>
+        ValNull
+      case List(ValString(from), ValNull, ValString(decimal)) if !isNumeric(from)                 =>
+        ValNull
+      case List(ValString(from), ValString(grouping), ValNull) if !isNumeric(from)                =>
+        ValNull
       case List(ValString(from), ValString(grouping), ValString(decimal))
           if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
             decimal
@@ -209,6 +203,11 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
 
   private def isValidDecimalSeparator(separator: String) =
     separator == "," || separator == "."
+
+  private def isNumeric(str: String): Boolean = {
+    val pattern = Pattern.compile("\\d+")
+    pattern.matcher(str).matches
+  }
 
   private def stringFunction = builtinFunction(
     params = List("from"),
