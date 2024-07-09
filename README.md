@@ -4,11 +4,12 @@
 
 A parser and interpreter for FEEL that is written in Scala (see [What is FEEL?](https://docs.camunda.io/docs/next/components/modeler/feel/what-is-feel/)).
 
-The FEEL engine started as a slack time project, grown to a community-driven project, and is now officially maintained by [Camunda](https://camunda.org/). :rocket: 
+The FEEL engine started as a slack time project, grown into a community-driven project, and is now officially maintained by [Camunda](https://camunda.org/). :rocket: 
 
 It is integrated in the following projects:
-* [Camunda Platform](https://docs.camunda.org/manual/user-guide/dmn-engine/feel/) as part of the DMN engine
-* [Zeebe](https://docs.camunda.io/docs/product-manuals/concepts/expressions#the-expression-language) as the expression language
+* [Camunda 7](https://docs.camunda.org/manual/user-guide/dmn-engine/feel/) as part of the DMN engine
+* [Camunda 8 (Zeebe)](https://docs.camunda.io/docs/product-manuals/concepts/expressions#the-expression-language) as the expression language
+* [DMN-Scala](https://github.com/camunda/dmn-scala/) as part of the DMN engine
 
 **Features:** :sparkles:
 
