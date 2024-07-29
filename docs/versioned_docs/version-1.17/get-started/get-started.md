@@ -3,7 +3,7 @@ id: get-started
 title: Get Started
 slug: /reference/
 ---
-
+ 
 Welcome to the documentation of the FEEL-Scala engine!
 
 If you're **new** and don't know anything about FEEL then have a look
