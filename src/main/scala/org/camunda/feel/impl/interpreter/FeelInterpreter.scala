@@ -40,6 +40,20 @@ import java.time.{Duration, Period}
 class FeelInterpreter {
 
   def eval(expression: Exp)(implicit context: EvalContext): Val = {
+    if (Thread.interrupted()) {
+      throw new InterruptedException()
+    }
+
+    val result = evalInternal(expression)
+    result match {
+      case ErroredVal(value, _) =>
+        value
+      case _ => result
+    }
+  }
+
+
+  private def evalInternal(expression: Exp)(implicit context: EvalContext): Val = {
     // Check if the current thread was interrupted, otherwise long-running evaluations can not be interrupted and fully block the thread
     if (Thread.interrupted()) {
       throw new InterruptedException()
@@ -62,14 +76,14 @@ class FeelInterpreter {
       case ConstDayTimeDuration(d)   => ValDayTimeDuration(d)
 
       case ConstList(items) =>
-        mapEither[Exp, Val](items, item => eval(item).toEither, ValList)
+        mapEither[Exp, Val](items, item => evalInternal(item).toEither, ValList)
 
       case ConstContext(entries) =>
         foldEither[(String, Exp), EvalContext](
           EvalContext.empty(context.valueMapper),
           entries,
           { case (ctx, (key, value)) =>
-            eval(value)(context.merge(ctx)).toEither.map(v => ctx.add(key -> v))
+            evalInternal(value)(context.merge(ctx)).toEither.map(v => ctx.add(key -> v))
           },
           ValContext
         )
@@ -78,30 +92,30 @@ class FeelInterpreter {
 
       // simple unary tests
       case InputEqualTo(x)                              =>
-        withVal(input, i => checkEquality(i, eval(x), _ == _, ValBoolean))
+        withVal(input, i => checkEquality(i, evalInternal(x), _ == _, ValBoolean))
       case InputLessThan(x)                             =>
-        withVal(input, i => dualOp(i, eval(x), _ < _, ValBoolean))
+        withVal(input, i => dualOp(i, evalInternal(x), _ < _, ValBoolean))
       case InputLessOrEqual(x)                          =>
-        withVal(input, i => dualOp(i, eval(x), _ <= _, ValBoolean))
+        withVal(input, i => dualOp(i, evalInternal(x), _ <= _, ValBoolean))
       case InputGreaterThan(x)                          =>
-        withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
+        withVal(input, i => dualOp(i, evalInternal(x), _ > _, ValBoolean))
       case InputGreaterOrEqual(x)                       =>
-        withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
+        withVal(input, i => dualOp(i, evalInternal(x), _ >= _, ValBoolean))
       case InputInRange(range @ ConstRange(start, end)) =>
-        unaryOpDual(eval(start.value), eval(end.value), isInRange(range), ValBoolean)
+        unaryOpDual(evalInternal(start.value), evalInternal(end.value), isInRange(range), ValBoolean)
 
-      case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+      case UnaryTestExpression(x) => withVal(evalInternal(x), v => unaryTestExpression(v, x))
 
       // arithmetic operations
-      case Addition(x, y)        => withValOrNull(addOp(eval(x), eval(y)))
-      case Subtraction(x, y)     => withValOrNull(subOp(eval(x), eval(y)))
-      case Multiplication(x, y)  => withValOrNull(mulOp(eval(x), eval(y)))
-      case Division(x, y)        => withValOrNull(divOp(eval(x), eval(y)))
+      case Addition(x, y)        => withValOrNull(addOp(evalInternal(x), evalInternal(y)))
+      case Subtraction(x, y)     => withValOrNull(subOp(evalInternal(x), evalInternal(y)))
+      case Multiplication(x, y)  => withValOrNull(mulOp(evalInternal(x), evalInternal(y)))
+      case Division(x, y)        => withValOrNull(divOp(evalInternal(x), evalInternal(y)))
       case Exponentiation(x, y)  =>
         withValOrNull(
           dualNumericOp(
-            eval(x),
-            eval(y),
+            evalInternal(x),
+            evalInternal(y),
             (x, y) =>
               if (y.isWhole) {
                 x.pow(y.toInt)
@@ -112,37 +126,37 @@ class FeelInterpreter {
           )
         )
       case ArithmeticNegation(x) =>
-        withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
+        withValOrNull(withNumber(evalInternal(x), x => ValNumber(-x)))
 
       // dual comparators
-      case Equal(x, y)          => checkEquality(eval(x), eval(y), _ == _, ValBoolean)
-      case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
-      case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
-      case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
-      case GreaterOrEqual(x, y) => dualOp(eval(x), eval(y), _ >= _, ValBoolean)
+      case Equal(x, y)          => checkEquality(evalInternal(x), evalInternal(y), _ == _, ValBoolean)
+      case LessThan(x, y)       => dualOp(evalInternal(x), evalInternal(y), _ < _, ValBoolean)
+      case LessOrEqual(x, y)    => dualOp(evalInternal(x), evalInternal(y), _ <= _, ValBoolean)
+      case GreaterThan(x, y)    => dualOp(evalInternal(x), evalInternal(y), _ > _, ValBoolean)
+      case GreaterOrEqual(x, y) => dualOp(evalInternal(x), evalInternal(y), _ >= _, ValBoolean)
 
       // combinators
       case AtLeastOne(xs)    => atLeastOne(xs, ValBoolean)
-      case Not(x)            => withBooleanOrNull(eval(x), x => ValBoolean(!x))
+      case Not(x)            => withBooleanOrNull(evalInternal(x), x => ValBoolean(!x))
       case Disjunction(x, y) => atLeastOne(x :: y :: Nil, ValBoolean)
       case Conjunction(x, y) => all(x :: y :: Nil, ValBoolean)
 
       // control structures
       case If(condition, statement, elseStatement) =>
         withBooleanOrFalse(
-          eval(condition),
+          evalInternal(condition),
           isMet =>
             if (isMet) {
-              eval(statement)
+              evalInternal(statement)
             } else {
-              eval(elseStatement)
+              evalInternal(elseStatement)
             }
         )
       case In(x, test)                             =>
-        withVal(eval(x), x => eval(test)(context.add(inputKey -> x)))
+        withVal(evalInternal(x), x => evalInternal(test)(context.add(inputKey -> x)))
       case InstanceOf(x, typeName)                 =>
         withVal(
-          eval(x),
+          evalInternal(x),
           x => {
             typeName match {
               case "Any" if x != ValNull       => ValBoolean(true)
@@ -165,19 +179,19 @@ class FeelInterpreter {
             ValNull
           case value       => ref(value, names.tail)
         }
-      case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
+      case PathExpression(exp, key) => withVal(evalInternal(exp), v => path(v, key))
 
       // list
       case SomeItem(iterators, condition)  =>
         withCartesianProduct(
           iterators,
           p =>
-            atLeastOneValue(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+            atLeastOneValue(p.map(vars => () => evalInternal(condition)(context.addAll(vars))), ValBoolean)
         )
       case EveryItem(iterators, condition) =>
         withCartesianProduct(
           iterators,
-          p => allValues(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+          p => allValues(p.map(vars => () => evalInternal(condition)(context.addAll(vars))), ValBoolean)
         )
       case For(iterators, exp)             =>
         withCartesianProduct(
@@ -186,17 +200,17 @@ class FeelInterpreter {
             ValList((List[Val]() /: p) {
               case (partial, vars) => {
                 val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
-                val value            = eval(exp)(iterationContext)
+                val value            = evalInternal(exp)(iterationContext)
                 partial ++ (value :: Nil)
               }
             })
         )
       case Filter(list, filter)            =>
         withList(
-          eval(list),
+          evalInternal(list),
           l => {
             val evalFilterWithItem =
-              (item: Val) => eval(filter)(filterContext(item))
+              (item: Val) => evalInternal(filter)(filterContext(item))
 
             filter match {
               case ConstNumber(index)                                                     => filterList(l.items, index)
@@ -205,7 +219,7 @@ class FeelInterpreter {
               case _: Comparison | _: FunctionInvocation | _: QualifiedFunctionInvocation =>
                 filterList(l.items, evalFilterWithItem)
               case _                                                                      =>
-                eval(filter) match {
+                evalInternal(filter) match {
                   case ValNumber(index) => filterList(l.items, index)
                   case _                => filterList(l.items, evalFilterWithItem)
                 }
@@ -214,8 +228,8 @@ class FeelInterpreter {
         )
       case IterationContext(start, end)    =>
         withNumbers(
-          eval(start),
-          eval(end),
+          evalInternal(start),
+          evalInternal(end),
           (x, y) => {
             val range = if (x < y) {
               (x to y).by(1)
@@ -246,7 +260,7 @@ class FeelInterpreter {
         )
       case QualifiedFunctionInvocation(path, name, params) =>
         withContext(
-          eval(path),
+          evalInternal(path),
           c =>
             withFunction(
               findFunction(EvalContext.wrap(c.context, context.valueMapper), name, params),
@@ -266,7 +280,7 @@ class FeelInterpreter {
                   paramValues,
                   context.valueMapper
                 )
-              case _                                                        => eval(body)(context.addAll((params zip paramValues).toMap))
+              case _                                                        => evalInternal(body)(context.addAll((params zip paramValues).toMap))
             }
         )
 
@@ -329,7 +343,7 @@ class FeelInterpreter {
       {
         case i if !isComparable(i, x, y) || !hasSameType(i, x, y) =>
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$input' with '$x' and '$y'")
-          ValNull
+          ErroredVal(ValNull, EvaluationFailureType.NOT_COMPARABLE)
         case i                                                    => f(c(i, x, y))
       }
     )
@@ -452,7 +466,7 @@ class FeelInterpreter {
     }
 
   private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: EvalContext): Val =
-    atLeastOneValue(xs map (x => () => eval(x)), f)
+    atLeastOneValue(xs map (x => () => evalInternal(x)), f)
 
   private def atLeastOneValue(items: List[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
@@ -469,7 +483,7 @@ class FeelInterpreter {
   }
 
   private def all(xs: List[Exp], f: Boolean => Val)(implicit context: EvalContext): Val =
-    allValues(xs map (x => () => eval(x)), f)
+    allValues(xs map (x => () => evalInternal(x)), f)
 
   private def allValues(items: List[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
@@ -508,29 +522,38 @@ class FeelInterpreter {
     }
 
   private def checkEquality(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit
-      context: EvalContext
-  ): Val =
-    x match {
-      case ValNull                         => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-      case x if (y == ValNull)             => f(c(x.toOption.getOrElse(ValNull), ValNull))
-      case _: ValError                     => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-      case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
-      case _ if !hasSameType(x, y)         =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
-      case ValNumber(x)                    => withNumber(y, y => f(c(x, y)))
-      case ValBoolean(x)                   => withBoolean(y, y => f(c(x, y)))
-      case ValString(x)                    => withString(y, y => f(c(x, y)))
-      case ValDate(x)                      => withDate(y, y => f(c(x, y)))
-      case ValLocalTime(x)                 => withLocalTime(y, y => f(c(x, y)))
-      case ValTime(x)                      => withTime(y, y => f(c(x, y)))
-      case ValLocalDateTime(x)             => withLocalDateTime(y, y => f(c(x, y)))
-      case ValDateTime(x)                  => withDateTime(y, y => f(c(x, y)))
-      case ValYearMonthDuration(x)         => withYearMonthDuration(y, y => f(c(x, y)))
-      case ValDayTimeDuration(x)           => withDayTimeDuration(y, y => f(c(x, y)))
-      case ValList(x)                      =>
+                                                                                         context: EvalContext
+  ): Val = {
+    val unwrappedX = x match {
+      case ErroredVal(value, _) => value
+      case _ => x
+    }
+
+    val unwrappedY = y match {
+      case ErroredVal(value, _) => value
+      case _ => y
+    }
+    unwrappedX match {
+      case ValNull => f(c(ValNull, unwrappedY.toOption.getOrElse(ValNull)))
+      case x if (unwrappedY == ValNull) => f(c(x.toOption.getOrElse(ValNull), ValNull))
+      case _: ValError => f(c(ValNull, unwrappedY.toOption.getOrElse(ValNull)))
+      case _ if (unwrappedY.isInstanceOf[ValError]) => f(c(ValNull, unwrappedX.toOption.getOrElse(ValNull)))
+      case _ if !hasSameType(unwrappedX, unwrappedY) =>
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$unwrappedX' with '$unwrappedY'")
+        ErroredVal(ValNull, EvaluationFailureType.NOT_COMPARABLE)
+      case ValNumber(x) => withNumber(unwrappedY, y => f(c(x, y)))
+      case ValBoolean(x) => withBoolean(unwrappedY, y => f(c(x, y)))
+      case ValString(x) => withString(unwrappedY, y => f(c(x, y)))
+      case ValDate(x) => withDate(unwrappedY, y => f(c(x, y)))
+      case ValLocalTime(x) => withLocalTime(unwrappedY, y => f(c(x, y)))
+      case ValTime(x) => withTime(unwrappedY, y => f(c(x, y)))
+      case ValLocalDateTime(x) => withLocalDateTime(unwrappedY, y => f(c(x, y)))
+      case ValDateTime(x) => withDateTime(unwrappedY, y => f(c(x, y)))
+      case ValYearMonthDuration(x) => withYearMonthDuration(unwrappedY, y => f(c(x, y)))
+      case ValDayTimeDuration(x) => withDayTimeDuration(unwrappedY, y => f(c(x, y)))
+      case ValList(x) =>
         withList(
-          y,
+          unwrappedY,
           y => {
             if (x.size != y.items.size) {
               f(false)
@@ -540,7 +563,7 @@ class FeelInterpreter {
                 listIsEqual && {
                   checkEquality(x, y, c, f) match {
                     case ValBoolean(itemIsEqual) => itemIsEqual
-                    case _                       => false
+                    case _ => false
                   }
                 }
               }
@@ -548,9 +571,9 @@ class FeelInterpreter {
             }
           }
         )
-      case ValContext(x)                   =>
+      case ValContext(x) =>
         withContext(
-          y,
+          unwrappedY,
           y => {
             val xVars = x.variableProvider.getVariables
             val yVars = y.context.variableProvider.getVariables
@@ -566,7 +589,7 @@ class FeelInterpreter {
 
                   checkEquality(xVal, yVal, c, f) match {
                     case ValBoolean(entryIsEqual) => entryIsEqual
-                    case _                        => false
+                    case _ => false
                   }
                 }
               }
@@ -574,10 +597,11 @@ class FeelInterpreter {
             }
           }
         )
-      case _                               =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
+      case _ =>
+        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$unwrappedX' with '$unwrappedY'")
+        ErroredVal(ValNull, EvaluationFailureType.NOT_COMPARABLE)
     }
+  }
 
   private def dualOp(x: Val, y: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(implicit
       context: EvalContext
@@ -585,7 +609,7 @@ class FeelInterpreter {
     x match {
       case _ if !isComparable(x, y) || !hasSameType(x, y) =>
         error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
+        ErroredVal(ValNull, EvaluationFailureType.NOT_COMPARABLE)
       case _                                              => f(c(x, y))
     }
 
@@ -715,23 +739,36 @@ class FeelInterpreter {
     case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't divide '$x' by '$y'")
   }
 
-  private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
+  private def unaryTestExpression(x: Val, expression: Exp)(implicit context: EvalContext): Val =
     withVal(
       input,
       i =>
-        x match {
-          case ValBoolean(true)              => ValBoolean(true) // the expression is true
-          case ValList(ys) if ys.contains(i) =>
-            ValBoolean(true) // the expression contains the input value
-          case _ =>
-            checkEquality(i, x, _ == _, ValBoolean) match {
-              case ValBoolean(true)             => ValBoolean(true)  // the expression is the input value
-              case _ if x == ValBoolean(false)  => ValBoolean(false) // the expression is false
-              case _ if x.isInstanceOf[ValList] =>
-                ValBoolean(false) // the expression is a list but doesn't contain the input value
-              case ValNull => ValNull           // the expression can't be compared to the input value
-              case _       => ValBoolean(false) // the expression is not the input value
-            }
+        {
+          expression match {
+            case comparison: Comparison =>
+              if (comparison.x == ConstInputValue || comparison.y == ConstInputValue) {
+                x match {
+                  case ErroredVal(value, _)          => return value
+                  case _ => // Continue
+                }
+              }
+            case _ => // Continue if not a Comparison or ConstInputValue not found
+          }
+
+          x match {
+            case ValBoolean(true)              => ValBoolean(true) // the expression is true
+            case ValList(ys) if ys.contains(i) =>
+              ValBoolean(true) // the expression contains the input value
+            case _ =>
+              checkEquality(i, x, _ == _, ValBoolean) match {
+                case ValBoolean(true)             => ValBoolean(true)  // the expression is the input value
+                case _ if x == ValBoolean(false)  => ValBoolean(false) // the expression is false
+                case _ if x.isInstanceOf[ValList] =>
+                  ValBoolean(false) // the expression is a list but doesn't contain the input value
+                case ValNull => ValNull           // the expression can't be compared to the input value
+                case _       => ValBoolean(false) // the expression is not the input value
+              }
+          }
         }
     )
 
@@ -829,7 +866,7 @@ class FeelInterpreter {
       f: List[Map[String, Val]] => Val
   )(implicit context: EvalContext): Val =
     withLists(
-      iterators.map { case (name, it) => name -> eval(it) },
+      iterators.map { case (name, it) => name -> evalInternal(it) },
       lists => f(flattenAndZipLists(lists))
     )
 
@@ -967,7 +1004,7 @@ class FeelInterpreter {
     }
 
   private def evalContextEntry(key: String, exp: Exp)(implicit context: EvalContext): Val =
-    withVal(eval(exp), value => value)
+    withVal(evalInternal(exp), value => value)
 
   private def invokeJavaFunction(
       className: String,
@@ -1013,10 +1050,10 @@ class FeelInterpreter {
 
   private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
     withVal(
-      eval(range.start.value),
+      evalInternal(range.start.value),
       startValue =>
         withVal(
-          eval(range.end.value),
+          evalInternal(range.end.value),
           endValue =>
             if (isValidRange(startValue, endValue)) {
               ValRange(

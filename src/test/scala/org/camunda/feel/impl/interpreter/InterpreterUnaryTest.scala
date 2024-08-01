@@ -544,4 +544,18 @@ class InterpreterUnaryTest extends AnyFlatSpec with Matchers with FeelIntegratio
     evalUnaryTests(4, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(false))
   }
 
+
+  it should "evaluate null values in disjunctions and conjunctions" in {
+    evalUnaryTests(null, "true or null") should be(ValBoolean(true))
+    evalUnaryTests(null, "false or null") should be(ValBoolean(true))
+    evalUnaryTests(null, "true and null") should be(ValBoolean(true))
+    evalUnaryTests(null, "false and null") should be(ValBoolean(false))
+  }
+
+  it should "evaluate expressions with placeholder and null values" in {
+    evalUnaryTests(null, "null > 20") should be(ValBoolean(true))
+    evalUnaryTests(null, "? > 3") should be(ValNull)
+    evalUnaryTests(null, "? <= null") should be(ValNull)
+  }
+
 }

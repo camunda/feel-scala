@@ -75,6 +75,19 @@ class UnaryTestsScriptEngineTest extends AnyFlatSpec with Matchers {
     a[ScriptException] should be thrownBy scriptEngine.compile("? 3")
   }
 
+  it should "evaluate a unary test involving null values" in {
+    val context = new SimpleScriptContext
+    val bindings = scriptEngine.createBindings()
+    bindings.put("?", null)
+    context.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
+
+    //these will not return null, but they are using deprecated evalUnaryTests that does not support three-valued output
+    //leaving them along for now, since false it kind of acceptable
+    eval("? > 3", context) .asInstanceOf[Boolean] should be(false)
+    eval("> 3", context).asInstanceOf[Boolean] should be(false)
+    eval("null > 3", context).asInstanceOf[Boolean] should be(true)
+  }
+
   private def eval(script: String, context: ScriptContext) =
     scriptEngine.eval(script, context)
 

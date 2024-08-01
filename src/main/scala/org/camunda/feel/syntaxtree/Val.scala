@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.syntaxtree
 
+import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context
 import org.camunda.feel.{
   Date,
@@ -285,6 +286,10 @@ object ValDayTimeDuration {
 
 case class ValError(error: String) extends Val {
   override def toString: String = s"error(\"$error\")"
+}
+
+case class ErroredVal(value: Val, errorType: EvaluationFailureType)  extends Val {
+  override def toString: String = value.toString
 }
 
 case object ValNull extends Val {
