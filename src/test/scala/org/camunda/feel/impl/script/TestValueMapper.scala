@@ -24,7 +24,7 @@ class TestValueMapper extends CustomValueMapper {
 
   override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] =
     value match {
-      case ValNull => Some(null)
+      case ValNull => Some("foobar")
       case _       => None
     }
 

@@ -766,6 +766,7 @@ class FeelInterpreter {
                 case _ if x.isInstanceOf[ValList] =>
                   ValBoolean(false) // the expression is a list but doesn't contain the input value
                 case ValNull => ValNull           // the expression can't be compared to the input value
+                case erroredVal: ErroredVal => erroredVal // propagate the errored value, from checkEquality
                 case _       => ValBoolean(false) // the expression is not the input value
               }
           }
