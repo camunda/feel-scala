@@ -511,37 +511,112 @@ class InterpreterUnaryTest extends AnyFlatSpec with Matchers with FeelIntegratio
     evalUnaryTests(2, "< min(1,2,3)") should be(ValBoolean(false))
   }
 
-  "An expression" should "be compared with equals" in {
+  "A unary-tests expression" should "return true if it evaluates to a value that is equal to the implicit value" in {
 
-    evalUnaryTests(2, """number("2")""") should be(ValBoolean(true))
+    evalUnaryTests(5, "5") should be(ValBoolean(true))
+    evalUnaryTests(5, "2 + 3") should be(ValBoolean(true))
+    evalUnaryTests(5, "x", Map("x" -> 5)) should be(ValBoolean(true))
   }
 
-  it should "be compared with a boolean" in {
+  it should "return false if it evaluates to a value that is not equal to the implicit value" in {
 
-    evalUnaryTests(false, """(5 < 4)""") should be(ValBoolean(true))
-    evalUnaryTests(true, """(5 < 4)""") should be(ValBoolean(false))
+    evalUnaryTests(5, "3") should be(ValBoolean(false))
+    evalUnaryTests(5, "1 + 2") should be(ValBoolean(false))
+    evalUnaryTests(5, "x", Map("x" -> 3)) should be(ValBoolean(false))
   }
 
-  it should "be compared to literal" in {
+  it should "return null if it evaluates to a value that has a different type than the implicit value" in {
 
-    evalUnaryTests(date("2019-08-12"), """ date(now) """, Map("now" -> "2019-08-12")) should be(
-      ValBoolean(true)
-    )
-
-    evalUnaryTests(date("2019-08-12"), """ date(now) """, Map("now" -> "2019-08-13")) should be(
-      ValBoolean(false)
-    )
+    evalUnaryTests(5, """ @"2024-08-19" """) should be(ValNull)
   }
 
-  it should "be compared with a list value" in {
+  it should "return true if it evaluates to a list that contains the implicit value" in {
 
-    evalUnaryTests(2, """[1,2,3]""") should be(ValBoolean(true))
-    evalUnaryTests(4, """[1,2,3]""") should be(ValBoolean(false))
+    evalUnaryTests(5, "[4,5,6]") should be(ValBoolean(true))
+    evalUnaryTests(5, "concatenate([1,2,3], [4,5,6])") should be(ValBoolean(true))
+    evalUnaryTests(5, "x", Map("x" -> List(4, 5, 6))) should be(ValBoolean(true))
   }
 
-  it should "be compared with a list variable" in {
-    evalUnaryTests(2, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(true))
-    evalUnaryTests(4, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(false))
+  it should "return false if it evaluates to a list that doesn't contain the implicit value" in {
+
+    evalUnaryTests(5, "[1,2,3]") should be(ValBoolean(false))
+    evalUnaryTests(5, "concatenate([1,2], [3])") should be(ValBoolean(false))
+    evalUnaryTests(5, "x", Map("x" -> List(1, 2, 3))) should be(ValBoolean(false))
+  }
+
+  it should "return true if it evaluates to true when the implicit value is applied to it" in {
+
+    evalUnaryTests(5, "< 10") should be(ValBoolean(true))
+    evalUnaryTests(5, "[1..10]") should be(ValBoolean(true))
+    evalUnaryTests(5, "> x", Map("x" -> 3)) should be(ValBoolean(true))
+  }
+
+  it should "return false if it evaluates to false when the implicit value is applied to it" in {
+
+    evalUnaryTests(5, "< 3") should be(ValBoolean(false))
+    evalUnaryTests(5, "[1..3]") should be(ValBoolean(false))
+    evalUnaryTests(5, "> x", Map("x" -> 10)) should be(ValBoolean(false))
+  }
+
+  it should "return null if it evaluates to null when the implicit value is applied to it" in {
+
+    evalUnaryTests(5, """ < @"2024-08-19" """) should be(ValNull)
+    evalUnaryTests(null, """ < @"2024-08-19" """) should be(ValNull)
+  }
+
+  it should "return true if it evaluates to true when the implicit value is assigned to the special variable '?'" in {
+
+    evalUnaryTests(5, "odd(?)") should be(ValBoolean(true))
+    evalUnaryTests(5, "abs(?) < 10") should be(ValBoolean(true))
+    evalUnaryTests(5, "? > x", Map("x" -> 3)) should be(ValBoolean(true))
+  }
+
+  it should "return false if it evaluates to false when the implicit value is assigned to the special variable '?'" in {
+
+    evalUnaryTests(5, "even(?)") should be(ValBoolean(false))
+    evalUnaryTests(5, "abs(?) < 3") should be(ValBoolean(false))
+    evalUnaryTests(5, "? > x", Map("x" -> 10)) should be(ValBoolean(false))
+  }
+
+  it should "return null if it evaluates to a value that is not a boolean when the implicit value is assigned to the special variable '?'" in {
+
+    evalUnaryTests(5, "abs(?)") should be(ValNull)
+    evalUnaryTests(5, "?") should be(ValNull)
+    evalUnaryTests(5, "? + not_existing") should be(ValNull)
+  }
+
+  it should "return true if it evaluates to null and the implicit value is null" in {
+
+    evalUnaryTests(null, "null") should be(ValBoolean(true))
+    evalUnaryTests(null, "2 + not_existing") should be(ValBoolean(true))
+    evalUnaryTests(null, "not_existing") should be(ValBoolean(true))
+  }
+
+  it should "return false if it evaluates to null and the implicit value is not null" in {
+
+    evalUnaryTests(5, "null") should be(ValBoolean(false))
+    evalUnaryTests(5, "2 + not_existing") should be(ValBoolean(false))
+    evalUnaryTests(5, "not_existing") should be(ValBoolean(false))
+  }
+
+  it should "return true if it evaluates to true when null is assigned to the special variable '?'" in {
+
+    evalUnaryTests(null, "? = null") should be(ValBoolean(true))
+    evalUnaryTests(null, "? = null or odd(?)") should be(ValBoolean(true))
+  }
+
+  it should "return false if it evaluates to false when null is assigned to the special variable '?'" in {
+
+    evalUnaryTests(null, "? != null") should be(ValBoolean(false))
+    evalUnaryTests(null, "? != null and odd(?)") should be(ValBoolean(false))
+  }
+
+  it should "return null if it evaluates to null when null is assigned to the special variable '?'" in {
+
+    evalUnaryTests(null, "? < 10") should be(ValNull)
+    evalUnaryTests(null, "odd(?)") should be(ValNull)
+    evalUnaryTests(null, "5 < ? and ? < 10") should be(ValNull)
+    evalUnaryTests(null, "5 < ? or ? < 10") should be(ValNull)
   }
 
 }
