@@ -35,6 +35,7 @@ import org.camunda.feel.syntaxtree.{
   ValDateTime,
   ValDayTimeDuration,
   ValError,
+  ValFatalError,
   ValFunction,
   ValList,
   ValLocalDateTime,
@@ -170,8 +171,9 @@ class DefaultValueMapper extends CustomValueMapper {
           }.toMap
         )
 
-      case f: ValFunction => Some(f)
-      case e: ValError    => Some(e)
+      case f: ValFunction            => Some(f)
+      case e: ValError               => Some(e)
+      case fatalError: ValFatalError => Some(fatalError)
 
       case _ => None
     }

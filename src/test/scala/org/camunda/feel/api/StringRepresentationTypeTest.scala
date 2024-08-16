@@ -25,6 +25,7 @@ import org.camunda.feel.syntaxtree.{
   ValDateTime,
   ValDayTimeDuration,
   ValError,
+  ValFatalError,
   ValFunction,
   ValList,
   ValLocalDateTime,
@@ -199,6 +200,12 @@ class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
     val error = ValError("something wrong")
 
     error.toString should be("error(\"something wrong\")")
+  }
+
+  "A fatal error" should """return 'fatal error("something wrong")' """ in {
+    val fatalError = ValFatalError("something wrong")
+
+    fatalError.toString should be("fatal error(\"something wrong\")")
   }
 
 }
