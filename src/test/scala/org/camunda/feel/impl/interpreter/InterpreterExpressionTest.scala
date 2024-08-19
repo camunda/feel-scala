@@ -351,4 +351,17 @@ class InterpreterExpressionTest
         """) should returnResult(1)
   }
 
+  "The special variable '?' (input value)" should "be available in an unary-test" in {
+
+    evaluateExpression("5 in ? < 10") should returnResult(true)
+    evaluateExpression("5 in ? < 3") should returnResult(false)
+  }
+
+  it should "not be available outside an unary-test" in {
+
+    evaluateExpression("? < 10") should failWith(
+      """failed to evaluate expression '? < 10': No input value available. '?' can only be used inside an unary-test expression."""
+    )
+  }
+
 }
