@@ -16,15 +16,26 @@
  */
 package org.camunda.feel.impl
 
+import org.camunda.feel.{
+  Date,
+  DateTime,
+  DayTimeDuration,
+  LocalDateTime,
+  LocalTime,
+  Time,
+  YearMonthDuration
+}
 import org.camunda.feel.api.{
   EvaluationResult,
+  FailedEvaluationResult,
   FeelEngineApi,
   FeelEngineBuilder,
-  SuccessfulEvaluationResult,
-  FailedEvaluationResult
+  SuccessfulEvaluationResult
 }
 import org.camunda.feel.context.Context
-import org.camunda.feel.syntaxtree.ValFunction
+import org.camunda.feel.syntaxtree.{ValFunction, ZonedTime}
+
+import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, Period, ZonedDateTime}
 
 trait FeelEngineTest {
 
@@ -96,5 +107,19 @@ trait FeelEngineTest {
         )
     }
   }
+
+  def date(x: String): Date = LocalDate.parse(x)
+
+  def localTime(x: String): LocalTime = LocalTime.parse(x)
+
+  def time(x: String): Time = ZonedTime.parse(x)
+
+  def dateTime(x: String): DateTime = ZonedDateTime.parse(x)
+
+  def localDateTime(x: String): LocalDateTime = LocalDateTime.parse(x)
+
+  def yearMonthDuration(x: String): YearMonthDuration = Period.parse(x)
+
+  def dayTimeDuration(x: String): DayTimeDuration = Duration.parse(x)
 
 }
