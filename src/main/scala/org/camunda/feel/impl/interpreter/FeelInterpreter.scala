@@ -19,6 +19,7 @@ package org.camunda.feel.impl.interpreter
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context
+import org.camunda.feel.impl.interpreter.FeelInterpreter.INPUT_VALUE_SYMBOL
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 import org.camunda.feel.{
@@ -49,7 +50,7 @@ class FeelInterpreter {
 
       // literals
       case ConstNull                 => ValNull
-      case ConstInputValue           => input
+      case ConstInputValue           => getInputValueBySymbol
       case ConstNumber(x)            => ValNumber(x)
       case ConstBool(b)              => ValBoolean(b)
       case ConstString(s)            => ValString(s)
@@ -90,7 +91,7 @@ class FeelInterpreter {
       case InputInRange(range @ ConstRange(start, end)) =>
         unaryOpDual(eval(start.value), eval(end.value), isInRange(range), ValBoolean)
 
-      case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+      case UnaryTestExpression(x) => unaryTestExpression(x)
 
       // arithmetic operations
       case Addition(x, y)        => withValOrNull(addOp(eval(x), eval(y)))
@@ -499,6 +500,14 @@ class FeelInterpreter {
       case inputValue  => inputValue
     }
 
+  private def getInputValueBySymbol(implicit context: EvalContext): Val = {
+    context.variable(INPUT_VALUE_SYMBOL).toOption.getOrElse {
+      ValFatalError(
+        s"No input value available. '$INPUT_VALUE_SYMBOL' can only be used inside an unary-test expression."
+      )
+    }
+  }
+
   private def dualNumericOp(x: Val, y: Val, op: (Number, Number) => Number, f: Number => Val)(
       implicit context: EvalContext
   ): Val =
@@ -715,25 +724,37 @@ class FeelInterpreter {
     case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't divide '$x' by '$y'")
   }
 
-  private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
+  private def unaryTestExpression(expression: Exp)(implicit context: EvalContext): Val = {
     withVal(
       input,
-      i =>
-        x match {
-          case ValBoolean(true)              => ValBoolean(true) // the expression is true
-          case ValList(ys) if ys.contains(i) =>
-            ValBoolean(true) // the expression contains the input value
-          case _ =>
-            checkEquality(i, x, _ == _, ValBoolean) match {
-              case ValBoolean(true)             => ValBoolean(true)  // the expression is the input value
-              case _ if x == ValBoolean(false)  => ValBoolean(false) // the expression is false
+      inputValue =>
+        eval(expression) match {
+          case _: ValFatalError                       =>
+            eval(expression)(context.add(INPUT_VALUE_SYMBOL -> inputValue)) match {
+              case ValBoolean(true)  => ValBoolean(true)
+              case ValBoolean(false) => ValBoolean(false)
+              case _                 => ValNull
+            }
+          case ValBoolean(true)                       => ValBoolean(true)
+          case ValList(ys) if ys.contains(inputValue) =>
+            // the expression contains the input value
+            ValBoolean(true)
+          case x                                      =>
+            checkEquality(inputValue, x, _ == _, ValBoolean) match {
+              case ValBoolean(true)             =>
+                // the expression is the input value
+                ValBoolean(true)
               case _ if x.isInstanceOf[ValList] =>
-                ValBoolean(false) // the expression is a list but doesn't contain the input value
-              case ValNull => ValNull           // the expression can't be compared to the input value
-              case _       => ValBoolean(false) // the expression is not the input value
+                // the expression is a list but doesn't contain the input value
+                ValBoolean(false)
+              case ValNull                      => ValNull
+              case _                            =>
+                // the expression is not the input value
+                ValBoolean(false)
             }
         }
     )
+  }
 
   private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val =
     x match {
@@ -1049,5 +1070,11 @@ class FeelInterpreter {
       case ClosedConstRangeBoundary(_) => ClosedRangeBoundary(value)
     }
   }
+
+}
+
+object FeelInterpreter {
+
+  val INPUT_VALUE_SYMBOL: String = "?"
 
 }
