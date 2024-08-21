@@ -132,6 +132,16 @@ class InterpreterLiteralExpressionTest extends AnyFlatSpec with Matchers with Fe
     )
   }
 
+  it should "be null if the date is not valid (leap year)" in {
+    eval(""" date("2023-02-29") """) should be(ValNull)
+    eval(""" @"2023-02-29" """) should be(ValNull)
+  }
+
+  it should "be null if the date is not valid (month with 31 days)" in {
+    eval(""" date("2023-06-31") """) should be(ValNull)
+    eval(""" @"2023-06-31" """) should be(ValNull)
+  }
+
   "A time literal" should "be defined without offset" in {
     eval(""" time("10:30:00") """) should be(
       ValLocalTime(
@@ -238,6 +248,22 @@ class InterpreterLiteralExpressionTest extends AnyFlatSpec with Matchers with Fe
         )
       )
     )
+  }
+
+  it should "be null if the date is not valid (leap year)" in {
+    eval(""" date and time("2023-02-29T10:00:00") """) should be(ValNull)
+    eval(""" @"2023-02-29T10:00:00" """) should be(ValNull)
+
+    eval(""" date and time("2023-02-29T10:00:00+02:00") """) should be(ValNull)
+    eval(""" @"2023-02-29T10:00:00+02:00" """) should be(ValNull)
+  }
+
+  it should "be null if the date is not valid (month with 31 days)" in {
+    eval(""" date and time("2023-06-31T10:00:00") """) should be(ValNull)
+    eval(""" @"2023-06-31T10:00:00" """) should be(ValNull)
+
+    eval(""" date and time("2023-06-31T10:00:00+02:00") """) should be(ValNull)
+    eval(""" @"2023-06-31T10:00:00+02:00" """) should be(ValNull)
   }
 
   "A years-months duration" should "be defined" in {
