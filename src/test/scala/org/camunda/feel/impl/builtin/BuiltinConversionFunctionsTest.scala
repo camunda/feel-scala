@@ -50,6 +50,18 @@ class BuiltinConversionFunctionsTest extends AnyFlatSpec with Matchers with Feel
     eval(""" date(2012, 12, 25) """) should be(ValDate("2012-12-25"))
   }
 
+  it should "return null if the date is not valid (leap year)" in {
+
+    evaluateExpression(""" date(x) """, Map("x" -> "2023-02-29")) should returnNull()
+    evaluateExpression(""" date(2023, 2, 29) """) should returnNull()
+  }
+
+  it should "return null if the date is not valid (month with 31 days)" in {
+
+    evaluateExpression(""" date(x) """, Map("x" -> "2023-06-31")) should returnNull()
+    evaluateExpression(""" date(2023, 6, 31) """) should returnNull()
+  }
+
   "A date and time() function" should "convert String" in {
 
     eval(""" date and time(x) """, Map("x" -> "2012-12-24T23:59:00")) should be(
@@ -100,6 +112,32 @@ class BuiltinConversionFunctionsTest extends AnyFlatSpec with Matchers with Feel
     eval(
       """ date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00+01:00")) """
     ) should be(ValDateTime("2012-12-24T23:59:00+01:00"))
+  }
+
+  it should "return null if the date is not valid (leap year)" in {
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-02-29T10:00:00")
+    ) should returnNull()
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-02-29T10:00:00+02:00")
+    ) should returnNull()
+  }
+
+  it should "return null if the date is not valid (month with 31 days)" in {
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-06-31T10:00:00")
+    ) should returnNull()
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-06-31T10:00:00+02:00")
+    ) should returnNull()
   }
 
   "A time() function" should "convert String" in {
