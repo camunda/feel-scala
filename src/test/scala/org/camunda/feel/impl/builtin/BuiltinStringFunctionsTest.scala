@@ -51,6 +51,13 @@ class BuiltinStringFunctionsTest
     )
   }
 
+  it should "return string with remaining characters if the length is greater than the string" in {
+    evaluateExpression(""" substring("abc", 1, 4) """) should returnResult("abc")
+    evaluateExpression(""" substring("abc", 2, 4) """) should returnResult("bc")
+    evaluateExpression(""" substring("abc", -1, 4) """) should returnResult("c")
+    evaluateExpression(""" substring("abc", 4, 4) """) should returnResult("")
+  }
+
   "A string length() function" should "return the length of a String" in {
 
     evaluateExpression(""" string length("foo") """) should returnResult(3)
