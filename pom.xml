@@ -344,6 +344,17 @@
               <differenceType>7002</differenceType>
               <method>scala.Function1 compose(scala.Function1)</method>
             </ignored>
+            <!-- ignore changes in FeelEngineBuilder -->
+            <ignored>
+              <className>org/camunda/feel/api/FeelEngineBuilder</className>
+              <differenceType>7002</differenceType>
+              <method>scala.Function1 curried()</method>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/api/FeelEngineBuilder</className>
+              <differenceType>7002</differenceType>
+              <method>scala.Function1 tupled()</method>
+            </ignored>
           </ignored>
         </configuration>
       </plugin>
