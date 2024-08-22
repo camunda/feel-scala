@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.api.EvaluationFailureType.INVALID_TYPE
 import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
@@ -62,6 +63,23 @@ class InterpreterListExpressionTest
     evaluateExpression("some x in 1..5 satisfies x > 3") should returnResult(true)
   }
 
+  it should "return null if the value is not a list (some)" in {
+    evaluateExpression(
+      expression = "some item in x satisfies x > 10"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "some item in x satisfies x > 10",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
+  }
+
   it should "be checked with 'every'" in {
 
     evaluateExpression("every x in [1,2,3] satisfies x >= 1") should returnResult(true)
@@ -83,6 +101,23 @@ class InterpreterListExpressionTest
 
   it should "be checked with 'every' (range)" in {
     evaluateExpression("every x in 1..5 satisfies x < 10") should returnResult(true)
+  }
+
+  it should "return null if the value is not a list (every)" in {
+    evaluateExpression(
+      expression = "every item in x satisfies x > 10"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "every item in x satisfies x > 10",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
   }
 
   it should "be processed in a for-expression" in {
@@ -183,6 +218,23 @@ class InterpreterListExpressionTest
     evaluateExpression(
       "for i in 1..8 return if (i <= 2) then 1 else partial[-1] + partial[-2]"
     ) should returnResult(List(1, 1, 2, 3, 5, 8, 13, 21))
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "for item in x return item * 2"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "for item in x return item * 2",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
   }
 
   private val hugeList: List[Int] = (1 to 10000).toList
@@ -421,6 +473,30 @@ class InterpreterListExpressionTest
                          ]}.loans[loanId = id].amount)""",
       context = new MyCustomContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
     ) should returnResult(20)
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "x[even(item)]"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "x[even(item)]",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
+
+    evaluateExpression(
+      expression = "x[1]"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
   }
 
 }
