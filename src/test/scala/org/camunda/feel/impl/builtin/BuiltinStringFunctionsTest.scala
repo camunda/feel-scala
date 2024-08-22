@@ -16,168 +16,183 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.math.BigDecimal.int2bigDecimal
-
 /** @author
   *   Philipp
   */
-class BuiltinStringFunctionsTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
+class BuiltinStringFunctionsTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "A substring() function" should "return string with _ characters" in {
 
-    eval(""" substring("foobar",3) """) should be(ValString("obar"))
+    evaluateExpression(""" substring("foobar",3) """) should returnResult("obar")
   }
 
   it should "return string with _ characters starting at _" in {
 
-    eval(""" substring("foobar",3,3) """) should be(ValString("oba"))
+    evaluateExpression(""" substring("foobar",3,3) """) should returnResult("oba")
   }
 
   it should "return string with _ characters starting at negative _" in {
 
-    eval(""" substring("foobar",-2,1) """) should be(ValString("a"))
+    evaluateExpression(""" substring("foobar",-2,1) """) should returnResult("a")
   }
 
   it should "be invoked with named parameters" in {
-    eval(""" substring(string: "foobar", start position:3) """) should be(ValString("obar"))
+    evaluateExpression(""" substring(string: "foobar", start position:3) """) should returnResult(
+      "obar"
+    )
+  }
+
+  it should "return string with remaining characters if the length is greater than the string" in {
+    evaluateExpression(""" substring("abc", 1, 4) """) should returnResult("abc")
+    evaluateExpression(""" substring("abc", 2, 4) """) should returnResult("bc")
+    evaluateExpression(""" substring("abc", -1, 4) """) should returnResult("c")
+    evaluateExpression(""" substring("abc", 4, 4) """) should returnResult("")
   }
 
   "A string length() function" should "return the length of a String" in {
 
-    eval(""" string length("foo") """) should be(ValNumber(3))
+    evaluateExpression(""" string length("foo") """) should returnResult(3)
   }
 
   "A upper case() function" should "return uppercased String" in {
 
-    eval(""" upper case("aBc4") """) should be(ValString("ABC4"))
+    evaluateExpression(""" upper case("aBc4") """) should returnResult("ABC4")
   }
 
   "A lower case() function" should "return lowercased String" in {
 
-    eval(""" lower case("aBc4") """) should be(ValString("abc4"))
+    evaluateExpression(""" lower case("aBc4") """) should returnResult("abc4")
   }
 
   "A substring before() function" should "return substring before match" in {
 
-    eval(""" substring before("foobar", "bar") """) should be(ValString("foo"))
+    evaluateExpression(""" substring before("foobar", "bar") """) should returnResult("foo")
 
-    eval(""" substring before("foobar", "xyz") """) should be(ValString(""))
+    evaluateExpression(""" substring before("foobar", "xyz") """) should returnResult("")
   }
 
   "A substring after() function" should "return substring after match" in {
 
-    eval(""" substring after("foobar", "ob") """) should be(ValString("ar"))
+    evaluateExpression(""" substring after("foobar", "ob") """) should returnResult("ar")
 
-    eval(""" substring after("", "a") """) should be(ValString(""))
+    evaluateExpression(""" substring after("", "a") """) should returnResult("")
 
-    eval(""" substring after("foo", "") """) should be(ValString("foo"))
+    evaluateExpression(""" substring after("foo", "") """) should returnResult("foo")
   }
 
   "A replace() function" should "replace a String" in {
 
-    eval(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should be(ValString("[1=ab][2=]cd"))
+    evaluateExpression(""" replace("abcd", "(ab)|(a)", "[1=$1][2=$2]") """) should returnResult(
+      "[1=ab][2=]cd"
+    )
   }
 
-  it should "replace a String with regex pattern" in (eval(
+  it should "replace a String with regex pattern" in (evaluateExpression(
     """ replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") """
-  ) should be(ValString("(012) 345-6789")))
+  ) should returnResult("(012) 345-6789"))
 
   it should "return null if the pattern is invalid" in {
-    eval(""" replace("abc", "([a-z)", "$1") """) should be(ValNull)
+    evaluateExpression(""" replace("abc", "([a-z)", "$1") """) should returnNull()
   }
 
   "A contains() function" should "return if contains the match" in {
 
-    eval(""" contains("foobar", "ob") """) should be(ValBoolean(true))
+    evaluateExpression(""" contains("foobar", "ob") """) should returnResult(true)
 
-    eval(""" contains("foobar", "of") """) should be(ValBoolean(false))
+    evaluateExpression(""" contains("foobar", "of") """) should returnResult(false)
   }
 
   "A starts with() function" should "return if starts with match" in {
 
-    eval(""" starts with("foobar", "fo") """) should be(ValBoolean(true))
+    evaluateExpression(""" starts with("foobar", "fo") """) should returnResult(true)
 
-    eval(""" starts with("foobar", "ba") """) should be(ValBoolean(false))
+    evaluateExpression(""" starts with("foobar", "ba") """) should returnResult(false)
   }
 
   "A ends with() function" should "return if ends with match" in {
 
-    eval(""" ends with("foobar", "r") """) should be(ValBoolean(true))
+    evaluateExpression(""" ends with("foobar", "r") """) should returnResult(true)
 
-    eval(""" ends with("foobar", "o") """) should be(ValBoolean(false))
+    evaluateExpression(""" ends with("foobar", "o") """) should returnResult(false)
   }
 
   "A matches() function" should "return if String matches a pattern" in {
 
-    eval(""" matches("foobar", "^fo*b") """) should be(ValBoolean(true))
+    evaluateExpression(""" matches("foobar", "^fo*b") """) should returnResult(true)
 
-    eval(""" matches("foobar", "^fo*z") """) should be(ValBoolean(false))
+    evaluateExpression(""" matches("foobar", "^fo*z") """) should returnResult(false)
   }
 
   it should "return null if the pattern is invalid" in {
-    eval(""" matches("abc", "[a-z") """) should be(ValNull)
+    evaluateExpression(""" matches("abc", "[a-z") """) should returnNull()
   }
 
   "A split() function" should "return a list of substrings" in {
 
-    eval(""" split("John Doe", "\s") """) should be(
-      ValList(List(ValString("John"), ValString("Doe")))
+    evaluateExpression(""" split("John Doe", "\s") """) should returnResult(
+      List("John", "Doe")
     )
 
-    eval(""" split("a;b;c;;", ";") """) should be(
-      ValList(List(ValString("a"), ValString("b"), ValString("c"), ValString(""), ValString("")))
+    evaluateExpression(""" split("a;b;c;;", ";") """) should returnResult(
+      List("a", "b", "c", "", "")
     )
   }
 
   "An extract() function" should "return a list of strings matching a pattern" in {
 
-    eval(""" extract("this is foobar and folbar", "fo[a-z]*") """) should be(
-      ValList(List(ValString("foobar"), ValString("folbar")))
+    evaluateExpression(
+      """ extract("this is foobar and folbar", "fo[a-z]*") """
+    ) should returnResult(
+      List("foobar", "folbar")
     )
 
-    eval(""" extract("nothing", "fo[a-z]*") """) should be(ValList(List()))
+    evaluateExpression(""" extract("nothing", "fo[a-z]*") """) should returnResult(List())
 
-    eval(""" extract("This is fobbar!", "fo[a-z]*") """) should be(
-      ValList(List(ValString("fobbar")))
+    evaluateExpression(""" extract("This is fobbar!", "fo[a-z]*") """) should returnResult(
+      List("fobbar")
     )
   }
 
   it should "return null if the pattern is invalid" in {
-    eval(""" extract("abc", "[a-z") """) should be(ValNull)
+    evaluateExpression(""" extract("abc", "[a-z") """) should returnNull()
   }
 
   "A trim() function" should "return the eliminates leading and trailing spaces of a String" in {
 
-    eval(""" trim("hello world") """) should be(ValString("hello world"))
+    evaluateExpression(""" trim("hello world") """) should returnResult("hello world")
 
-    eval(""" trim("hello world  ") """) should be(ValString("hello world"))
+    evaluateExpression(""" trim("hello world  ") """) should returnResult("hello world")
 
-    eval(""" trim("  hello world") """) should be(ValString("hello world"))
+    evaluateExpression(""" trim("  hello world") """) should returnResult("hello world")
 
-    eval(""" trim("  hello world  ") """) should be(ValString("hello world"))
+    evaluateExpression(""" trim("  hello world  ") """) should returnResult("hello world")
 
-    eval(""" trim(" hello   world ") """) should be(ValString("hello   world"))
+    evaluateExpression(""" trim(" hello   world ") """) should returnResult("hello   world")
   }
 
   "A uuid() function" should "return a string" in {
 
-    eval(" uuid() ") shouldBe a[ValString]
+    evaluateExpression(" uuid() ").result shouldBe a[String]
   }
 
   it should "return a string of length 36" in {
 
-    eval(" string length(uuid()) ") should be(ValNumber(36))
+    evaluateExpression(" string length(uuid()) ") should returnResult(36)
   }
 
   "A to base64() function" should "return a string encoded as base64" in {
 
-    eval(""" to base64("FEEL") """) should be(ValString("RkVFTA=="))
+    evaluateExpression(""" to base64("FEEL") """) should returnResult("RkVFTA==")
 
-    eval(""" to base64(value: "Camunda") """) should be(ValString("Q2FtdW5kYQ=="))
+    evaluateExpression(""" to base64(value: "Camunda") """) should returnResult("Q2FtdW5kYQ==")
   }
 }
