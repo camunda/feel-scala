@@ -16,6 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
 import org.camunda.feel.api.FeelEngineBuilder
 import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
@@ -215,6 +216,30 @@ class BuiltinConversionFunctionsTest
       """ number(from: "1.500", grouping separator: ".", decimal separator: null) """
     ) should returnResult(
       1500
+    )
+  }
+
+  it should "return null if the string is not a number" in {
+
+    evaluateExpression(""" number("x") """) should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'number': Can't parse 'x' as a number"
+      )
+    )
+
+    evaluateExpression(""" number("x", ".") """) should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'number': Can't parse 'x' as a number"
+      )
+    )
+
+    evaluateExpression(""" number("x", ".", ",") """) should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'number': Can't parse 'x' as a number"
+      )
     )
   }
 
