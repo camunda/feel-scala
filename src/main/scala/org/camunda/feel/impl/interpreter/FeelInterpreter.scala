@@ -172,48 +172,59 @@ class FeelInterpreter {
 
       // list
       case SomeItem(iterators, condition)  =>
-        withCartesianProduct(
-          iterators,
-          p =>
-            atLeastOneValue(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+        withValOrNull(
+          withCartesianProduct(
+            iterators,
+            p =>
+              atLeastOneValue(
+                p.map(vars => () => eval(condition)(context.addAll(vars))),
+                ValBoolean
+              )
+          )
         )
       case EveryItem(iterators, condition) =>
-        withCartesianProduct(
-          iterators,
-          p => allValues(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+        withValOrNull(
+          withCartesianProduct(
+            iterators,
+            p => allValues(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+          )
         )
       case For(iterators, exp)             =>
-        withCartesianProduct(
-          iterators,
-          p =>
-            ValList((List[Val]() /: p) {
-              case (partial, vars) => {
-                val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
-                val value            = eval(exp)(iterationContext)
-                partial ++ (value :: Nil)
-              }
-            })
+        withValOrNull(
+          withCartesianProduct(
+            iterators,
+            p =>
+              ValList((List[Val]() /: p) {
+                case (partial, vars) => {
+                  val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
+                  val value            = eval(exp)(iterationContext)
+                  partial ++ (value :: Nil)
+                }
+              })
+          )
         )
       case Filter(list, filter)            =>
-        withList(
-          eval(list),
-          l => {
-            val evalFilterWithItem =
-              (item: Val) => eval(filter)(filterContext(item))
+        withValOrNull(
+          withList(
+            eval(list),
+            l => {
+              val evalFilterWithItem =
+                (item: Val) => eval(filter)(filterContext(item))
 
-            filter match {
-              case ConstNumber(index)                                                     => filterList(l.items, index)
-              case ArithmeticNegation(ConstNumber(index))                                 =>
-                filterList(l.items, -index)
-              case _: Comparison | _: FunctionInvocation | _: QualifiedFunctionInvocation =>
-                filterList(l.items, evalFilterWithItem)
-              case _                                                                      =>
-                eval(filter) match {
-                  case ValNumber(index) => filterList(l.items, index)
-                  case _                => filterList(l.items, evalFilterWithItem)
-                }
+              filter match {
+                case ConstNumber(index)                                                     => filterList(l.items, index)
+                case ArithmeticNegation(ConstNumber(index))                                 =>
+                  filterList(l.items, -index)
+                case _: Comparison | _: FunctionInvocation | _: QualifiedFunctionInvocation =>
+                  filterList(l.items, evalFilterWithItem)
+                case _                                                                      =>
+                  eval(filter) match {
+                    case ValNumber(index) => filterList(l.items, index)
+                    case _                => filterList(l.items, evalFilterWithItem)
+                  }
+              }
             }
-          }
+          )
         )
       case IterationContext(start, end)    =>
         withNumbers(
