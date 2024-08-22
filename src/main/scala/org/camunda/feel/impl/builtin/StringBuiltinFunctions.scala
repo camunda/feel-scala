@@ -50,11 +50,11 @@ object StringBuiltinFunctions {
   private def substringFunction3 = builtinFunction(
     params = List("string", "start position", "length"),
     invoke = { case List(ValString(string), ValNumber(start), ValNumber(length)) =>
+      val startIndex = stringIndex(string, start.intValue)
+      val endIndex   = Math.min(startIndex + length.intValue, string.length)
+
       ValString(
-        string.substring(
-          stringIndex(string, start.intValue),
-          stringIndex(string, start.intValue) + length.intValue
-        )
+        string.substring(startIndex, endIndex)
       )
     }
   )
