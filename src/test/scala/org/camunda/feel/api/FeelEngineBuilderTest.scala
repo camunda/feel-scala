@@ -27,7 +27,7 @@ class FeelEngineBuilderTest extends AnyFlatSpec with Matchers {
     javaBuilder.buildEngine() shouldBe a[FeelEngineApi]
   }
 
-  it should "build a preconfigured Java engine" in {
+  it should "build a preconfigured Java engine and evaluate expression" in {
     val javaBuilder = new FeelEngineBuilderJava()
     val engine = javaBuilder.buildEngine()
 
