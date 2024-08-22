@@ -60,10 +60,6 @@ case class FeelEngineBuilder private (
   def withEnabledExternalFunctions(enabled: Boolean): FeelEngineBuilder =
     copy(configuration = configuration.copy(externalFunctionsEnabled = enabled))
 
-  /** Java-compatibility method to create a builder instance.
-   */
-  def forJava(): FeelEngineBuilder = FeelEngineBuilder().withCustomValueMapper(new JavaValueMapper)
-
   /** Creates a new engine with the given configuration.
     *
     * @return
@@ -82,5 +78,18 @@ case class FeelEngineBuilder private (
 
 object FeelEngineBuilder {
 
+  /** Creates a new builder for the FEEL engine.
+    *
+    * @return
+    *   a new builder
+    */
   def create(): FeelEngineBuilder = FeelEngineBuilder()
+
+  /** Creates a new preconfigured builder for the FEEL engine. Use it if the engine is called from
+    * Java code.
+    *
+    * @return
+    *   a new builder
+    */
+  def forJava(): FeelEngineBuilder = FeelEngineBuilder().withCustomValueMapper(new JavaValueMapper)
 }
