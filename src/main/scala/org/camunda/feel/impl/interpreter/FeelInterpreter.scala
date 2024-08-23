@@ -476,57 +476,10 @@ class FeelInterpreter {
         withValues(
           x,
           y,
-          {
-            case (ValNull, _)                                       => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-            case (_, ValNull)                                       => f(c(x.toOption.getOrElse(ValNull), ValNull))
-            case (ValNumber(x), ValNumber(y))                       => f(c(x, y))
-            case (ValBoolean(x), ValBoolean(y))                     => f(c(x, y))
-            case (ValString(x), ValString(y))                       => f(c(x, y))
-            case (ValDate(x), ValDate(y))                           => f(c(x, y))
-            case (ValLocalTime(x), ValLocalTime(y))                 => f(c(x, y))
-            case (ValTime(x), ValTime(y))                           => f(c(x, y))
-            case (ValLocalDateTime(x), ValLocalDateTime(y))         => f(c(x, y))
-            case (ValDateTime(x), ValDateTime(y))                   => f(c(x, y))
-            case (ValYearMonthDuration(x), ValYearMonthDuration(y)) => f(c(x, y))
-            case (ValDayTimeDuration(x), ValDayTimeDuration(y))     => f(c(x, y))
-            case (ValList(x), ValList(y))                           =>
-              if (x.size != y.size) {
-                f(false)
-
-              } else {
-                val isEqual = x.zip(y).foldRight(true) { case ((x, y), listIsEqual) =>
-                  listIsEqual && {
-                    checkEquality(x, y, c, f) match {
-                      case ValBoolean(itemIsEqual) => itemIsEqual
-                      case _                       => false
-                    }
-                  }
-                }
-                f(isEqual)
-              }
-            case (ValContext(x), ValContext(y))                     =>
-              val xVars = x.variableProvider.getVariables
-              val yVars = y.variableProvider.getVariables
-
-              if (xVars.keys != yVars.keys) {
-                f(false)
-
-              } else {
-                val isEqual = xVars.keys.foldRight(true) { case (key, contextIsEqual) =>
-                  contextIsEqual && {
-                    val xVal = context.valueMapper.toVal(xVars(key))
-                    val yVal = context.valueMapper.toVal(yVars(key))
-
-                    checkEquality(xVal, yVal, c, f) match {
-                      case ValBoolean(entryIsEqual) => entryIsEqual
-                      case _                        => false
-                    }
-                  }
-                }
-                f(isEqual)
-              }
-            case _                                                  =>
+          { (x, y) =>
+            new ValComparator(context.valueMapper).compare(x, y).toOption.getOrElse {
               error(x, s"Can't compare '$x' with '$y'")
+            }
           }
         )
     }
