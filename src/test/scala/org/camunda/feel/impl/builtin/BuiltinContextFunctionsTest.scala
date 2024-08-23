@@ -200,17 +200,49 @@ class BuiltinContextFunctionsTest
     evaluateExpression(""" context put({x:1, y:{a:1}}, ["y", "b"], 2) """) should returnResult(
       Map("x" -> 1, "y" -> Map("a" -> 1, "b" -> 2))
     )
+
+    evaluateExpression(
+      """ context put({x:1, a:{b:{c:1}}}, ["a", "b", "d"], 2) """
+    ) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> 1, "d" -> 2)))
+    )
+
+    evaluateExpression(
+      """ context put({x:1, a:{b:{c:{d:1}}}}, ["a", "b", "c", "e"], 2) """
+    ) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> Map("d" -> 1, "e" -> 2))))
+    )
   }
 
   it should "override nested context entry" in {
     evaluateExpression(""" context put({x:1, y:{a:1}}, ["y", "a"], 2) """) should returnResult(
       Map("x" -> 1, "y" -> Map("a" -> 2))
     )
+
+    evaluateExpression(
+      """ context put({x:1, a:{b:{c:1}}}, ["a", "b", "c"], 2) """
+    ) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> 2)))
+    )
+
+    evaluateExpression(
+      """ context put({x:1, a:{b:{c:{d:1}}}}, ["a", "b", "c", "d"], 2) """
+    ) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> Map("d" -> 2))))
+    )
   }
 
   it should "add nested context entry if key doesn't exist" in {
     evaluateExpression(""" context put({x:1}, ["y", "z"], 2) """) should returnResult(
       Map("x" -> 1, "y" -> Map("z" -> 2))
+    )
+
+    evaluateExpression(""" context put({x:1}, ["a", "b", "c"], 2) """) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> 2)))
+    )
+
+    evaluateExpression(""" context put({x:1}, ["a", "b", "c", "d"], 2) """) should returnResult(
+      Map("x" -> 1, "a" -> Map("b" -> Map("c" -> Map("d" -> 2))))
     )
   }
 
