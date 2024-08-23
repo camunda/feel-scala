@@ -63,13 +63,13 @@ class BuiltinConversionFunctionsTest
     )
   }
 
-  it should "return null if the date is not valid (leap year)" in {
+  it should "return null if the date is not valid (not a leap year)" in {
 
     evaluateExpression(""" date(x) """, Map("x" -> "2023-02-29")) should returnNull()
     evaluateExpression(""" date(2023, 2, 29) """) should returnNull()
   }
 
-  it should "return null if the date is not valid (month with 31 days)" in {
+  it should "return null if the date is not valid (month without 31 days)" in {
 
     evaluateExpression(""" date(x) """, Map("x" -> "2023-06-31")) should returnNull()
     evaluateExpression(""" date(2023, 6, 31) """) should returnNull()
