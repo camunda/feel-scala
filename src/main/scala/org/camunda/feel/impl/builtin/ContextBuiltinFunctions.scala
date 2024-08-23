@@ -150,10 +150,12 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
           parentContextUpdater =
             // pass a lambda to update this context with the modified nested context
             nestedContext =>
-              contextPut(
-                contextValue = contextValue,
-                key = key,
-                value = nestedContext
+              parentContextUpdater(
+                contextPut(
+                  contextValue = contextValue,
+                  key = key,
+                  value = nestedContext
+                )
               )
         )
     }
