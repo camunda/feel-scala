@@ -196,16 +196,25 @@ object ConversionBuiltinFunctions {
     builtinFunction(
       params = List("from"),
       invoke = { case List(ValString(from)) =>
-        ValNumber(from)
+        parseNumber(from)
       }
     )
+
+  private def parseNumber(from: String): Val = {
+    Try(
+      ValNumber(from)
+    ).getOrElse(
+      ValError(s"Can't parse '$from' as a number")
+    )
+  }
 
   private def numberFunction2 = builtinFunction(
     params = List("from", "grouping separator"),
     invoke = {
       case List(ValString(from), ValString(grouping)) if (isValidGroupingSeparator(grouping)) =>
-        ValNumber(from.replace(grouping, ""))
-      case List(ValString(from), ValString(grouping))                                         =>
+        parseNumber(from.replace(grouping, ""))
+
+      case List(ValString(_), ValString(_)) =>
         ValError(s"illegal argument for grouping. Must be one of ' ', ',' or '.'")
     }
   )
@@ -217,13 +226,16 @@ object ConversionBuiltinFunctions {
           if (isValidGroupingSeparator(grouping) && isValidDecimalSeparator(
             decimal
           ) && grouping != decimal) =>
-        ValNumber(from.replace(grouping, "").replace(decimal, "."))
+        parseNumber(from.replace(grouping, "").replace(decimal, "."))
+
       case List(ValString(from), ValNull, ValString(decimal)) if isValidDecimalSeparator(decimal) =>
-        ValNumber(from.replace(decimal, "."))
+        parseNumber(from.replace(decimal, "."))
+
       case List(ValString(from), ValString(grouping), ValNull)
           if isValidGroupingSeparator(grouping) =>
-        ValNumber(from.replace(grouping, ""))
-      case List(ValString(from), ValString(grouping), ValString(decimal))                         =>
+        parseNumber(from.replace(grouping, ""))
+
+      case List(ValString(_), ValString(_), ValString(_)) =>
         ValError(
           s"illegal arguments for grouping or decimal. Must be one of ' ' (grouping only), ',' or '.'"
         )
