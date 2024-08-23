@@ -632,13 +632,13 @@ class InterpreterUnaryTest
   it should "return true if it evaluates to true when null is assigned to the special variable '?'" in {
 
     evaluateUnaryTests("? = null", inputValue = null) should returnResult(true)
-    evaluateUnaryTests("? = null or odd(?)", inputValue = null) should returnResult(true)
+    evaluateUnaryTests("odd(?) or ? = null", inputValue = null) should returnResult(true)
   }
 
   it should "return false if it evaluates to false when null is assigned to the special variable '?'" in {
 
     evaluateUnaryTests("? != null", inputValue = null) should returnResult(false)
-    evaluateUnaryTests("? != null and odd(?)", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("odd(?) and ? != null", inputValue = null) should returnResult(false)
   }
 
   it should "return null if it evaluates to null when null is assigned to the special variable '?'" in {
