@@ -19,6 +19,7 @@ package org.camunda.feel.impl.interpreter
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.context.Context
+import org.camunda.feel.impl.interpreter.FeelInterpreter.INPUT_VALUE_SYMBOL
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 import org.camunda.feel.{
@@ -33,6 +34,7 @@ import org.camunda.feel.{
 }
 
 import java.time.{Duration, Period}
+import scala.reflect.ClassTag
 
 /** @author
   *   Philipp Ossler
@@ -49,7 +51,7 @@ class FeelInterpreter {
 
       // literals
       case ConstNull                 => ValNull
-      case ConstInputValue           => input
+      case ConstInputValue           => getInputValueBySymbol
       case ConstNumber(x)            => ValNumber(x)
       case ConstBool(b)              => ValBoolean(b)
       case ConstString(s)            => ValString(s)
@@ -78,19 +80,19 @@ class FeelInterpreter {
 
       // simple unary tests
       case InputEqualTo(x)                              =>
-        withVal(input, i => checkEquality(i, eval(x), _ == _, ValBoolean))
+        withVal(getImplicitInputValue, i => checkEquality(i, eval(x), _ == _, ValBoolean))
       case InputLessThan(x)                             =>
-        withVal(input, i => dualOp(i, eval(x), _ < _, ValBoolean))
+        withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ < _, ValBoolean))
       case InputLessOrEqual(x)                          =>
-        withVal(input, i => dualOp(i, eval(x), _ <= _, ValBoolean))
+        withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ <= _, ValBoolean))
       case InputGreaterThan(x)                          =>
-        withVal(input, i => dualOp(i, eval(x), _ > _, ValBoolean))
+        withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ > _, ValBoolean))
       case InputGreaterOrEqual(x)                       =>
-        withVal(input, i => dualOp(i, eval(x), _ >= _, ValBoolean))
+        withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ >= _, ValBoolean))
       case InputInRange(range @ ConstRange(start, end)) =>
         unaryOpDual(eval(start.value), eval(end.value), isInRange(range), ValBoolean)
 
-      case UnaryTestExpression(x) => withVal(eval(x), unaryTestExpression)
+      case UnaryTestExpression(x) => unaryTestExpression(x)
 
       // arithmetic operations
       case Addition(x, y)        => withValOrNull(addOp(eval(x), eval(y)))
@@ -99,16 +101,17 @@ class FeelInterpreter {
       case Division(x, y)        => withValOrNull(divOp(eval(x), eval(y)))
       case Exponentiation(x, y)  =>
         withValOrNull(
-          dualNumericOp(
+          withNumbers(
             eval(x),
             eval(y),
-            (x, y) =>
-              if (y.isWhole) {
+            (x, y) => {
+              val result: Number = if (y.isWhole) {
                 x.pow(y.toInt)
               } else {
                 math.pow(x.toDouble, y.toDouble)
-              },
-            ValNumber
+              }
+              ValNumber(result)
+            }
           )
         )
       case ArithmeticNegation(x) =>
@@ -139,19 +142,19 @@ class FeelInterpreter {
             }
         )
       case In(x, test)                             =>
-        withVal(eval(x), x => eval(test)(context.add(inputKey -> x)))
+        withVal(eval(x), x => eval(test)(context.add(getInputVariableName -> x)))
       case InstanceOf(x, typeName)                 =>
         withVal(
           eval(x),
           x => {
+            val valueType = getTypeName(x.getClass)
+
             typeName match {
-              case "Any" if x != ValNull       => ValBoolean(true)
-              case "years and months duration" =>
-                withType(x, t => ValBoolean(t == "year-month-duration"))
-              case "days and time duration"    =>
-                withType(x, t => ValBoolean(t == "day-time-duration"))
-              case "date and time"             => withType(x, t => ValBoolean(t == "date time"))
-              case _                           => withType(x, t => ValBoolean(t == typeName))
+              case "Any"                 => ValBoolean(x != ValNull)
+              case "date time"           => ValBoolean("date and time" == valueType)
+              case "year-month-duration" => ValBoolean("years and months duration" == valueType)
+              case "day-time-duration"   => ValBoolean("days and time duration" == valueType)
+              case _                     => ValBoolean(typeName == valueType)
             }
           }
         )
@@ -228,21 +231,23 @@ class FeelInterpreter {
 
       // functions
       case FunctionInvocation(name, params)                =>
-        withFunction(
-          findFunction(context, name, params),
-          f =>
-            invokeFunction(f, params) match {
-              case ValError(failure) if name == "assert" =>
-                error(EvaluationFailureType.ASSERT_FAILURE, failure)
-                ValError(failure)
-              case ValError(failure)                     =>
-                error(
-                  EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-                  s"Failed to invoke function '$name': $failure"
-                )
-                ValNull
-              case result                                => result
-            }
+        withValOrNull(
+          withFunction(
+            findFunction(context, name, params),
+            f =>
+              invokeFunction(f, params) match {
+                case ValError(failure) if name == "assert" =>
+                  error(EvaluationFailureType.ASSERT_FAILURE, failure)
+                  ValError(failure)
+                case ValError(failure)                     =>
+                  error(
+                    EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
+                    s"Failed to invoke function '$name': $failure"
+                  )
+                  ValNull
+                case result                                => result
+              }
+          )
         )
       case QualifiedFunctionInvocation(path, name, params) =>
         withContext(
@@ -275,6 +280,8 @@ class FeelInterpreter {
 
     }
   }
+
+  // ======== helpers ====================
 
   private def mapEither[T, R](
       it: Iterable[T],
@@ -309,6 +316,8 @@ class FeelInterpreter {
     }
   }
 
+  // =========================================
+
   private def error(failureType: EvaluationFailureType, failureMessage: String)(implicit
       context: EvalContext
   ): ValError = {
@@ -316,127 +325,131 @@ class FeelInterpreter {
     ValError(failureMessage)
   }
 
-  private def withValOrNull(x: Val): Val = x match {
-    case _: ValError => ValNull
-    case _           => x
+  private def withVal(x: Val, f: Val => Val): Val = x match {
+    case fatalError: ValFatalError => fatalError
+    case error: ValError           => error
+    case value                     => f(value)
+  }
+
+  private def withValOrNull(x: Val): Val = x.toOption.getOrElse(ValNull)
+
+  private def withValues(x: Val, y: Val, f: (Val, Val) => Val) =
+    withVal(x, valueX => withVal(y, valueY => f(valueX, valueY)))
+
+  private def withValueType[T <: Val](value: Val, f: T => Val)(implicit
+      context: EvalContext,
+      tag: ClassTag[T]
+  ): Val = {
+    value match {
+      case fatalError: ValFatalError                  => fatalError
+      case error: ValError                            => error
+      case v: T if tag.runtimeClass.isInstance(value) => f(v)
+      case other                                      =>
+        error(
+          EvaluationFailureType.INVALID_TYPE,
+          s"Expected ${getTypeName(tag.runtimeClass)} but found '$other'"
+        )
+    }
+  }
+
+  private def getTypeName(valueType: Class[_]): String = valueType match {
+    case _ if valueType == ValNull.getClass              => "null"
+    case _ if valueType == classOf[ValNumber]            => "number"
+    case _ if valueType == classOf[ValBoolean]           => "boolean"
+    case _ if valueType == classOf[ValString]            => "string"
+    case _ if valueType == classOf[ValDate]              => "date"
+    case _ if valueType == classOf[ValTime]              => "time"
+    case _ if valueType == classOf[ValLocalTime]         => "time"
+    case _ if valueType == classOf[ValDateTime]          => "date and time"
+    case _ if valueType == classOf[ValLocalDateTime]     => "date and time"
+    case _ if valueType == classOf[ValYearMonthDuration] => "years and months duration"
+    case _ if valueType == classOf[ValDayTimeDuration]   => "days and time duration"
+    case _ if valueType == classOf[ValList]              => "list"
+    case _ if valueType == classOf[ValContext]           => "context"
+    case _ if valueType == classOf[ValFunction]          => "function"
+    case _ if valueType == classOf[ValRange]             => "range"
+    case _ if valueType == classOf[ValError]             => "error"
+    case _ if valueType == classOf[ValFatalError]        => "fatal error"
+    case other                                           => other.getSimpleName
+  }
+
+  private def isComparable(values: Val*): Boolean = values.forall(_.isComparable)
+
+  private def hasSameType(values: Val*): Boolean = values.map(_.getClass).distinct.size == 1
+
+  // ======== type checks ====================
+
+  private def withNumber(x: Val, f: Number => Val)(implicit context: EvalContext): Val =
+    withValueType[ValNumber](x, number => f(number.value))
+
+  private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val)(implicit
+      context: EvalContext
+  ): Val =
+    withNumber(x, x => withNumber(y, y => f(x, y)))
+
+  private def withBoolean(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val =
+    withValueType[ValBoolean](x, boolean => f(boolean.value))
+
+  private def withBooleanOrNull(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val =
+    withBoolean(x, f) match {
+      case _: ValError => ValNull
+      case value       => value
+    }
+
+  private def withBooleanOrFalse(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val =
+    withBoolean(x, f) match {
+      case _: ValError => f(false)
+      case value       => value
+    }
+
+  private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val =
+    withValueType[ValFunction](x, f)
+
+  private def withList(x: Val, f: ValList => Val)(implicit context: EvalContext): Val =
+    withValueType[ValList](x, f)
+
+  private def withContext(x: Val, f: ValContext => Val)(implicit context: EvalContext): Val =
+    withValueType[ValContext](x, f)
+
+  // =========================================
+
+  private def getInputVariableName(implicit context: EvalContext): String = {
+    context.variable(UnaryTests.inputVariable) match {
+      case ValString(inputVariableName) => inputVariableName
+      case _                            => UnaryTests.defaultInputVariable
+    }
+  }
+
+  private def getImplicitInputValue(implicit context: EvalContext): Val = {
+    context.variable(getInputVariableName).toOption.getOrElse {
+      error(EvaluationFailureType.NO_VARIABLE_FOUND, "No input value found.")
+      ValNull
+    }
+  }
+
+  private def getInputValueBySymbol(implicit context: EvalContext): Val = {
+    context.variable(INPUT_VALUE_SYMBOL).toOption.getOrElse {
+      ValFatalError(
+        s"No input value available. '$INPUT_VALUE_SYMBOL' can only be used inside an unary-test expression."
+      )
+    }
   }
 
   private def unaryOpDual(x: Val, y: Val, c: (Val, Val, Val) => Boolean, f: Boolean => Val)(implicit
       context: EvalContext
   ): Val =
     withVal(
-      input,
+      getImplicitInputValue,
       {
-        case i if !isComparable(i, x, y) || !hasSameType(i, x, y) =>
-          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$input' with '$x' and '$y'")
+        case inputValue if !isComparable(inputValue, x, y) || !hasSameType(inputValue, x, y) =>
+          error(
+            EvaluationFailureType.NOT_COMPARABLE,
+            s"Can't compare '$getImplicitInputValue' with '$x' and '$y'"
+          )
           ValNull
-        case i                                                    => f(c(i, x, y))
+        case inputValue                                                                      => f(c(inputValue, x, y))
       }
     )
-
-  private def withNumbers(x: Val, y: Val, f: (Number, Number) => Val)(implicit
-      context: EvalContext
-  ): Val =
-    withNumber(
-      x,
-      x => {
-        withNumber(
-          y,
-          y => {
-            f(x, y)
-          }
-        )
-      }
-    )
-
-  private def withNumber(x: Val, f: Number => Val)(implicit context: EvalContext): Val = x match {
-    case ValNumber(x) => f(x)
-    case _            => error(EvaluationFailureType.INVALID_TYPE, s"Expected number but found '$x'")
-  }
-
-  private def withBoolean(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val = x match {
-    case ValBoolean(x) => f(x)
-    case _             => error(EvaluationFailureType.INVALID_TYPE, s"Expected boolean but found '$x'")
-  }
-
-  private def withBooleanOrNull(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val =
-    x match {
-      case ValBoolean(x) => f(x)
-      case _             =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected boolean but found '$x'")
-        ValNull
-    }
-
-  private def withBooleanOrFalse(x: Val, f: Boolean => Val)(implicit context: EvalContext): Val =
-    x match {
-      case ValBoolean(x) => f(x)
-      case _             =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected boolean but found '$x'")
-        f(false)
-    }
-
-  private def withString(x: Val, f: String => Val)(implicit context: EvalContext): Val = x match {
-    case ValString(x) => f(x)
-    case _            => error(EvaluationFailureType.INVALID_TYPE, s"Expected string but found '$x'")
-  }
-
-  private def withDate(x: Val, f: Date => Val)(implicit context: EvalContext): Val = x match {
-    case ValDate(x) => f(x)
-    case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected date but found '$x'")
-  }
-
-  private def withLocalTime(x: Val, f: LocalTime => Val)(implicit context: EvalContext): Val =
-    x match {
-      case ValLocalTime(x) => f(x)
-      case _               => error(EvaluationFailureType.INVALID_TYPE, s"Expected local time but found '$x'")
-    }
-
-  private def withTime(x: Val, f: Time => Val)(implicit context: EvalContext): Val = x match {
-    case ValTime(x) => f(x)
-    case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected time but found '$x'")
-  }
-
-  private def withDateTime(x: Val, f: DateTime => Val)(implicit context: EvalContext): Val =
-    x match {
-      case ValDateTime(x) => f(x)
-      case _              => error(EvaluationFailureType.INVALID_TYPE, s"Expected date-and-time but found '$x'")
-    }
-
-  private def withLocalDateTime(x: Val, f: LocalDateTime => Val)(implicit
-      context: EvalContext
-  ): Val =
-    x match {
-      case ValLocalDateTime(x) => f(x)
-      case _                   =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected local date-and-time but found '$x'")
-    }
-
-  private def withYearMonthDuration(x: Val, f: YearMonthDuration => Val)(implicit
-      context: EvalContext
-  ): Val =
-    x match {
-      case ValYearMonthDuration(x) => f(x)
-      case _                       =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected years-months-duration but found '$x'")
-    }
-
-  private def withDayTimeDuration(x: Val, f: DayTimeDuration => Val)(implicit
-      context: EvalContext
-  ): Val =
-    x match {
-      case ValDayTimeDuration(x) => f(x)
-      case _                     =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected days-time-duration but found '$x'")
-    }
-
-  private def withVal(x: Val, f: Val => Val): Val = x match {
-    case e: ValError => e
-    case _           => f(x)
-  }
-
-  private def isComparable(values: Val*): Boolean = values.forall(_.isComparable)
-
-  private def hasSameType(values: Val*): Boolean = values.map(_.getClass).distinct.size == 1
 
   private def isInRange(range: ConstRange): (Val, Val, Val) => Boolean =
     (i, x, y) => {
@@ -458,13 +471,15 @@ class FeelInterpreter {
       context: EvalContext
   ): Val = {
     items.foldLeft(f(false)) {
-      case (ValBoolean(true), _) => f(true)
-      case (ValNull, item)       =>
+      case (ValBoolean(true), _)          => f(true)
+      case (fatalError: ValFatalError, _) => fatalError
+      case (ValNull, item)                =>
         item() match {
-          case ValBoolean(true) => f(true)
-          case _                => ValNull
+          case ValBoolean(true)          => f(true)
+          case fatalError: ValFatalError => fatalError
+          case _                         => ValNull
         }
-      case (_, item)             => withBooleanOrNull(item(), f)
+      case (_, item)                      => withBooleanOrNull(item(), f)
     }
   }
 
@@ -475,276 +490,249 @@ class FeelInterpreter {
       context: EvalContext
   ): Val = {
     items.foldLeft(f(true)) {
-      case (ValBoolean(false), _) => f(false)
-      case (ValNull, item)        =>
+      case (ValBoolean(false), _)         => f(false)
+      case (fatalError: ValFatalError, _) => fatalError
+      case (ValNull, item)                =>
         item() match {
-          case ValBoolean(false) => f(false)
-          case _                 => ValNull
+          case ValBoolean(false)         => f(false)
+          case fatalError: ValFatalError => fatalError
+          case _                         => ValNull
         }
-      case (_, item)              => withBooleanOrNull(item(), f)
+      case (_, item)                      => withBooleanOrNull(item(), f)
     }
   }
-
-  private def inputKey(implicit context: EvalContext): String =
-    context.variable(UnaryTests.inputVariable) match {
-      case ValString(inputVariableName) => inputVariableName
-      case _                            => UnaryTests.defaultInputVariable
-    }
-
-  private def input(implicit context: EvalContext): Val =
-    context.variable(inputKey) match {
-      case _: ValError =>
-        error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No input value found.")
-        ValNull
-      case inputValue  => inputValue
-    }
-
-  private def dualNumericOp(x: Val, y: Val, op: (Number, Number) => Number, f: Number => Val)(
-      implicit context: EvalContext
-  ): Val =
-    x match {
-      case ValNumber(x) => withNumber(y, y => f(op(x, y)))
-      case _            => error(EvaluationFailureType.INVALID_TYPE, s"Expected number but found '$x'")
-    }
 
   private def checkEquality(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit
       context: EvalContext
   ): Val =
-    x match {
-      case ValNull                         => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-      case x if (y == ValNull)             => f(c(x.toOption.getOrElse(ValNull), ValNull))
-      case _: ValError                     => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-      case _ if (y.isInstanceOf[ValError]) => f(c(ValNull, x.toOption.getOrElse(ValNull)))
-      case _ if !hasSameType(x, y)         =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
-      case ValNumber(x)                    => withNumber(y, y => f(c(x, y)))
-      case ValBoolean(x)                   => withBoolean(y, y => f(c(x, y)))
-      case ValString(x)                    => withString(y, y => f(c(x, y)))
-      case ValDate(x)                      => withDate(y, y => f(c(x, y)))
-      case ValLocalTime(x)                 => withLocalTime(y, y => f(c(x, y)))
-      case ValTime(x)                      => withTime(y, y => f(c(x, y)))
-      case ValLocalDateTime(x)             => withLocalDateTime(y, y => f(c(x, y)))
-      case ValDateTime(x)                  => withDateTime(y, y => f(c(x, y)))
-      case ValYearMonthDuration(x)         => withYearMonthDuration(y, y => f(c(x, y)))
-      case ValDayTimeDuration(x)           => withDayTimeDuration(y, y => f(c(x, y)))
-      case ValList(x)                      =>
-        withList(
-          y,
-          y => {
-            if (x.size != y.items.size) {
-              f(false)
+    withValues(
+      x,
+      y,
+      {
+        case (ValNull, _)                                       => f(c(ValNull, y.toOption.getOrElse(ValNull)))
+        case (_, ValNull)                                       => f(c(x.toOption.getOrElse(ValNull), ValNull))
+        case (ValNumber(x), ValNumber(y))                       => f(c(x, y))
+        case (ValBoolean(x), ValBoolean(y))                     => f(c(x, y))
+        case (ValString(x), ValString(y))                       => f(c(x, y))
+        case (ValDate(x), ValDate(y))                           => f(c(x, y))
+        case (ValLocalTime(x), ValLocalTime(y))                 => f(c(x, y))
+        case (ValTime(x), ValTime(y))                           => f(c(x, y))
+        case (ValLocalDateTime(x), ValLocalDateTime(y))         => f(c(x, y))
+        case (ValDateTime(x), ValDateTime(y))                   => f(c(x, y))
+        case (ValYearMonthDuration(x), ValYearMonthDuration(y)) => f(c(x, y))
+        case (ValDayTimeDuration(x), ValDayTimeDuration(y))     => f(c(x, y))
+        case (ValList(x), ValList(y))                           =>
+          if (x.size != y.size) {
+            f(false)
 
-            } else {
-              val isEqual = x.zip(y.items).foldRight(true) { case ((x, y), listIsEqual) =>
-                listIsEqual && {
-                  checkEquality(x, y, c, f) match {
-                    case ValBoolean(itemIsEqual) => itemIsEqual
-                    case _                       => false
-                  }
+          } else {
+            val isEqual = x.zip(y).foldRight(true) { case ((x, y), listIsEqual) =>
+              listIsEqual && {
+                checkEquality(x, y, c, f) match {
+                  case ValBoolean(itemIsEqual) => itemIsEqual
+                  case _                       => false
                 }
               }
-              f(isEqual)
             }
+            f(isEqual)
           }
-        )
-      case ValContext(x)                   =>
-        withContext(
-          y,
-          y => {
-            val xVars = x.variableProvider.getVariables
-            val yVars = y.context.variableProvider.getVariables
+        case (ValContext(x), ValContext(y))                     =>
+          val xVars = x.variableProvider.getVariables
+          val yVars = y.variableProvider.getVariables
 
-            if (xVars.keys != yVars.keys) {
-              f(false)
+          if (xVars.keys != yVars.keys) {
+            f(false)
 
-            } else {
-              val isEqual = xVars.keys.foldRight(true) { case (key, contextIsEqual) =>
-                contextIsEqual && {
-                  val xVal = context.valueMapper.toVal(xVars(key))
-                  val yVal = context.valueMapper.toVal(yVars(key))
+          } else {
+            val isEqual = xVars.keys.foldRight(true) { case (key, contextIsEqual) =>
+              contextIsEqual && {
+                val xVal = context.valueMapper.toVal(xVars(key))
+                val yVal = context.valueMapper.toVal(yVars(key))
 
-                  checkEquality(xVal, yVal, c, f) match {
-                    case ValBoolean(entryIsEqual) => entryIsEqual
-                    case _                        => false
-                  }
+                checkEquality(xVal, yVal, c, f) match {
+                  case ValBoolean(entryIsEqual) => entryIsEqual
+                  case _                        => false
                 }
               }
-              f(isEqual)
             }
+            f(isEqual)
           }
-        )
-      case _                               =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
-    }
+        case _                                                  =>
+          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
+          ValNull
+      }
+    )
 
   private def dualOp(x: Val, y: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(implicit
       context: EvalContext
-  ): Val =
-    x match {
-      case _ if !isComparable(x, y) || !hasSameType(x, y) =>
-        error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
-        ValNull
-      case _                                              => f(c(x, y))
-    }
+  ): Val = {
+    withValues(
+      x,
+      y,
+      {
+        case _ if !isComparable(x, y) || !hasSameType(x, y) =>
+          error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
+          ValNull
+        case _                                              => f(c(x, y))
+      }
+    )
+  }
 
-  private def addOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
-    case ValNumber(x)            => withNumber(y, y => ValNumber(x + y))
-    case ValString(x)            => withString(y, y => ValString(x + y))
-    case ValLocalTime(x)         => withDayTimeDuration(y, y => ValLocalTime(x.plus(y)))
-    case ValTime(x)              => withDayTimeDuration(y, y => ValTime(x.plus(y)))
-    case ValLocalDateTime(x)     =>
-      y match {
-        case ValYearMonthDuration(y) => ValLocalDateTime(x.plus(y))
-        case ValDayTimeDuration(y)   => ValLocalDateTime(x.plus(y))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-      }
-    case ValDateTime(x)          =>
-      y match {
-        case ValYearMonthDuration(y) => ValDateTime(x.plus(y))
-        case ValDayTimeDuration(y)   => ValDateTime(x.plus(y))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-      }
-    case ValYearMonthDuration(x) =>
-      y match {
-        case ValYearMonthDuration(y) =>
+  private def addOp(x: Val, y: Val)(implicit context: EvalContext): Val =
+    withValues(
+      x,
+      y,
+      {
+        case (ValNumber(x), ValNumber(y)) => ValNumber(x + y)
+        case (ValString(x), ValString(y)) => ValString(x + y)
+
+        case (ValLocalTime(x), ValDayTimeDuration(y)) => ValLocalTime(x.plus(y))
+        case (ValTime(x), ValDayTimeDuration(y))      => ValTime(x.plus(y))
+
+        case (ValLocalDateTime(x), ValYearMonthDuration(y)) => ValLocalDateTime(x.plus(y))
+        case (ValLocalDateTime(x), ValDayTimeDuration(y))   => ValLocalDateTime(x.plus(y))
+        case (ValDateTime(x), ValYearMonthDuration(y))      => ValDateTime(x.plus(y))
+        case (ValDateTime(x), ValDayTimeDuration(y))        => ValDateTime(x.plus(y))
+
+        case (ValYearMonthDuration(x), ValYearMonthDuration(y)) =>
           ValYearMonthDuration(x.plus(y).normalized)
-        case ValLocalDateTime(y)     => ValLocalDateTime(y.plus(x))
-        case ValDateTime(y)          => ValDateTime(y.plus(x))
-        case ValDate(y)              => ValDate(y.plus(x))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-      }
-    case ValDayTimeDuration(x)   =>
-      y match {
-        case ValDayTimeDuration(y) => ValDayTimeDuration(x.plus(y))
-        case ValLocalDateTime(y)   => ValLocalDateTime(y.plus(x))
-        case ValDateTime(y)        => ValDateTime(y.plus(x))
-        case ValLocalTime(y)       => ValLocalTime(y.plus(x))
-        case ValTime(y)            => ValTime(y.plus(x))
-        case ValDate(y)            => ValDate(y.atStartOfDay().plus(x).toLocalDate())
-        case _                     => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-      }
-    case ValDate(x)              =>
-      y match {
-        case ValDayTimeDuration(y)   =>
-          ValDate(x.atStartOfDay().plus(y).toLocalDate())
-        case ValYearMonthDuration(y) => ValDate(x.plus(y))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-      }
-    case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
-  }
+        case (ValYearMonthDuration(x), ValLocalDateTime(y))     => ValLocalDateTime(y.plus(x))
+        case (ValYearMonthDuration(x), ValDateTime(y))          => ValDateTime(y.plus(x))
+        case (ValYearMonthDuration(x), ValDate(y))              => ValDate(y.plus(x))
 
-  private def subOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
-    case ValNumber(x)            => withNumber(y, y => ValNumber(x - y))
-    case ValLocalTime(x)         =>
-      y match {
-        case ValLocalTime(y)       => ValDayTimeDuration(Duration.between(y, x))
-        case ValDayTimeDuration(y) => ValLocalTime(x.minus(y))
-        case _                     => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
+        case (ValDayTimeDuration(x), ValDayTimeDuration(y)) => ValDayTimeDuration(x.plus(y))
+        case (ValDayTimeDuration(x), ValLocalDateTime(y))   => ValLocalDateTime(y.plus(x))
+        case (ValDayTimeDuration(x), ValDateTime(y))        => ValDateTime(y.plus(x))
+        case (ValDayTimeDuration(x), ValLocalTime(y))       => ValLocalTime(y.plus(x))
+        case (ValDayTimeDuration(x), ValTime(y))            => ValTime(y.plus(x))
+        case (ValDayTimeDuration(x), ValDate(y))            => ValDate(y.atStartOfDay().plus(x).toLocalDate)
+
+        case (ValDate(x), ValDayTimeDuration(y))   => ValDate(x.atStartOfDay().plus(y).toLocalDate)
+        case (ValDate(x), ValYearMonthDuration(y)) => ValDate(x.plus(y))
+
+        case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't add '$y' to '$x'")
       }
-    case ValTime(x)              =>
-      y match {
-        case ValTime(y)            => ValDayTimeDuration(ZonedTime.between(x, y))
-        case ValDayTimeDuration(y) => ValTime(x.minus(y))
-        case _                     => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
-      }
-    case ValLocalDateTime(x)     =>
-      y match {
-        case ValLocalDateTime(y)     => ValDayTimeDuration(Duration.between(y, x))
-        case ValYearMonthDuration(y) => ValLocalDateTime(x.minus(y))
-        case ValDayTimeDuration(y)   => ValLocalDateTime(x.minus(y))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
-      }
-    case ValDateTime(x)          =>
-      y match {
-        case ValDateTime(y)          => ValDayTimeDuration(Duration.between(y, x))
-        case ValYearMonthDuration(y) => ValDateTime(x.minus(y))
-        case ValDayTimeDuration(y)   => ValDateTime(x.minus(y))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
-      }
-    case ValDate(x)              =>
-      y match {
-        case ValDate(y)              =>
+    )
+
+  private def subOp(x: Val, y: Val)(implicit context: EvalContext): Val =
+    withValues(
+      x,
+      y,
+      {
+        case (ValNumber(x), ValNumber(y)) => ValNumber(x - y)
+
+        case (ValLocalTime(x), ValLocalTime(y))       => ValDayTimeDuration(Duration.between(y, x))
+        case (ValLocalTime(x), ValDayTimeDuration(y)) => ValLocalTime(x.minus(y))
+
+        case (ValTime(x), ValTime(y))            => ValDayTimeDuration(ZonedTime.between(x, y))
+        case (ValTime(x), ValDayTimeDuration(y)) => ValTime(x.minus(y))
+
+        case (ValLocalDateTime(x), ValLocalDateTime(y))     =>
+          ValDayTimeDuration(Duration.between(y, x))
+        case (ValLocalDateTime(x), ValYearMonthDuration(y)) => ValLocalDateTime(x.minus(y))
+        case (ValLocalDateTime(x), ValDayTimeDuration(y))   => ValLocalDateTime(x.minus(y))
+
+        case (ValDateTime(x), ValDateTime(y))          => ValDayTimeDuration(Duration.between(y, x))
+        case (ValDateTime(x), ValYearMonthDuration(y)) => ValDateTime(x.minus(y))
+        case (ValDateTime(x), ValDayTimeDuration(y))   => ValDateTime(x.minus(y))
+
+        case (ValDate(x), ValDate(y))              =>
           ValDayTimeDuration(Duration.between(y.atStartOfDay, x.atStartOfDay))
-        case ValYearMonthDuration(y) => ValDate(x.minus(y))
-        case ValDayTimeDuration(y)   =>
-          ValDate(x.atStartOfDay.minus(y).toLocalDate())
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
-      }
-    case ValYearMonthDuration(x) =>
-      withYearMonthDuration(y, y => ValYearMonthDuration(x.minus(y).normalized))
-    case ValDayTimeDuration(x)   =>
-      withDayTimeDuration(y, y => ValDayTimeDuration(x.minus(y)))
-    case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
-  }
+        case (ValDate(x), ValYearMonthDuration(y)) => ValDate(x.minus(y))
+        case (ValDate(x), ValDayTimeDuration(y))   => ValDate(x.atStartOfDay.minus(y).toLocalDate)
 
-  private def mulOp(x: Val, y: Val)(implicit context: EvalContext): Val = x match {
-    case ValNumber(x)            =>
-      y match {
-        case ValNumber(y)            => ValNumber(x * y)
-        case ValYearMonthDuration(y) =>
+        case (ValYearMonthDuration(x), ValYearMonthDuration(y)) =>
+          ValYearMonthDuration(x.minus(y).normalized)
+        case (ValDayTimeDuration(x), ValDayTimeDuration(y))     => ValDayTimeDuration(x.minus(y))
+
+        case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't subtract '$y' from '$x'")
+      }
+    )
+
+  private def mulOp(x: Val, y: Val)(implicit context: EvalContext): Val =
+    withValues(
+      x,
+      y,
+      {
+        case (ValNumber(x), ValNumber(y))            => ValNumber(x * y)
+        case (ValNumber(x), ValYearMonthDuration(y)) =>
           ValYearMonthDuration(y.multipliedBy(x.intValue).normalized)
-        case ValDayTimeDuration(y)   =>
-          ValDayTimeDuration(y.multipliedBy(x.intValue))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't multiply '$x' by '$y'")
+        case (ValNumber(x), ValDayTimeDuration(y))   => ValDayTimeDuration(y.multipliedBy(x.intValue))
+
+        case (ValYearMonthDuration(x), ValNumber(y)) =>
+          ValYearMonthDuration(x.multipliedBy(y.intValue).normalized)
+        case (ValDayTimeDuration(x), ValNumber(y))   => ValDayTimeDuration(x.multipliedBy(y.intValue))
+
+        case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't multiply '$x' by '$y'")
       }
-    case ValYearMonthDuration(x) =>
-      withNumber(y, y => ValYearMonthDuration(x.multipliedBy(y.intValue).normalized))
-    case ValDayTimeDuration(x)   =>
-      withNumber(y, y => ValDayTimeDuration(x.multipliedBy(y.intValue)))
-    case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't multiply '$x' by '$y'")
-  }
+    )
 
-  private def divOp(x: Val, y: Val)(implicit context: EvalContext): Val = y match {
-    case ValNumber(y) if (y != 0) =>
-      x match {
-        case ValNumber(x)            => ValNumber(x / y)
-        case ValYearMonthDuration(x) =>
-          ValYearMonthDuration(Period.ofMonths((x.toTotalMonths() / y).intValue).normalized)
-        case ValDayTimeDuration(x)   =>
-          ValDayTimeDuration(Duration.ofMillis((x.toMillis() / y).intValue))
-        case _                       => error(EvaluationFailureType.INVALID_TYPE, s"Can't divide '$x' by '$y'")
+  private def divOp(x: Val, y: Val)(implicit context: EvalContext): Val =
+    withValues(
+      x,
+      y,
+      {
+        case (ValNumber(x), ValNumber(y)) if (y != 0) => ValNumber(x / y)
+
+        case (ValYearMonthDuration(x), ValNumber(y)) if (y != 0)               =>
+          ValYearMonthDuration(Period.ofMonths((x.toTotalMonths / y).intValue).normalized)
+        case (ValYearMonthDuration(x), ValYearMonthDuration(y)) if (!y.isZero) =>
+          ValNumber(x.toTotalMonths / y.toTotalMonths)
+
+        case (ValDayTimeDuration(x), ValDayTimeDuration(y)) if (!y.isZero) =>
+          ValNumber(x.toMillis / y.toMillis)
+        case (ValDayTimeDuration(x), ValNumber(y)) if (y != 0)             =>
+          ValDayTimeDuration(Duration.ofMillis((x.toMillis / y).intValue))
+
+        case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't divide '$x' by '$y'")
       }
+    )
 
-    case ValYearMonthDuration(y) if (!y.isZero) =>
-      withYearMonthDuration(x, x => ValNumber(x.toTotalMonths / y.toTotalMonths))
-    case ValDayTimeDuration(y) if (!y.isZero)   =>
-      withDayTimeDuration(x, x => ValNumber(x.toMillis / y.toMillis))
-
-    case _ => error(EvaluationFailureType.INVALID_TYPE, s"Can't divide '$x' by '$y'")
-  }
-
-  private def unaryTestExpression(x: Val)(implicit context: EvalContext): Val =
+  private def unaryTestExpression(expression: Exp)(implicit context: EvalContext): Val = {
     withVal(
-      input,
-      i =>
-        x match {
-          case ValBoolean(true)              => ValBoolean(true) // the expression is true
-          case ValList(ys) if ys.contains(i) =>
-            ValBoolean(true) // the expression contains the input value
-          case _ =>
-            checkEquality(i, x, _ == _, ValBoolean) match {
-              case ValBoolean(true)             => ValBoolean(true)  // the expression is the input value
-              case _ if x == ValBoolean(false)  => ValBoolean(false) // the expression is false
+      getImplicitInputValue,
+      inputValue =>
+        eval(expression) match {
+          case _: ValFatalError                       =>
+            eval(expression)(context.add(INPUT_VALUE_SYMBOL -> inputValue)) match {
+              case ValBoolean(true)  => ValBoolean(true)
+              case ValBoolean(false) => ValBoolean(false)
+              case _                 => ValNull
+            }
+          case ValBoolean(true)                       => ValBoolean(true)
+          case ValList(ys) if ys.contains(inputValue) =>
+            // the expression contains the input value
+            ValBoolean(true)
+          case x                                      =>
+            checkEquality(inputValue, x, _ == _, ValBoolean) match {
+              case ValBoolean(true)             =>
+                // the expression is the input value
+                ValBoolean(true)
               case _ if x.isInstanceOf[ValList] =>
-                ValBoolean(false) // the expression is a list but doesn't contain the input value
-              case ValNull => ValNull           // the expression can't be compared to the input value
-              case _       => ValBoolean(false) // the expression is not the input value
+                // the expression is a list but doesn't contain the input value
+                ValBoolean(false)
+              case ValNull                      => ValNull
+              case _                            =>
+                // the expression is not the input value
+                ValBoolean(false)
             }
         }
     )
+  }
 
-  private def withFunction(x: Val, f: ValFunction => Val)(implicit context: EvalContext): Val =
-    x match {
-      case x: ValFunction    => f(x)
-      case ValError(failure) =>
-        error(EvaluationFailureType.NO_FUNCTION_FOUND, failure)
-        ValNull
-      case _                 =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Expected function but found '$x'")
-        ValNull
+  private def findFunction(ctx: EvalContext, name: String, params: FunctionParameters)(implicit
+      context: EvalContext
+  ): Val = {
+    val function = params match {
+      case PositionalFunctionParameters(params) => ctx.function(name, params.size)
+      case NamedFunctionParameters(params)      => ctx.function(name, params.keySet)
     }
+
+    function match {
+      case ValError(failure) => error(EvaluationFailureType.NO_FUNCTION_FOUND, failure)
+      case _                 => function
+    }
+  }
 
   private def invokeFunction(function: ValFunction, params: FunctionParameters)(implicit
       context: EvalContext
@@ -777,40 +765,10 @@ class FeelInterpreter {
     }
 
     function.invoke(paramList) match {
-      case e: ValError => e
-      case result      => context.valueMapper.toVal(result)
+      case fatalError: ValFatalError => fatalError
+      case e: ValError               => e
+      case result                    => context.valueMapper.toVal(result)
     }
-  }
-
-  private def findFunction(ctx: EvalContext, name: String, params: FunctionParameters): Val =
-    params match {
-      case PositionalFunctionParameters(params) => ctx.function(name, params.size)
-      case NamedFunctionParameters(params)      => ctx.function(name, params.keySet)
-    }
-
-  private def withType(x: Val, f: String => ValBoolean)(implicit context: EvalContext): Val =
-    x match {
-      case ValNumber(_)            => f("number")
-      case ValBoolean(_)           => f("boolean")
-      case ValString(_)            => f("string")
-      case ValDate(_)              => f("date")
-      case ValLocalTime(_)         => f("time")
-      case ValTime(_)              => f("time")
-      case ValLocalDateTime(_)     => f("date time")
-      case ValDateTime(_)          => f("date time")
-      case ValYearMonthDuration(_) => f("year-month-duration")
-      case ValDayTimeDuration(_)   => f("day-time-duration")
-      case ValNull                 => f("null")
-      case ValList(_)              => f("list")
-      case ValContext(_)           => f("context")
-      case ValFunction(_, _, _)    => f("function")
-      case _                       =>
-        error(EvaluationFailureType.INVALID_TYPE, s"Unknown type '${x.getClass.getName}' of '$x'")
-    }
-
-  private def withList(x: Val, f: ValList => Val)(implicit context: EvalContext): Val = x match {
-    case x: ValList => f(x)
-    case _          => error(EvaluationFailureType.INVALID_TYPE, s"Expected list but found '$x'")
   }
 
   private def withLists(lists: List[(String, Val)], f: List[(String, ValList)] => Val)(implicit
@@ -818,20 +776,21 @@ class FeelInterpreter {
   ): Val = {
     lists
       .map { case (name, it) => name -> withList(it, list => list) }
-      .find(_._2.isInstanceOf[ValError]) match {
-      case Some(Tuple2(_, e: Val)) => e
-      case None                    => f(lists.asInstanceOf[List[(String, ValList)]])
+      .find { case (_, value) => !value.isInstanceOf[ValList] } match {
+      case Some(Tuple2(_, error: Val)) => error
+      case None                        => f(lists.asInstanceOf[List[(String, ValList)]])
     }
   }
 
   private def withCartesianProduct(
       iterators: List[(String, Exp)],
       f: List[Map[String, Val]] => Val
-  )(implicit context: EvalContext): Val =
+  )(implicit context: EvalContext): Val = {
     withLists(
       iterators.map { case (name, it) => name -> eval(it) },
       lists => f(flattenAndZipLists(lists))
     )
+  }
 
   private def flattenAndZipLists(lists: List[(String, ValList)]): List[Map[String, Val]] =
     lists match {
@@ -909,12 +868,6 @@ class FeelInterpreter {
     }
   }
 
-  private def withContext(x: Val, f: ValContext => Val)(implicit context: EvalContext): Val =
-    x match {
-      case x: ValContext => f(x)
-      case _             => error(EvaluationFailureType.INVALID_TYPE, s"Expect context but found '$x'")
-    }
-
   private def filterContext(x: Val)(implicit context: EvalContext): EvalContext =
     x match {
       case ValContext(ctx: Context) => context.add("item" -> x).merge(ctx)
@@ -966,9 +919,6 @@ class FeelInterpreter {
         }
     }
 
-  private def evalContextEntry(key: String, exp: Exp)(implicit context: EvalContext): Val =
-    withVal(eval(exp), value => value)
-
   private def invokeJavaFunction(
       className: String,
       methodName: String,
@@ -1012,21 +962,19 @@ class FeelInterpreter {
   }
 
   private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
-    withVal(
+    withValues(
       eval(range.start.value),
-      startValue =>
-        withVal(
-          eval(range.end.value),
-          endValue =>
-            if (isValidRange(startValue, endValue)) {
-              ValRange(
-                start = toRangeBoundary(range.start, startValue),
-                end = toRangeBoundary(range.end, endValue)
-              )
-            } else {
-              error(EvaluationFailureType.INVALID_TYPE, s"Invalid range definition '$range'")
-            }
-        )
+      eval(range.end.value),
+      (startValue, endValue) => {
+        if (isValidRange(startValue, endValue)) {
+          ValRange(
+            start = toRangeBoundary(range.start, startValue),
+            end = toRangeBoundary(range.end, endValue)
+          )
+        } else {
+          error(EvaluationFailureType.INVALID_TYPE, s"Invalid range definition '$range'")
+        }
+      }
     )
   }
 
@@ -1049,5 +997,11 @@ class FeelInterpreter {
       case ClosedConstRangeBoundary(_) => ClosedRangeBoundary(value)
     }
   }
+
+}
+
+object FeelInterpreter {
+
+  val INPUT_VALUE_SYMBOL: String = "?"
 
 }

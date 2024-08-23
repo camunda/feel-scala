@@ -94,13 +94,15 @@ sealed trait Val extends Ordered[Val] {
   }
 
   def toEither: Either[ValError, Val] = this match {
-    case e: ValError => Left(e)
-    case v           => Right(v)
+    case e: ValError      => Left(e)
+    case e: ValFatalError => Left(ValError(e.toString))
+    case v                => Right(v)
   }
 
   def toOption: Option[Val] = this match {
-    case e: ValError => None
-    case v           => Some(v)
+    case _: ValError               => None
+    case fatalError: ValFatalError => Some(fatalError)
+    case v                         => Some(v)
   }
 
 }
@@ -285,6 +287,10 @@ object ValDayTimeDuration {
 
 case class ValError(error: String) extends Val {
   override def toString: String = s"error(\"$error\")"
+}
+
+case class ValFatalError(error: String) extends Val {
+  override def toString: String = s"fatal error(\"$error\")"
 }
 
 case object ValNull extends Val {

@@ -65,7 +65,7 @@ class SuppressedFailuresTest
   it should "report a suppressed failure if an addition has incompatible values" in {
     evaluateExpression("2 + true") should reportFailure(
       failureType = EvaluationFailureType.INVALID_TYPE,
-      failureMessage = "Expected number but found 'true'"
+      failureMessage = "Can't add 'true' to '2'"
     )
   }
 
@@ -109,7 +109,7 @@ class SuppressedFailuresTest
       ),
       EvaluationFailure(
         failureType = EvaluationFailureType.INVALID_TYPE,
-        failureMessage = "Expected number but found 'null'"
+        failureMessage = "Can't add 'null' to '1'"
       )
     )
   }
