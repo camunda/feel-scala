@@ -141,7 +141,7 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(ZonedDateTime.parse("2012-12-24T23:59:00+01:00"))
   }
 
-  it should "return null if the date is not valid (leap year)" in {
+  it should "return null if the date is not valid (not a leap year)" in {
 
     evaluateExpression(
       """ date and time(x) """,
@@ -154,7 +154,7 @@ class BuiltinConversionFunctionsTest
     ) should returnNull()
   }
 
-  it should "return null if the date is not valid (month with 31 days)" in {
+  it should "return null if the date is not valid (month without 31 days)" in {
 
     evaluateExpression(
       """ date and time(x) """,
