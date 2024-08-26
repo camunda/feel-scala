@@ -96,7 +96,7 @@ class InterpreterContextExpressionTest
   }
 
   it should "fail if compare to not a context" in {
-    evaluateExpression("{} = 1") should failWith("expect Context but found 'ValNumber(1)'")
+    evaluateExpression("{} = 1") should failWith("Can't compare '{}' with '1'")
   }
 
   it should "fail when special symbols violate context syntax" in {
@@ -135,26 +135,34 @@ class InterpreterContextExpressionTest
   }
 
   it should "fail if the context is empty" in {
-    evaluateExpression("{}.x") should failWith("context contains no entry with key 'x'")
+    evaluateExpression("{}.x") should failWith(
+      "No context entry found with key 'x'. The context is empty"
+    )
   }
 
   it should "fail if no entry exists with the key" in {
-    evaluateExpression("{x:1, y:2}.z") should failWith("context contains no entry with key 'z'")
+    evaluateExpression("{x:1, y:2}.z") should failWith(
+      "No context entry found with key 'z'. Available keys: 'x', 'y'"
+    )
   }
 
-  it should "return fail if the context is null" in {
+  it should "fail if the context is null" in {
     evaluateExpression(
       expression = "a.b",
       variables = Map("a" -> null)
-    ) should failWith("No property found with name 'b' of value 'ValNull'")
+    ) should failWith("No context entry found with key 'b'. The context is null")
   }
 
   it should "fail if the chained context is null" in {
-    evaluateExpression("{a:1}.b.c") should failWith("context contains no entry with key 'b'")
+    evaluateExpression("{a:1}.b.c") should failWith(
+      "No context entry found with key 'b'. Available keys: 'a'"
+    )
   }
 
   it should "fail if the context is empty (inside a context)" in {
-    evaluateExpression("{x:1, y:{}.z}") should failWith("context contains no entry with key 'z'")
+    evaluateExpression("{x:1, y:{}.z}") should failWith(
+      "No context entry found with key 'z'. The context is empty"
+    )
   }
 
   it should "return the value of a key with whitespaces" in {

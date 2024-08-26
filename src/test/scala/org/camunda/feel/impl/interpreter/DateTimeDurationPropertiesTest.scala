@@ -54,7 +54,7 @@ class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with Feel
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDate(2020-09-30)'. Available properties:"
+      "No property found with name 'x' of value '2020-09-30'. Available properties: 'year', 'month', 'day', 'weekday'"
     )
   }
 
@@ -97,7 +97,7 @@ class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with Feel
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValTime(ZonedTime(11:45:30,+02:00,None))'. Available properties:"
+      "No property found with name 'x' of value '11:45:30+02:00'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
     )
   }
 
@@ -139,7 +139,7 @@ class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with Feel
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalTime(11:45:30)'. Available properties:"
+      "No property found with name 'x' of value '11:45:30'. Available properties: 'timezone', 'second', 'time offset', 'minute', 'hour'"
     )
   }
 
@@ -208,7 +208,7 @@ class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with Feel
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValDateTime(2020-09-30T22:50:30+02:00)'. Available properties:"
+      "No property found with name 'x' of value '2020-09-30T22:50:30+02:00'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
     )
   }
 
@@ -269,7 +269,7 @@ class DateTimeDurationPropertiesTest extends AnyFlatSpec with Matchers with Feel
 
     result shouldBe a[ValError]
     result.asInstanceOf[ValError].error should startWith(
-      "No property found with name 'x' of value 'ValLocalDateTime(2020-09-30T22:50:30)'. Available properties:"
+      "No property found with name 'x' of value '2020-09-30T22:50:30'. Available properties: 'timezone', 'year', 'second', 'month', 'day', 'time offset', 'weekday', 'minute', 'hour'"
     )
   }
 
