@@ -17,6 +17,7 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.api.EvaluationFailureType.INVALID_TYPE
 import org.camunda.feel.context.{CustomContext, VariableProvider}
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
@@ -34,85 +35,7 @@ class InterpreterListExpressionTest
     with FeelEngineTest
     with EvaluationResultMatchers {
 
-  "A list" should "be checked with 'some'" in {
-
-    evaluateExpression("some x in [1,2,3] satisfies x > 2") should returnResult(true)
-    evaluateExpression("some x in [1,2,3] satisfies x > 3") should returnResult(false)
-
-    evaluateExpression(
-      expression = "some x in xs satisfies x > 2",
-      variables = Map("xs" -> List(1, 2, 3))
-    ) should returnResult(true)
-
-    evaluateExpression(
-      expression = "some x in xs satisfies x > 2",
-      variables = Map("xs" -> List(1, 2))
-    ) should returnResult(false)
-
-    evaluateExpression(
-      expression = "some x in xs satisfies count(xs) > 2",
-      variables = Map("xs" -> List(1, 2))
-    ) should returnResult(false)
-
-    evaluateExpression("some x in [1,2], y in [2,3] satisfies x < y") should returnResult(true)
-    evaluateExpression("some x in [1,2], y in [1,1] satisfies x < y") should returnResult(false)
-  }
-
-  it should "be checked with 'some' (range)" in {
-    evaluateExpression("some x in 1..5 satisfies x > 3") should returnResult(true)
-  }
-
-  it should "be checked with 'every'" in {
-
-    evaluateExpression("every x in [1,2,3] satisfies x >= 1") should returnResult(true)
-    evaluateExpression("every x in [1,2,3] satisfies x >= 2") should returnResult(false)
-
-    evaluateExpression(
-      expression = "every x in xs satisfies x >= 1",
-      variables = Map("xs" -> List(1, 2, 3))
-    ) should returnResult(true)
-
-    evaluateExpression(
-      expression = "every x in xs satisfies x >= 1",
-      variables = Map("xs" -> List(0, 1, 2, 3))
-    ) should returnResult(false)
-
-    evaluateExpression("every x in [1,2], y in [3,4] satisfies x < y") should returnResult(true)
-    evaluateExpression("every x in [1,2], y in [2,3] satisfies x < y") should returnResult(false)
-  }
-
-  it should "be checked with 'every' (range)" in {
-    evaluateExpression("every x in 1..5 satisfies x < 10") should returnResult(true)
-  }
-
-  it should "be processed in a for-expression" in {
-
-    evaluateExpression("for x in [1,2] return x * 2") should returnResult(
-      List(2, 4)
-    )
-
-    evaluateExpression("for x in [1,2], y in [3,4] return x * y") should returnResult(
-      List(3, 4, 6, 8)
-    )
-
-    evaluateExpression(
-      expression = "for x in xs return x * 2",
-      variables = Map("xs" -> List(1, 2))
-    ) should returnResult(List(2, 4))
-
-    evaluateExpression(
-      expression = "for y in xs return index of([2, 3], y)",
-      variables = Map("xs" -> List(1, 2))
-    ) should returnResult(List(List.empty, List(1)))
-  }
-
-  it should "be processed in a for-expression (range)" in {
-    evaluateExpression("for x in 1..3 return x") should returnResult(
-      List(1, 2, 3)
-    )
-  }
-
-  it should "contain null if a variable doesn't exist" in {
+  "A list" should "contain null if a variable doesn't exist" in {
     evaluateExpression("[1, x]") should returnResult(List(1, null))
   }
 
@@ -157,7 +80,130 @@ class InterpreterListExpressionTest
     ))
   }
 
-  "A for-expression" should "iterate over a range" in {
+  "A some-expression" should "return true if one item satisfies the condition" in {
+
+    evaluateExpression("some x in [1,2,3] satisfies x > 2") should returnResult(true)
+
+    evaluateExpression(
+      expression = "some x in xs satisfies x > 1",
+      variables = Map("xs" -> List(1, 2, 3))
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = "some x in xs satisfies count(xs) > 2",
+      variables = Map("xs" -> List(1, 2, 3))
+    ) should returnResult(true)
+
+    evaluateExpression("some x in [1,2], y in [2,3] satisfies x < y") should returnResult(true)
+  }
+
+  it should "return false if no item satisfies the condition" in {
+
+    evaluateExpression("some x in [1,2,3] satisfies x > 3") should returnResult(false)
+
+    evaluateExpression(
+      expression = "some x in xs satisfies x > 2",
+      variables = Map("xs" -> List(1, 2))
+    ) should returnResult(false)
+
+    evaluateExpression("some x in [1,2], y in [1,1] satisfies x < y") should returnResult(false)
+  }
+
+  it should "return true if the range satisfies the condition" in {
+    evaluateExpression("some x in 1..5 satisfies x > 3") should returnResult(true)
+  }
+
+  it should "return false if the range doesn't satisfy the condition" in {
+    evaluateExpression("some x in 1..5 satisfies x > 10") should returnResult(false)
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "some item in x satisfies x > 10"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "some item in x satisfies x > 10",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
+  }
+
+  "An every-expression" should "return true if all items satisfy the condition" in {
+
+    evaluateExpression("every x in [1,2,3] satisfies x >= 1") should returnResult(true)
+
+    evaluateExpression(
+      expression = "every x in xs satisfies x >= 1",
+      variables = Map("xs" -> List(1, 2, 3))
+    ) should returnResult(true)
+
+    evaluateExpression("every x in [1,2], y in [3,4] satisfies x < y") should returnResult(true)
+  }
+
+  it should "return false if one item doesn't satisfy the condition" in {
+
+    evaluateExpression("every x in [1,2,3] satisfies x >= 2") should returnResult(false)
+
+    evaluateExpression(
+      expression = "every x in xs satisfies x >= 1",
+      variables = Map("xs" -> List(0, 1, 2, 3))
+    ) should returnResult(false)
+
+    evaluateExpression("every x in [1,2], y in [2,3] satisfies x < y") should returnResult(false)
+  }
+
+  it should "return true if the range satisfies the condition" in {
+    evaluateExpression("every x in 1..5 satisfies x < 10") should returnResult(true)
+  }
+
+  it should "return false if the range doesn't satisfy the condition" in {
+    evaluateExpression("every x in 1..10 satisfies x < 5") should returnResult(false)
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "every item in x satisfies x > 10"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "every item in x satisfies x > 10",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
+  }
+
+  "A for-expression" should "iterate over a list" in {
+    evaluateExpression("for x in [1,2] return x * 2") should returnResult(
+      List(2, 4)
+    )
+
+    evaluateExpression("for x in [1,2], y in [3,4] return x * y") should returnResult(
+      List(3, 4, 6, 8)
+    )
+
+    evaluateExpression(
+      expression = "for x in xs return x * 2",
+      variables = Map("xs" -> List(1, 2))
+    ) should returnResult(List(2, 4))
+
+    evaluateExpression(
+      expression = "for y in xs return index of([2, 3], y)",
+      variables = Map("xs" -> List(1, 2))
+    ) should returnResult(List(List.empty, List(1)))
+  }
+
+  it should "iterate over a range" in {
     evaluateExpression("for x in 1..3 return x * 2") should returnResult(List(2, 4, 6))
 
     evaluateExpression("for x in 1..n return x * 2", Map("n" -> 3)) should returnResult(
@@ -183,6 +229,23 @@ class InterpreterListExpressionTest
     evaluateExpression(
       "for i in 1..8 return if (i <= 2) then 1 else partial[-1] + partial[-2]"
     ) should returnResult(List(1, 1, 2, 3, 5, 8, 13, 21))
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "for item in x return item * 2"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "for item in x return item * 2",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
   }
 
   private val hugeList: List[Int] = (1 to 10000).toList
@@ -421,6 +484,30 @@ class InterpreterListExpressionTest
                          ]}.loans[loanId = id].amount)""",
       context = new MyCustomContext(Map("id" -> "AAA002", "loanId" -> "AAA002"))
     ) should returnResult(20)
+  }
+
+  it should "return null if the value is not a list" in {
+    evaluateExpression(
+      expression = "x[even(item)]"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
+
+    evaluateExpression(
+      expression = "x[even(item)]",
+      variables = Map("x" -> 2)
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found '2'"
+    ))
+
+    evaluateExpression(
+      expression = "x[1]"
+    ) should (returnNull() and reportFailure(
+      INVALID_TYPE,
+      "Expected list but found 'null'"
+    ))
   }
 
 }
