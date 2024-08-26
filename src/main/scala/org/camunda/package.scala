@@ -18,20 +18,20 @@ package org.camunda
 
 import scala.math.BigDecimal
 import org.slf4j.LoggerFactory
+
 import java.time.temporal.ChronoField.{
+  DAY_OF_MONTH,
   HOUR_OF_DAY,
   MINUTE_OF_HOUR,
-  SECOND_OF_MINUTE,
-  NANO_OF_SECOND,
-  YEAR,
   MONTH_OF_YEAR,
-  DAY_OF_MONTH
+  NANO_OF_SECOND,
+  SECOND_OF_MINUTE,
+  YEAR
 }
-
 import java.util.regex.Pattern
 import org.camunda.feel.syntaxtree.ZonedTime
 
-import java.time.format.{DateTimeFormatterBuilder, SignStyle}
+import java.time.format.{DateTimeFormatterBuilder, ResolverStyle, SignStyle}
 import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, Period, ZonedDateTime}
 
 /** @author
@@ -189,17 +189,20 @@ package object feel {
     .appendValue(MONTH_OF_YEAR, 2)
     .appendLiteral("-")
     .appendValue(DAY_OF_MONTH, 2)
-    .toFormatter();
+    .toFormatter()
+    .withResolverStyle(ResolverStyle.STRICT)
 
   val localDateTimeFormatter = new DateTimeFormatterBuilder()
     .append(dateFormatter)
     .append(timeFormatterWithPrefix)
-    .toFormatter();
+    .toFormatter()
+    .withResolverStyle(ResolverStyle.STRICT)
 
   val dateTimeFormatter = new DateTimeFormatterBuilder()
     .append(dateFormatter)
     .append(timeFormatterWithPrefix)
     .append(offsetFormatter)
-    .toFormatter();
+    .toFormatter()
+    .withResolverStyle(ResolverStyle.STRICT)
 
 }
