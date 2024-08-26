@@ -133,14 +133,14 @@ class InterpreterUnaryTest
   }
 
   it should "compare null with less/greater than" in {
-    evaluateUnaryTests("< 3", inputValue = null) should returnNull()
-    evaluateUnaryTests("<= 3", inputValue = null) should returnNull()
-    evaluateUnaryTests("> 3", inputValue = null) should returnNull()
-    evaluateUnaryTests(">= 3", inputValue = null) should returnNull()
+    evaluateUnaryTests("< 3", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("<= 3", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("> 3", inputValue = null) should returnResult(false)
+    evaluateUnaryTests(">= 3", inputValue = null) should returnResult(false)
   }
 
   it should "compare null with interval" in {
-    evaluateUnaryTests("(0..10)", inputValue = null) should returnNull()
+    evaluateUnaryTests("(0..10)", inputValue = null) should returnResult(false)
   }
 
   "A string" should "be equal to another string" in {
@@ -555,9 +555,9 @@ class InterpreterUnaryTest
     evaluateUnaryTests("x", 5, Map("x" -> 3)) should returnResult(false)
   }
 
-  it should "return null if it evaluates to a value that has a different type than the implicit value" in {
+  it should "return false if it evaluates to a value that has a different type than the implicit value" in {
 
-    evaluateUnaryTests(""" @"2024-08-19" """, 5) should returnNull()
+    evaluateUnaryTests(""" @"2024-08-19" """, 5) should returnResult(false)
   }
 
   it should "return true if it evaluates to a list that contains the implicit value" in {
@@ -588,10 +588,11 @@ class InterpreterUnaryTest
     evaluateUnaryTests("> x", 5, Map("x" -> 10)) should returnResult(false)
   }
 
-  it should "return null if it evaluates to null when the implicit value is applied to it" in {
+  it should "fail if the implicit value has a different type" in {
 
-    evaluateUnaryTests(""" < @"2024-08-19" """, 5) should returnNull()
-    evaluateUnaryTests(""" < @"2024-08-19" """, inputValue = null) should returnNull()
+    evaluateUnaryTests(""" < @"2024-08-19" """, 5) should failWith(
+      "Can't compare '5' with '2024-08-19'"
+    )
   }
 
   it should "return true if it evaluates to true when the implicit value is assigned to the special variable '?'" in {
@@ -608,25 +609,23 @@ class InterpreterUnaryTest
     evaluateUnaryTests("? > x", 5, Map("x" -> 10)) should returnResult(false)
   }
 
-  it should "return null if it evaluates to a value that is not a boolean when the implicit value is assigned to the special variable '?'" in {
+  it should "return false if it evaluates to a value that is not a boolean when the implicit value is assigned to the special variable '?'" in {
 
-    evaluateUnaryTests("abs(?)", 5) should returnNull()
-    evaluateUnaryTests("?", 5) should returnNull()
-    evaluateUnaryTests("? + not_existing", 5) should returnNull()
+    evaluateUnaryTests("abs(?)", 5) should returnResult(false)
+    evaluateUnaryTests("?", 5) should returnResult(false)
+    evaluateUnaryTests("? + not_existing", 5) should returnResult(false)
   }
 
   it should "return true if it evaluates to null and the implicit value is null" in {
 
     evaluateUnaryTests("null", inputValue = null) should returnResult(true)
     evaluateUnaryTests("2 + not_existing", inputValue = null) should returnResult(true)
-    evaluateUnaryTests("not_existing", inputValue = null) should returnResult(true)
   }
 
   it should "return false if it evaluates to null and the implicit value is not null" in {
 
     evaluateUnaryTests("null", 5) should returnResult(false)
     evaluateUnaryTests("2 + not_existing", 5) should returnResult(false)
-    evaluateUnaryTests("not_existing", 5) should returnResult(false)
   }
 
   it should "return true if it evaluates to true when null is assigned to the special variable '?'" in {
@@ -641,12 +640,12 @@ class InterpreterUnaryTest
     evaluateUnaryTests("odd(?) and ? != null", inputValue = null) should returnResult(false)
   }
 
-  it should "return null if it evaluates to null when null is assigned to the special variable '?'" in {
+  it should "return false if it evaluates to null when null is assigned to the special variable '?'" in {
 
-    evaluateUnaryTests("? < 10", inputValue = null) should returnNull()
-    evaluateUnaryTests("odd(?)", inputValue = null) should returnNull()
-    evaluateUnaryTests("5 < ? and ? < 10", inputValue = null) should returnNull()
-    evaluateUnaryTests("5 < ? or ? < 10", inputValue = null) should returnNull()
+    evaluateUnaryTests("? < 10", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("odd(?)", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("5 < ? and ? < 10", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("5 < ? or ? < 10", inputValue = null) should returnResult(false)
   }
 
 }
