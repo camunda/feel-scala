@@ -301,6 +301,58 @@ class BuiltinListFunctionsTest
     evaluateExpression(" union([1,2],[2,3], [4]) ") should returnResult(List(1, 2, 3, 4))
   }
 
+  it should "invoked with named parameter" in {
+
+    evaluateExpression(" union(lists: [[1,2],[2,3]]) ") should returnResult(List(1, 2, 3))
+  }
+
+  it should "remove duplicated context values" in {
+
+    evaluateExpression("union([{a:1},{a:2}],[{a:1},{b:3}])") should returnResult(
+      List(Map("a" -> 1), Map("a" -> 2), Map("b" -> 3))
+    )
+
+    evaluateExpression("union([{a:1},{a:null}],[{a:null},{b:2}])") should returnResult(
+      List(Map("a" -> 1), Map("a" -> null), Map("b" -> 2))
+    )
+
+    evaluateExpression("union([{a:1},{}],[{},{b:2}])") should returnResult(
+      List(Map("a" -> 1), Map(), Map("b" -> 2))
+    )
+
+    evaluateExpression(
+      "union([{a:1,b:{c:2}}, {a:1,b:{c:3}}], [{a:1,b:{c:2}}, {a:1,b:{c:3},d:4}])"
+    ) should returnResult(
+      List(
+        Map("a" -> 1, "b" -> Map("c" -> 2)),
+        Map("a" -> 1, "b" -> Map("c" -> 3)),
+        Map("a" -> 1, "b" -> Map("c" -> 3), "d" -> 4)
+      )
+    )
+  }
+
+  it should "remove duplicated list values" in {
+    evaluateExpression(" union([[1],[2]],[[3],[2]]) ") should returnResult(
+      List(List(1), List(2), List(3))
+    )
+
+    evaluateExpression(" union([[1],[null]],[[1],[null]]) ") should returnResult(
+      List(List(1), List(null))
+    )
+
+    evaluateExpression(" union([[1],[]],[[],[2]]) ") should returnResult(
+      List(List(1), List.empty, List(2))
+    )
+
+    evaluateExpression(" union([[1,2],[4,5]],[[1,2],[4]]) ") should returnResult(
+      List(List(1, 2), List(4, 5), List(4))
+    )
+  }
+
+  it should "remove duplicated null values" in {
+    evaluateExpression(" union([1,null],[2,null]) ") should returnResult(List(1, null, 2))
+  }
+
   "A distinct values() function" should "remove duplicates" in {
 
     evaluateExpression(" distinct values([1,2,3,2,1]) ") should returnResult(List(1, 2, 3))
