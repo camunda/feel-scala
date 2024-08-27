@@ -82,7 +82,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
       // simple unary tests
       case InputEqualTo(x)                              =>
-        withVal(getImplicitInputValue, i => checkEquality(i, eval(x), _ == _, ValBoolean))
+        withVal(getImplicitInputValue, i => checkEquality(i, eval(x)))
       case InputLessThan(x)                             =>
         withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ < _, ValBoolean))
       case InputLessOrEqual(x)                          =>
@@ -120,7 +120,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
         withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
 
       // dual comparators
-      case Equal(x, y)          => checkEquality(eval(x), eval(y), _ == _, ValBoolean)
+      case Equal(x, y)          => checkEquality(eval(x), eval(y))
       case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
       case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
       case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
@@ -515,18 +515,15 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
     }
   }
 
-  private def checkEquality(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit
-      context: EvalContext
-  ): Val =
+  private def checkEquality(x: Val, y: Val)(implicit context: EvalContext): Val =
     withValues(
       x,
       y,
-      { (x, y) =>
+      (x, y) =>
         valueComparator.compare(x, y).toOption.getOrElse {
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
           ValNull
         }
-      }
     )
 
   private def dualOp(x: Val, y: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(implicit
@@ -670,7 +667,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             // the expression contains the input value
             ValBoolean(true)
           case x                                      =>
-            checkEquality(inputValue, x, _ == _, ValBoolean) match {
+            checkEquality(inputValue, x) match {
               case ValBoolean(true)             =>
                 // the expression is the input value
                 ValBoolean(true)
