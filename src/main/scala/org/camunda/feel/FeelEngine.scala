@@ -119,7 +119,7 @@ class FeelEngine(
     val clock: FeelEngineClock = FeelEngine.defaultClock
 ) {
 
-  private val interpreter = new FeelInterpreter()
+  private val interpreter = new FeelInterpreter(valueMapper)
 
   private val validator = new ExpressionValidator(
     externalFunctionsEnabled = configuration.externalFunctionsEnabled
