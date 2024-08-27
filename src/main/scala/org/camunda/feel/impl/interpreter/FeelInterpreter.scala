@@ -29,7 +29,9 @@ import scala.reflect.ClassTag
 /** @author
   *   Philipp Ossler
   */
-class FeelInterpreter {
+class FeelInterpreter(private val valueMapper: ValueMapper) {
+
+  private val valueComparator = new ValComparator(valueMapper)
 
   def eval(expression: Exp)(implicit context: EvalContext): Val =
     expression match {
@@ -477,7 +479,7 @@ class FeelInterpreter {
           x,
           y,
           { (x, y) =>
-            new ValComparator(context.valueMapper).compare(x, y).toOption.getOrElse {
+            valueComparator.compare(x, y).toOption.getOrElse {
               error(x, s"Can't compare '$x' with '$y'")
             }
           }
