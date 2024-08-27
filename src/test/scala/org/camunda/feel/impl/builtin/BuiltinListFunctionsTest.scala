@@ -419,16 +419,67 @@ class BuiltinListFunctionsTest
     evaluateExpression(" duplicate values([1,2,3,2,1]) ") should returnResult(List(1, 2))
   }
 
-  it should "return null duplicate values" in {
+  it should "invoked with named parameter" in {
 
-    evaluateExpression(" duplicate values([1,2,1,null,null]) ") should returnResult(
-      List(1, null)
+    evaluateExpression(" duplicate values(list: [1,2,3,2,1]) ") should returnResult(List(1, 2))
+  }
+
+  it should "return an empty list if there are no duplicates" in {
+
+    evaluateExpression(" duplicate values(list: [1,2,3,4,5]) ") should returnResult(List.empty)
+  }
+
+  it should "return duplicated context values" in {
+
+    evaluateExpression("duplicate values([{a:1},{a:2},{a:1},{a:2},{b:3}])") should returnResult(
+      List(Map("a" -> 1), Map("a" -> 2))
+    )
+
+    evaluateExpression(
+      "duplicate values([{a:1},{a:null},{a:null},{b:2},{a:1}])"
+    ) should returnResult(
+      List(Map("a" -> 1), Map("a" -> null))
+    )
+
+    evaluateExpression("duplicate values([{a:1},{},{},{b:2},{a:1}])") should returnResult(
+      List(Map("a" -> 1), Map.empty)
+    )
+
+    evaluateExpression(
+      "duplicate values([{a:1,b:{c:2}}, {a:1,b:{c:3}}, {a:1,b:{c:2}}, {a:1,b:{c:3},d:4}, {a:1}])"
+    ) should returnResult(
+      List(
+        Map("a" -> 1, "b" -> Map("c" -> 2))
+      )
     )
   }
 
-  it should "return duplicate values for named parameters" in {
+  it should "return duplicated list values" in {
+    evaluateExpression(" duplicate values([[1],[2],[3],[2],[3]]) ") should returnResult(
+      List(List(2), List(3))
+    )
 
-    evaluateExpression(" duplicate values(list: [1,2,3,2,1]) ") should returnResult(List(1, 2))
+    evaluateExpression(" duplicate values([[1],[null],[1],[null],[2]]) ") should returnResult(
+      List(List(1), List(null))
+    )
+
+    evaluateExpression(" duplicate values([[1],[],[],[2],[1]]) ") should returnResult(
+      List(List(1), List.empty)
+    )
+
+    evaluateExpression(" duplicate values([[1,2],[4,5],[1,2],[4]]) ") should returnResult(
+      List(List(1, 2))
+    )
+  }
+
+  it should "return duplicated null values" in {
+    evaluateExpression(" duplicate values([1,null,2,null,2]) ") should returnResult(List(null, 2))
+  }
+
+  it should "preserve the order" in {
+    evaluateExpression(" duplicate values([1,2,3,4,2,3,1]) ") should returnResult(List(1, 2, 3))
+
+    evaluateExpression(" duplicate values([1,2,3,4,3,1,2]) ") should returnResult(List(1, 2, 3))
   }
 
   "A flatten() function" should "flatten nested lists" in {
