@@ -408,7 +408,10 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     builtinFunction(
       params = List("list"),
       invoke = { case List(ValList(list)) =>
-        ValList(list.distinct.filter(x => list.count(_ == x) > 1))
+        val duplicatedValues =
+          distinct(list).filter(x => list.count(valueComparator.equals(_, x)) > 1)
+
+        ValList(duplicatedValues)
       }
     )
 
