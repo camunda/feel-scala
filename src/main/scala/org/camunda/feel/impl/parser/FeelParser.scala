@@ -157,12 +157,17 @@ object FeelParser {
   // an identifier which is not a reserved word. but, it can contain a reserved word.
   private def identifier[_: P]: P[String] =
     P(
-      reservedWord.? ~~ javaLikeIdentifier
+      (reservedWord ~~ namePart) | (reservedWord.? ~~ nameStart ~~ namePart.?)
     ).!
 
-  private def javaLikeIdentifier[_: P]: P[String] =
+  private def nameStart[_: P]: P[String] =
     P(
-      CharPred(Character.isJavaIdentifierStart) ~~ CharsWhile(Character.isJavaIdentifierPart, 0)
+      CharPred(Character.isJavaIdentifierStart)
+    ).!
+
+  private def namePart[_: P]: P[String] =
+    P(
+      CharsWhile(Character.isJavaIdentifierPart, 1)
     ).!
 
   // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
