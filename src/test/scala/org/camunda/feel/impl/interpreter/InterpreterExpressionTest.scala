@@ -317,7 +317,9 @@ class InterpreterExpressionTest
     "inside",
     "durationX",
     "dateX",
-    "timeX"
+    "timeX",
+    "inX",
+    "in1"
   ).foreach { variableName =>
     it should s"contain a key-word ($variableName)" in {
 
