@@ -379,15 +379,11 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def unionFunction = builtinFunction(
     params = List("lists"),
     invoke = { case List(ValList(lists)) =>
-      ValList(
-        lists
-          .flatMap(_ match {
-            case ValList(list) => list
-            case v             => List(v)
-          })
-          .toList
-          .distinct
-      )
+      val listOfLists = lists.flatMap {
+        case ValList(list) => list
+        case v             => List(v)
+      }
+      ValList(distinct(listOfLists))
     },
     hasVarArgs = true
   )
@@ -395,18 +391,19 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def distinctValuesFunction =
     builtinFunction(
       params = List("list"),
-      invoke = { case List(ValList(list)) =>
-        val distinctList = list.foldLeft(List[Val]())((result, item) =>
-          if (result.exists(y => valueComparator.equals(item, y))) {
-            // duplicate value
-            result
-          } else {
-            result :+ item
-          }
-        )
-        ValList(distinctList)
+      invoke = { case List(ValList(list)) => ValList(distinct(list)) }
+    )
+
+  private def distinct(list: List[Val]): List[Val] = {
+    list.foldLeft(List[Val]())((result, item) =>
+      if (result.exists(y => valueComparator.equals(item, y))) {
+        // duplicate value
+        result
+      } else {
+        result :+ item
       }
     )
+  }
 
   private def duplicateValuesFunction =
     builtinFunction(
