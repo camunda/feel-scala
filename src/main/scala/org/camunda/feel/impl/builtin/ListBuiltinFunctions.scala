@@ -18,6 +18,7 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.Number
+import org.camunda.feel.impl.interpreter.ValComparator
 import org.camunda.feel.syntaxtree.{
   Val,
   ValBoolean,
@@ -28,10 +29,13 @@ import org.camunda.feel.syntaxtree.{
   ValNumber,
   ValString
 }
+import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.annotation.tailrec
 
-object ListBuiltinFunctions {
+class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
+
+  private val valueComparator = new ValComparator(valueMapper)
 
   def functions = Map(
     "list contains"    -> List(listContainsFunction),
@@ -392,7 +396,15 @@ object ListBuiltinFunctions {
     builtinFunction(
       params = List("list"),
       invoke = { case List(ValList(list)) =>
-        ValList(list.distinct)
+        val distinctList = list.foldLeft(List[Val]())((result, item) =>
+          if (result.exists(y => valueComparator.equals(item, y))) {
+            // duplicate value
+            result
+          } else {
+            result :+ item
+          }
+        )
+        ValList(distinctList)
       }
     )
 

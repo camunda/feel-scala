@@ -22,6 +22,11 @@ import org.camunda.feel.valuemapper.ValueMapper
 
 class ValComparator(private val valueMapper: ValueMapper) {
 
+  def equals(x: Val, y: Val): Boolean = compare(x, y) match {
+    case ValBoolean(isEqual) => isEqual
+    case _                   => false
+  }
+
   def compare(x: Val, y: Val): Val = (x, y) match {
     // both values are null
     case (ValNull, _)                                       => ValBoolean(ValNull == y.toOption.getOrElse(ValNull))
