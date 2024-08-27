@@ -51,7 +51,7 @@ class InterpreterBeanExpressionTest extends AnyFlatSpec with Matchers with FeelI
     }
 
     eval("a.result", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'result'")
+      ValError("No context entry found with key 'result'. Available keys: ")
     )
   }
 
@@ -62,7 +62,7 @@ class InterpreterBeanExpressionTest extends AnyFlatSpec with Matchers with FeelI
     }
 
     eval("a.plus", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'plus'")
+      ValError("No context entry found with key 'plus'. Available keys: ")
     )
   }
 
@@ -70,7 +70,7 @@ class InterpreterBeanExpressionTest extends AnyFlatSpec with Matchers with FeelI
     class A(private val x: Int)
 
     eval("a.x", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'x'")
+      ValError("No context entry found with key 'x'. Available keys: ")
     )
   }
 
@@ -80,7 +80,7 @@ class InterpreterBeanExpressionTest extends AnyFlatSpec with Matchers with FeelI
     }
 
     eval("a.result", Map("a" -> new A(2))) should be(
-      ValError("context contains no entry with key 'result'")
+      ValError("No context entry found with key 'result'. Available keys: 'x'")
     )
   }
 

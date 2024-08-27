@@ -26,7 +26,7 @@ import org.camunda.feel.FeelEngine.{
 import org.camunda.feel.context.{Context, FunctionProvider, VariableProvider}
 import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
-import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError}
+import org.camunda.feel.syntaxtree.{Exp, ParsedExpression, ValError, ValFatalError}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 
@@ -205,9 +205,11 @@ class FeelEngine(
 
   private def eval(exp: ParsedExpression, context: EvalContext): EvalExpressionResult = {
     interpreter.eval(exp.expression)(context) match {
-      case ValError(cause) =>
+      case ValError(cause)      =>
         Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
-      case value           => Right(valueMapper.unpackVal(value))
+      case ValFatalError(cause) =>
+        Left(Failure(s"failed to evaluate expression '${exp.text}': $cause"))
+      case value                => Right(valueMapper.unpackVal(value))
     }
   }
 

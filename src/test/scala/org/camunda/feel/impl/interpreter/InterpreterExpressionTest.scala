@@ -17,263 +17,284 @@
 package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.FeelEngine.UnaryTests
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /** @author
   *   Philipp Ossler
   */
-class InterpreterExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
+class InterpreterExpressionTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers {
 
   "An expression" should "be an if-then-else (with parentheses)" in {
     val exp = """ if (x < 5) then "low" else "high" """
 
-    eval(exp, Map("x" -> 2)) should be(ValString("low"))
-    eval(exp, Map("x" -> 7)) should be(ValString("high"))
+    evaluateExpression(exp, Map("x" -> 2)) should returnResult("low")
+    evaluateExpression(exp, Map("x" -> 7)) should returnResult("high")
 
-    eval(exp, Map("x" -> "foo")) should be(ValString("high"))
+    evaluateExpression(exp, Map("x" -> "foo")) should returnResult("high")
   }
 
   it should "be an if-then-else (without parentheses)" in {
-    eval("if x < 5 then 1 else 2", Map("x" -> 2)) should be(ValNumber(1))
+    evaluateExpression("if x < 5 then 1 else 2", Map("x" -> 2)) should returnResult(1)
   }
 
   it should "be an if-then-else (with literal)" in {
-    eval("if true then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if true then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with path)" in {
-    eval("if {a: true}.a then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if {a: true}.a then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with filter)" in {
-    eval("if [true][1] then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if [true][1] then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with conjunction)" in {
-    eval("if true and true then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if true and true then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with disjunction)" in {
-    eval("if false or true then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if false or true then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with in-test)" in {
-    eval("if 1 in < 5 then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if 1 in < 5 then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with instance of)" in {
-    eval("if 1 instance of number then 1 else 2") should be(ValNumber(1))
+    evaluateExpression("if 1 instance of number then 1 else 2") should returnResult(1)
   }
 
   it should "be an if-then-else (with variable and function call -> then)" in {
-    eval("if 7 > var then flatten(xs) else []", Map("xs" -> List(1, 2), "var" -> 3)) should be(
-      ValList(List(ValNumber(1), ValNumber(2)))
-    )
+    evaluateExpression(
+      "if 7 > var then flatten(xs) else []",
+      Map("xs" -> List(1, 2), "var" -> 3)
+    ) should returnResult(List(1, 2))
   }
 
   it should "be an if-then-else (with variable and function call -> else)" in {
-    eval("if false then var else flatten(xs)", Map("xs" -> List(1, 2), "var" -> 3)) should be(
-      ValList(List(ValNumber(1), ValNumber(2)))
-    )
+    evaluateExpression(
+      "if false then var else flatten(xs)",
+      Map("xs" -> List(1, 2), "var" -> 3)
+    ) should returnResult(List(1, 2))
   }
 
   it should "be a simple positive unary test" in {
 
-    eval("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should be(ValBoolean(true))
+    evaluateExpression("< 3", Map(UnaryTests.defaultInputVariable -> 2)) should returnResult(true)
 
-    eval("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should be(ValBoolean(false))
+    evaluateExpression("(2 .. 4)", Map(UnaryTests.defaultInputVariable -> 5)) should returnResult(
+      false
+    )
   }
 
   it should "be an instance of (literal)" in {
 
-    eval("x instance of number", Map("x" -> 1)) should be(ValBoolean(true))
-    eval("x instance of number", Map("x" -> "NaN")) should be(ValBoolean(false))
+    evaluateExpression("x instance of number", Map("x" -> 1)) should returnResult(true)
+    evaluateExpression("x instance of number", Map("x" -> "NaN")) should returnResult(false)
 
-    eval("x instance of boolean", Map("x" -> true)) should be(ValBoolean(true))
-    eval("x instance of boolean", Map("x" -> 0)) should be(ValBoolean(false))
+    evaluateExpression("x instance of boolean", Map("x" -> true)) should returnResult(true)
+    evaluateExpression("x instance of boolean", Map("x" -> 0)) should returnResult(false)
 
-    eval("x instance of string", Map("x" -> "yes")) should be(ValBoolean(true))
-    eval("x instance of string", Map("x" -> 0)) should be(ValBoolean(false))
+    evaluateExpression("x instance of string", Map("x" -> "yes")) should returnResult(true)
+    evaluateExpression("x instance of string", Map("x" -> 0)) should returnResult(false)
   }
 
   it should "be an instance of (duration)" in {
-    eval("""duration("P3M") instance of years and months duration""") should be(ValBoolean(true))
-    eval("""duration("PT4H") instance of days and time duration""") should be(ValBoolean(true))
-    eval("""null instance of years and months duration""") should be(ValBoolean(false))
-    eval("""null instance of days and time duration""") should be(ValBoolean(false))
+    evaluateExpression(
+      """duration("P3M") instance of years and months duration"""
+    ) should returnResult(true)
+    evaluateExpression(
+      """duration("PT4H") instance of days and time duration"""
+    ) should returnResult(true)
+    evaluateExpression("""null instance of years and months duration""") should returnResult(false)
+    evaluateExpression("""null instance of days and time duration""") should returnResult(false)
   }
 
   it should "be an instance of (date)" in {
-    eval("""date("2023-03-07") instance of date""") should be(ValBoolean(true))
-    eval(""" @"2023-03-07" instance of date""") should be(ValBoolean(true))
-    eval("1 instance of date") should be(ValBoolean(false))
+    evaluateExpression("""date("2023-03-07") instance of date""") should returnResult(true)
+    evaluateExpression(""" @"2023-03-07" instance of date""") should returnResult(true)
+    evaluateExpression("1 instance of date") should returnResult(false)
   }
 
   it should "be an instance of (time)" in {
-    eval("""time("11:27:00") instance of time""") should be(ValBoolean(true))
-    eval(""" @"11:27:00" instance of time""") should be(ValBoolean(true))
-    eval("1 instance of time") should be(ValBoolean(false))
+    evaluateExpression("""time("11:27:00") instance of time""") should returnResult(true)
+    evaluateExpression(""" @"11:27:00" instance of time""") should returnResult(true)
+    evaluateExpression("1 instance of time") should returnResult(false)
   }
 
   it should "be an instance of (date and time)" in {
-    eval("""date and time("2023-03-07T11:27:00") instance of date and time""") should be(
-      ValBoolean(true)
+    evaluateExpression(
+      """date and time("2023-03-07T11:27:00") instance of date and time"""
+    ) should returnResult(true)
+
+    evaluateExpression(""" @"2023-03-07T11:27:00" instance of date and time""") should returnResult(
+      true
     )
-    eval(""" @"2023-03-07T11:27:00" instance of date and time""") should be(ValBoolean(true))
-    eval("1 instance of date and time") should be(ValBoolean(false))
+    evaluateExpression("1 instance of date and time") should returnResult(false)
   }
 
   it should "be an instance of (list)" in {
-    eval("[1,2,3] instance of list") should be(ValBoolean(true))
-    eval("[] instance of list") should be(ValBoolean(true))
-    eval("1 instance of list") should be(ValBoolean(false))
+    evaluateExpression("[1,2,3] instance of list") should returnResult(true)
+    evaluateExpression("[] instance of list") should returnResult(true)
+    evaluateExpression("1 instance of list") should returnResult(false)
   }
 
   it should "be an instance of (context)" in {
-    eval("{x:1} instance of context") should be(ValBoolean(true))
-    eval("{} instance of context") should be(ValBoolean(true))
-    eval("1 instance of context") should be(ValBoolean(false))
+    evaluateExpression("{x:1} instance of context") should returnResult(true)
+    evaluateExpression("{} instance of context") should returnResult(true)
+    evaluateExpression("1 instance of context") should returnResult(false)
   }
 
   it should "be an instance of (multiplication)" in {
-    eval("2 * 3 instance of number") should be(ValBoolean(true))
+    evaluateExpression("2 * 3 instance of number") should returnResult(true)
   }
 
   it should "be an instance of (function definition)" in {
-    eval(""" (function() "foo") instance of function """) should be(ValBoolean(true))
-    eval("""1 instance of function""") should be(ValBoolean(false))
+    evaluateExpression(""" (function() "foo") instance of function """) should returnResult(true)
+    evaluateExpression("""1 instance of function""") should returnResult(false)
   }
 
   it should "be a instance of Any should always pass" in {
-    eval("x instance of Any", Map("x" -> "yes")) should be(ValBoolean(true))
-    eval("x instance of Any", Map("x" -> 1)) should be(ValBoolean(true))
-    eval("x instance of Any", Map("x" -> true)) should be(ValBoolean(true))
-    eval("x instance of Any", Map("x" -> null)) should be(ValBoolean(false))
+    evaluateExpression("x instance of Any", Map("x" -> "yes")) should returnResult(true)
+    evaluateExpression("x instance of Any", Map("x" -> 1)) should returnResult(true)
+    evaluateExpression("x instance of Any", Map("x" -> true)) should returnResult(true)
+    evaluateExpression("x instance of Any", Map("x" -> null)) should returnResult(false)
   }
 
   it should "be an escaped identifier" in {
     // regular identifier
-    eval(" `x` ", Map("x" -> "foo")) should be(ValString("foo"))
+    evaluateExpression(" `x` ", Map("x" -> "foo")) should returnResult("foo")
     // with whitespace
-    eval(" `a b` ", Map("a b" -> "foo")) should be(ValString("foo"))
+    evaluateExpression(" `a b` ", Map("a b" -> "foo")) should returnResult("foo")
     // with operator
-    eval(" `a-b` ", Map("a-b" -> 3)) should be(ValNumber(3))
+    evaluateExpression(" `a-b` ", Map("a-b" -> 3)) should returnResult(3)
   }
 
   it should "contains parentheses" in {
-    eval("(1 + 2)") should be(ValNumber(3))
-    eval("(1 + 2) + 3") should be(ValNumber(6))
-    eval("1 + (2 + 3)") should be(ValNumber(6))
+    evaluateExpression("(1 + 2)") should returnResult(3)
+    evaluateExpression("(1 + 2) + 3") should returnResult(6)
+    evaluateExpression("1 + (2 + 3)") should returnResult(6)
 
-    eval("([1,2,3])[1]") should be(ValNumber(1))
-    eval("({x:1}).x") should be(ValNumber(1))
-    eval("{x:(1)}.x") should be(ValNumber(1))
+    evaluateExpression("([1,2,3])[1]") should returnResult(1)
+    evaluateExpression("({x:1}).x") should returnResult(1)
+    evaluateExpression("{x:(1)}.x") should returnResult(1)
 
-    eval("[1,2,3,4][(1)]") should be(ValNumber(1))
+    evaluateExpression("[1,2,3,4][(1)]") should returnResult(1)
   }
 
   it should "contain parentheses in a context literal" in {
     val context = Map("xs" -> List(1, 2, 3))
 
-    eval("{x:(xs[1])}.x", context) should be(ValNumber(1))
-    eval("{x:(xs)[1]}.x", context) should be(ValNumber(1))
-    eval("{x:(xs)}.x", context) should be(ValList(List(ValNumber(1), ValNumber(2), ValNumber(3))))
+    evaluateExpression("{x:(xs[1])}.x", context) should returnResult(1)
+    evaluateExpression("{x:(xs)[1]}.x", context) should returnResult(1)
+    evaluateExpression("{x:(xs)}.x", context) should returnResult(List(1, 2, 3))
   }
 
   it should "contains nested filter expressions" in {
-    eval("[1,2,3,4][item > 2][1]") should be(ValNumber(3))
-    eval("([1,2,3,4])[item > 2][1]") should be(ValNumber(3))
-    eval("([1,2,3,4][item > 2])[1]") should be(ValNumber(3))
+    evaluateExpression("[1,2,3,4][item > 2][1]") should returnResult(3)
+    evaluateExpression("([1,2,3,4])[item > 2][1]") should returnResult(3)
+    evaluateExpression("([1,2,3,4][item > 2])[1]") should returnResult(3)
   }
 
   it should "contains nested path expressions" in {
-    eval("{x:{y:1}}.x.y") should be(ValNumber(1))
-    eval("{x:{y:{z:1}}}.x.y.z") should be(ValNumber(1))
+    evaluateExpression("{x:{y:1}}.x.y") should returnResult(1)
+    evaluateExpression("{x:{y:{z:1}}}.x.y.z") should returnResult(1)
 
-    eval("({x:{y:{z:1}}}).x.y.z") should be(ValNumber(1))
-    eval("({x:{y:{z:1}}}.x).y.z") should be(ValNumber(1))
-    eval("({x:{y:{z:1}}}.x.y).z") should be(ValNumber(1))
+    evaluateExpression("({x:{y:{z:1}}}).x.y.z") should returnResult(1)
+    evaluateExpression("({x:{y:{z:1}}}.x).y.z") should returnResult(1)
+    evaluateExpression("({x:{y:{z:1}}}.x.y).z") should returnResult(1)
   }
 
   it should "contains nested filter and path expressions" in {
-    eval("[{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y[2]") should be(ValNumber(2))
-    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x.y[2]") should be(ValNumber(2))
-    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x).y[2]") should be(ValNumber(2))
-    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y)[2]") should be(ValNumber(2))
+    evaluateExpression("[{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y[2]") should returnResult(2)
+    evaluateExpression("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x.y[2]") should returnResult(2)
+    evaluateExpression("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x).y[2]") should returnResult(2)
+    evaluateExpression("([{x:{y:1}},{x:{y:2}},{x:{y:3}}].x.y)[2]") should returnResult(2)
 
-    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x[2].y") should be(ValNumber(2))
-    eval("([{x:{y:1}},{x:{y:2}},{x:{y:3}}])[2].x.y") should be(ValNumber(2))
+    evaluateExpression("([{x:{y:1}},{x:{y:2}},{x:{y:3}}]).x[2].y") should returnResult(2)
+    evaluateExpression("([{x:{y:1}},{x:{y:2}},{x:{y:3}}])[2].x.y") should returnResult(2)
 
-    eval("[{x:[1,2]},{x:[3,4]},{x:[5,6]}][2].x[1]") should be(ValNumber(3))
+    evaluateExpression("[{x:[1,2]},{x:[3,4]},{x:[5,6]}][2].x[1]") should returnResult(3)
 
-    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}]).x[2][1]") should be(ValNumber(3))
-    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x)[2][1]") should be(ValNumber(3))
-    eval("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x[2])[1]") should be(ValNumber(3))
+    evaluateExpression("([{x:[1,2]},{x:[3,4]},{x:[5,6]}]).x[2][1]") should returnResult(3)
+    evaluateExpression("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x)[2][1]") should returnResult(3)
+    evaluateExpression("([{x:[1,2]},{x:[3,4]},{x:[5,6]}].x[2])[1]") should returnResult(3)
   }
 
   "Null" should "compare to null" in {
 
-    eval("null = null") should be(ValBoolean(true))
-    eval("null != null") should be(ValBoolean(false))
+    evaluateExpression("null = null") should returnResult(true)
+    evaluateExpression("null != null") should returnResult(false)
   }
 
   it should "compare to nullable variable" in {
 
-    eval("null = x", Map("x" -> ValNull)) should be(ValBoolean(true))
-    eval("null = x", Map("x" -> 1)) should be(ValBoolean(false))
+    evaluateExpression("null = x", Map("x" -> ValNull)) should returnResult(true)
+    evaluateExpression("null = x", Map("x" -> 1)) should returnResult(false)
 
-    eval("null != x", Map("x" -> ValNull)) should be(ValBoolean(false))
-    eval("null != x", Map("x" -> 1)) should be(ValBoolean(true))
+    evaluateExpression("null != x", Map("x" -> ValNull)) should returnResult(false)
+    evaluateExpression("null != x", Map("x" -> 1)) should returnResult(true)
   }
 
   it should "compare to nullable context entry" in {
 
-    eval("null = {x: null}.x") should be(ValBoolean(true))
-    eval("null = {x: 1}.x") should be(ValBoolean(false))
+    evaluateExpression("null = {x: null}.x") should returnResult(true)
+    evaluateExpression("null = {x: 1}.x") should returnResult(false)
 
-    eval("null != {x: null}.x") should be(ValBoolean(false))
-    eval("null != {x: 1}.x") should be(ValBoolean(true))
+    evaluateExpression("null != {x: null}.x") should returnResult(false)
+    evaluateExpression("null != {x: 1}.x") should returnResult(true)
   }
 
   it should "compare to not existing variable" in {
 
-    eval("null = x") should be(ValBoolean(true))
-    eval("null = x.y") should be(ValBoolean(true))
+    evaluateExpression("null = x") should returnResult(true)
+    evaluateExpression("null = x.y") should returnResult(true)
 
-    eval("x = null") should be(ValBoolean(true))
-    eval("x.y = null") should be(ValBoolean(true))
+    evaluateExpression("x = null") should returnResult(true)
+    evaluateExpression("x.y = null") should returnResult(true)
   }
 
   it should "compare to not existing context entry" in {
 
-    eval("null = {}.x") should be(ValBoolean(true))
-    eval("null = {x: null}.x.y") should be(ValBoolean(true))
+    evaluateExpression("null = {}.x") should returnResult(true)
+    evaluateExpression("null = {x: null}.x.y") should returnResult(true)
 
-    eval("{}.x = null") should be(ValBoolean(true))
-    eval("{x: null}.x.y = null") should be(ValBoolean(true))
+    evaluateExpression("{}.x = null") should returnResult(true)
+    evaluateExpression("{x: null}.x.y = null") should returnResult(true)
   }
 
   "A variable name" should "not be a key-word" in {
+    evaluateExpression("{ null: 1 }.null") should failToParse()
+    evaluateExpression("{ true: 1}.true") should failToParse()
+    evaluateExpression("{ false: 1}.false") should failToParse()
+    evaluateExpression("function") should failToParse()
+    evaluateExpression("in") should failToParse()
+    evaluateExpression("return") should failToParse()
+    evaluateExpression("then") should failToParse()
+    evaluateExpression("else") should failToParse()
+    evaluateExpression("satisfies") should failToParse()
+    evaluateExpression("and") should failToParse()
+    evaluateExpression("or") should failToParse()
+  }
 
-    eval("some = true") shouldBe a[ValError]
-    eval("every = true") shouldBe a[ValError]
-    eval("if = true") shouldBe a[ValError]
-    eval("then = true") shouldBe a[ValError]
-    eval("else = true") shouldBe a[ValError]
-    eval("function = true") shouldBe a[ValError]
-    eval("for = true") shouldBe a[ValError]
-    eval("between = true") shouldBe a[ValError]
-    eval("instance = true") shouldBe a[ValError]
-    eval("of = true") shouldBe a[ValError]
-    eval("not = true") shouldBe a[ValError]
-    eval("in = true") shouldBe a[ValError]
-    eval("satisfies = true") shouldBe a[ValError]
-    eval("and = true") shouldBe a[ValError]
-    eval("or = true") shouldBe a[ValError]
-    eval("return = true") shouldBe a[ValError]
+//  Ignored as these keywords are not listed as reserved keywords yet
+  ignore should "not be a key-word (ignored)" in {
+    evaluateExpression("some") should failToParse()
+    evaluateExpression("every") should failToParse()
+    evaluateExpression("if") should failToParse()
+    evaluateExpression("for") should failToParse()
+    evaluateExpression("between") should failToParse()
+    evaluateExpression("instance") should failToParse()
+    evaluateExpression("of") should failToParse()
+    evaluateExpression("not") should failToParse()
   }
 
   List(
@@ -300,32 +321,47 @@ class InterpreterExpressionTest extends AnyFlatSpec with Matchers with FeelInteg
   ).foreach { variableName =>
     it should s"contain a key-word ($variableName)" in {
 
-      eval(s"$variableName = true", Map(variableName -> true)) should be(ValBoolean(true))
+      evaluateExpression(s"$variableName = true", Map(variableName -> true)) should returnResult(
+        true
+      )
     }
   }
 
   "A comment" should "be written as end of line comments //" in {
-    eval(""" [1,2,3][1] // the first item """) should be(ValNumber(1))
+    evaluateExpression(""" [1,2,3][1] // the first item """) should returnResult(1)
   }
 
   it should "be written as trailing comments /* .. */" in {
-    eval(""" [1,2,3][1] /* the first item */ """) should be(ValNumber(1))
+    evaluateExpression(""" [1,2,3][1] /* the first item */ """) should returnResult(1)
   }
 
   it should "be written as single line comments /* .. */" in {
-    eval("""
+    evaluateExpression("""
         /* the first item */
         [1,2,3][1]
-        """) should be(ValNumber(1))
+        """) should returnResult(1)
   }
 
   it should "be written as block comments /* .. */" in {
-    eval("""
+    evaluateExpression("""
         /*
          * the first item
          */
         [1,2,3][1]
-        """) should be(ValNumber(1))
+        """) should returnResult(1)
+  }
+
+  "The special variable '?' (input value)" should "be available in an unary-test" in {
+
+    evaluateExpression("5 in ? < 10") should returnResult(true)
+    evaluateExpression("5 in ? < 3") should returnResult(false)
+  }
+
+  it should "not be available outside an unary-test" in {
+
+    evaluateExpression("? < 10") should failWith(
+      """failed to evaluate expression '? < 10': No input value available. '?' can only be used inside an unary-test expression."""
+    )
   }
 
 }

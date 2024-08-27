@@ -25,11 +25,14 @@ import org.camunda.feel.{
   LocalTime,
   Number,
   Time,
-  YearMonthDuration
+  YearMonthDuration,
+  dateTimeFormatter,
+  localDateTimeFormatter,
+  localTimeFormatter
 }
 
-import java.math.BigInteger
 import java.time.Duration
+import java.util.regex.Pattern
 
 /** FEEL supports the following datatypes: number string boolean days and time duration years and
   * months duration time date and time Duration and date/time datatypes have no literal syntax. They
@@ -91,22 +94,30 @@ sealed trait Val extends Ordered[Val] {
   }
 
   def toEither: Either[ValError, Val] = this match {
-    case e: ValError => Left(e)
-    case v           => Right(v)
+    case e: ValError      => Left(e)
+    case e: ValFatalError => Left(ValError(e.toString))
+    case v                => Right(v)
   }
 
   def toOption: Option[Val] = this match {
-    case e: ValError => None
-    case v           => Some(v)
+    case _: ValError               => None
+    case fatalError: ValFatalError => Some(fatalError)
+    case v                         => Some(v)
   }
 
 }
 
-case class ValNumber(value: Number) extends Val
+case class ValNumber(value: Number) extends Val {
+  override def toString: String = value.toString()
+}
 
-case class ValBoolean(value: Boolean) extends Val
+case class ValBoolean(value: Boolean) extends Val {
+  override def toString: String = value.toString
+}
 
-case class ValString(value: String) extends Val
+case class ValString(value: String) extends Val {
+  override def toString: String = s"\"$value\""
+}
 
 case class ValDate(value: Date) extends Val {
   override protected val properties: Map[String, Val] = Map(
@@ -115,6 +126,8 @@ case class ValDate(value: Date) extends Val {
     "day"     -> ValNumber(value.getDayOfMonth),
     "weekday" -> ValNumber(value.getDayOfWeek.getValue)
   )
+
+  override def toString: String = value.toString
 }
 
 case class ValLocalTime(value: LocalTime) extends Val {
@@ -125,6 +138,8 @@ case class ValLocalTime(value: LocalTime) extends Val {
     "time offset" -> ValNull,
     "timezone"    -> ValNull
   )
+
+  override def toString: String = value.format(localTimeFormatter)
 }
 
 case class ValTime(value: Time) extends Val {
@@ -136,6 +151,8 @@ case class ValTime(value: Time) extends Val {
       ValDayTimeDuration(Duration.ofSeconds(value.getOffsetInTotalSeconds)),
     "timezone"    -> value.getZoneId.map(ValString).getOrElse(ValNull)
   )
+
+  override def toString: String = value.format
 }
 
 case class ValLocalDateTime(value: LocalDateTime) extends Val {
@@ -150,6 +167,8 @@ case class ValLocalDateTime(value: LocalDateTime) extends Val {
     "time offset" -> ValNull,
     "timezone"    -> ValNull
   )
+
+  override def toString: String = value.format(localDateTimeFormatter)
 }
 
 case class ValDateTime(value: DateTime) extends Val {
@@ -169,30 +188,27 @@ case class ValDateTime(value: DateTime) extends Val {
   )
 
   private def hasTimeZone = !value.getOffset.equals(value.getZone)
+
+  override def toString: String = ValDateTime.format(value)
+}
+
+object ValDateTime {
+
+  private val dateTimeOffsetZoneIdPattern = Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
+
+  def format(value: DateTime): String = {
+    val formattedDateTime = value.format(dateTimeFormatter)
+    // remove offset-id if zone-id is present
+    dateTimeOffsetZoneIdPattern
+      .matcher(formattedDateTime)
+      .replaceAll("$1$3")
+  }
+
 }
 
 case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 
-  override def toString: String = {
-    def makeString(sign: String, year: Long, month: Long): String = {
-      val y = Option(year).filterNot(_ == 0).map(_ + "Y").getOrElse("")
-      val m = Option(month).filterNot(_ == 0).map(_ + "M").getOrElse("")
-
-      val stringBuilder = new StringBuilder("")
-      stringBuilder.append(sign).append("P").append(y).append(m)
-      stringBuilder.toString()
-    }
-
-    val year  = value.getYears
-    val month = value.getMonths % 12
-
-    if (year == 0 && month == 0)
-      "P0Y"
-    else if (year <= 0 && month <= 0)
-      makeString("-", -year, -month)
-    else
-      makeString("", year, month)
-  }
+  override def toString: String = ValYearMonthDuration.format(value)
 
   override val properties: Map[String, Val] = Map(
     "years"  -> ValNumber(value.getYears),
@@ -200,35 +216,34 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
   )
 }
 
-case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
-  override def toString: String             = {
-    def makeString(sign: String, day: Long, hour: Long, minute: Long, second: Long): String = {
-      val d = Option(day).filterNot(_ == 0).map(_ + "D").getOrElse("")
-      val h = Option(hour).filterNot(_ == 0).map(_ + "H").getOrElse("")
-      val m = Option(minute).filterNot(_ == 0).map(_ + "M").getOrElse("")
-      val s = Option(second).filterNot(_ == 0).map(_ + "S").getOrElse("")
+object ValYearMonthDuration {
 
-      val stringBuilder = new StringBuilder("")
-      stringBuilder.append(sign).append("P").append(d)
-      if (h.nonEmpty || m.nonEmpty || s.nonEmpty) {
-        stringBuilder.append("T")
-        stringBuilder.append(h).append(m).append(s)
-      }
-      stringBuilder.toString()
-    }
+  def format(value: YearMonthDuration): String = {
+    val year  = value.getYears
+    val month = value.getMonths % 12
 
-    val day    = value.toDays
-    val hour   = value.toHours    % 24
-    val minute = value.toMinutes  % 60
-    val second = value.getSeconds % 60
-
-    if (day == 0 && hour == 0 && minute == 0 && second == 0)
-      "P0D"
-    else if (day <= 0 && hour <= 0 && minute <= 0 && second <= 0)
-      makeString("-", -day, -hour, -minute, -second)
+    if (year == 0 && month == 0)
+      "P0Y"
+    else if (year <= 0 && month <= 0)
+      "-" + mkString(-year, -month)
     else
-      makeString("", day, hour, minute, second)
+      mkString(year, month)
   }
+
+  private def mkString(year: Long, month: Long): String = {
+    val y = Option(year).filterNot(_ == 0).map(_ + "Y").getOrElse("")
+    val m = Option(month).filterNot(_ == 0).map(_ + "M").getOrElse("")
+
+    val stringValue = new StringBuilder("P")
+    stringValue.append(y).append(m)
+    stringValue.toString()
+  }
+
+}
+
+case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
+  override def toString: String = ValDayTimeDuration.format(value)
+
   override val properties: Map[String, Val] = Map(
     "days"    -> ValNumber(value.toDays),
     "hours"   -> ValNumber(value.toHours % 24),
@@ -237,18 +252,74 @@ case class ValDayTimeDuration(value: DayTimeDuration) extends Val {
   )
 }
 
-case class ValError(error: String) extends Val
+object ValDayTimeDuration {
 
-case object ValNull extends Val
+  def format(value: DayTimeDuration): String = {
+    val day    = value.toDays
+    val hour   = value.toHours    % 24
+    val minute = value.toMinutes  % 60
+    val second = value.getSeconds % 60
+
+    if (day == 0 && hour == 0 && minute == 0 && second == 0)
+      "P0D"
+    else if (day <= 0 && hour <= 0 && minute <= 0 && second <= 0)
+      "-" + mkString(-day, -hour, -minute, -second)
+    else
+      mkString(day, hour, minute, second)
+  }
+
+  private def mkString(day: Long, hour: Long, minute: Long, second: Long): String = {
+    val d = Option(day).filterNot(_ == 0).map(_ + "D").getOrElse("")
+    val h = Option(hour).filterNot(_ == 0).map(_ + "H").getOrElse("")
+    val m = Option(minute).filterNot(_ == 0).map(_ + "M").getOrElse("")
+    val s = Option(second).filterNot(_ == 0).map(_ + "S").getOrElse("")
+
+    val stringValue = new StringBuilder("P")
+    stringValue.append(d)
+    if (h.nonEmpty || m.nonEmpty || s.nonEmpty) {
+      stringValue.append("T")
+      stringValue.append(h).append(m).append(s)
+    }
+    stringValue.toString()
+  }
+
+}
+
+case class ValError(error: String) extends Val {
+  override def toString: String = s"error(\"$error\")"
+}
+
+case class ValFatalError(error: String) extends Val {
+  override def toString: String = s"fatal error(\"$error\")"
+}
+
+case object ValNull extends Val {
+  override def toString: String = "null"
+}
 
 case class ValFunction(params: List[String], invoke: List[Val] => Any, hasVarArgs: Boolean = false)
     extends Val {
 
   val paramSet: Set[String] = params.toSet
+
+  override def toString: String = s"function(${params.mkString(", ")})"
 }
 
-case class ValContext(context: Context) extends Val
+case class ValContext(context: Context) extends Val {
+  override def toString: String = context.variableProvider.getVariables
+    .map { case (key, value) => s"$key:$value" }
+    .mkString(start = "{", sep = ", ", end = "}")
+}
 
-case class ValList(items: List[Val]) extends Val
+case class ValList(items: List[Val]) extends Val {
+  override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
+}
 
-case class ValRange(start: RangeBoundary, end: RangeBoundary) extends Val
+case class ValRange(start: RangeBoundary, end: RangeBoundary) extends Val {
+  override def toString: String = {
+    val startSymbol = if (start.isClosed) "[" else "("
+    val endSymbol   = if (end.isClosed) "]" else ")"
+
+    s"$startSymbol${start.value}..${end.value}$endSymbol"
+  }
+}

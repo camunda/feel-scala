@@ -150,7 +150,7 @@ class InterpreterListExpressionTest
   }
 
   it should "fail if compare to not a list" in {
-    evaluateExpression("[] = 1") should failWith("expect List but found 'ValNumber(1)'")
+    evaluateExpression("[] = 1") should failWith("Can't compare '[]' with '1'")
   }
 
   "A for-expression" should "iterate over a range" in {
@@ -390,7 +390,7 @@ class InterpreterListExpressionTest
 
   it should "fail if the filter doesn't return a boolean or a number" in {
     evaluateExpression(""" [1,2,3,4]["not a valid filter"] """) should
-      failWith("Expected boolean filter or number but found 'ValString(not a valid filter)'")
+      failWith("""Expected boolean filter or number but found '"not a valid filter"'""")
   }
 
   it should "access an item property if the context contains a variable with the same name" in {
