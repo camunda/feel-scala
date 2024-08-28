@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.parser
 
-import fastparse.JavaWhitespace.whitespace
+import org.camunda.feel.impl.parser.FeelWhitespace.whitespace
 import fastparse.{
   AnyChar,
   ByNameOps,
