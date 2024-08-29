@@ -688,22 +688,16 @@ object FeelParser {
     }.getOrElse(ConstNull)
   }
 
-  // replace escaped character with the provided replacement
   private def translateEscapes(input: String): String = {
-    val escapeMap = Map(
-      "\\b"  -> "\b",
-      "\\t"  -> "\t",
-      "\\n"  -> "\n",
-      "\\f"  -> "\f",
-      "\\r"  -> "\r",
-      "\\\"" -> "\"",
-      "\\'"  -> "'",
-      "\\s"  -> " "
-      // Add more escape sequences as needed
-    )
-
-    escapeMap.foldLeft(input) { case (result, (escape, replacement)) =>
-      result.replace(escape, replacement)
-    }
+    // replace all escape sequences
+    input
+      .replaceAll("(?<!\\\\)\\\\n", "\n")  // new line
+      .replaceAll("(?<!\\\\)\\\\r", "\r")  // carriage return
+      .replaceAll("(?<!\\\\)\\\\t", "\t")  // tab
+      .replaceAll("(?<!\\\\)\\\\b", "\b")  // backspace
+      .replaceAll("(?<!\\\\)\\\\f", "\f")  // form feed
+      .replaceAll("(?<!\\\\)\\\\'", "'")   // single quote
+      .replaceAll("(?<!\\\\)\\\\\"", "\"") // double quote
+      .replaceAll("\\\\\\\\", "\\\\")      // backslash (for regex characters)
   }
 }
