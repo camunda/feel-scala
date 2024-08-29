@@ -21,6 +21,7 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 /** @author
   *   Philipp Ossler
@@ -29,7 +30,8 @@ class InterpreterExpressionTest
     extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
-    with EvaluationResultMatchers {
+    with EvaluationResultMatchers
+    with TableDrivenPropertyChecks {
 
   "An expression" should "be an if-then-else (with parentheses)" in {
     val exp = """ if (x < 5) then "low" else "high" """
@@ -366,69 +368,121 @@ class InterpreterExpressionTest
     )
   }
 
-  // Unicode for NBSP (Non-breaking Space)
-  private val whitespaceChar: Char = '\u00A0'
+  // FEEL-specific whitespace characters from the DMN specification
+  private val whitespaceChars = Table(
+    ("Character", "Char"),
+    ('\u0009', "\\u0009"),
+    ('\u0020', "\\u0020"),
+    ('\u0085', "\\u0085"),
+    ('\u00A0', "\\u00A0"),
+    ('\u1680', "\\u1680"),
+    ('\u180E', "\\u180E"),
+    ('\u2000', "\\u2000"),
+    ('\u2001', "\\u2001"),
+    ('\u2002', "\\u2002"),
+    ('\u2003', "\\u2003"),
+    ('\u2004', "\\u2004"),
+    ('\u2005', "\\u2005"),
+    ('\u2006', "\\u2006"),
+    ('\u2007', "\\u2007"),
+    ('\u2008', "\\u2008"),
+    ('\u2009', "\\u2009"),
+    ('\u200A', "\\u200A"),
+    ('\u200B', "\\u200B"),
+    ('\u2028', "\\u2028"),
+    ('\u2029', "\\u2029"),
+    ('\u202F', "\\u202F"),
+    ('\u205F', "\\u205F"),
+    ('\u3000', "\\u3000"),
+    ('\uFEFF', "\\uFEFF"),
+    ('\u000A', "\\u000A"),
+    ('\u000B', "\\u000B"),
+    ('\u000C', "\\u000C"),
+    ('\u000D', "\\u000D")
+  )
 
   "A space character" should "be ignored before of a literal" in {
-    evaluateExpression(s"${whitespaceChar}1") should returnResult(1)
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"${whitespaceChar}1") should returnResult(1)
+    }
   }
 
   it should "be ignored after of a literal" in {
-    evaluateExpression(s"1${whitespaceChar}") should returnResult(1)
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"1${whitespaceChar}") should returnResult(1)
+    }
   }
 
   it should "be ignored between a math operation" in {
-    evaluateExpression(s"${whitespaceChar}1+2") should returnResult(3)
-    evaluateExpression(s"1${whitespaceChar}+2") should returnResult(3)
-    evaluateExpression(s"1+${whitespaceChar}2") should returnResult(3)
-    evaluateExpression(s"1+2${whitespaceChar}") should returnResult(3)
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"${whitespaceChar}1+2") should returnResult(3)
+      evaluateExpression(s"1${whitespaceChar}+2") should returnResult(3)
+      evaluateExpression(s"1+${whitespaceChar}2") should returnResult(3)
+      evaluateExpression(s"1+2${whitespaceChar}") should returnResult(3)
+    }
   }
 
   it should "be ignored between a comparison" in {
-    evaluateExpression(s"${whitespaceChar}1<2") should returnResult(true)
-    evaluateExpression(s"1${whitespaceChar}<2") should returnResult(true)
-    evaluateExpression(s"1<${whitespaceChar}2") should returnResult(true)
-    evaluateExpression(s"1<2${whitespaceChar}") should returnResult(true)
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"${whitespaceChar}1<2") should returnResult(true)
+      evaluateExpression(s"1${whitespaceChar}<2") should returnResult(true)
+      evaluateExpression(s"1<${whitespaceChar}2") should returnResult(true)
+      evaluateExpression(s"1<2${whitespaceChar}") should returnResult(true)
+    }
   }
 
   it should "be ignored inside a context literal" in {
-    evaluateExpression(s"{${whitespaceChar}x:1}") should returnResult(Map("x" -> 1))
-    evaluateExpression(s"{x${whitespaceChar}:1}") should returnResult(Map("x" -> 1))
-    evaluateExpression(s"{x:${whitespaceChar}1}") should returnResult(Map("x" -> 1))
-    evaluateExpression(s"{x:1${whitespaceChar}}") should returnResult(Map("x" -> 1))
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"{${whitespaceChar}x:1}") should returnResult(Map("x" -> 1))
+      evaluateExpression(s"{x${whitespaceChar}:1}") should returnResult(Map("x" -> 1))
+      evaluateExpression(s"{x:${whitespaceChar}1}") should returnResult(Map("x" -> 1))
+      evaluateExpression(s"{x:1${whitespaceChar}}") should returnResult(Map("x" -> 1))
+    }
   }
 
   it should "be ignored inside a for loop" in {
-    evaluateExpression(s"for${whitespaceChar}x in [1] return x") should returnResult(List(1))
-    evaluateExpression(s"for x${whitespaceChar}in [1] return x") should returnResult(List(1))
-    evaluateExpression(s"for x in${whitespaceChar}[1] return x") should returnResult(List(1))
-    evaluateExpression(s"for x in [1]${whitespaceChar}return x") should returnResult(List(1))
-    evaluateExpression(s"for x in [1] return${whitespaceChar}x") should returnResult(List(1))
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"for${whitespaceChar}x in [1] return x") should returnResult(List(1))
+      evaluateExpression(s"for x${whitespaceChar}in [1] return x") should returnResult(List(1))
+      evaluateExpression(s"for x in${whitespaceChar}[1] return x") should returnResult(List(1))
+      evaluateExpression(s"for x in [1]${whitespaceChar}return x") should returnResult(List(1))
+      evaluateExpression(s"for x in [1] return${whitespaceChar}x") should returnResult(List(1))
+    }
   }
 
   it should "be ignored inside a some/every operation" in {
-    evaluateExpression(s"some${whitespaceChar}x in [1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"some x${whitespaceChar}in [1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"some x in${whitespaceChar}[1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"some x in [1]${whitespaceChar}satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"some x in [1] satisfies${whitespaceChar}odd(x)") should returnResult(true)
+    forEvery(whitespaceChars) { (whitespaceChar, _) =>
+      evaluateExpression(s"some${whitespaceChar}x in [1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"some x${whitespaceChar}in [1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"some x in${whitespaceChar}[1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"some x in [1]${whitespaceChar}satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"some x in [1] satisfies${whitespaceChar}odd(x)") should returnResult(
+        true
+      )
 
-    evaluateExpression(s"every${whitespaceChar}x in [1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"every x${whitespaceChar}in [1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"every x in${whitespaceChar}[1] satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"every x in [1]${whitespaceChar}satisfies odd(x)") should returnResult(true)
-    evaluateExpression(s"every x in [1] satisfies${whitespaceChar}odd(x)") should returnResult(true)
-  }
-
-  // FEEL-specific whitespace characters from the DMN specification
-  List(
-    '\u0009', '\u0020', '\u0085', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002',
-    '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',
-    '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF', '\u000A', '\u000B', '\u000C',
-    '\u000D'
-  ).foreach { character =>
-    it should f"be parsed (\\u${character.toInt}%04X)" in {
-      evaluateExpression(s"${character}1") should returnResult(1)
+      evaluateExpression(s"every${whitespaceChar}x in [1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"every x${whitespaceChar}in [1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"every x in${whitespaceChar}[1] satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"every x in [1]${whitespaceChar}satisfies odd(x)") should returnResult(
+        true
+      )
+      evaluateExpression(s"every x in [1] satisfies${whitespaceChar}odd(x)") should returnResult(
+        true
+      )
     }
   }
 
