@@ -20,6 +20,7 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelInte
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.collection.immutable.Map
 
@@ -30,7 +31,8 @@ class InterpreterStringExpressionTest
     extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
-    with EvaluationResultMatchers {
+    with EvaluationResultMatchers
+    with TableDrivenPropertyChecks {
 
   "A string" should "concatenates to another String" in {
 
@@ -98,22 +100,33 @@ class InterpreterStringExpressionTest
     evaluateExpression(" x ", Map("x" -> "Hello\"World")) should returnResult("Hello\"World")
   }
 
-  List(
-    " \' ",
-    " \\ ",
-    " \n ",
-    " \r ",
-    " \t ",
-    """ \u269D """,
-    """ \U101EF """
+  private val escapeSequences = Table(
+    ("Character", "Display name"),
+    ('\n', "\\n"),
+    ('\r', "\\r"),
+    ('\t', "\\t"),
+    ('\b', "\\b"),
+    ('\f', "\\f"),
+    ('\'', "\'"),
+    ('\\', "\\")
   )
-    .foreach { notEscapeChar =>
-      it should s"contains a not escape sequence ($notEscapeChar)" in {
 
-        evaluateExpression(s""" "a $notEscapeChar b" """) should returnResult(
-          s"""a $notEscapeChar b"""
-        )
-      }
+  it should "contains an escape sequence" in {
+    forEvery(escapeSequences) { (character, _) =>
+      evaluateExpression(s" \"a $character b\" ") should returnResult(s"a $character b")
     }
+  }
+
+  private val unicodeCharacters = Table(
+    ("Character", "Display name"),
+    ('\u269D', "\\u269D"),
+    ("\\U101EF", "\\U101EF")
+  )
+
+  it should "contains unicode characters" in {
+    forEvery(unicodeCharacters) { (character, _) =>
+      evaluateExpression(s" \"a $character b\" ") should returnResult(s"a $character b")
+    }
+  }
 
 }
