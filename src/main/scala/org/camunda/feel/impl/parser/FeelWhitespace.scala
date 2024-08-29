@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.parser
 
-import fastparse.{ParsingRun, Whitespace}
-import fastparse.internal.{Msgs, Util}
+import fastparse.ParsingRun
+import fastparse.internal.Util
 
 import scala.annotation.{switch, tailrec}
 
@@ -45,57 +45,48 @@ object FeelWhitespace {
     case _ => false
   }
 
-  implicit object whitespace extends Whitespace {
-    def apply(ctx: ParsingRun[_]) = {
-      val input                                                    = ctx.input
-      @tailrec def rec(current: Int, state: Int): ParsingRun[Unit] = {
-        if (!input.isReachable(current)) {
-          if (state == 0 || state == 1) {
-            if (ctx.verboseFailures) ctx.reportTerminalMsg(current, Msgs.empty)
-            ctx.freshSuccessUnit(current)
-          } else if (state == 2) {
-            if (ctx.verboseFailures) ctx.reportTerminalMsg(current, Msgs.empty)
-            ctx.freshSuccessUnit(current - 1)
-          } else {
-            ctx.cut = true
-            val res = ctx.freshFailure(current)
-            if (ctx.verboseFailures) ctx.reportTerminalMsg(current, () => Util.literalize("*/"))
-            res
-          }
-        } else {
-          val currentChar = input(current)
-          (state: @switch) match {
-            case 0 =>
-              (currentChar: @switch) match {
-                case ' ' | '\t' | '\n' | '\r' | _ if isWhitespace(currentChar) =>
-                  rec(current + 1, state)
-                case '/'                                                       => rec(current + 1, state = 2)
-                case _                                                         =>
-                  if (ctx.verboseFailures) ctx.reportTerminalMsg(current, Msgs.empty)
-                  ctx.freshSuccessUnit(current)
-              }
-            case 1 => rec(current + 1, state = if (currentChar == '\n') 0 else state)
-            case 2 =>
-              (currentChar: @switch) match {
-                case '/' => rec(current + 1, state = 1)
-                case '*' => rec(current + 1, state = 3)
-                case _   =>
-                  if (ctx.verboseFailures) ctx.reportTerminalMsg(current, Msgs.empty)
-                  ctx.freshSuccessUnit(current - 1)
-              }
-            case 3 => rec(current + 1, state = if (currentChar == '*') 4 else state)
-            case 4 =>
-              (currentChar: @switch) match {
-                case '/' => rec(current + 1, state = 0)
-                case '*' => rec(current + 1, state = 4)
-                case _   => rec(current + 1, state = 3)
-              }
-            //            rec(current + 1, state = if (currentChar == '/') 0 else 3)
-          }
+  implicit val whitespace = { implicit ctx: ParsingRun[_] =>
+    val input                                                    = ctx.input
+    val startIndex                                               = ctx.index
+    @tailrec def rec(current: Int, state: Int): ParsingRun[Unit] = {
+      if (!input.isReachable(current)) {
+        if (state == 0 || state == 1) ctx.freshSuccessUnit(current)
+        else if (state == 2) ctx.freshSuccessUnit(current - 1)
+        else {
+          ctx.cut = true
+          val res = ctx.freshFailure(current)
+          if (ctx.verboseFailures) ctx.setMsg(startIndex, () => Util.literalize("*/"))
+          res
+        }
+      } else {
+        val currentChar = input(current)
+        (state: @switch) match {
+          case 0 =>
+            (currentChar: @switch) match {
+              case ' ' | '\t' | '\n' | '\r' | _ if isWhitespace(currentChar) =>
+                rec(current + 1, state)
+              case '/'                                                       => rec(current + 1, state = 2)
+              case _                                                         => ctx.freshSuccessUnit(current)
+            }
+          case 1 => rec(current + 1, state = if (currentChar == '\n') 0 else state)
+          case 2 =>
+            (currentChar: @switch) match {
+              case '/' => rec(current + 1, state = 1)
+              case '*' => rec(current + 1, state = 3)
+              case _   => ctx.freshSuccessUnit(current - 1)
+            }
+          case 3 => rec(current + 1, state = if (currentChar == '*') 4 else state)
+          case 4 =>
+            (currentChar: @switch) match {
+              case '/' => rec(current + 1, state = 0)
+              case '*' => rec(current + 1, state = 4)
+              case _   => rec(current + 1, state = 3)
+            }
+          //            rec(current + 1, state = if (currentChar == '/') 0 else 3)
         }
       }
-      rec(current = ctx.index, state = 0)
     }
+    rec(current = ctx.index, state = 0)
   }
 
 }
