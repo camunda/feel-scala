@@ -167,7 +167,7 @@ object FeelParser {
 
   private def namePart[_: P]: P[String] =
     P(
-      CharsWhile(Character.isJavaIdentifierPart, 1)
+      CharsWhile(c => Character.isJavaIdentifierPart(c) && !FeelWhitespace.isWhitespace(c), 1)
     ).!
 
   // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
