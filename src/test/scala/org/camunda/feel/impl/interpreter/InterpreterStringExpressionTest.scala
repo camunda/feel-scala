@@ -115,4 +115,26 @@ class InterpreterStringExpressionTest
     }
   }
 
+  private val regexCharacters = Table(
+    ("Character", "Display name"),
+    ("\\s", "\\s"),
+    ("\\S", "\\S"),
+    ("\\d", "\\d"),
+    ("\\w", "\\w"),
+    ("\\R", "\\R"),
+    ("\\h", "\\h"),
+    ("\\v", "\\v"),
+    ("\\\n", "\\n"),
+    ("\\\r", "\\r")
+  )
+
+  it should "contains a regex character" in {
+    forEvery(regexCharacters) { (character, _) =>
+      val expectedString = s"a $character b"
+
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
+    }
+  }
+
 }
