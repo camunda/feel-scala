@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.parser
 
-import fastparse.JavaWhitespace.whitespace
+import org.camunda.feel.impl.parser.FeelWhitespace.whitespace
 import fastparse.{
   AnyChar,
   ByNameOps,
@@ -167,7 +167,7 @@ object FeelParser {
 
   private def namePart[_: P]: P[String] =
     P(
-      CharsWhile(Character.isJavaIdentifierPart, 1)
+      CharsWhile(c => Character.isJavaIdentifierPart(c) && !FeelWhitespace.isWhitespace(c), 1)
     ).!
 
   // an identifier wrapped in backticks. it can contain any char (e.g. `a b`, `a+b`).
