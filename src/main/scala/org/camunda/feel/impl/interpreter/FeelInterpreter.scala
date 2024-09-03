@@ -39,7 +39,9 @@ import scala.reflect.ClassTag
 /** @author
   *   Philipp Ossler
   */
-class FeelInterpreter {
+class FeelInterpreter(private val valueMapper: ValueMapper) {
+
+  private val valueComparator = new ValComparator(valueMapper)
 
   def eval(expression: Exp)(implicit context: EvalContext): Val = {
     // Check if the current thread was interrupted, otherwise long-running evaluations can not be interrupted and fully block the thread
@@ -80,7 +82,7 @@ class FeelInterpreter {
 
       // simple unary tests
       case InputEqualTo(x)                              =>
-        withVal(getImplicitInputValue, i => checkEquality(i, eval(x), _ == _, ValBoolean))
+        withVal(getImplicitInputValue, i => checkEquality(i, eval(x)))
       case InputLessThan(x)                             =>
         withVal(getImplicitInputValue, i => dualOp(i, eval(x), _ < _, ValBoolean))
       case InputLessOrEqual(x)                          =>
@@ -118,7 +120,7 @@ class FeelInterpreter {
         withValOrNull(withNumber(eval(x), x => ValNumber(-x)))
 
       // dual comparators
-      case Equal(x, y)          => checkEquality(eval(x), eval(y), _ == _, ValBoolean)
+      case Equal(x, y)          => checkEquality(eval(x), eval(y))
       case LessThan(x, y)       => dualOp(eval(x), eval(y), _ < _, ValBoolean)
       case LessOrEqual(x, y)    => dualOp(eval(x), eval(y), _ <= _, ValBoolean)
       case GreaterThan(x, y)    => dualOp(eval(x), eval(y), _ > _, ValBoolean)
@@ -513,65 +515,15 @@ class FeelInterpreter {
     }
   }
 
-  private def checkEquality(x: Val, y: Val, c: (Any, Any) => Boolean, f: Boolean => Val)(implicit
-      context: EvalContext
-  ): Val =
+  private def checkEquality(x: Val, y: Val)(implicit context: EvalContext): Val =
     withValues(
       x,
       y,
-      {
-        case (ValNull, _)                                       => f(c(ValNull, y.toOption.getOrElse(ValNull)))
-        case (_, ValNull)                                       => f(c(x.toOption.getOrElse(ValNull), ValNull))
-        case (ValNumber(x), ValNumber(y))                       => f(c(x, y))
-        case (ValBoolean(x), ValBoolean(y))                     => f(c(x, y))
-        case (ValString(x), ValString(y))                       => f(c(x, y))
-        case (ValDate(x), ValDate(y))                           => f(c(x, y))
-        case (ValLocalTime(x), ValLocalTime(y))                 => f(c(x, y))
-        case (ValTime(x), ValTime(y))                           => f(c(x, y))
-        case (ValLocalDateTime(x), ValLocalDateTime(y))         => f(c(x, y))
-        case (ValDateTime(x), ValDateTime(y))                   => f(c(x, y))
-        case (ValYearMonthDuration(x), ValYearMonthDuration(y)) => f(c(x, y))
-        case (ValDayTimeDuration(x), ValDayTimeDuration(y))     => f(c(x, y))
-        case (ValList(x), ValList(y))                           =>
-          if (x.size != y.size) {
-            f(false)
-
-          } else {
-            val isEqual = x.zip(y).foldRight(true) { case ((x, y), listIsEqual) =>
-              listIsEqual && {
-                checkEquality(x, y, c, f) match {
-                  case ValBoolean(itemIsEqual) => itemIsEqual
-                  case _                       => false
-                }
-              }
-            }
-            f(isEqual)
-          }
-        case (ValContext(x), ValContext(y))                     =>
-          val xVars = x.variableProvider.getVariables
-          val yVars = y.variableProvider.getVariables
-
-          if (xVars.keys != yVars.keys) {
-            f(false)
-
-          } else {
-            val isEqual = xVars.keys.foldRight(true) { case (key, contextIsEqual) =>
-              contextIsEqual && {
-                val xVal = context.valueMapper.toVal(xVars(key))
-                val yVal = context.valueMapper.toVal(yVars(key))
-
-                checkEquality(xVal, yVal, c, f) match {
-                  case ValBoolean(entryIsEqual) => entryIsEqual
-                  case _                        => false
-                }
-              }
-            }
-            f(isEqual)
-          }
-        case _                                                  =>
+      (x, y) =>
+        valueComparator.compare(x, y).toOption.getOrElse {
           error(EvaluationFailureType.NOT_COMPARABLE, s"Can't compare '$x' with '$y'")
           ValNull
-      }
+        }
     )
 
   private def dualOp(x: Val, y: Val, c: (Val, Val) => Boolean, f: Boolean => Val)(implicit
@@ -715,7 +667,7 @@ class FeelInterpreter {
             // the expression contains the input value
             ValBoolean(true)
           case x                                      =>
-            checkEquality(inputValue, x, _ == _, ValBoolean) match {
+            checkEquality(inputValue, x) match {
               case ValBoolean(true)             =>
                 // the expression is the input value
                 ValBoolean(true)
