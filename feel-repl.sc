@@ -1,5 +1,5 @@
 // import the FEEL engine library
-import $ivy.`org.camunda.feel:feel-engine:1.18.0`, org.camunda.feel._
+import $ivy.`org.camunda.feel:feel-engine:1.18.0`, org.camunda.feel._, org.camunda.feel.api._
 
 // import a logging library
 import $ivy.`org.apache.logging.log4j:log4j-slf4j-impl:2.14.0`,
@@ -9,17 +9,17 @@ org.apache.logging.log4j.Level
 Configurator.setRootLevel(Level.WARN)
 
 // initialize the FEEL engine
-val feelEngine = new FeelEngine()
+val feelEngine = FeelEngineBuilder.create().build()
 
 val feelEngineVersion = classOf[FeelEngine].getPackage.getImplementationVersion
 
 // define a shortcut function for evaluation
 def feel(expression: String, context: Map[String, Any] = Map.empty): Unit = {
-  val evalResult = feelEngine.evalExpression(expression, context)
+  val evalResult = feelEngine.evaluateExpression(expression, context)
   printResult(evalResult)
 }
 
-def feel(expression: String, jsonContext: String): Any = {
+def feel(expression: String, jsonContext: String): Unit = {
   parseJsonObject(jsonContext)
     .map(context => feel(expression, context))
 }
@@ -27,8 +27,7 @@ def feel(expression: String, jsonContext: String): Any = {
 def unaryTests(expression: String,
                inputValue: Any,
                context: Map[String, Any] = Map.empty): Unit = {
-  val contextWithInputValue = context + (FeelEngine.UnaryTests.defaultInputVariable -> inputValue)
-  val evalResult = feelEngine.evalUnaryTests(expression, contextWithInputValue)
+  val evalResult = feelEngine.evaluateUnaryTests(expression, inputValue, context)
   printResult(evalResult)
 }
 
@@ -41,16 +40,17 @@ def unaryTests(expression: String,
   }
 }
 
-private def printResult(evalResult: Either[FeelEngine.Failure, Any]): Unit = {
-  evalResult match {
-    case Right(result) => println(fansi.Color.LightGreen(s"> $result"))
-    case Left(failure) => println(fansi.Color.LightRed(s"> $failure"))
+private def printResult(evalResult: EvaluationResult): Unit = {
+  if (evalResult.isSuccess) {
+    println(fansi.Color.LightGreen(s"> ${evalResult.result}"))
+  } else {
+    println(fansi.Color.LightRed(s"> ${evalResult.failure}"))
   }
 }
 
 private def parseJsonObject(json: String): Option[Map[String, Any]] = {
   parseJson(json) match {
-    case objectValue: Map[String, Any] => Some(objectValue)
+    case objectValue: Map[_,_] => Some(objectValue.asInstanceOf[Map[String, Any]])
     case otherValue =>
       println(
         fansi.Color.LightRed(
