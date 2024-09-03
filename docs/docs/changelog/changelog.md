@@ -10,6 +10,27 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+## 1.18
+
+<MarkerChangelogVersion versionZeebe="8.6.0" versionC7="not yet" />
+
+**Built-in functions:**
+
+* New built-in
+  function `is empty()`
+  to check if a list is empty
+* New built-in
+  function `trim()`
+  to remove leading and trailing spaces of a string
+* New built-in
+  function `uuid()`
+  to create a UUID (Universally Unique Identifier)
+* New built-in
+  function `to base64()`
+  to encode a string in Base64 format
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.18.0).
+
 ## 1.17
 
 <MarkerChangelogVersion versionZeebe="8.3.0" versionC7="7.21.0" />
