@@ -49,43 +49,21 @@ class ValComparator(private val valueMapper: ValueMapper) {
   }
 
   private def compare(x: List[Val], y: List[Val]): ValBoolean = {
-    if (x.size != y.size) {
-      ValBoolean(false)
-
-    } else {
-      val itemsAreEqual = x.zip(y).foldRight(true) { case ((x, y), listIsEqual) =>
-        listIsEqual && {
-          compare(x, y) match {
-            case ValBoolean(itemIsEqual) => itemIsEqual
-            case _                       => false
-          }
-        }
-      }
-      ValBoolean(itemsAreEqual)
-    }
+    ValBoolean(
+      x.size == y.size && x.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
+    )
   }
 
   private def compare(x: Context, y: Context): ValBoolean = {
     val xVars = x.variableProvider.getVariables
     val yVars = y.variableProvider.getVariables
 
-    if (xVars.keys != yVars.keys) {
-      ValBoolean(false)
+    ValBoolean(xVars.keys == yVars.keys && xVars.keys.forall { key =>
+      val xVal = valueMapper.toVal(xVars(key))
+      val yVal = valueMapper.toVal(yVars(key))
 
-    } else {
-      val itemsAreEqual = xVars.keys.foldRight(true) { case (key, contextIsEqual) =>
-        contextIsEqual && {
-          val xVal = valueMapper.toVal(xVars(key))
-          val yVal = valueMapper.toVal(yVars(key))
-
-          compare(xVal, yVal) match {
-            case ValBoolean(entryIsEqual) => entryIsEqual
-            case _                        => false
-          }
-        }
-      }
-      ValBoolean(itemsAreEqual)
-    }
+      equals(xVal, yVal)
+    })
   }
 
 }
