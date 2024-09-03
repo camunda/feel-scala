@@ -37,7 +37,7 @@ import org.camunda.feel.{
 trait FeelIntegrationTest {
 
   val interpreter: FeelInterpreter =
-    new FeelInterpreter
+    new FeelInterpreter(ValueMapper.defaultValueMapper)
 
   private val clock: TimeTravelClock = new TimeTravelClock
 
