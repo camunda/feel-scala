@@ -42,7 +42,7 @@ class BuiltinFunctions(clock: FeelEngineClock, valueMapper: ValueMapper) extends
     new ConversionBuiltinFunctions(valueMapper).functions ++
       BooleanBuiltinFunctions.functions ++
       StringBuiltinFunctions.functions ++
-      ListBuiltinFunctions.functions ++
+      new ListBuiltinFunctions(valueMapper).functions ++
       NumericBuiltinFunctions.functions ++
       new ContextBuiltinFunctions(valueMapper).functions ++
       RangeBuiltinFunction.functions ++

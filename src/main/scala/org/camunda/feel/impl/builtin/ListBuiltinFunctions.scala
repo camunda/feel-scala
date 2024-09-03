@@ -18,6 +18,7 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.Number
+import org.camunda.feel.impl.interpreter.ValComparator
 import org.camunda.feel.syntaxtree.{
   Val,
   ValBoolean,
@@ -28,10 +29,13 @@ import org.camunda.feel.syntaxtree.{
   ValNumber,
   ValString
 }
+import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.annotation.tailrec
 
-object ListBuiltinFunctions {
+class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
+
+  private val valueComparator = new ValComparator(valueMapper)
 
   def functions = Map(
     "list contains"    -> List(listContainsFunction),
@@ -375,15 +379,11 @@ object ListBuiltinFunctions {
   private def unionFunction = builtinFunction(
     params = List("lists"),
     invoke = { case List(ValList(lists)) =>
-      ValList(
-        lists
-          .flatMap(_ match {
-            case ValList(list) => list
-            case v             => List(v)
-          })
-          .toList
-          .distinct
-      )
+      val listOfLists = lists.flatMap {
+        case ValList(list) => list
+        case v             => List(v)
+      }
+      ValList(distinct(listOfLists))
     },
     hasVarArgs = true
   )
@@ -391,16 +391,28 @@ object ListBuiltinFunctions {
   private def distinctValuesFunction =
     builtinFunction(
       params = List("list"),
-      invoke = { case List(ValList(list)) =>
-        ValList(list.distinct)
+      invoke = { case List(ValList(list)) => ValList(distinct(list)) }
+    )
+
+  private def distinct(list: List[Val]): List[Val] = {
+    list.foldLeft(List[Val]())((result, item) =>
+      if (result.exists(y => valueComparator.equals(item, y))) {
+        // duplicate value
+        result
+      } else {
+        result :+ item
       }
     )
+  }
 
   private def duplicateValuesFunction =
     builtinFunction(
       params = List("list"),
       invoke = { case List(ValList(list)) =>
-        ValList(list.distinct.filter(x => list.count(_ == x) > 1))
+        val duplicatedValues =
+          distinct(list).filter(x => list.count(valueComparator.equals(_, x)) > 1)
+
+        ValList(duplicatedValues)
       }
     )
 
