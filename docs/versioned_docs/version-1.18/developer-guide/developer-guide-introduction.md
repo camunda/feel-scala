@@ -1,6 +1,7 @@
 ---
 id: developer-guide-introduction
 title: Introduction
+slug: /developer-guide/
 ---
 
 You can embed the FEEL engine in your application in different ways. Have a look
