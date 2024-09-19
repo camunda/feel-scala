@@ -243,4 +243,27 @@ class BuiltinFunctionsTest
       "Assertion failure on evaluate the expression 'list contains(assert(my_list, my_list != null, \"The condition is not true\"), 2)': The condition is not true"
     )
   }
+
+  "A is blank() function" should "return Boolean" in {
+    evaluateExpression(
+      expression = """ is blank("") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is blank(" ") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is blank("hello world") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is blank(" hello world ") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is blank("\t\n\r\f") """
+    ) should returnResult(true)
+  }
+
 }

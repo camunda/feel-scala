@@ -25,7 +25,8 @@ object BooleanBuiltinFunctions {
     "not"         -> List(notFunction),
     "is defined"  -> List(isDefinedFunction),
     "get or else" -> List(getOrElse),
-    "assert"      -> List(assertFunction, assertFunction2)
+    "assert"      -> List(assertFunction, assertFunction2),
+    "is blank"  -> List(isBlankFunction)
   )
 
   private def notFunction =
@@ -67,6 +68,13 @@ object BooleanBuiltinFunctions {
     invoke = {
       case List(value, ValBoolean(true), _) => value
       case List(_, _, ValString(cause))     => ValError(cause)
+    }
+  )
+
+  private def isBlankFunction = builtinFunction(
+    params = List("string"),
+    invoke = {case List(ValString(string)) =>
+      ValBoolean(string.isBlank)
     }
   )
 
