@@ -563,11 +563,31 @@ class BuiltinListFunctionsTest
     evaluateExpression(""" string join(["foo", 123, "bar"]) """) should returnNull()
   }
 
-  "A list is empty() function" should "return if the list is empty" in {
+  "A list or string is empty() function" should "return Boolean" in {
 
     evaluateExpression(" is empty([]) ") should returnResult(true)
     evaluateExpression(" is empty([1]) ") should returnResult(false)
     evaluateExpression(" is empty([1,2,3]) ") should returnResult(false)
     evaluateExpression(" is empty(list: [1]) ") should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is empty("") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is empty(" ") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is empty("hello world") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is empty(" hello world ") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is empty("\t\n\r\f") """
+    ) should returnResult(false)
   }
 }

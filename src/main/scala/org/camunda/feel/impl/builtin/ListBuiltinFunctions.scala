@@ -513,8 +513,9 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def emptyFunction =
     builtinFunction(
       params = List("list"),
-      invoke = { case List(ValList(list)) =>
-        ValBoolean(list.isEmpty)
+      invoke = {
+        case List(ValString(list)) => ValBoolean(list.isEmpty)
+        case List(ValList(list)) => ValBoolean(list.isEmpty)
       }
     )
 
