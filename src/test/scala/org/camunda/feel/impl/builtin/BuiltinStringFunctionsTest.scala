@@ -214,7 +214,7 @@ class BuiltinStringFunctionsTest
     ) should returnResult(true)
   }
 
-  "A is blank() function" should "return false if the string contains only non-whitespace characters" in {
+  it should "return false if the string contains only non-whitespace characters" in {
     evaluateExpression(
       expression = """ is blank("hello world") """
     ) should returnResult(false)
