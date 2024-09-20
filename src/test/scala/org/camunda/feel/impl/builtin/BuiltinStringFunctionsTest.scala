@@ -195,4 +195,32 @@ class BuiltinStringFunctionsTest
 
     evaluateExpression(""" to base64(value: "Camunda") """) should returnResult("Q2FtdW5kYQ==")
   }
+
+  "A is blank() function" should "return true if the string contains only whitespace" in {
+    evaluateExpression(
+      expression = """ is blank("") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is blank(" ") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is blank("\t\n\r\f") """
+    ) should returnResult(true)
+
+    evaluateExpression(
+      expression = """ is blank(string: "") """
+    ) should returnResult(true)
+  }
+
+  it should "return false if the string contains only non-whitespace characters" in {
+    evaluateExpression(
+      expression = """ is blank("hello world") """
+    ) should returnResult(false)
+
+    evaluateExpression(
+      expression = """ is blank(" hello world ") """
+    ) should returnResult(false)
+  }
 }

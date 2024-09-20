@@ -45,7 +45,8 @@ object StringBuiltinFunctions {
     "extract"          -> List(extractFunction),
     "trim"             -> List(trimFunction),
     "uuid"             -> List(uuidFunction),
-    "to base64"        -> List(toBase64Function)
+    "to base64"        -> List(toBase64Function),
+    "is blank"         -> List(isBlankFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -286,5 +287,12 @@ object StringBuiltinFunctions {
         ValString(Base64.getEncoder.encodeToString(bytes))
       }
     )
+
+  private def isBlankFunction = builtinFunction(
+    params = List("string"),
+    invoke = {case List(ValString(string)) =>
+      ValBoolean(string.isBlank)
+    }
+  )
 
 }
