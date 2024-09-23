@@ -15,7 +15,7 @@
   <name>FEEL Scala Engine</name>
 
   <properties>
-    <scala.version>2.13.14</scala.version>
+    <scala.version>2.13.15</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.24.0</version.log4j>
     <version.uuid>5.1.0</version.uuid>
