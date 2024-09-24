@@ -23,9 +23,9 @@ Please have a look at the [documentation](https://docs.camunda.io/docs/next/comp
 
 Want to try it out? Use the [Playground](https://camunda.github.io/feel-scala/docs/playground/) to evaluate FEEL expressions. 
 
-## Install
+## Install and Extend
 
-Please have a look at the [developer documentation](https://camunda.github.io/feel-scala/docs/reference/developer-guide/developer-guide-introduction). It describes how to integrate the engine into your application, and how to extend/customize it.
+Please have a look at the [developer documentation](https://camunda.github.io/feel-scala/docs/developer-guide). It describes how to integrate the engine into your application, and how to extend/customize it.
 
 ## Contribution
 
