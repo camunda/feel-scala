@@ -82,38 +82,24 @@ class InterpreterStringExpressionTest
     evaluateExpression(""" "a" != null """) should returnResult(true)
   }
 
-  it should "return not escaped characters" in {
-
-    evaluateExpression(""" "Hello\nWorld" """) should returnResult("Hello\nWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\nWorld")) should returnResult("Hello\nWorld")
-
-    evaluateExpression(""" "Hello\rWorld" """) should returnResult("Hello\rWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\rWorld")) should returnResult("Hello\rWorld")
-
-    evaluateExpression(""" "Hello\'World" """) should returnResult("Hello\'World")
-    evaluateExpression(" x ", Map("x" -> "Hello\'World")) should returnResult("Hello\'World")
-
-    evaluateExpression(""" "Hello\tWorld" """) should returnResult("Hello\tWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\tWorld")) should returnResult("Hello\tWorld")
-
-    evaluateExpression(""" "Hello\"World" """) should returnResult("Hello\"World")
-    evaluateExpression(" x ", Map("x" -> "Hello\"World")) should returnResult("Hello\"World")
-  }
-
   private val escapeSequences = Table(
-    ("Character", "Display name"),
-    ('\n', "\\n"),
-    ('\r', "\\r"),
-    ('\t', "\\t"),
-    ('\b', "\\b"),
-    ('\f', "\\f"),
-    ('\'', "\'"),
-    ('\\', "\\")
+    ("Character", "Expected", "Display name"),
+    ('\n', '\n', "new line"),
+    ('\r', '\r', "carriage return"),
+    ('\t', '\t', "tab"),
+    ('\b', '\b', "backspace"),
+    ('\f', '\f', "form feed"),
+    ('\'', '\'', "single quote"),
+    ("\\\"", '"', "double quote"),
+    ("\\\\", '\\', "backslash")
   )
 
   it should "contains an escape sequence" in {
-    forEvery(escapeSequences) { (character, _) =>
-      evaluateExpression(s" \"a $character b\" ") should returnResult(s"a $character b")
+    forEvery(escapeSequences) { (character, expected, _) =>
+      val expectedString = s"a $expected b"
+
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
     }
   }
 
