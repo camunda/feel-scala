@@ -20,6 +20,7 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelInte
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.collection.immutable.Map
 
@@ -30,7 +31,8 @@ class InterpreterStringExpressionTest
     extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
-    with EvaluationResultMatchers {
+    with EvaluationResultMatchers
+    with TableDrivenPropertyChecks {
 
   "A string" should "concatenates to another String" in {
 
@@ -80,40 +82,59 @@ class InterpreterStringExpressionTest
     evaluateExpression(""" "a" != null """) should returnResult(true)
   }
 
-  it should "return not escaped characters" in {
+  private val escapeSequences = Table(
+    ("Character", "Expected", "Display name"),
+    ('\n', '\n', "new line"),
+    ('\r', '\r', "carriage return"),
+    ('\t', '\t', "tab"),
+    ('\b', '\b', "backspace"),
+    ('\f', '\f', "form feed"),
+    ('\'', '\'', "single quote"),
+    ("\\\"", '"', "double quote"),
+    ("\\\\", '\\', "backslash")
+  )
 
-    evaluateExpression(""" "Hello\nWorld" """) should returnResult("Hello\nWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\nWorld")) should returnResult("Hello\nWorld")
+  it should "contains an escape sequence" in {
+    forEvery(escapeSequences) { (character, expected, _) =>
+      val expectedString = s"a $expected b"
 
-    evaluateExpression(""" "Hello\rWorld" """) should returnResult("Hello\rWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\rWorld")) should returnResult("Hello\rWorld")
-
-    evaluateExpression(""" "Hello\'World" """) should returnResult("Hello\'World")
-    evaluateExpression(" x ", Map("x" -> "Hello\'World")) should returnResult("Hello\'World")
-
-    evaluateExpression(""" "Hello\tWorld" """) should returnResult("Hello\tWorld")
-    evaluateExpression(" x ", Map("x" -> "Hello\tWorld")) should returnResult("Hello\tWorld")
-
-    evaluateExpression(""" "Hello\"World" """) should returnResult("Hello\"World")
-    evaluateExpression(" x ", Map("x" -> "Hello\"World")) should returnResult("Hello\"World")
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
+    }
   }
 
-  List(
-    " \' ",
-    " \\ ",
-    " \n ",
-    " \r ",
-    " \t ",
-    """ \u269D """,
-    """ \U101EF """
+  private val unicodeCharacters = Table(
+    ("Character", "Display name"),
+    ('\u269D', "\\u269D"),
+    ("\\U101EF", "\\U101EF")
   )
-    .foreach { notEscapeChar =>
-      it should s"contains a not escape sequence ($notEscapeChar)" in {
 
-        evaluateExpression(s""" "a $notEscapeChar b" """) should returnResult(
-          s"""a $notEscapeChar b"""
-        )
-      }
+  it should "contains unicode characters" in {
+    forEvery(unicodeCharacters) { (character, _) =>
+      evaluateExpression(s" \"a $character b\" ") should returnResult(s"a $character b")
     }
+  }
+
+  private val regexCharacters = Table(
+    ("Character", "Display name"),
+    ("\\s", "\\s"),
+    ("\\S", "\\S"),
+    ("\\d", "\\d"),
+    ("\\w", "\\w"),
+    ("\\R", "\\R"),
+    ("\\h", "\\h"),
+    ("\\v", "\\v"),
+    ("\\\n", "\\n"),
+    ("\\\r", "\\r")
+  )
+
+  it should "contains a regex character" in {
+    forEvery(regexCharacters) { (character, _) =>
+      val expectedString = s"a $character b"
+
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
+    }
+  }
 
 }
