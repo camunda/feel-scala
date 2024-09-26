@@ -16,100 +16,125 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.impl.FeelIntegrationTest
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
+
+import scala.collection.immutable.Map
 
 /** @author
   *   Philipp Ossler
   */
-class InterpreterStringExpressionTest extends AnyFlatSpec with Matchers with FeelIntegrationTest {
+class InterpreterStringExpressionTest
+    extends AnyFlatSpec
+    with Matchers
+    with FeelEngineTest
+    with EvaluationResultMatchers
+    with TableDrivenPropertyChecks {
 
   "A string" should "concatenates to another String" in {
 
-    eval(""" "a" + "b" """) should be(ValString("ab"))
+    evaluateExpression(""" "a" + "b" """) should returnResult("ab")
   }
 
   it should "compare with '='" in {
 
-    eval(""" "a" = "a" """) should be(ValBoolean(true))
-    eval(""" "a" = "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" = "a" """) should returnResult(true)
+    evaluateExpression(""" "a" = "b" """) should returnResult(false)
   }
 
   it should "compare with '!='" in {
 
-    eval(""" "a" != "a" """) should be(ValBoolean(false))
-    eval(""" "a" != "b" """) should be(ValBoolean(true))
+    evaluateExpression(""" "a" != "a" """) should returnResult(false)
+    evaluateExpression(""" "a" != "b" """) should returnResult(true)
   }
 
   it should "compare with '<'" in {
 
-    eval(""" "a" < "b" """) should be(ValBoolean(true))
-    eval(""" "b" < "a" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" < "b" """) should returnResult(true)
+    evaluateExpression(""" "b" < "a" """) should returnResult(false)
   }
 
   it should "compare with '<='" in {
 
-    eval(""" "a" <= "a" """) should be(ValBoolean(true))
-    eval(""" "b" <= "a" """) should be(ValBoolean(false))
+    evaluateExpression(""" "a" <= "a" """) should returnResult(true)
+    evaluateExpression(""" "b" <= "a" """) should returnResult(false)
   }
 
   it should "compare with '>'" in {
 
-    eval(""" "b" > "a" """) should be(ValBoolean(true))
-    eval(""" "a" > "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "b" > "a" """) should returnResult(true)
+    evaluateExpression(""" "a" > "b" """) should returnResult(false)
   }
 
   it should "compare with '>='" in {
 
-    eval(""" "b" >= "b" """) should be(ValBoolean(true))
-    eval(""" "a" >= "b" """) should be(ValBoolean(false))
+    evaluateExpression(""" "b" >= "b" """) should returnResult(true)
+    evaluateExpression(""" "a" >= "b" """) should returnResult(false)
   }
 
   it should "compare with null" in {
 
-    eval(""" "a" = null """) should be(ValBoolean(false))
-    eval(""" null = "a" """) should be(ValBoolean(false))
-    eval(""" "a" != null """) should be(ValBoolean(true))
+    evaluateExpression(""" "a" = null """) should returnResult(false)
+    evaluateExpression(""" null = "a" """) should returnResult(false)
+    evaluateExpression(""" "a" != null """) should returnResult(true)
   }
 
-  it should "return not escaped characters" in {
-
-    eval(""" "Hello\nWorld" """) should be(ValString("Hello\nWorld"))
-    eval(" x ", Map("x" -> "Hello\nWorld")) should be(ValString("Hello\nWorld"))
-
-    eval(""" "Hello\rWorld" """) should be(ValString("Hello\rWorld"))
-    eval(" x ", Map("x" -> "Hello\rWorld")) should be(ValString("Hello\rWorld"))
-
-    eval(""" "Hello\'World" """) should be(ValString("Hello\'World"))
-    eval(" x ", Map("x" -> "Hello\'World")) should be(ValString("Hello\'World"))
-
-    eval(""" "Hello\tWorld" """) should be(ValString("Hello\tWorld"))
-    eval(" x ", Map("x" -> "Hello\tWorld")) should be(ValString("Hello\tWorld"))
-
-    eval(""" "Hello\"World" """) should be(ValString("Hello\"World"))
-    eval(" x ", Map("x" -> "Hello\"World")) should be(ValString("Hello\"World"))
-  }
-
-  List(
-    " \' ",
-    " \\ ",
-    " \n ",
-    " \r ",
-    " \t ",
-    """ \u269D """,
-    """ \U101EF """
+  private val escapeSequences = Table(
+    ("Character", "Expected", "Display name"),
+    ('\n', '\n', "new line"),
+    ('\r', '\r', "carriage return"),
+    ('\t', '\t', "tab"),
+    ('\b', '\b', "backspace"),
+    ('\f', '\f', "form feed"),
+    ('\'', '\'', "single quote"),
+    ("\\\"", '"', "double quote"),
+    ("\\\\", '\\', "backslash")
   )
-    .foreach { notEscapeChar =>
-      it should s"contains a not escape sequence ($notEscapeChar)" in {
 
-        eval(s""" "a $notEscapeChar b" """) should be(
-          ValString(
-            s"""a $notEscapeChar b"""
-          )
-        )
-      }
+  it should "contains an escape sequence" in {
+    forEvery(escapeSequences) { (character, expected, _) =>
+      val expectedString = s"a $expected b"
+
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
     }
+  }
+
+  private val unicodeCharacters = Table(
+    ("Character", "Display name"),
+    ('\u269D', "\\u269D"),
+    ("\\U101EF", "\\U101EF")
+  )
+
+  it should "contains unicode characters" in {
+    forEvery(unicodeCharacters) { (character, _) =>
+      evaluateExpression(s" \"a $character b\" ") should returnResult(s"a $character b")
+    }
+  }
+
+  private val regexCharacters = Table(
+    ("Character", "Display name"),
+    ("\\s", "\\s"),
+    ("\\S", "\\S"),
+    ("\\d", "\\d"),
+    ("\\w", "\\w"),
+    ("\\R", "\\R"),
+    ("\\h", "\\h"),
+    ("\\v", "\\v"),
+    ("\\\n", "\\n"),
+    ("\\\r", "\\r")
+  )
+
+  it should "contains a regex character" in {
+    forEvery(regexCharacters) { (character, _) =>
+      val expectedString = s"a $character b"
+
+      evaluateExpression(s" \"a $character b\" ") should returnResult(expectedString)
+      evaluateExpression("char", Map("char" -> expectedString)) should returnResult(expectedString)
+    }
+  }
 
 }
