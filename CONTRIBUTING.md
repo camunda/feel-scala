@@ -16,9 +16,12 @@ If you have an idea of how to improve the project, please create a [new issue](h
 
 Do you want to provide a bug fix or an inprovement? Great! :tada:
 
-Before opening a pull request, make sure that there is a related issue. The issue helps to confirm that the behavior is unexpected, or the idea of the improvement is valid. (Following the rule "Talk, then code")
+Before you start coding, make sure that there is a related issue. The issue helps to confirm that the behavior is unexpected, or the idea of the improvement is valid. (Following the rule "Talk, then code")
 
-In order to verify that you don't break anything, you should build the whole project and run all tests. This also apply the code formatting.
+Before you open a pull request:
+* Make sure that you write new tests for the changed behavior 
+* Run all tests to verify you don't break anything
+* Build the project with Maven to format the code
 
 ## Building the project from source
 
@@ -66,6 +69,37 @@ Available commit types:
 * `build` - changes to the build (e.g. to Maven's `pom.xml`)
 * `ci` - changes to the CI (e.g. to GitHub-related configs)
 
+## Guide for common contributions
+
+If you're new and want to contribute to the project, check out the following step-by-step guides for common contributions.
+
+### Adding a new built-in function
+
+The built-in functions are grouped by their main argument type, following the DMN specification. 
+
+Example: Add a new string function `reverse(value: string): string` 
+
+* Implement the function in [StringBuiltinFunctions.scala](src/main/scala/org/camunda/feel/impl/builtin/StringBuiltinFunctions.scala)
+  * Add a new private method `reverseFunction` and use the method `builtinFunction()`
+  * `params` returns the argument list: `params = List("value")`
+  * `invoke` is called when the function is invoked
+  * It uses pattern-matching for the function parameters, the parameter order is the same in the argument list: `invoke = { case List(ValString(value)) => ??? }`
+  * Return the function result `ValString(value.reverse)`
+  * If the function can't return a successful result, return `ValError("something went wrong")` instead
+* Verify the behavior by writing test cases in [BuiltinStringFunctionsTest.scala](src/test/scala/org/camunda/feel/impl/builtin/BuiltinStringFunctionsTest.scala)  
+  * Add a new test case following the pattern: `"A reverse() function" should "return a string in reverse order" in { ??? }`
+  * Add more test cases for other results, alternative parameters, or covering edge cases
+  * Group all test cases for a method using `it should "return null if the argument is not a string" in { ??? }`
+  * Add one test case that invokes the function with named arguments: `reverse(value: "adnumac")`
+* Run all tests to verify the behavior
+* Run the Maven build to format the code
+* Open a pull request and link to the FEEL issue
+* Then, document the function in the [Camunda docs](https://docs.camunda.io/docs/next/components/modeler/feel/builtin-functions/feel-built-in-functions-introduction/)
+  * Navigate to the page [String functions](https://docs.camunda.io/docs/next/components/modeler/feel/builtin-functions/feel-built-in-functions-string/)
+  * Click on `Edit this page` at the bottom
+  * Add the function to the page, describe the behavior, and provide a few examples
+  * Open a pull request and link to the FEEL issue and your pull request   
+
 ## Public API and backward compatibility
 
 The FEEL engine is integrated into Camunda 7 and Camunda 8. It's important to keep the public API stable and stay backward compatible to avoid breaking the integration in Camunda 7/8 or the userspace (i.e. the application that uses FEEL expressions). 
@@ -91,7 +125,7 @@ Technically:
 * The engine behavior is verified by the unit tests  
 * The supported environments are checked via GibHub actions 
 
-Any change or violation of the above must be accepted by the maintainers of Camunda 7 and Camunda 8 to avoid that a team/product getting "locked out".
+Any change or violation of the above must be accepted by the maintainers of Camunda 7 and Camunda 8 to avoid a team/product getting "locked out".
 
 ## Building the documentation
 
