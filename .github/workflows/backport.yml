@@ -51,3 +51,10 @@ jobs:
             
             relates to ${issue_refs}
             original author: @${pull_author}
+
+          # Optional
+          # Specifies how the action will handle a conflict occurring during the cherry-pick. 
+          # In all cases, the action will stop the cherry-pick at the first conflict encountered.
+          # When set to draft_commit_conflicts the backport will always create a draft pull request 
+          # with the first conflict encountered committed.
+          conflict_resolution: draft_commit_conflicts
