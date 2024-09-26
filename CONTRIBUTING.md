@@ -2,29 +2,25 @@
 
 :tada: First off, thanks for taking the time to contribute! :+1:
 
-## How Can I Contribute?
+## How can I contribute?
 
-### Reporting Bugs
+### Reporting bugs
 
-If you found a bug or an unexpected behevior then please create a [new issue](https://github.com/camunda/feel-scala/issues). Before creating an issue, make sure that there is no issue yet. Any information you provide in the issue, helps to solve it.
+If you found a bug or unexpected behavior, please create a [new issue](https://github.com/camunda/feel-scala/issues). Before you create an issue, please make sure that there is no issue yet. Any information you provide on the issue would be helpful to solve it.
 
-### Suggesting Enhancements
+### Suggesting enhancements
 
-If you have an idea how to improve the project then please create a [new issue](https://github.com/camunda/feel-scala/issues). Describe your idea and the motivation behind it. In order to speed up the process, think about providing a pull request.
+If you have an idea of how to improve the project, please create a [new issue](https://github.com/camunda/feel-scala/issues). Describe your idea and the motivation behind it. To speed up the process, think about providing a pull request.
 
-### Improving Documentation
+### Providing pull requests
 
-If you see a way to improve the documentation (e.g. provide additional or missing information) then please open a new pull request which contains your changes. Use the link on the page to edit it.
-
-### Providing Pull Requests
-
-You want to provide a bug fix or an inprovement? Great! :tada:
+Do you want to provide a bug fix or an inprovement? Great! :tada:
 
 Before opening a pull request, make sure that there is a related issue. The issue helps to confirm that the behavior is unexpected, or the idea of the improvement is valid. (Following the rule "Talk, then code")
 
 In order to verify that you don't break anything, you should build the whole project and run all tests. This also apply the code formatting.
 
-## Building the Project from Source
+## Building the project from source
 
 You can build the project with [Maven](http://maven.apache.org). 
 
@@ -40,31 +36,13 @@ Build the JAR files with
 mvn install
 ```
 
-## Building the Documentation
-
-The documentation is located in the `/docs` folder. It is built with [Docusaurus](https://v2.docusaurus.io/)
-
-For development, use the following command (build + serve + auto-reload):
-```
-npm run start
-```
-
-The documentation is published using GitHub actions.
-
-## Building a new Release
-
-> [!NOTE]
-> Only for Camunda developers. 
-
-Open the Camunda Slack channel [#ask-dmn-feel](https://camunda.slack.com/archives/C01QYD808A3). Click on the bookmark "Release FEEL-Scala" and follow the instructions. 🏗️
-
 ## Styleguides
 
-### Source Code
+### Source code
 
 Scala code is formatted using [Scalafmt](https://scalameta.org/scalafmt/). The formatting is integrated in the build process.
 
-### Git Commit Messages
+### Git commit messages
 
 Commit messages should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) format.
 
@@ -86,13 +64,14 @@ Available commit types:
 * `docs` - changes in the documentation, readme, etc.
 * `style` - apply code styles
 * `build` - changes to the build (e.g. to Maven's `pom.xml`)
-* `ci` - changes to the CI (e.g. to GitHub related configs)
+* `ci` - changes to the CI (e.g. to GitHub-related configs)
 
-## Public API and Backwards Compatibility
+## Public API and backward compatibility
 
-Changes to the following code and concepts are considered breaking changes in the sense of semantic versioning. That means, if you want to make such a change, this must result in a new major version of this library. For any such change, both teams maintaining this codebase (Zeebe and Runtime) must be informed and accept the change. This allows us to make sure both teams will be able to work with a new major release and no team gets "locked out".
+The FEEL engine is integrated into Camunda 7 and Camunda 8. It's important to keep the public API stable and stay backward compatible to avoid breaking the integration in Camunda 7/8 or the userspace (i.e. the application that uses FEEL expressions). 
 
-* The API of the following classes must remain binary backwards compatible
+Concrete:
+* The API of the following classes must remain binary backward compatible
   * Any class in a package namespace that does not contain `impl`, especially
     * `FeelEngine`
     * The custom function mechanism
@@ -102,7 +81,32 @@ Changes to the following code and concepts are considered breaking changes in th
   * Ability to compile and evaluate expressions at once
   * Expression evaluation
     * Input and return type handling of expressions, e.g. the returned type of an expression should not change
-    * The result of an expression unless it is a clear bug with respect to the FEEL specification
+    * The result of an expression unless it is a clear bug according to the DMN specification
 * Supported environments
-  * Minimal Java version: 8 (Runtime team)
-  * Java 11 (Zeebe team)
+  * Minimal Java version: 11 (Camunda 7)
+  * Java 21 (Camunda 8)
+
+Technically:
+* The binary backward compatibility is validated using the [clirr-maven-plugin](https://www.mojohaus.org/clirr-maven-plugin/)
+* The engine behavior is verified by the unit tests  
+* The supported environments are checked via GibHub actions 
+
+Any change or violation of the above must be accepted by the maintainers of Camunda 7 and Camunda 8 to avoid that a team/product getting "locked out".
+
+## Building the documentation
+
+The documentation is located in the `/docs` folder. It is built with [Docusaurus](https://v2.docusaurus.io/)
+
+For development, use the following command (build + serve + auto-reload):
+```
+npm run start
+```
+
+The documentation is published using GitHub actions.
+
+## Building a new release
+
+> [!NOTE]
+> Only for Camunda developers. 
+
+Open the Camunda Slack channel [#ask-dmn-feel](https://camunda.slack.com/archives/C01QYD808A3). Click on the bookmark "Release FEEL-Scala" and follow the instructions. 🏗️
