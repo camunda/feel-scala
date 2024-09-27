@@ -100,6 +100,19 @@ Example: Add a new string function `reverse(value: string): string`
   * Add the function to the page, describe the behavior, and provide a few examples
   * Open a pull request and link to the FEEL issue and your pull request   
 
+### Fix or extend the parsing
+
+Modifying the FEEL parser is more complex and requires some knowledge about the parsing library. Here are some useful resources:
+* [FastParse documentation](https://com-lihaoyi.github.io/fastparse/) 
+* [Blog: Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html) 
+* [Blog: Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
+
+Example: ?
+
+* Adjust the parsing behavior in [FeelParser.scala](src/main/scala/org/camunda/feel/impl/parser/FeelParser.scala)
+* Verify the behavior by writing test cases in ?
+
+
 ## Public API and backward compatibility
 
 The FEEL engine is integrated into Camunda 7 and Camunda 8. It's important to keep the public API stable and stay backward compatible to avoid breaking the integration in Camunda 7/8 or the userspace (i.e. the application that uses FEEL expressions). 
