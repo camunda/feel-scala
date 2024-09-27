@@ -31,11 +31,6 @@ Please have a look at the [developer documentation](https://camunda.github.io/fe
 
 Contributions are welcome 🎉 Please have a look at the [Contribution Guide](./CONTRIBUTING.md).
 
-The following resources can help to understand some general concepts behind the implementation: 
-* [Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
-* [Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html)
-* [FastParse - Documentation of the Parser Library](https://com-lihaoyi.github.io/fastparse/)
-
 ## License
 
 [Apache License, Version 2.0](./LICENSE)
