@@ -14,7 +14,7 @@ If you have an idea of how to improve the project, please create a [new issue](h
 
 ### Providing pull requests
 
-Do you want to provide a bug fix or an inprovement? Great! :tada:
+Do you want to provide a bug fix or an improvement? Great! :tada:
 
 Before you start coding, make sure that there is a related issue. The issue helps to confirm that the behavior is unexpected, or the idea of the improvement is valid. (Following the rule "Talk, then code")
 
@@ -22,6 +22,8 @@ Before you open a pull request:
 * Make sure that you write new tests for the changed behavior 
 * Run all tests to verify you don't break anything
 * Build the project with Maven to format the code
+
+If you added a new feature, please add it to the [Camunda docs](https://docs.camunda.io/docs/next/components/modeler/feel/language-guide/feel-expressions-introduction/) by contributing its documentation to the [repository](https://github.com/camunda/camunda-docs).   
 
 ## Building the project from source
 
@@ -75,11 +77,10 @@ If you're new and want to contribute to the project, check out the following ste
 
 ### Adding a new built-in function
 
-The built-in functions are grouped by their main argument type, following the DMN specification. 
-
 Example: Add a new string function `reverse(value: string): string` 
 
 * Implement the function in [StringBuiltinFunctions.scala](src/main/scala/org/camunda/feel/impl/builtin/StringBuiltinFunctions.scala)
+  * Note: the built-in functions are grouped by their main argument type
   * Add a new private method `reverseFunction` and use the method `builtinFunction()`
   * `params` returns the argument list: `params = List("value")`
   * `invoke` is called when the function is invoked
@@ -100,6 +101,22 @@ Example: Add a new string function `reverse(value: string): string`
   * Add the function to the page, describe the behavior, and provide a few examples
   * Open a pull request and link to the FEEL issue and your pull request   
 
+### Fix or extend the evaluation
+
+Example: Zero-bases index list access `[1,2,3][0]` instead of `[1,2,3][1]` 
+
+* Adjust the list access in [FeelInterpreter.scala](src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala)
+  * Note: The entry point of the evaluation is `def eval(expression: Exp)`
+  * Note: The list access is parsed as `Filter(list, filter)`
+  * Note: Inspect the call hierachie starting from `def eval(expression: Exp)` and looking for `case Filter(list, filter) =>`   
+  * Change the access behavior in `private def filterList(list: List[Val], index: Number)`
+* Adjust the relevant test cases in [InterpreterListExpressionTest.scala](src/test/scala/org/camunda/feel/impl/interpreter/InterpreterListExpressionTest.scala)
+  * Note: The test cases are grouped by value type   
+* Run all tests to verify that other cases are not broken
+* Run the Maven build to format the code
+* Open a pull request and link to the FEEL issue
+* Then, adjust the documentation in the [Camunda docs](https://docs.camunda.io/docs/components/modeler/feel/language-guide/feel-list-expressions/#get-element)
+
 ### Fix or extend the parsing
 
 Modifying the FEEL parser is more complex and requires some knowledge about the parsing library. Here are some useful resources:
@@ -107,7 +124,7 @@ Modifying the FEEL parser is more complex and requires some knowledge about the 
 * [Blog: Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html) 
 * [Blog: Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
 
-Example: ?
+Example: ???
 
 * Adjust the parsing behavior in [FeelParser.scala](src/main/scala/org/camunda/feel/impl/parser/FeelParser.scala)
 * Verify the behavior by writing test cases in ?
