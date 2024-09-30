@@ -108,7 +108,7 @@ Example: Zero-bases index list access `[1,2,3][0]` instead of `[1,2,3][1]`
 * Adjust the list access in [FeelInterpreter.scala](src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala)
   * Note: The entry point of the evaluation is `def eval(expression: Exp)`
   * Note: The list access is parsed as `Filter(list, filter)`
-  * Note: Inspect the call hierachie starting from `def eval(expression: Exp)` and looking for `case Filter(list, filter) =>`   
+  * Note: Inspect the call hierarchy starting from `def eval(expression: Exp)` and looking for `case Filter(list, filter) =>`   
   * Change the access behavior in `private def filterList(list: List[Val], index: Number)`
 * Adjust the relevant test cases in [InterpreterListExpressionTest.scala](src/test/scala/org/camunda/feel/impl/interpreter/InterpreterListExpressionTest.scala)
   * Note: The test cases are grouped by value type   
@@ -124,10 +124,19 @@ Modifying the FEEL parser is more complex and requires some knowledge about the 
 * [Blog: Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html) 
 * [Blog: Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
 
-Example: ???
+Example: Add the nullish coalescing operator `??`: `null ?? "default"`
 
-* Adjust the parsing behavior in [FeelParser.scala](src/main/scala/org/camunda/feel/impl/parser/FeelParser.scala)
-* Verify the behavior by writing test cases in ?
+* Extend the parsing model in [Exp.scala](src/main/scala/org/camunda/feel/syntaxtree/Exp.scala)
+  * Add a new type `case class NullishCoalescing(value: Exp, alternative: Exp) extends Exp`
+* Extend the parsing behavior in [FeelParser.scala](src/main/scala/org/camunda/feel/impl/parser/FeelParser.scala)
+  * Add a new private method: `private def nullishCoalesching[_: P](value: Exp): P[Exp] = ???`
+  * Implement the parser: `P("??" ~ expLvl4)`
+  * Note: the parser uses levels for a hierarchy to define precedence and avoid left recursion 
+  * Build the parsed expression: `.map { NullishCoalescing(value, _) }`
+  * Add the new parser to the suitable level
+* Add the new operator in [FeelInterpreter.scala](src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala)
+  * ??? 
+* Verify the behavior by writing test cases in ???
 
 
 ## Public API and backward compatibility
