@@ -146,6 +146,29 @@ Example: Add the nullish coalescing operator `null ?? "default"`
 * Open a pull request and link to the FEEL issue
 * Then, add the new operator to the documentation in the [Camunda docs](https://docs.camunda.io/docs/next/components/modeler/feel/language-guide/feel-boolean-expressions/)
 
+## Architecture overview
+
+The following diagram shows an overview of the different components within the FEEL engine:
+
+```mermaid
+graph TD;
+    FeelEngineBuilder --> |build| FeelEngineApi;
+    FeelEngineApi --> |use| FeelEngine;
+    FeelEngine --> |parse| FeelParser;
+    FeelParser --> |build| Exp;
+    FeelEngine --> |interpret| FeelInterpreter;
+    FeelInterpreter --> |create| Val;
+    FeelInterpreter --> |use| BuiltinFunctions;
+    click FeelEngineBuilder "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/api/FeelEngineBuilder.scala" _blank;
+    click FeelEngineApi "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/api/FeelEngineApi.scala" _blank;
+    click FeelEngine "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/FeelEngine.scala" _blank;
+    click FeelParser "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/impl/parser/FeelParser.scala" _blank;
+    click Exp "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/syntaxtree/Exp.scala" _blank;
+    click FeelInterpreter "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala" _blank;
+    click Val "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/syntaxtree/Val.scala" _blank;
+    click BuiltinFunctions "https://github.com/camunda/feel-scala/blob/main/src/main/scala/org/camunda/feel/impl/interpreter/BuiltinFunctions.scala" _blank;
+```
+
 ## Public API and backward compatibility
 
 The FEEL engine is integrated into Camunda 7 and Camunda 8. It's important to keep the public API stable and stay backward compatible to avoid breaking the integration in Camunda 7/8 or the userspace (i.e. the application that uses FEEL expressions). 
