@@ -124,7 +124,7 @@ Modifying the FEEL parser is more complex and requires some knowledge about the 
 * [Blog: Easy Parsing with Parser Combinators](https://www.lihaoyi.com/post/EasyParsingwithParserCombinators.html) 
 * [Blog: Build your own Programming Language with Scala](https://www.lihaoyi.com/post/BuildyourownProgrammingLanguagewithScala.html)
 
-Example: Add the nullish coalescing operator `??`: `null ?? "default"`
+Example: Add the nullish coalescing operator `null ?? "default"`
 
 * Extend the parsing model in [Exp.scala](src/main/scala/org/camunda/feel/syntaxtree/Exp.scala)
   * Add a new type `case class NullishCoalescing(value: Exp, alternative: Exp) extends Exp`
@@ -133,11 +133,18 @@ Example: Add the nullish coalescing operator `??`: `null ?? "default"`
   * Implement the parser: `P("??" ~ expLvl4)`
   * Note: the parser uses levels for a hierarchy to define precedence and avoid left recursion 
   * Build the parsed expression: `.map { NullishCoalescing(value, _) }`
-  * Add the new parser to the suitable level
-* Add the new operator in [FeelInterpreter.scala](src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala)
-  * ??? 
-* Verify the behavior by writing test cases in ???
-
+  * Add the new parser to the suitable level `| nullishCoalesching(value)`
+* Handle the new operator in [FeelInterpreter.scala](src/main/scala/org/camunda/feel/impl/interpreter/FeelInterpreter.scala)
+  * Add a case in `def eval(expression: Exp)` with: `case NullishCoalescing(value, alternative) => ???`
+  * Implement the behavior and return `eval(value)` or `eval(alternative)` 
+* Verify the behavior by writing test cases in [InterpreterBooleanExpressionTest.scala](src/test/scala/org/camunda/feel/impl/interpreter/InterpreterBooleanExpressionTest.scala)
+  * Add a new test case following the pattern: `"A nullish coalescing operator" should "return the value if the given value is not null" in { ??? }`
+  * Add more test cases for other results, or covering edge cases
+  * Group all test cases for a method using `it should "return the alternative if the given value is null" in { ??? }`
+* Run all tests to verify the behavior
+* Run the Maven build to format the code
+* Open a pull request and link to the FEEL issue
+* Then, add the new operator to the documentation in the [Camunda docs](https://docs.camunda.io/docs/next/components/modeler/feel/language-guide/feel-boolean-expressions/)
 
 ## Public API and backward compatibility
 
