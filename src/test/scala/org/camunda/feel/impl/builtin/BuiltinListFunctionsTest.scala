@@ -19,6 +19,7 @@ package org.camunda.feel.impl.builtin
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.camunda.feel._
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
 import org.camunda.feel.syntaxtree._
 
@@ -569,5 +570,33 @@ class BuiltinListFunctionsTest
     evaluateExpression(" is empty([1]) ") should returnResult(false)
     evaluateExpression(" is empty([1,2,3]) ") should returnResult(false)
     evaluateExpression(" is empty(list: [1]) ") should returnResult(false)
+  }
+
+  "A partition() function" should "return list partitioned by _" in {
+    evaluateExpression(" partition([1,2,3,4,5], 2) ") should returnResult(
+      List(List(1, 2), List(3, 4), List(5))
+    )
+    evaluateExpression(" partition(list: [1,2,3,4,5], size: 2) ") should returnResult(
+      List(List(1, 2), List(3, 4), List(5))
+    )
+
+    evaluateExpression(" partition([], 2) ") should returnResult(List())
+    evaluateExpression(" partition([1], 2) ") should returnResult(List(List(1)))
+  }
+
+  it should "return null if the size is invalid" in {
+    evaluateExpression(" partition([1,2], 0) ") should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'partition': 'size' should be greater than zero but was '0'"
+      )
+    )
+
+    evaluateExpression(" partition([1,2], -1) ") should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'partition': 'size' should be greater than zero but was '-1'"
+      )
+    )
   }
 }
