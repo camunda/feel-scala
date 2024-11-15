@@ -92,6 +92,7 @@ Example: Add a new string function `reverse(value: string): string`
   * Add more test cases for other results, alternative parameters, or covering edge cases
   * Group all test cases for a method using `it should "return null if the argument is not a string" in { ??? }`
   * Add one test case that invokes the function with named arguments: `reverse(value: "adnumac")`
+  * If the function returns an error, verify the error in the test case: `should (returnNull() and reportFailure(FUNCTION_INVOCATION_FAILURE, "Failed to invoke function 'reverse': something went wrong"))`
 * Run all tests to verify the behavior
 * Run the Maven build to format the code
 * Open a pull request and link to the FEEL issue
