@@ -69,7 +69,8 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       joinWithDelimiterFunction,
       joinWithDelimiterAndPrefixAndSuffixFunction
     ),
-    "is empty"         -> List(emptyFunction)
+    "is empty"         -> List(emptyFunction),
+    "partition"        -> List(partitionFunction)
   )
 
   private def listContainsFunction =
@@ -515,6 +516,18 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       params = List("list"),
       invoke = { case List(ValList(list)) =>
         ValBoolean(list.isEmpty)
+      }
+    )
+
+  private def partitionFunction =
+    builtinFunction(
+      params = List("list", "size"),
+      invoke = { case List(ValList(list), ValNumber(size)) =>
+        if (size.intValue > 0) {
+          ValList(list.grouped(size.intValue).map(l => ValList(l)).toList)
+        } else {
+          ValError(s"'size' should be greater than zero but was '$size'")
+        }
       }
     )
 
