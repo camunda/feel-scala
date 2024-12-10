@@ -10,9 +10,24 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+## 1.19
+
+<MarkerChangelogVersion versionZeebe="8.7.0" versionC7="not yet" />
+
+**Built-in functions:**
+
+* New built-in
+  function `is blank()`
+  to check if a string is blank
+* New built-in
+  function `partition()`
+  to split a list in sublists of the same size
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.19.0).
+
 ## 1.18
 
-<MarkerChangelogVersion versionZeebe="8.6.0" versionC7="not yet" />
+<MarkerChangelogVersion versionZeebe="8.6.0" versionC7="7.23.0" />
 
 **Built-in functions:**
 
