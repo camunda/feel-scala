@@ -1,0 +1,32 @@
+---
+id: chapter-4
+title: "Chapter 4"
+---
+
+import dedent from "dedent";
+import LiveFeel from "@site/src/components/LiveFeel";
+import EnvelopeAddress from "@site/src/components/EnvelopeAddress";
+
+Before he continues on his quest, Zee promised to keep in touch with friends back home and send them
+each a letter. :incoming_envelope:
+
+Luckily, FEEL [string expressions](https://docs.camunda.io/docs/components/modeler/feel/language-guide/feel-string-expressions/) are
+here to Help and save time. Use an expression to fill the name on the envelope that contains the
+first and the last name.
+
+<EnvelopeAddress
+  defaultExpression={dedent`
+      // concatenate the first and the last name
+      firstName`}
+  feelContext='{"firstName":"?", "lastName":"?"}'
+  metadata={{ page: "challenge-4" }}
+/>
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>Zee labels the envelopes and send them out.</div>
+    <br />
+    <pre title={"Expression"}>firstName + " " + lastName</pre>
+  </div>
+</details>
