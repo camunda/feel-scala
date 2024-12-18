@@ -16,8 +16,7 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.logger
-import org.camunda.feel.syntaxtree.{Val, ValError, ValFatalError, ValFunction, ValNull}
+import org.camunda.feel.syntaxtree.{Val, ValError, ValFatalError, ValFunction}
 
 object BuiltinFunction {
 
@@ -28,16 +27,18 @@ object BuiltinFunction {
   ): ValFunction = {
     ValFunction(
       params = params,
-      invoke = invoke.orElse(error),
+      invoke = validateArgs.orElse(invoke).orElse(error),
       hasVarArgs = hasVarArgs
     )
   }
 
+  private def validateArgs: PartialFunction[List[Val], Any] = {
+    case args if args.exists(_.isInstanceOf[ValFatalError]) => args.find(_.isInstanceOf[ValFatalError]).get
+    case args if args.exists(_.isInstanceOf[ValError]) => args.find(_.isInstanceOf[ValError]).get
+  }
+
   private def error: PartialFunction[List[Val], Any] = {
-    case args if args.exists(_.isInstanceOf[ValFatalError]) =>
-      args.find(_.isInstanceOf[ValFatalError])
-    case args if args.exists(_.isInstanceOf[ValError])      => args.find(_.isInstanceOf[ValError])
-    case args                                               =>
+    case args =>
       val argumentList = args.map("'" + _ + "'").mkString(", ")
       ValError(s"Illegal arguments: $argumentList")
   }
