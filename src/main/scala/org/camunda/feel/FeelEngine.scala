@@ -125,7 +125,7 @@ class FeelEngine(
     externalFunctionsEnabled = configuration.externalFunctionsEnabled
   )
 
-  logger.info(
+  logger.debug(
     s"Engine created. [" +
       s"value-mapper: $valueMapper, " +
       s"function-provider: $functionProvider, " +
