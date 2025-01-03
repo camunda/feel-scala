@@ -249,6 +249,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             findFunction(context, name, params),
             f =>
               invokeFunction(f, params) match {
+                case fatalError: ValFatalError             => fatalError
                 case ValError(failure) if name == "assert" =>
                   error(EvaluationFailureType.ASSERT_FAILURE, failure)
                   ValError(failure)
@@ -727,10 +728,19 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       }
     }
 
-    function.invoke(paramList) match {
-      case fatalError: ValFatalError => fatalError
-      case e: ValError               => e
-      case result                    => context.valueMapper.toVal(result)
+    // validate parameters
+    if (paramList.exists(_.isInstanceOf[ValFatalError])) {
+      paramList.find(_.isInstanceOf[ValFatalError]).get
+
+    } else if (paramList.exists(_.isInstanceOf[ValError])) {
+      paramList.find(_.isInstanceOf[ValError]).get
+
+    } else {
+      function.invoke(paramList) match {
+        case fatalError: ValFatalError => fatalError
+        case e: ValError               => e
+        case result                    => context.valueMapper.toVal(result)
+      }
     }
   }
 

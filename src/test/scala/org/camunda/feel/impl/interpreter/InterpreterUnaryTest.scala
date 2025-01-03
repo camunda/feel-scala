@@ -529,7 +529,7 @@ class InterpreterUnaryTest
     evaluateUnaryTests("null", inputValue = null) should returnResult(true)
   }
 
-  "A function" should "be invoked with ? (input value)" in {
+  "A function" should "be invoked with the special variable '?'" in {
 
     evaluateUnaryTests(""" starts with(?, "f") """, "foo") should returnResult(true)
     evaluateUnaryTests(""" starts with(?, "b") """, "foo") should returnResult(false)
@@ -539,6 +539,12 @@ class InterpreterUnaryTest
 
     evaluateUnaryTests("< max(1,2,3)", 2) should returnResult(true)
     evaluateUnaryTests("< min(1,2,3)", 2) should returnResult(false)
+  }
+
+  it should "be invoked with the special variable '?' for a parameter with ANY type" in {
+
+    evaluateUnaryTests("list contains([481, 485, 551, 483], ?)", 481) should returnResult(true)
+    evaluateUnaryTests("list contains([481, 485, 551, 483], ?)", 999) should returnResult(false)
   }
 
   "A unary-tests expression" should "return true if it evaluates to a value that is equal to the implicit value" in {
