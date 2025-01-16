@@ -18,12 +18,10 @@ package org.camunda.feel.impl.builtin
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
-import org.camunda.feel._
-import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest, FeelIntegrationTest}
-import org.camunda.feel.syntaxtree._
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
+import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 
 import java.time.LocalDate
-import scala.math.BigDecimal.int2bigDecimal
 
 /** @author
   *   Philipp
@@ -256,6 +254,21 @@ class BuiltinListFunctionsTest
     evaluateExpression(" sublist([1,2,3], 1, 2) ") should returnResult(List(1, 2))
   }
 
+  it should "return null if the start position is 0" in {
+
+    evaluateExpression(" sublist([1,2,3], 0) ") should (returnNull() and reportFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage =
+        "Failed to invoke function 'sublist': start position must be a non-zero number"
+    ))
+
+    evaluateExpression(" sublist([1,2,3], 0, 2) ") should (returnNull() and reportFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage =
+        "Failed to invoke function 'sublist': start position must be a non-zero number"
+    ))
+  }
+
   "A append() function" should "return list with item appended" in {
 
     evaluateExpression(" append([1,2], 3) ") should returnResult(List(1, 2, 3))
@@ -273,9 +286,26 @@ class BuiltinListFunctionsTest
     evaluateExpression(" insert before([1,3],2,2) ") should returnResult(List(1, 2, 3))
   }
 
+  it should "return null if the position is 0" in {
+
+    evaluateExpression(" insert before([1,3],0,2) ") should (returnNull() and reportFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage =
+        "Failed to invoke function 'insert before': position must be a non-zero number"
+    ))
+  }
+
   "A remove() function" should "return list with item at _ removed" in {
 
     evaluateExpression(" remove([1,1,3],2) ") should returnResult(List(1, 3))
+  }
+
+  it should "return null if the position is 0" in {
+
+    evaluateExpression(" remove([1,2,3], 0) ") should (returnNull() and reportFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage = "Failed to invoke function 'remove': position must be a non-zero number"
+    ))
   }
 
   "A reverse() function" should "reverse the list" in {
