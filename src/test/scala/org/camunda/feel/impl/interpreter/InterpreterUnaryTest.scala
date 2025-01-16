@@ -655,4 +655,24 @@ class InterpreterUnaryTest
     evaluateUnaryTests("5 < ? or ? < 10", inputValue = null) should returnNull()
   }
 
+  it should "return true if it evaluates to true" in {
+
+    evaluateUnaryTests("x", inputValue = 3, variables = Map("x" -> true)) should returnResult(true)
+    evaluateUnaryTests("4 < 10", 3) should returnResult(true)
+    evaluateUnaryTests("even(4)", 3) should returnResult(true)
+    evaluateUnaryTests("list contains([1,2,3], 3)", 3) should returnResult(true)
+  }
+
+  it should "return false if it evaluates to false" in {
+
+    evaluateUnaryTests(
+      expression = "x",
+      inputValue = 3,
+      variables = Map("x" -> false)
+    ) should returnResult(false)
+    evaluateUnaryTests(expression = "4 > 10", 3) should returnResult(false)
+    evaluateUnaryTests(expression = "odd(4)", 3) should returnResult(false)
+    evaluateUnaryTests(expression = "list contains([1,2], 3)", 3) should returnResult(false)
+  }
+
 }
