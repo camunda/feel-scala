@@ -672,6 +672,9 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
               case ValBoolean(true)             =>
                 // the expression is the input value
                 ValBoolean(true)
+              case _ if x == ValBoolean(false)  =>
+                // the expression is false
+                ValBoolean(false)
               case _ if x.isInstanceOf[ValList] =>
                 // the expression is a list but doesn't contain the input value
                 ValBoolean(false)
