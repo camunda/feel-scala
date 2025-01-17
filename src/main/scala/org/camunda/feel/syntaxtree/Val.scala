@@ -219,8 +219,8 @@ case class ValYearMonthDuration(value: YearMonthDuration) extends Val {
 object ValYearMonthDuration {
 
   def format(value: YearMonthDuration): String = {
-    val year  = value.getYears
-    val month = value.getMonths % 12
+    val year  = value.toTotalMonths / 12
+    val month = value.toTotalMonths % 12
 
     if (year == 0 && month == 0)
       "P0Y"
