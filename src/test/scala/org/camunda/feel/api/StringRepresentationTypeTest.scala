@@ -121,6 +121,14 @@ class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
     duration.toString should be("P2M")
   }
 
+  it should "return normalized format " in {
+    ValYearMonthDuration(Period.parse("P2Y")).toString should be("P2Y")
+    ValYearMonthDuration(Period.parse("P24M")).toString should be("P2Y")
+
+    ValYearMonthDuration(Period.parse("P25M")).toString should be("P2Y1M")
+    ValYearMonthDuration(Period.parse("P35M")).toString should be("P2Y11M")
+  }
+
   "A days-time-duration" should "return 'P1DT2H3M4S' " in {
     val duration = ValDayTimeDuration(Duration.parse("P1DT2H3M4S"))
 
@@ -149,6 +157,17 @@ class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
     val duration = ValDayTimeDuration(Duration.parse("PT4S"))
 
     duration.toString should be("PT4S")
+  }
+
+  it should "return normalized format " in {
+    ValDayTimeDuration(Duration.parse("P5D")).toString should be("P5D")
+    ValDayTimeDuration(Duration.parse("PT120H")).toString should be("P5D")
+    ValDayTimeDuration(Duration.parse("PT7200M")).toString should be("P5D")
+    ValDayTimeDuration(Duration.parse("PT432000S")).toString should be("P5D")
+
+    ValDayTimeDuration(Duration.parse("PT121H")).toString should be("P5DT1H")
+    ValDayTimeDuration(Duration.parse("PT7201M")).toString should be("P5DT1M")
+    ValDayTimeDuration(Duration.parse("PT7261M")).toString should be("P5DT1H1M")
   }
 
   "A list" should "return '[1, 2]' " in {
