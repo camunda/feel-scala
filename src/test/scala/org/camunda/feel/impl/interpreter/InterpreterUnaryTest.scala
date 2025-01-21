@@ -655,4 +655,119 @@ class InterpreterUnaryTest
     evaluateUnaryTests("5 < ? or ? < 10", inputValue = null) should returnNull()
   }
 
+  it should "return true if it evaluates to true" in {
+
+    evaluateUnaryTests("x", inputValue = 3, variables = Map("x" -> true)) should returnResult(true)
+    evaluateUnaryTests("4 < 10", 3) should returnResult(true)
+    evaluateUnaryTests("even(4)", 3) should returnResult(true)
+    evaluateUnaryTests("list contains([1,2,3], 3)", 3) should returnResult(true)
+  }
+
+  it should "return false if it evaluates to false" in {
+
+    evaluateUnaryTests(
+      expression = "x",
+      inputValue = 3,
+      variables = Map("x" -> false)
+    ) should returnResult(false)
+    evaluateUnaryTests(expression = "4 > 10", 3) should returnResult(false)
+    evaluateUnaryTests(expression = "odd(4)", 3) should returnResult(false)
+    evaluateUnaryTests(expression = "list contains([1,2], 3)", 3) should returnResult(false)
+  }
+
+  "A negation" should "return true if it evaluates to a value that is not equal to the implicit value" in {
+
+    evaluateUnaryTests("not(1)", 3) should returnResult(true)
+    evaluateUnaryTests(""" not("a") """, "b") should returnResult(true)
+  }
+
+  it should "return false if it evaluates to a value that is equal to the implicit value" in {
+
+    evaluateUnaryTests("not(3)", 3) should returnResult(false)
+    evaluateUnaryTests(""" not("b") """, "b") should returnResult(false)
+  }
+
+  it should "return null if it evaluates to a value that has a different type than the implicit value" in {
+
+    evaluateUnaryTests("not(1)", "b") should returnNull()
+    evaluateUnaryTests(""" not("a") """, 2) should returnNull()
+  }
+
+  it should "return true if it evaluates to false when the implicit value is applied to it" in {
+
+    evaluateUnaryTests("not(< 3)", 5) should returnResult(true)
+    evaluateUnaryTests("not([1..3])", 5) should returnResult(true)
+    evaluateUnaryTests("not(> x)", inputValue = 5, variables = Map("x" -> 10)) should returnResult(
+      true
+    )
+  }
+
+  it should "return false if it evaluates to true when the implicit value is applied to it" in {
+
+    evaluateUnaryTests("not(< 10)", 5) should returnResult(false)
+    evaluateUnaryTests("not([1..10])", 5) should returnResult(false)
+    evaluateUnaryTests("not(> x)", inputValue = 5, variables = Map("x" -> 3)) should returnResult(
+      false
+    )
+  }
+
+  it should "return null if it evaluates to null when the implicit value is applied to it" in {
+
+    evaluateUnaryTests("not(< 3)", "a") should returnNull()
+    evaluateUnaryTests("not(< 3)", inputValue = null) should returnNull()
+  }
+
+  it should "return true if it evaluates to false" in {
+
+    evaluateUnaryTests("not(x)", inputValue = 3, variables = Map("x" -> false)) should returnResult(
+      true
+    )
+    evaluateUnaryTests("not(4 > 10)", 3) should returnResult(true)
+    evaluateUnaryTests("not(odd(4))", 3) should returnResult(true)
+    evaluateUnaryTests("not(list contains([1,2], 3))", 3) should returnResult(true)
+  }
+
+  it should "return false if it evaluates to true" in {
+
+    evaluateUnaryTests("not(x)", inputValue = 3, variables = Map("x" -> true)) should returnResult(
+      false
+    )
+    evaluateUnaryTests("not(4 < 10)", 3) should returnResult(false)
+    evaluateUnaryTests("not(even(4))", 3) should returnResult(false)
+    evaluateUnaryTests("not(list contains([1,2,3], 3))", 3) should returnResult(false)
+  }
+
+  it should "return true if it evaluates to null and the implicit value is not null" in {
+
+    evaluateUnaryTests("not(null)", 5) should returnResult(true)
+    evaluateUnaryTests("not(not_existing)", 5) should returnResult(true)
+  }
+
+  it should "return false if it evaluates to null and the implicit value is null" in {
+
+    evaluateUnaryTests("not(null)", inputValue = null) should returnResult(false)
+    evaluateUnaryTests("not(not_existing)", inputValue = null) should returnResult(false)
+  }
+
+  it should "return true if a disjunction evaluates to false" in {
+
+    evaluateUnaryTests("not(2,3)", 5) should returnResult(true)
+    evaluateUnaryTests("not(< 3, > 10)", 5) should returnResult(true)
+    evaluateUnaryTests("not([0..3], [10..20])", 5) should returnResult(true)
+  }
+
+  it should "return false if a disjunction evaluates to true" in {
+
+    evaluateUnaryTests("not(2,3)", 3) should returnResult(false)
+    evaluateUnaryTests("not(< 3, > 10)", 1) should returnResult(false)
+    evaluateUnaryTests("not([0..3], [10..20])", 1) should returnResult(false)
+  }
+
+  it should "return null if a disjunction evaluates to null" in {
+
+    evaluateUnaryTests("not(2,3)", "a") should returnNull()
+    evaluateUnaryTests("not(< 3, > 10)", "a") should returnNull()
+    evaluateUnaryTests("not([0..3], [10..20])", "a") should returnNull()
+  }
+
 }
