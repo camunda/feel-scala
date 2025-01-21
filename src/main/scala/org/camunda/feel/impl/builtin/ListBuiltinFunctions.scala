@@ -275,20 +275,26 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def sublistFunction =
     builtinFunction(
       params = List("list", "start"),
-      invoke = { case List(ValList(list), ValNumber(start)) =>
-        ValList(list.slice(listIndex(list, start.intValue), list.length))
+      invoke = {
+        case List(ValList(_), ValNumber(start)) if start == 0 =>
+          ValError("start position must be a non-zero number")
+        case List(ValList(list), ValNumber(start))            =>
+          ValList(list.slice(listIndex(list, start.intValue), list.length))
       }
     )
 
   private def sublistFunction3 = builtinFunction(
     params = List("list", "start", "length"),
-    invoke = { case List(ValList(list), ValNumber(start), ValNumber(length)) =>
-      ValList(
-        list.slice(
-          listIndex(list, start.intValue),
-          listIndex(list, start.intValue) + length.intValue
+    invoke = {
+      case List(ValList(_), ValNumber(start), ValNumber(_)) if start == 0 =>
+        ValError("start position must be a non-zero number")
+      case List(ValList(list), ValNumber(start), ValNumber(length))       =>
+        ValList(
+          list.slice(
+            listIndex(list, start.intValue),
+            listIndex(list, start.intValue) + length.intValue
+          )
         )
-      )
     }
   )
 
@@ -325,23 +331,29 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
 
   private def insertBeforeFunction = builtinFunction(
     params = List("list", "position", "newItem"),
-    invoke = { case List(ValList(list), ValNumber(position), newItem: Val) =>
-      ValList(
-        list
-          .take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list
-          .drop(listIndex(list, position.intValue))
-      )
+    invoke = {
+      case List(ValList(_), ValNumber(position), _) if position == 0 =>
+        ValError("position must be a non-zero number")
+      case List(ValList(list), ValNumber(position), newItem: Val)    =>
+        ValList(
+          list
+            .take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list
+            .drop(listIndex(list, position.intValue))
+        )
     }
   )
 
   private def removeFunction = builtinFunction(
     params = List("list", "position"),
-    invoke = { case List(ValList(list), ValNumber(position)) =>
-      ValList(
-        list.take(listIndex(list, position.intValue)) ++ list.drop(
-          listIndex(list, position.intValue + 1)
+    invoke = {
+      case List(ValList(_), ValNumber(position)) if position == 0 =>
+        ValError("position must be a non-zero number")
+      case List(ValList(list), ValNumber(position))               =>
+        ValList(
+          list.take(listIndex(list, position.intValue)) ++ list.drop(
+            listIndex(list, position.intValue + 1)
+          )
         )
-      )
     }
   )
 
