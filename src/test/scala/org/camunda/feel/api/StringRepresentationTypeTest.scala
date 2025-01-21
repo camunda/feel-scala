@@ -127,6 +127,8 @@ class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
 
     ValYearMonthDuration(Period.parse("P25M")).toString should be("P2Y1M")
     ValYearMonthDuration(Period.parse("P35M")).toString should be("P2Y11M")
+
+    ValYearMonthDuration(Period.parse("P2Y13M")).toString should be("P3Y1M")
   }
 
   "A days-time-duration" should "return 'P1DT2H3M4S' " in {
