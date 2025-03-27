@@ -136,6 +136,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
       case key :: tail =>
         val contextOfKey = contextValue.context.variableProvider
           .getVariable(key)
+          .map(valueMapper.toVal)
           .map {
             case contextOfKey: ValContext => contextOfKey
             case _                        => ValContext(EmptyContext)
