@@ -236,30 +236,17 @@ class BuiltinContextFunctionsTest
     )
   }
 
-  it should "handle a lazy value mapper" in {
-    val lazyEngine = FeelEngineBuilder()
-      .withCustomValueMapper(new CustomValueMapper {
-        override def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
-          case x: Map[String, Any] =>
-            Some {
-              ValContext(
-                Context.StaticContext(
-                  variables = x, // don't eagerly map inner values
-                )
-              )
-            }
-          case  _ => None // fallback to default
-        }
-
-        override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] = {
-          None // fallback to default
-        }
-      })
-      .build()
-
-    lazyEngine.evaluateExpression(
-      """ context put(vars, ["a", "c"], 3) """,
-      Map("vars" -> Map("a" -> Map("b" -> 1, "c" -> 2)))
+  it should "override nested context entry from a custom context" in {
+    evaluateExpression(
+      expression = """ context put(vars, ["a", "c"], 3) """,
+      variables = Map(
+        "vars" ->
+          ValContext(
+            new MyCustomContext(
+              Map("a" -> Map("b" -> 1, "c" -> 2))
+            )
+        )
+      )
     ) should returnResult(
       Map("a" -> Map("b" -> 1, "c" -> 3))
     )
