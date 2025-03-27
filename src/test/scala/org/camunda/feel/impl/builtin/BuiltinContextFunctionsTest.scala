@@ -16,10 +16,12 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.context.{CustomContext, VariableProvider}
+import org.camunda.feel.api.FeelEngineBuilder
+import org.camunda.feel.context.Context
 import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.CustomValueMapper
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -231,6 +233,35 @@ class BuiltinContextFunctionsTest
       """ context put({x:1, a:{b:{c:{d:1}}}}, ["a", "b", "c", "d"], 2) """
     ) should returnResult(
       Map("x" -> 1, "a" -> Map("b" -> Map("c" -> Map("d" -> 2))))
+    )
+  }
+
+  it should "handle a lazy value mapper" in {
+    val lazyEngine = FeelEngineBuilder()
+      .withCustomValueMapper(new CustomValueMapper {
+        override def toVal(x: Any, innerValueMapper: Any => Val): Option[Val] = x match {
+          case x: Map[String, Any] =>
+            Some {
+              ValContext(
+                Context.StaticContext(
+                  variables = x, // don't eagerly map inner values
+                )
+              )
+            }
+          case  _ => None // fallback to default
+        }
+
+        override def unpackVal(value: Val, innerValueMapper: Val => Any): Option[Any] = {
+          None // fallback to default
+        }
+      })
+      .build()
+
+    lazyEngine.evaluateExpression(
+      """ context put(vars, ["a", "c"], 3) """,
+      Map("vars" -> Map("a" -> Map("b" -> 1, "c" -> 2)))
+    ) should returnResult(
+      Map("a" -> Map("b" -> 1, "c" -> 3))
     )
   }
 
