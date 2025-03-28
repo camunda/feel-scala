@@ -16,10 +16,12 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.context.{CustomContext, VariableProvider}
+import org.camunda.feel.api.FeelEngineBuilder
+import org.camunda.feel.context.Context
 import org.camunda.feel.impl.interpreter.MyCustomContext
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.CustomValueMapper
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -231,6 +233,22 @@ class BuiltinContextFunctionsTest
       """ context put({x:1, a:{b:{c:{d:1}}}}, ["a", "b", "c", "d"], 2) """
     ) should returnResult(
       Map("x" -> 1, "a" -> Map("b" -> Map("c" -> Map("d" -> 2))))
+    )
+  }
+
+  it should "override nested context entry from a custom context" in {
+    evaluateExpression(
+      expression = """ context put(vars, ["a", "c"], 3) """,
+      variables = Map(
+        "vars" ->
+          ValContext(
+            new MyCustomContext(
+              Map("a" -> Map("b" -> 1, "c" -> 2))
+            )
+        )
+      )
+    ) should returnResult(
+      Map("a" -> Map("b" -> 1, "c" -> 3))
     )
   }
 
