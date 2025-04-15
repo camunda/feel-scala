@@ -412,6 +412,11 @@
                   <shadedPattern>camundajar.impl.sourcecode</shadedPattern>
                 </relocation>
 
+                <relocation>
+                  <pattern>com.fasterxml.uuid</pattern>
+                  <shadedPattern>camundajar.impl.com.fasterxml.uuid</shadedPattern>
+                </relocation>
+
               </relocations>
 
             </configuration>
