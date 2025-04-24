@@ -30,5 +30,6 @@ project/plugins/project/
 
 .bloop/
 .metals/
+.bsp/
 
 .ammonite/
