@@ -75,6 +75,10 @@ class SpecExampleTest extends AnyFlatSpec with Matchers with FeelIntegrationTest
 
   }
 
+  it should "compute long list" in {
+    evalWithContext(""" for x in 0..1000000 return "Hi there " + string(x) """)
+  }
+
   it should "sum entries of a list" in {
 
     evalWithContext(""" sum(monthly_outgoings) """) should be(ValNumber(5500))

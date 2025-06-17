@@ -191,18 +191,20 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             p => allValues(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
           )
         )
-      case For(iterators, exp)             =>
+      case For(iterators, exp) =>
         withValOrNull(
           withCartesianProduct(
             iterators,
-            p =>
-              ValList((Seq[Val]() /: p) {
-                case (partial, vars) => {
-                  val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
-                  val value            = eval(exp)(iterationContext)
-                  partial :+ value
-                }
-              })
+            p => {
+              var partial = Vector.empty[Val]
+              val results = p.map { vars =>
+                val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
+                val value = eval(exp)(iterationContext)
+                partial = partial :+ value
+                value
+              }
+              ValList(results)
+            }
           )
         )
       case Filter(list, filter)            =>
