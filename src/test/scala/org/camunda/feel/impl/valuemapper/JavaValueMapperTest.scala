@@ -65,7 +65,7 @@ class JavaValueMapperTest extends AnyFlatSpec with Matchers {
     list.add("a")
     list.add("b")
 
-    valueMapper.unpackVal(ValList(List(ValString("a"), ValString("b")))) should be(list)
+    valueMapper.unpackVal(ValList(Seq(ValString("a"), ValString("b")))) should be(list)
   }
 
   it should "return context as java.util.Map" in {

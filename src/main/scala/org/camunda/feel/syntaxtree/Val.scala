@@ -311,7 +311,7 @@ case class ValContext(context: Context) extends Val {
     .mkString(start = "{", sep = ", ", end = "}")
 }
 
-case class ValList(items: List[Val]) extends Val {
+case class ValList(items: Seq[Val]) extends Val {
   override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
 }
 

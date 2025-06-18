@@ -79,7 +79,7 @@ class DefaultValueMapper extends CustomValueMapper {
     case x: DateTime                            => Some(ValDateTime(x))
     case x: YearMonthDuration                   => Some(ValYearMonthDuration(x))
     case x: DayTimeDuration                     => Some(ValDayTimeDuration(x))
-    case x: List[_]                             => Some(ValList(x map innerValueMapper))
+    case x: Seq[_]                              => Some(ValList(x map innerValueMapper))
     case x: Map[_, _]                           =>
       Some {
         val (functions, variables) = x
@@ -120,7 +120,7 @@ class DefaultValueMapper extends CustomValueMapper {
       )
     case x: java.util.List[_]        =>
       Some(
-        ValList(x.asScala.toList map innerValueMapper)
+        ValList(x.asScala.toVector map innerValueMapper)
       )
     case x: java.util.Map[_, _]      =>
       Some(
@@ -160,7 +160,7 @@ class DefaultValueMapper extends CustomValueMapper {
       case ValDateTime(dateTime)          => Some(dateTime)
       case ValYearMonthDuration(duration) => Some(duration)
       case ValDayTimeDuration(duration)   => Some(duration)
-      case ValList(list)                  => Some(list map innerValueMapper)
+      case ValList(seq)                   => Some(seq map innerValueMapper)
       case ValContext(c: Context)         =>
         Some(
           c.variableProvider.getVariables.map { case (key, value) =>

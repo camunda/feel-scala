@@ -245,7 +245,7 @@ class BuiltinContextFunctionsTest
             new MyCustomContext(
               Map("a" -> Map("b" -> 1, "c" -> 2))
             )
-        )
+          )
       )
     ) should returnResult(
       Map("a" -> Map("b" -> 1, "c" -> 3))
