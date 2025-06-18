@@ -120,7 +120,7 @@ class DefaultValueMapper extends CustomValueMapper {
       )
     case x: java.util.List[_]        =>
       Some(
-        ValList(x.asScala.toSeq map innerValueMapper)
+        ValList(x.asScala.toVector map innerValueMapper)
       )
     case x: java.util.Map[_, _]      =>
       Some(
