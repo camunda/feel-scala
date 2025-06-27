@@ -48,7 +48,7 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case _                                                  => ValError(s"Can't compare '$x' with '$y'")
   }
 
-  private def compare(x: List[Val], y: List[Val]): ValBoolean = {
+  private def compare(x: Seq[Val], y: Seq[Val]): ValBoolean = {
     ValBoolean(
       x.size == y.size && x.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
     )
