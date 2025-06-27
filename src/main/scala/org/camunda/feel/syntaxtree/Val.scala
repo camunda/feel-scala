@@ -311,8 +311,19 @@ case class ValContext(context: Context) extends Val {
     .mkString(start = "{", sep = ", ", end = "}")
 }
 
-case class ValList(items: Seq[Val]) extends Val {
+case class ValList(private val _items: Seq[Val]) extends Val {
+
+  def this(items: List[Val]) = this(items: Seq[Val])
+  def items: List[Val]                = _items.toList
+  def copy(items: List[Val]): ValList = new ValList(items)
+  def copy$default$1(): List[Val]     = _items.toList
+
   override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
+}
+
+object ValList {
+  def apply(items: List[Val]): ValList = new ValList(items)
+  def apply(items: Seq[Val]): ValList  = new ValList(items)
 }
 
 case class ValRange(start: RangeBoundary, end: RangeBoundary) extends Val {
