@@ -313,12 +313,14 @@ case class ValContext(context: Context) extends Val {
 
 case class ValList(private val _items: Seq[Val]) extends Val {
 
+  override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
+
+  /// BACKWARD COMPATIBILITY ///
+  /// Following methods are added only for backwards compatibility
   def this(items: List[Val]) = this(items: Seq[Val])
   def items: List[Val]                = _items.toList
   def copy(items: List[Val]): ValList = new ValList(items)
   def copy$default$1(): List[Val]     = _items.toList
-
-  override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
 }
 
 object ValList {
