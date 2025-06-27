@@ -311,16 +311,16 @@ case class ValContext(context: Context) extends Val {
     .mkString(start = "{", sep = ", ", end = "}")
 }
 
-case class ValList(private val _items: Seq[Val]) extends Val {
+case class ValList(itemsAsSeq: Seq[Val]) extends Val {
 
-  override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
+  override def toString: String = itemsAsSeq.mkString(start = "[", sep = ", ", end = "]")
 
-  /// BACKWARD COMPATIBILITY ///
-  /// Following methods are added only for backwards compatibility
+  // / BACKWARD COMPATIBILITY ///
+  // / Following methods are added only for backwards compatibility
   def this(items: List[Val]) = this(items: Seq[Val])
-  def items: List[Val]                = _items.toList
+  @deprecated("1.19.4", "Use itemsAsSeq instead to avoid a copy")
+  def items: List[Val] = itemsAsSeq.toList
   def copy(items: List[Val]): ValList = new ValList(items)
-  def copy$default$1(): List[Val]     = _items.toList
 }
 
 object ValList {
