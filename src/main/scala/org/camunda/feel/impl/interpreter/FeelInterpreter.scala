@@ -216,15 +216,15 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
                 (item: Val) => eval(filter)(filterContext(item))
 
               filter match {
-                case ConstNumber(index)                                                     => filterList(l.items, index)
+                case ConstNumber(index)                                                     => filterList(l.itemsAsSeq, index)
                 case ArithmeticNegation(ConstNumber(index))                                 =>
-                  filterList(l.items, -index)
+                  filterList(l.itemsAsSeq, -index)
                 case _: Comparison | _: FunctionInvocation | _: QualifiedFunctionInvocation =>
-                  filterList(l.items, evalFilterWithItem)
+                  filterList(l.itemsAsSeq, evalFilterWithItem)
                 case _                                                                      =>
                   eval(filter) match {
-                    case ValNumber(index) => filterList(l.items, index)
-                    case _                => filterList(l.items, evalFilterWithItem)
+                    case ValNumber(index) => filterList(l.itemsAsSeq, index)
+                    case _                => filterList(l.itemsAsSeq, evalFilterWithItem)
                   }
               }
             }
@@ -773,10 +773,10 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def flattenAndZipLists(lists: List[(String, ValList)]): Seq[Map[String, Val]] =
     lists match {
       case Nil                  => Seq.empty
-      case (name, list) :: Nil  => list.items.map(v => Map(name -> v)) // flatten
+      case (name, list) :: Nil  => list.itemsAsSeq.map(v => Map(name -> v)) // flatten
       case (name, list) :: tail =>
         for {
-          v <- list.items; values <- flattenAndZipLists(tail)
+          v <- list.itemsAsSeq; values <- flattenAndZipLists(tail)
         } yield values + (name -> v) // zip
     }
 
