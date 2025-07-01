@@ -64,7 +64,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     params = List("context", "keys"),
     invoke = {
       case List(ValContext(context), ValList(keys)) if isListOfStrings(keys) =>
-        val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
+        val listOfKeys = keys.asInstanceOf[Seq[ValString]].map(_.value).toList
         getValueRecursive(context, listOfKeys)
       case List(ValContext(_), ValList(_))                                   => ValNull
     }
@@ -88,17 +88,17 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
   private def contextPutFunction = builtinFunction(
     params = List("context", "key", "value"),
     invoke = {
-      case List(ValContext(_), ValString(_), ValError(_))                                 => ValNull
-      case List(context: ValContext, ValString(key), value)                               =>
+      case List(ValContext(_), ValString(_), ValError(_))                                      => ValNull
+      case List(context: ValContext, ValString(key), value)                                    =>
         contextPut(
           contextValue = context,
           key = key,
           value = value
         )
       // delegate to other context put function with keys
-      case List(ValContext(_), ValList(_), ValError(_))                                   => ValNull
-      case List(ValContext(_), ValList(keys), _) if keys.isEmpty                          => ValNull
-      case List(context: ValContext, keys: ValList, value) if isListOfStrings(keys.items) =>
+      case List(ValContext(_), ValList(_), ValError(_))                                        => ValNull
+      case List(ValContext(_), ValList(keys), _) if keys.isEmpty                               => ValNull
+      case List(context: ValContext, keys: ValList, value) if isListOfStrings(keys.itemsAsSeq) =>
         contextPutFunction2.invoke(List(context, keys, value))
     }
   )
@@ -115,7 +115,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
       case List(ValContext(_), ValList(_), ValError(_))                             => ValNull
       case List(ValContext(_), ValList(keys), _) if keys.isEmpty                    => ValNull
       case List(context: ValContext, ValList(keys), value) if isListOfStrings(keys) =>
-        val listOfKeys = keys.asInstanceOf[List[ValString]].map(_.value)
+        val listOfKeys = keys.asInstanceOf[Seq[ValString]].map(_.value).toList
 
         contextPutWithKeys(context, listOfKeys, value)
     }
@@ -162,7 +162,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     }
   }
 
-  private def isListOfStrings(list: List[Val]): Boolean =
+  private def isListOfStrings(list: Seq[Val]): Boolean =
     list.forall(_.isInstanceOf[ValString])
 
   private def contextMergeFunction = builtinFunction(
@@ -184,7 +184,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     hasVarArgs = true
   )
 
-  private def isListOfContexts(list: List[Val]): Boolean =
+  private def isListOfContexts(list: Seq[Val]): Boolean =
     list.forall(_.isInstanceOf[ValContext])
 
   private def contextFunction = builtinFunction(
@@ -202,7 +202,7 @@ class ContextBuiltinFunctions(valueMapper: ValueMapper) {
     }
   )
 
-  private def isListOfKeyValuePairs(list: List[Val]): Boolean =
+  private def isListOfKeyValuePairs(list: Seq[Val]): Boolean =
     list.forall {
       case ValContext(context) =>
         val keys = context.variableProvider.keys.toList

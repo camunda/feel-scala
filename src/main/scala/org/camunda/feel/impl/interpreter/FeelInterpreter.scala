@@ -195,14 +195,16 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
         withValOrNull(
           withCartesianProduct(
             iterators,
-            p =>
-              ValList((List[Val]() /: p) {
-                case (partial, vars) => {
-                  val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
-                  val value            = eval(exp)(iterationContext)
-                  partial ++ (value :: Nil)
-                }
-              })
+            p => {
+              var partial = Vector.empty[Val]
+              val results = p.map { vars =>
+                val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
+                val value            = eval(exp)(iterationContext)
+                partial = partial :+ value
+                value
+              }
+              ValList(results)
+            }
           )
         )
       case Filter(list, filter)            =>
@@ -214,15 +216,15 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
                 (item: Val) => eval(filter)(filterContext(item))
 
               filter match {
-                case ConstNumber(index)                                                     => filterList(l.items, index)
+                case ConstNumber(index)                                                     => filterList(l.itemsAsSeq, index)
                 case ArithmeticNegation(ConstNumber(index))                                 =>
-                  filterList(l.items, -index)
+                  filterList(l.itemsAsSeq, -index)
                 case _: Comparison | _: FunctionInvocation | _: QualifiedFunctionInvocation =>
-                  filterList(l.items, evalFilterWithItem)
+                  filterList(l.itemsAsSeq, evalFilterWithItem)
                 case _                                                                      =>
                   eval(filter) match {
-                    case ValNumber(index) => filterList(l.items, index)
-                    case _                => filterList(l.items, evalFilterWithItem)
+                    case ValNumber(index) => filterList(l.itemsAsSeq, index)
+                    case _                => filterList(l.itemsAsSeq, evalFilterWithItem)
                   }
               }
             }
@@ -238,7 +240,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             } else {
               (x to y).by(-1)
             }
-            ValList(range.map(ValNumber).toList)
+            ValList(range.map(ValNumber))
           }
         )
 
@@ -300,11 +302,11 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def mapEither[T, R](
       it: Iterable[T],
       f: T => Either[ValError, R],
-      resultMapping: List[R] => Val
+      resultMapping: Seq[R] => Val
   ): Val = {
 
-    foldEither[T, List[R]](
-      List(),
+    foldEither[T, Seq[R]](
+      Seq.empty,
       it,
       { case (xs, x) =>
         f(x).map(xs :+ _)
@@ -481,7 +483,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def atLeastOne(xs: List[Exp], f: Boolean => Val)(implicit context: EvalContext): Val =
     atLeastOneValue(xs map (x => () => eval(x)), f)
 
-  private def atLeastOneValue(items: List[() => Val], f: Boolean => Val)(implicit
+  private def atLeastOneValue(items: Seq[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
   ): Val = {
     items.foldLeft(f(false)) {
@@ -500,7 +502,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def all(xs: List[Exp], f: Boolean => Val)(implicit context: EvalContext): Val =
     allValues(xs map (x => () => eval(x)), f)
 
-  private def allValues(items: List[() => Val], f: Boolean => Val)(implicit
+  private def allValues(items: Seq[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
   ): Val = {
     items.foldLeft(f(true)) {
@@ -713,7 +715,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           val args: List[Val] = params take (size) map eval
 
           val varArgs: Val = (params drop (size) map eval) match {
-            case Nil                                 => ValList(List())
+            case Nil                                 => ValList(Seq.empty)
             case ValList(list) :: Nil if (size == 0) => ValList(list)
             case list                                => ValList(list)
           }
@@ -760,7 +762,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
   private def withCartesianProduct(
       iterators: List[(String, Exp)],
-      f: List[Map[String, Val]] => Val
+      f: Seq[Map[String, Val]] => Val
   )(implicit context: EvalContext): Val = {
     withLists(
       iterators.map { case (name, it) => name -> eval(it) },
@@ -768,22 +770,22 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
     )
   }
 
-  private def flattenAndZipLists(lists: List[(String, ValList)]): List[Map[String, Val]] =
+  private def flattenAndZipLists(lists: List[(String, ValList)]): Seq[Map[String, Val]] =
     lists match {
-      case Nil                  => List()
-      case (name, list) :: Nil  => list.items map (v => Map(name -> v)) // flatten
+      case Nil                  => Seq.empty
+      case (name, list) :: Nil  => list.itemsAsSeq.map(v => Map(name -> v)) // flatten
       case (name, list) :: tail =>
         for {
-          v <- list.items; values <- flattenAndZipLists(tail)
+          v <- list.itemsAsSeq; values <- flattenAndZipLists(tail)
         } yield values + (name -> v) // zip
     }
 
-  private def filterList(list: List[Val], filter: Val => Val)(implicit
+  private def filterList(list: Seq[Val], filter: Val => Val)(implicit
       context: EvalContext
   ): Val = {
     val conditionNotFulfilled = ValString("_")
 
-    val withBooleanFilter = (list: List[Val]) =>
+    val withBooleanFilter = (list: Seq[Val]) =>
       mapEither[Val, Val](
         list,
         item =>
@@ -791,7 +793,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             case ValBoolean(true) => item
             case _                => conditionNotFulfilled
           }).toEither,
-        items => ValList(items.filterNot(_ == conditionNotFulfilled))
+        items => ValList(items.filterNot(_ == conditionNotFulfilled).toSeq)
       )
 
     // The filter function could return a boolean or a number. If it returns a number then we use
@@ -807,7 +809,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             case ValNumber(index)        => filterList(list, index)
             case ValBoolean(isFulFilled) =>
               withBooleanFilter(list.tail) match {
-                case ValList(fulFilledItems) if isFulFilled => ValList(head :: fulFilledItems)
+                case ValList(fulFilledItems) if isFulFilled => ValList(head +: fulFilledItems)
                 case fulFilledItems: ValList                => fulFilledItems
                 case error                                  => error
               }
@@ -823,11 +825,11 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
         // Return always an empty list if the given list is empty. Note that we would return `null`
         // instead, if the filter is a number. But if it is a function, we would need to evaluate the
         // function first to see that it returns a number.
-        ValList(List.empty)
+        ValList(Seq.empty)
       )
   }
 
-  private def filterList(list: List[Val], index: Number): Val = {
+  private def filterList(list: Seq[Val], index: Number): Val = {
 
     val i = {
       if (index > 0) {
