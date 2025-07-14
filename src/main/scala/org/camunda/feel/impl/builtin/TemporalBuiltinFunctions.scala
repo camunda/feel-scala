@@ -18,16 +18,9 @@ package org.camunda.feel.impl.builtin
 
 import org.camunda.feel.{Date, FeelEngineClock}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{
-  Val,
-  ValDate,
-  ValDateTime,
-  ValFunction,
-  ValLocalDateTime,
-  ValNumber,
-  ValString
-}
+import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValDate, ValDateTime, ValFunction, ValLocalDateTime, ValNull, ValNumber, ValString}
 
+import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset, ZonedDateTime}
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
@@ -36,13 +29,16 @@ import java.util.Locale
 class TemporalBuiltinFunctions(clock: FeelEngineClock) {
 
   def functions = Map(
-    "now"               -> List(nowFunction),
-    "today"             -> List(todayFunction),
-    "day of year"       -> List(dateTimeFunction(getDayOfYear)),
-    "day of week"       -> List(dateTimeFunction(getDayOfWeek)),
-    "month of year"     -> List(dateTimeFunction(getMonthOfYear)),
-    "week of year"      -> List(dateTimeFunction(getWeekOfYear)),
-    "last day of month" -> List(dateTimeFunction(getLastDayOfMonth))
+    "now"                    -> List(nowFunction),
+    "today"                  -> List(todayFunction),
+    "day of year"            -> List(dateTimeFunction(getDayOfYear)),
+    "day of week"            -> List(dateTimeFunction(getDayOfWeek)),
+    "month of year"          -> List(dateTimeFunction(getMonthOfYear)),
+    "week of year"           -> List(dateTimeFunction(getWeekOfYear)),
+    "last day of month"      -> List(dateTimeFunction(getLastDayOfMonth)),
+    "to unix timestamp"      -> List(timestampFunction,timestampFunction2),
+    "to unix timestampMilli" -> List(timestampMilliFunction,timestampMilliFunction2),
+    "from unix timestamp"    -> List(timestampFunction3)
   )
 
   private def nowFunction = builtinFunction(
@@ -97,5 +93,74 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
   private def getLastDayOfMonth(date: Date): ValDate = {
     ValDate(date.`with`(TemporalAdjusters.lastDayOfMonth()))
   }
+
+  private def timestampFunction = builtinFunction(
+    params = List.empty,
+    invoke = { case _ =>
+      val timestamp = clock.getCurrentTime.toEpochSecond
+      ValNumber(timestamp)
+    }
+  )
+
+  private def timestampFunction2 = builtinFunction(
+    params = List("datetime"),
+    invoke = {
+      case List(ValDateTime(datetime))        =>
+        val timestamp = datetime.toEpochSecond
+        ValNumber(timestamp)
+      case List(ValLocalDateTime(datetime))   =>
+        val timestamp = datetime.toInstant(ZoneOffset.UTC).getEpochSecond
+        ValNumber(timestamp)
+      case _                                  => ValNull
+
+    }
+  )
+
+  private def timestampFunction3 = builtinFunction(
+    params = List("timestamp","zoneId"),
+    invoke = {
+
+      case List(ValString(timestamp),ValString(zoneId))    =>
+        System.out.println("timestamp---"+timestamp+"---"+zoneId)
+        var instant = Instant.ofEpochSecond(timestamp.toLong)
+        if (timestamp.length() == 10) {
+          instant = Instant.ofEpochSecond(timestamp.toLong)
+        } else if (timestamp.length() == 13){
+          instant = Instant.ofEpochMilli(timestamp.toLong)
+        }
+        if(!"UTC".equals(zoneId) && zoneId.nonEmpty) {
+          val localDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of(zoneId))
+          System.out.println(localDateTime)
+          ValDateTime(localDateTime)
+        }else {
+          val localDateTime = instant.atZone(ZoneId.of("UTC")).toLocalDateTime
+          System.out.println(localDateTime)
+          ValLocalDateTime(localDateTime)
+        }
+      case _                                               => ValNull
+
+    }
+  )
+
+  private def timestampMilliFunction = builtinFunction(
+    params = List.empty,
+    invoke = { case _ =>
+      val timestamp =  clock.getCurrentTime.toInstant.toEpochMilli
+      ValString(timestamp.toString)
+    }
+  )
+
+  private def timestampMilliFunction2 = builtinFunction(
+    params = List("datetime"),
+    invoke = {
+      case List(ValDateTime(datetime))        =>
+        val timestamp =  datetime.toInstant.toEpochMilli
+        ValString(timestamp.toString)
+      case List(ValLocalDateTime(datetime))   =>
+        val timestamp =  datetime.toInstant(ZoneOffset.UTC).toEpochMilli
+        ValString(timestamp.toString)
+      case _                                  =>ValNull
+    }
+  )
 
 }
