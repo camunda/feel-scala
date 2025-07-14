@@ -85,7 +85,7 @@ class BuiltinTemporalFunctionsTest
     eval(""" to unix timestampMilli(date and time ("2020-07-31T14:27:30.123456@Europe/Berlin")) """) should be(ValString("1596198450123"))
   }
 
-  "The from unix timestamp() function" should "return the date time of given time zone" in {
+  "The from unix timestamp() function" should "return the date time with or without milliseconds  of the UTC or a given time zone" in {
     eval("""  from unix timestamp("1596198450","Europe/Berlin") """) should be(ValDateTime(now))
     eval("""  from unix timestamp("1568730600","") """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
     eval("""  from unix timestamp("1596198450123","Europe/Berlin") """) should be(ValDateTime(now3))
