@@ -16,17 +16,9 @@
  */
 package org.camunda.feel.impl.builtin
 
-import java.time.{LocalDate, LocalTime, ZoneId, ZonedDateTime}
-
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
 import org.camunda.feel.impl.FeelIntegrationTest
-import org.camunda.feel.syntaxtree.{
-  ValDate,
-  ValDateTime,
-  ValNumber,
-  ValString,
-  ValDayTimeDuration,
-  ValYearMonthDuration
-}
+import org.camunda.feel.syntaxtree.{ValDate, ValDateTime, ValDayTimeDuration, ValError, ValLocalDateTime, ValNull, ValNumber, ValString, ValYearMonthDuration}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
@@ -44,10 +36,22 @@ class BuiltinTemporalFunctionsTest
     ZoneId.of("Europe/Berlin")
   )
 
+  private val now2 = ZonedDateTime.of(
+    LocalDate.parse("2020-07-31"),
+    LocalTime.parse("14:27:30.123456"),
+    ZoneId.of("Europe/Berlin")
+  )
+
+  private val now3 = ZonedDateTime.of(
+    LocalDate.parse("2020-07-31"),
+    LocalTime.parse("14:27:30.123"),
+    ZoneId.of("Europe/Berlin")
+  )
+
   private val date          = "date(2019,9,17)"
   private val localDateTime = """date and time("2019-09-17T14:30:00")"""
   private val dateTime      =
-    """date and time("2019-09-17T14:30:00@Europe/Berlin")"""
+    """date and time("2019-09-17T14:30:00.123456@Europe/Berlin")"""
 
   "The now() function" should "return the current date-time" in withClock { clock =>
     clock.currentTime(now)
@@ -57,6 +61,34 @@ class BuiltinTemporalFunctionsTest
   "The today() function" should "return the current date" in withClock { clock =>
     clock.currentTime(now)
     eval(""" today() """) should be(ValDate(now.toLocalDate))
+  }
+
+  "The to unix timestamp() function" should "return the current timestamp" in withClock { clock =>
+    clock.currentTime(now)
+    eval(""" to unix timestamp() """) should be(ValNumber(1596198450))
+  }
+
+  "The to unix timestamp() function" should "return the timestamp of a given date time" in  {
+    eval(s"to unix timestamp($dateTime)") should be(ValNumber(1568723400))
+    eval(s"to unix timestamp($localDateTime)") should be(ValNumber(1568730600))
+    eval(""" to unix timestamp(date and time ("2020-07-31T14:27:30.123456@Europe/Berlin")) """) should be(ValNumber(1596198450))
+  }
+
+  "The to unix timestampMilli() function" should "return the current timestamp in milliseconds" in withClock { clock =>
+    clock.currentTime(now2)
+    eval(""" to unix timestampMilli() """) should be(ValString("1596198450123"))
+  }
+
+  "The to unix timestampMilli() function" should "return the timestamp in milliseconds of a given date time" in  {
+    eval(s"to unix timestampMilli($dateTime)") should be(ValString("1568723400123"))
+    eval(s"to unix timestampMilli($localDateTime)") should be(ValString("1568730600000"))
+    eval(""" to unix timestampMilli(date and time ("2020-07-31T14:27:30.123456@Europe/Berlin")) """) should be(ValString("1596198450123"))
+  }
+
+  "The from unix timestamp() function" should "return the current timestamp in nanoseconds" in {
+    eval("""  from unix timestamp("1596198450","Europe/Berlin") """) should be(ValDateTime(now))
+    eval("""  from unix timestamp("1568730600","") """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
+    eval("""  from unix timestamp("1596198450123","Europe/Berlin") """) should be(ValDateTime(now3))
   }
 
   "The day of year() function" should "return the day within the year" in {
