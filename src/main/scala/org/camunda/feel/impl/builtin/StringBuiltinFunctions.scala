@@ -290,7 +290,7 @@ object StringBuiltinFunctions {
 
   private def isBlankFunction = builtinFunction(
     params = List("string"),
-    invoke = {case List(ValString(string)) =>
+    invoke = { case List(ValString(string)) =>
       ValBoolean(string.isBlank)
     }
   )
