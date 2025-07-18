@@ -16,14 +16,13 @@
  */
 package org.camunda.feel.impl.builtin
 
-import org.camunda.feel.{Date, FeelEngineClock}
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
-import org.camunda.feel.syntaxtree.{Val, ValBoolean, ValDate, ValDateTime, ValFunction, ValLocalDateTime, ValNull, ValNumber, ValString}
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.{Date, FeelEngineClock}
 
-import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset, ZonedDateTime}
 import java.time.format.TextStyle
-import java.time.temporal.TemporalAdjusters
-import java.time.temporal.WeekFields
+import java.time.temporal.{TemporalAdjusters, WeekFields}
+import java.time.{Instant, ZoneId, ZoneOffset, ZonedDateTime}
 import java.util.Locale
 
 class TemporalBuiltinFunctions(clock: FeelEngineClock) {
@@ -38,7 +37,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     "last day of month"      -> List(dateTimeFunction(getLastDayOfMonth)),
     "to unix timestamp"      -> List(timestampFunction,timestampFunction2),
     "to unix timestampMilli" -> List(timestampMilliFunction,timestampMilliFunction2),
-    "from unix timestamp"    -> List(timestampFunction3)
+    "from unix timestamp"    -> List(fromUnixTimestampFunction,fromUnixTimestampFunction2)
   )
 
   private def nowFunction = builtinFunction(
@@ -111,17 +110,34 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
       case List(ValLocalDateTime(datetime))   =>
         val timestamp = datetime.toInstant(ZoneOffset.UTC).getEpochSecond
         ValNumber(timestamp)
-      case _                                  => ValNull
+      case _                                  =>
+        ValNull
 
     }
   )
 
-  private def timestampFunction3 = builtinFunction(
+  private def fromUnixTimestampFunction = builtinFunction(
+    params = List("timestamp"),
+    invoke = {
+      case List(ValString(timestamp))        =>
+        var instant = Instant.ofEpochSecond(timestamp.toLong)
+        if (timestamp.length() == 10) {
+          instant = Instant.ofEpochSecond(timestamp.toLong)
+        } else if (timestamp.length() == 13){
+          instant = Instant.ofEpochMilli(timestamp.toLong)
+        }
+        val localDateTime = instant.atZone(ZoneId.of("UTC")).toLocalDateTime
+        ValLocalDateTime(localDateTime)
+      case _                                 =>
+        ValNull
+
+    }
+  )
+
+  private def fromUnixTimestampFunction2 = builtinFunction(
     params = List("timestamp","zoneId"),
     invoke = {
-
       case List(ValString(timestamp),ValString(zoneId))    =>
-        System.out.println("timestamp---"+timestamp+"---"+zoneId)
         var instant = Instant.ofEpochSecond(timestamp.toLong)
         if (timestamp.length() == 10) {
           instant = Instant.ofEpochSecond(timestamp.toLong)
@@ -130,14 +146,13 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
         }
         if(!"UTC".equals(zoneId) && zoneId.nonEmpty) {
           val localDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of(zoneId))
-          System.out.println(localDateTime)
           ValDateTime(localDateTime)
         }else {
           val localDateTime = instant.atZone(ZoneId.of("UTC")).toLocalDateTime
-          System.out.println(localDateTime)
           ValLocalDateTime(localDateTime)
         }
-      case _                                               => ValNull
+      case _                                               =>
+        ValNull
 
     }
   )
@@ -159,7 +174,8 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
       case List(ValLocalDateTime(datetime))   =>
         val timestamp =  datetime.toInstant(ZoneOffset.UTC).toEpochMilli
         ValString(timestamp.toString)
-      case _                                  =>ValNull
+      case _                                  =>
+        ValNull
     }
   )
 
