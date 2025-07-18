@@ -80,28 +80,28 @@ class BuiltinTemporalFunctionsTest
 
   "The to unix timestampMilli() function" should "return the current timestamp in milliseconds" in withClock { clock =>
     clock.currentTime(now2)
-    eval(""" to unix timestampMilli() """) should be(ValString("1596198450123"))
+    eval(""" to unix timestampMilli() """) should be(ValNumber(1596198450123L))
   }
 
   "The to unix timestampMilli() function" should "return the timestamp in milliseconds of a given date time" in  {
-    eval(s"to unix timestampMilli($dateTime)") should be(ValString("1568723400123"))
-    eval(s"to unix timestampMilli($localDateTime)") should be(ValString("1568730600000"))
-    eval(""" to unix timestampMilli(date and time ("2020-07-31T14:27:30.123456@Europe/Berlin")) """) should be(ValString("1596198450123"))
-    eval(""" to unix timestampMilli(@"2023-06-09T16:18:41Z") """) should be(ValString("1686327521000"))
-    eval(""" to unix timestampMilli(@"2023-06-09T16:18:41@Europe/Berlin") """) should be(ValString("1686320321000"))
+    eval(s"to unix timestampMilli($dateTime)") should be(ValNumber(1568723400123L))
+    eval(s"to unix timestampMilli($localDateTime)") should be(ValNumber(1568730600000L))
+    eval(""" to unix timestampMilli(date and time ("2020-07-31T14:27:30.123456@Europe/Berlin")) """) should be(ValNumber(1596198450123L))
+    eval(""" to unix timestampMilli(@"2023-06-09T16:18:41Z") """) should be(ValNumber(1686327521000L))
+    eval(""" to unix timestampMilli(@"2023-06-09T16:18:41@Europe/Berlin") """) should be(ValNumber(1686320321000L))
     eval(""" to unix timestampMilli(now()) """) should not be ValNull
   }
 
   "The from unix timestamp() function" should "return the date time with or without milliseconds  of the UTC or a given time zone" in {
 
-    eval("""  from unix timestamp("1568730600") """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
-    eval("""  from unix timestamp("1568730600","") """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
-    eval("""  from unix timestamp("1686327521","UTC") """) should be(ValLocalDateTime(LocalDateTime.parse("2023-06-09T16:18:41")))
-    eval("""  from unix timestamp("1596198450","Europe/Berlin") """) should be(ValDateTime(now))
+    eval("""  from unix timestamp(1568730600) """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
+    eval("""  from unix timestamp(1568730600,"") """) should be(ValLocalDateTime(LocalDateTime.parse("2019-09-17T14:30:00")))
+    eval("""  from unix timestamp(1686327521,"UTC") """) should be(ValLocalDateTime(LocalDateTime.parse("2023-06-09T16:18:41")))
+    eval("""  from unix timestamp(1596198450,"Europe/Berlin") """) should be(ValDateTime(now))
 
     eval("""  from unix timestamp(to unix timestampMilli(@"2023-06-09T16:18:41Z")) """) should be(ValLocalDateTime(LocalDateTime.parse("2023-06-09T16:18:41")))
 
-    eval("""  from unix timestamp("1596198450123","Europe/Berlin") """) should be(ValDateTime(now3))
+    eval("""  from unix timestamp(1596198450123,"Europe/Berlin") """) should be(ValDateTime(now3))
     eval("""  from unix timestamp(to unix timestampMilli(@"2020-07-31T14:27:30.123@Europe/Berlin"),"Europe/Berlin") """) should be(ValDateTime(now3))
     eval("""  from unix timestamp(to unix timestampMilli(@"2023-06-09T16:18:41.123Z"),"") """) should be(ValLocalDateTime(LocalDateTime.parse("2023-06-09T16:18:41.123")))
   }

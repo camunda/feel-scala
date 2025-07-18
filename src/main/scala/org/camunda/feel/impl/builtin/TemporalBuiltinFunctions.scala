@@ -119,11 +119,11 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
   private def fromUnixTimestampFunction = builtinFunction(
     params = List("timestamp"),
     invoke = {
-      case List(ValString(timestamp))        =>
+      case List(ValNumber(timestamp))        =>
         var instant = Instant.ofEpochSecond(timestamp.toLong)
-        if (timestamp.length() == 10) {
+        if (timestamp.toString().length() == 10) {
           instant = Instant.ofEpochSecond(timestamp.toLong)
-        } else if (timestamp.length() == 13){
+        } else if (timestamp.toString().length() == 13){
           instant = Instant.ofEpochMilli(timestamp.toLong)
         }
         val localDateTime = instant.atZone(ZoneId.of("UTC")).toLocalDateTime
@@ -137,11 +137,11 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
   private def fromUnixTimestampFunction2 = builtinFunction(
     params = List("timestamp","zoneId"),
     invoke = {
-      case List(ValString(timestamp),ValString(zoneId))    =>
+      case List(ValNumber(timestamp),ValString(zoneId))    =>
         var instant = Instant.ofEpochSecond(timestamp.toLong)
-        if (timestamp.length() == 10) {
+        if (timestamp.toString().length() == 10) {
           instant = Instant.ofEpochSecond(timestamp.toLong)
-        } else if (timestamp.length() == 13){
+        } else if (timestamp.toString().length() == 13){
           instant = Instant.ofEpochMilli(timestamp.toLong)
         }
         if(!"UTC".equals(zoneId) && zoneId.nonEmpty) {
@@ -161,7 +161,7 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     params = List.empty,
     invoke = { case _ =>
       val timestamp =  clock.getCurrentTime.toInstant.toEpochMilli
-      ValString(timestamp.toString)
+      ValNumber(timestamp)
     }
   )
 
@@ -170,10 +170,10 @@ class TemporalBuiltinFunctions(clock: FeelEngineClock) {
     invoke = {
       case List(ValDateTime(datetime))        =>
         val timestamp =  datetime.toInstant.toEpochMilli
-        ValString(timestamp.toString)
+        ValNumber(timestamp)
       case List(ValLocalDateTime(datetime))   =>
         val timestamp =  datetime.toInstant(ZoneOffset.UTC).toEpochMilli
-        ValString(timestamp.toString)
+        ValNumber(timestamp)
       case _                                  =>
         ValNull
     }
