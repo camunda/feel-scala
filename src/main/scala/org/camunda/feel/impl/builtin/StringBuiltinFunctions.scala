@@ -17,17 +17,20 @@
 package org.camunda.feel.impl.builtin
 
 import com.fasterxml.uuid.Generators
+import com.github.ksuid.KsuidGenerator
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree.{ValBoolean, ValError, ValList, ValNumber, ValString}
 
 import java.util.Base64
 import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
 import java.util.regex.Pattern
 import scala.util.Try
 
 object StringBuiltinFunctions {
 
   private lazy val generator = Generators.timeBasedEpochRandomGenerator()
+  private lazy val ksuidGenerator = new KsuidGenerator(new SecureRandom())
 
   def functions = Map(
     "substring"        -> List(substringFunction, substringFunction3),
@@ -46,7 +49,8 @@ object StringBuiltinFunctions {
     "trim"             -> List(trimFunction),
     "uuid"             -> List(uuidFunction),
     "to base64"        -> List(toBase64Function),
-    "is blank"         -> List(isBlankFunction)
+    "is blank"         -> List(isBlankFunction),
+    "ksuid"            -> List(ksuidFunction)
   )
 
   private def substringFunction = builtinFunction(
@@ -273,7 +277,7 @@ object StringBuiltinFunctions {
 
   private def uuidFunction =
     builtinFunction(
-      params = List(),
+      params = List.empty,
       invoke = { case List() =>
         ValString(generator.generate.toString)
       }
@@ -295,4 +299,11 @@ object StringBuiltinFunctions {
     }
   )
 
+  private def ksuidFunction =
+    builtinFunction(
+      params = List.empty,
+      invoke = { case List() =>
+        ValString(ksuidGenerator.newKsuid().toString)
+      }
+    )
 }

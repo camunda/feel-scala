@@ -223,4 +223,14 @@ class BuiltinStringFunctionsTest
       expression = """ is blank(" hello world ") """
     ) should returnResult(false)
   }
+
+  "A ksuid() function" should "return a string" in {
+
+    evaluateExpression(" ksuid() ").result shouldBe a[String]
+  }
+
+  it should "return a string of length 27" in {
+
+    evaluateExpression(" string length(ksuid()) ") should returnResult(27)
+  }
 }
