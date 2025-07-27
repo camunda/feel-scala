@@ -528,4 +528,54 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(Period.parse("P1Y8M"))
   }
 
+  "A from json(string) function" should "convert a JSON string" in {
+    evaluateExpression(
+      """ from json(value) """,
+      Map("value" -> "{\"a\": 1, \"b\": 2}")
+    ) should returnResult(
+      Map("a" -> 1, "b" -> 2)
+    )
+    evaluateExpression(""" from json("null") """) should returnResult(
+      null
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "1")) should returnResult(
+      1
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "\"a\"")) should returnResult(
+      "a"
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "true")) should returnResult(
+      true
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "[1, 2, 3]")) should returnResult(
+      List(1, 2, 3)
+    )
+    evaluateExpression(
+      """ from json(value) """,
+      Map("value" -> "\"2023-06-14\"")
+    ) should returnResult(
+      "2023-06-14"
+    )
+    evaluateExpression(
+      """ from json(value) """,
+      Map("value" -> "\"14:55:00\"")
+    ) should returnResult(
+      "14:55:00"
+    )
+    evaluateExpression(
+      """ from json(value) """,
+      Map("value" -> "\"2023-06-14T14:55:00\"")
+    ) should returnResult(
+      "2023-06-14T14:55:00"
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "\"P1Y\"")) should returnResult(
+      "P1Y"
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "\"PT2H\"")) should returnResult(
+      "PT2H"
+    )
+    evaluateExpression(""" from json(value) """, Map("value" -> "invalid")) should returnResult(
+      null
+    )
+  }
 }
