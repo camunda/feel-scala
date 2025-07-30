@@ -73,7 +73,7 @@
 
       <dependency>
         <groupId>com.fasterxml.jackson.module</groupId>
-        <artifactId>jackson-module-scala_3</artifactId>
+        <artifactId>jackson-module-scala_2.13</artifactId>
         <version>${version.jackson}</version>
       </dependency>
 
@@ -106,7 +106,7 @@
 
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-scala_3</artifactId>
+      <artifactId>jackson-module-scala_2.13</artifactId>
     </dependency>
 
     <dependency>
@@ -189,9 +189,6 @@
               <goal>add-source</goal>
               <goal>compile</goal>
             </goals>
-            <configuration>
-              <addScalacArgs>-Ytasty-reader</addScalacArgs>
-            </configuration>
           </execution>
           <execution>
             <id>scala-test-compile</id>
