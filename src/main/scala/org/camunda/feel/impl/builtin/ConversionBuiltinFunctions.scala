@@ -314,9 +314,6 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
       case List(ValNull)         => ValNull
       case List(json: ValString) =>
         Try(Mapper.readValue(json.value, classOf[Any]))
-          .map { value: Any =>
-            valueMapper.toVal(value)
-          }
           .getOrElse {
             ValError(s"Failed to parse JSON from '${json.value}'")
           }
