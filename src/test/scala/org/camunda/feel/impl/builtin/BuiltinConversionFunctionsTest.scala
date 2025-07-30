@@ -528,54 +528,84 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(Period.parse("P1Y8M"))
   }
 
-  "A from json(string) function" should "convert a JSON string" in {
+  "A from json({...}) function" should "convert a JSON object to a map" in {
     evaluateExpression(
       """ from json(value) """,
       Map("value" -> "{\"a\": 1, \"b\": 2}")
     ) should returnResult(
       Map("a" -> 1, "b" -> 2)
     )
-    evaluateExpression(""" from json("null") """) should returnResult(
-      null
-    )
-    evaluateExpression(""" from json(value) """, Map("value" -> "1")) should returnResult(
-      1
-    )
-    evaluateExpression(""" from json(value) """, Map("value" -> "\"a\"")) should returnResult(
-      "a"
-    )
-    evaluateExpression(""" from json(value) """, Map("value" -> "true")) should returnResult(
-      true
-    )
+  }
+
+  "A from json([...]) function" should "convert a JSON array to a list" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "[1, 2, 3]")) should returnResult(
       List(1, 2, 3)
     )
+  }
+
+  "A from json(null) function" should "return null" in {
+    evaluateExpression(""" from json("null") """) should returnResult(
+      null
+    )
+  }
+
+  "A from json(number) function" should "convert a JSON number to a BigDecimal" in {
+    evaluateExpression(""" from json(value) """, Map("value" -> "1")) should returnResult(
+      1
+    )
+  }
+
+  "A from json(string) function" should "convert a string to a string literal" in {
+    evaluateExpression(""" from json(value) """, Map("value" -> "\"a\"")) should returnResult(
+      "a"
+    )
+
     evaluateExpression(
       """ from json(value) """,
       Map("value" -> "\"2023-06-14\"")
     ) should returnResult(
       "2023-06-14"
     )
+
     evaluateExpression(
       """ from json(value) """,
       Map("value" -> "\"14:55:00\"")
     ) should returnResult(
       "14:55:00"
     )
+
     evaluateExpression(
       """ from json(value) """,
       Map("value" -> "\"2023-06-14T14:55:00\"")
     ) should returnResult(
       "2023-06-14T14:55:00"
     )
+
     evaluateExpression(""" from json(value) """, Map("value" -> "\"P1Y\"")) should returnResult(
       "P1Y"
     )
+
     evaluateExpression(""" from json(value) """, Map("value" -> "\"PT2H\"")) should returnResult(
       "PT2H"
     )
-    evaluateExpression(""" from json(value) """, Map("value" -> "invalid")) should returnResult(
-      null
+  }
+
+  "A from json(boolean) function" should "convert a boolean to a boolean literal" in {
+    evaluateExpression(""" from json(value) """, Map("value" -> "true")) should returnResult(
+      true
+    )
+
+    evaluateExpression(""" from json(value) """, Map("value" -> "false")) should returnResult(
+      false
+    )
+  }
+
+  "A from json(string) function with invalid JSON" should "report the parsing error" in {
+    evaluateExpression(""" from json(value) """, Map("value" -> "invalid")) should (
+      returnNull() and reportFailure(
+        FUNCTION_INVOCATION_FAILURE,
+        "Failed to invoke function 'from json': Failed to parse JSON from 'invalid'"
+      )
     )
   }
 }
