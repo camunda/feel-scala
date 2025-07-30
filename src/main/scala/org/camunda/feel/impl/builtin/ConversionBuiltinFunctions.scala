@@ -44,7 +44,7 @@ import java.time._
 import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
-  val Mapper = JsonMapper
+  private val jsonMapper = JsonMapper
     .builder()
     .addModule(DefaultScalaModule)
     .build()
@@ -313,7 +313,7 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     invoke = {
       case List(ValNull)         => ValNull
       case List(json: ValString) =>
-        Try(Mapper.readValue(json.value, classOf[Any]))
+        Try(jsonMapper.readValue(json.value, classOf[Any]))
           .getOrElse {
             ValError(s"Failed to parse JSON from '${json.value}'")
           }
