@@ -528,7 +528,7 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(Period.parse("P1Y8M"))
   }
 
-  "A from json({...}) function" should "convert a JSON object to a map" in {
+  "A from json() function" should "convert a JSON object to a context" in {
     evaluateExpression(
       """ from json(value) """,
       Map("value" -> "{\"a\": 1, \"b\": 2}")
@@ -537,25 +537,25 @@ class BuiltinConversionFunctionsTest
     )
   }
 
-  "A from json([...]) function" should "convert a JSON array to a list" in {
+  it should "convert a JSON array to a list" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "[1, 2, 3]")) should returnResult(
       List(1, 2, 3)
     )
   }
 
-  "A from json(null) function" should "return null" in {
+  it should "convert a JSON null value" in {
     evaluateExpression(""" from json("null") """) should returnResult(
       null
     )
   }
 
-  "A from json(number) function" should "convert a JSON number to a BigDecimal" in {
+  it should "convert a JSON number" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "1")) should returnResult(
       1
     )
   }
 
-  "A from json(string) function" should "convert a string to a string literal" in {
+  it should "convert a JSON string" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "\"a\"")) should returnResult(
       "a"
     )
@@ -590,7 +590,7 @@ class BuiltinConversionFunctionsTest
     )
   }
 
-  "A from json(boolean) function" should "convert a boolean to a boolean literal" in {
+  it should "convert a JSON boolean" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "true")) should returnResult(
       true
     )
@@ -600,7 +600,7 @@ class BuiltinConversionFunctionsTest
     )
   }
 
-  "A from json(string) function with invalid JSON" should "report the parsing error" in {
+  it should "return null if the JSON is invalid" in {
     evaluateExpression(""" from json(value) """, Map("value" -> "invalid")) should (
       returnNull() and reportFailure(
         FUNCTION_INVOCATION_FAILURE,
