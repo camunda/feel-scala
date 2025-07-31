@@ -19,6 +19,7 @@
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.25.1</version.log4j>
     <version.uuid>5.1.0</version.uuid>
+    <version.jackson>2.19.2</version.jackson>
 
     <plugin.version.shade>3.6.0</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
@@ -70,6 +71,12 @@
         <version>${version.log4j}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_2.13</artifactId>
+        <version>${version.jackson}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -95,6 +102,11 @@
       <groupId>com.fasterxml.uuid</groupId>
       <artifactId>java-uuid-generator</artifactId>
       <version>${version.uuid}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_2.13</artifactId>
     </dependency>
 
     <dependency>

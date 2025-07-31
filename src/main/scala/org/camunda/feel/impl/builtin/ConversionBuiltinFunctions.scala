@@ -16,6 +16,8 @@
  */
 package org.camunda.feel.impl.builtin
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
@@ -42,6 +44,10 @@ import java.time._
 import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
+  private val jsonMapper = JsonMapper
+    .builder()
+    .addModule(DefaultScalaModule)
+    .build()
 
   def functions = Map(
     "date"                      -> List(dateFunction, dateFunction3),
@@ -50,7 +56,8 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     "number"                    -> List(numberFunction, numberFunction2, numberFunction3),
     "string"                    -> List(stringFunction),
     "duration"                  -> List(durationFunction),
-    "years and months duration" -> List(durationFunction2)
+    "years and months duration" -> List(durationFunction2),
+    "from json"                 -> List(fromJsonFunction)
   )
 
   private def dateFunction = builtinFunction(
@@ -301,6 +308,18 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     }
   )
 
+  private def fromJsonFunction: ValFunction = builtinFunction(
+    params = List("json"),
+    invoke = {
+      case List(ValNull)         => ValNull
+      case List(json: ValString) =>
+        Try(jsonMapper.readValue(json.value, classOf[Any]))
+          .getOrElse {
+            ValError(s"Failed to parse JSON from '${json.value}'")
+          }
+    }
+  )
+
   private def parseDate(d: String): Val = {
     if (isValidDate(d)) {
       Try(ValDate(d)).getOrElse {
@@ -354,5 +373,4 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
       ValError(s"Failed to parse duration from '$d'")
     }
   }
-
 }
