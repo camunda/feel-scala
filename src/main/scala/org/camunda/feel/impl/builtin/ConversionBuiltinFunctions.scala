@@ -41,6 +41,8 @@ import org.camunda.feel.{
 
 import java.math.BigDecimal
 import java.time._
+import java.time.format.DateTimeFormatter
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
@@ -57,7 +59,8 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     "string"                    -> List(stringFunction),
     "duration"                  -> List(durationFunction),
     "years and months duration" -> List(durationFunction2),
-    "from json"                 -> List(fromJsonFunction)
+    "from json"                 -> List(fromJsonFunction),
+    "to json"                   -> List(toJsonFunction)
   )
 
   private def dateFunction = builtinFunction(
@@ -320,6 +323,21 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     }
   )
 
+  private def toJsonFunction: ValFunction = builtinFunction(
+    params = List("object"),
+    invoke = {
+      case List(ValNull) => ValString("null")
+
+      case List(obj) =>
+        Try {
+          val jsonString = jsonMapper.writeValueAsString(convertToJsonValue(obj))
+          ValString(jsonString)
+        }.getOrElse({
+          ValError(s"Failed to convert object to JSON: ${obj.getClass.getSimpleName}")
+        })
+    }
+  )
+
   private def parseDate(d: String): Val = {
     if (isValidDate(d)) {
       Try(ValDate(d)).getOrElse {
@@ -372,5 +390,32 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     } else {
       ValError(s"Failed to parse duration from '$d'")
     }
+  }
+
+  private def convertToJsonValue(value: Val): Any = value match {
+    case ValNull       => null
+    case ValString(s)  => s
+    case ValBoolean(b) => b
+    case ValNumber(n)  => n.underlying()
+
+    case ValDate(d)           => d.format(DateTimeFormatter.ISO_LOCAL_DATE)
+    case ValTime(t)           => t.format
+    case ValDateTime(dt)      => dt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    case ValLocalTime(t)      => t.format(DateTimeFormatter.ISO_LOCAL_TIME)
+    case ValLocalDateTime(dt) => dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+    case ValDayTimeDuration(dur)   => dur.toString
+    case ValYearMonthDuration(dur) => dur.toString
+
+    case ValList(items) => items.map(convertToJsonValue).asJava
+
+    case ValContext(context) =>
+      context.variableProvider.getVariables.map { case (key, value) =>
+        key -> convertToJsonValue(valueMapper.toVal(value))
+      }.asJava
+    case other               =>
+      throw new IllegalArgumentException(
+        s"Unsupported or unrecognized value for JSON serialization: ${other.getClass.getName}"
+      )
   }
 }
