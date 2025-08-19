@@ -608,4 +608,134 @@ class BuiltinConversionFunctionsTest
       )
     )
   }
+
+  "A to json() function" should "convert a string value" in {
+    evaluateExpression(""" to json(x) """, Map("x" -> "hello")) should returnResult(
+      "\"hello\""
+    )
+  }
+
+  it should "convert a number" in {
+    evaluateExpression(""" to json(x) """, Map("x" -> 42)) should returnResult(
+      "42"
+    )
+  }
+
+  it should "convert a boolean" in {
+    evaluateExpression(""" to json(x) """, Map("x" -> true)) should returnResult(
+      "true"
+    )
+  }
+
+  it should "convert a list" in {
+    evaluateExpression(""" to json(x) """, Map("x" -> List("a", "b", "c"))) should returnResult(
+      "[\"a\",\"b\",\"c\"]"
+    )
+  }
+
+  it should "convert a nested list" in {
+    evaluateExpression(""" to json(x) """, Map("x" -> List(List(1, 2), 3))) should returnResult(
+      "[[1,2],3]"
+    )
+  }
+
+  it should "convert a context/map" in {
+    evaluateExpression(
+      """ to json(x) """,
+      Map("x" -> Map("a" -> 1, "b" -> "foo"))
+    ) should returnResult(
+      """{"a":1,"b":"foo"}"""
+    )
+  }
+
+  it should "convert a nested context/map" in {
+    evaluateExpression(
+      """ to json(x) """,
+      Map("x" -> Map("person" -> Map("name" -> "Alice", "age" -> 30)))
+    ) should returnResult(
+      """{"person":{"name":"Alice","age":30}}"""
+    )
+  }
+
+  it should "convert null" in {
+    evaluateExpression(""" to json(null) """) should returnResult(
+      "null"
+    )
+  }
+  it should "convert a date" in {
+    evaluateExpression(""" to json(date("2023-06-14")) """) should returnResult(
+      "\"2023-06-14\""
+    )
+  }
+  it should "convert a time" in {
+    evaluateExpression(""" to json(time(14,55,0)) """) should returnResult(
+      "\"14:55:00\""
+    )
+  }
+
+  it should "convert a date and time" in {
+    evaluateExpression(
+      """ to json(date and time("2023-06-14T14:55:00")) """
+    ) should returnResult(
+      "\"2023-06-14T14:55:00\""
+    )
+  }
+
+  it should "serialize a date value" in {
+    evaluateExpression(""" to json(date("2025-08-13")) """) should returnResult(
+      "\"2025-08-13\""
+    )
+  }
+
+  it should "serialize a time value" in {
+    evaluateExpression(" to json(time(15, 55, 0)) ") should returnResult(
+      "\"15:55:00\""
+    )
+  }
+
+  it should "serialize a date and time value" in {
+    evaluateExpression(""" to json(date and time("2025-08-13T14:55:00")) """) should returnResult(
+      "\"2025-08-13T14:55:00\""
+    )
+  }
+
+  it should "serialize a day-time duration" in {
+    evaluateExpression(""" to json(duration("PT2H30M")) """) should returnResult(
+      "\"PT2H30M\""
+    )
+  }
+
+  it should "serialize a year-month duration" in {
+    evaluateExpression(""" to json(duration("P1Y6M")) """) should returnResult(
+      "\"P1Y6M\""
+    )
+  }
+
+  it should "convert a time with offset" in {
+    evaluateExpression(""" to json(time("14:55:00+02:00")) """) should returnResult(
+      "\"14:55:00+02:00\""
+    )
+  }
+
+  it should "convert a time with timezone" in {
+    evaluateExpression(""" to json(time("14:55:00@Europe/Berlin")) """) should returnResult(
+      "\"14:55:00@Europe/Berlin\""
+    )
+  }
+
+  it should "convert a date and time with offset" in {
+    evaluateExpression(
+      """ to json(date and time("2023-06-14T14:55:00+02:00")) """
+    ) should returnResult(
+      "\"2023-06-14T14:55:00+02:00\""
+    )
+  }
+
+  it should "convert a date and time with timezone" in {
+    evaluateExpression(
+      """ to json(date and time("2023-06-14T14:55:00@Europe/Berlin")) """
+    ) should returnResult(
+      "\"2023-06-14T14:55:00+02:00\""
+    )
+  }
 }
