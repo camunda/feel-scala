@@ -700,8 +700,13 @@ class BuiltinConversionFunctionsTest
   }
 
   it should "convert a time with timezone" in {
-    evaluateExpression(""" to json(time("14:55:00@Europe/Berlin")) """) should returnResult(
-      "\"14:55:00@Europe/Berlin\""
+    val zone   = ZoneId.of("Europe/Berlin")
+    val time   = LocalTime.of(14, 55)
+    val offset = ZoneOffset.ofHours(2)
+    val zoned  = ZonedTime(time, offset, Some(zone))
+
+    evaluateExpression(""" to json(x) """, Map("x" -> ValTime(zoned))) should returnResult(
+      "\"14:55:00+02:00[Europe/Berlin]\""
     )
   }
 

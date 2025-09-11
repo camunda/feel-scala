@@ -396,7 +396,7 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     case ValNumber(n)  => n.underlying()
 
     case ValDate(d)           => d.format(DateTimeFormatter.ISO_LOCAL_DATE)
-    case ValTime(t)           => t.format
+    case ValTime(t)           => ZonedTime.format(t)
     case ValDateTime(dt)      => dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
     case ValLocalTime(t)      => t.format(DateTimeFormatter.ISO_LOCAL_TIME)
     case ValLocalDateTime(dt) => dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
