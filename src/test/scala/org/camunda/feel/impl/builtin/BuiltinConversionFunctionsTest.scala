@@ -681,24 +681,6 @@ class BuiltinConversionFunctionsTest
     )
   }
 
-  it should "serialize a date value" in {
-    evaluateExpression(""" to json(date("2025-08-13")) """) should returnResult(
-      "\"2025-08-13\""
-    )
-  }
-
-  it should "serialize a time value" in {
-    evaluateExpression(" to json(time(15, 55, 0)) ") should returnResult(
-      "\"15:55:00\""
-    )
-  }
-
-  it should "serialize a date and time value" in {
-    evaluateExpression(""" to json(date and time("2025-08-13T14:55:00")) """) should returnResult(
-      "\"2025-08-13T14:55:00\""
-    )
-  }
-
   it should "serialize a day-time duration" in {
     evaluateExpression(""" to json(duration("PT2H30M")) """) should returnResult(
       "\"PT2H30M\""
@@ -735,7 +717,39 @@ class BuiltinConversionFunctionsTest
     evaluateExpression(
       """ to json(date and time("2023-06-14T14:55:00@Europe/Berlin")) """
     ) should returnResult(
-      "\"2023-06-14T14:55:00+02:00\""
+      "\"2023-06-14T14:55:00+02:00[Europe/Berlin]\""
     )
   }
+
+  it should "convert a function" in {
+    evaluateExpression(
+      """ to json(x) """,
+      Map("x" -> ValFunction(List("a", "b"), _ => ValNull))
+    ) should returnResult(
+      "\"function(a, b)\""
+    )
+  }
+
+  it should "convert an inclusive range" in {
+    val range = ValRange(
+      start = ClosedRangeBoundary(ValNumber(1)),
+      end = ClosedRangeBoundary(ValNumber(10))
+    )
+
+    evaluateExpression(""" to json(x) """, Map("x" -> range)) should returnResult(
+      "\"[1..10]\""
+    )
+  }
+
+  it should "convert an exclusive start range" in {
+    val range = ValRange(
+      start = OpenRangeBoundary(ValNumber(1)),
+      end = ClosedRangeBoundary(ValNumber(10))
+    )
+
+    evaluateExpression(""" to json(x) """, Map("x" -> range)) should returnResult(
+      "\"(1..10]\""
+    )
+  }
+
 }

@@ -324,13 +324,13 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
   )
 
   private def toJsonFunction: ValFunction = builtinFunction(
-    params = List("object"),
+    params = List("value"),
     invoke = { case List(obj) =>
       Try {
         val jsonString = jsonMapper.writeValueAsString(convertToJsonValue(obj))
         ValString(jsonString)
       }.getOrElse({
-        ValError(s"Failed to convert object to JSON: ${obj.getClass.getSimpleName}")
+        ValError(s"Failed to convert value to JSON: ${obj.getClass.getSimpleName}")
       })
     }
   )
@@ -397,7 +397,7 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
 
     case ValDate(d)           => d.format(DateTimeFormatter.ISO_LOCAL_DATE)
     case ValTime(t)           => t.format
-    case ValDateTime(dt)      => dt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    case ValDateTime(dt)      => dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
     case ValLocalTime(t)      => t.format(DateTimeFormatter.ISO_LOCAL_TIME)
     case ValLocalDateTime(dt) => dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
@@ -410,7 +410,12 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
       context.variableProvider.getVariables.map { case (key, value) =>
         key -> convertToJsonValue(valueMapper.toVal(value))
       }.asJava
-    case other               =>
+
+    case f: ValFunction => f.toString
+
+    case r: ValRange => r.toString
+
+    case other =>
       throw new IllegalArgumentException(
         s"Unsupported or unrecognized value for JSON serialization: ${other.getClass.getName}"
       )
