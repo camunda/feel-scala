@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.syntaxtree
 
-import java.time.format.DateTimeFormatterBuilder
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.TemporalAmount
 import org.camunda.feel.{localTimeFormatter, timeFormatterWithOffsetAndOptionalPrefix}
 
@@ -114,6 +114,8 @@ object ZonedTime {
     .appendOffsetId()
     .toFormatter()
 
+  private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
   def parse(time: String): ZonedTime = {
     val temporal = timeFormatterWithOffsetAndOptionalPrefix.parse(time)
 
@@ -164,4 +166,14 @@ object ZonedTime {
 
   def between(x: ZonedTime, y: ZonedTime): Duration = x.between(y)
 
+  def format(zonedTime: ZonedTime): String = {
+    val base = zonedTime.time.format(timeFormatter)
+
+    val withOffset = base + zonedTime.offset.toString
+
+    zonedTime.zone match {
+      case Some(zoneId) => withOffset + s"[${zoneId.getId}]"
+      case None         => withOffset
+    }
+  }
 }
