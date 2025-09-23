@@ -17,11 +17,11 @@
   <properties>
     <scala.version>2.13.16</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
-    <version.log4j>2.25.1</version.log4j>
+    <version.log4j>2.25.2</version.log4j>
     <version.uuid>5.1.0</version.uuid>
     <version.jackson>2.19.2</version.jackson>
 
-    <plugin.version.shade>3.6.0</plugin.version.shade>
+    <plugin.version.shade>3.6.1</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
     <plugin.version.javadoc>2.9.1</plugin.version.javadoc>
 
@@ -176,7 +176,7 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>4.9.5</version>
+        <version>4.9.6</version>
         <configuration>
           <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
           <scalaVersion>${scala.version}</scalaVersion>
@@ -210,7 +210,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.4</version>
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
