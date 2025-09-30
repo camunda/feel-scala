@@ -18,7 +18,7 @@
     <scala.version>2.13.16</scala.version>
     <scala.binary.version>2.13.6</scala.binary.version>
     <version.log4j>2.25.2</version.log4j>
-    <version.uuid>5.1.0</version.uuid>
+    <version.uuid>5.1.1</version.uuid>
     <version.jackson>2.19.2</version.jackson>
 
     <plugin.version.shade>3.6.1</plugin.version.shade>
