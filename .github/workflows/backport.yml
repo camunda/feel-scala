@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Create backport PRs
-        uses: zeebe-io/backport-action@v3.3.0
+        uses: zeebe-io/backport-action@v3.4.1
         with:
           # Required
           # Token to authenticate requests to GitHub
