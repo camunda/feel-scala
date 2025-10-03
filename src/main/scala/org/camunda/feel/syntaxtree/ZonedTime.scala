@@ -90,6 +90,18 @@ case class ZonedTime(time: LocalTime, offset: ZoneOffset, zone: Option[ZoneId]) 
     }
   }
 
+  def formatToIso: String = {
+    val localTime  = localTimeFormatter.format(time)
+    val withOffset = localTime + offsetFormatter.format(offset)
+
+    if (hasTimeZone) {
+      val zoneId = zone.get.getId
+      s"$withOffset[$zoneId]"
+    } else {
+      withOffset
+    }
+  }
+
   def withDate(date: LocalDate): ZonedDateTime = {
     val localDateTime = date.atTime(time)
 
@@ -165,15 +177,4 @@ object ZonedTime {
   }
 
   def between(x: ZonedTime, y: ZonedTime): Duration = x.between(y)
-
-  def format(zonedTime: ZonedTime): String = {
-    val base = zonedTime.time.format(timeFormatter)
-
-    val withOffset = base + zonedTime.offset.toString
-
-    zonedTime.zone match {
-      case Some(zoneId) => withOffset + s"[${zoneId.getId}]"
-      case None         => withOffset
-    }
-  }
 }
