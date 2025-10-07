@@ -126,8 +126,6 @@ object ZonedTime {
     .appendOffsetId()
     .toFormatter()
 
-  private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
   def parse(time: String): ZonedTime = {
     val temporal = timeFormatterWithOffsetAndOptionalPrefix.parse(time)
 
