@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.syntaxtree
 
-import java.time.format.DateTimeFormatterBuilder
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.TemporalAmount
 import org.camunda.feel.{localTimeFormatter, timeFormatterWithOffsetAndOptionalPrefix}
 
@@ -87,6 +87,18 @@ case class ZonedTime(time: LocalTime, offset: ZoneOffset, zone: Option[ZoneId]) 
       s"$localTime@$zoneId"
     } else {
       localTime + offsetFormatter.format(offset)
+    }
+  }
+
+  def formatToIso: String = {
+    val localTime  = localTimeFormatter.format(time)
+    val withOffset = localTime + offsetFormatter.format(offset)
+
+    if (hasTimeZone) {
+      val zoneId = zone.get.getId
+      s"$withOffset[$zoneId]"
+    } else {
+      withOffset
     }
   }
 
@@ -163,5 +175,4 @@ object ZonedTime {
   }
 
   def between(x: ZonedTime, y: ZonedTime): Duration = x.between(y)
-
 }
