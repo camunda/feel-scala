@@ -12,8 +12,8 @@
     "clear": "docusaurus clear"
   },
   "dependencies": {
-    "@docusaurus/core": "2.4",
-    "@docusaurus/preset-classic": "2.4",
+    "@docusaurus/core": "3.9",
+    "@docusaurus/preset-classic": "3.9",
     "@mdx-js/react": "^1.6.21",
     "axios": "^0.27.2",
     "clsx": "^1.1.1",
