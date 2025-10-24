@@ -176,7 +176,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download Release Artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: release-artifacts-${{ inputs.releaseVersion }}
 
