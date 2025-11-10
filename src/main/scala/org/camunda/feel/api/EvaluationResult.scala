@@ -36,8 +36,8 @@ sealed trait EvaluationResult {
     */
   val isSuccess: Boolean
 
-  /** The suppressed failures that occurred during the evaluation. These failures doesn't result in
-    * an evaluation failure but may indicate an unintended behavior. Use them for debugging purpose.
+  /** The suppressed failures that occurred during the evaluation. These failures don't result in an
+    * evaluation failure but may indicate an unintended behavior. Use them for debugging purpose.
     */
   val suppressedFailures: List[EvaluationFailure]
 
@@ -56,8 +56,8 @@ sealed trait EvaluationResult {
     if (isSuccess) Right(result)
     else Left(failure)
 
-  /** The suppressed failures that occurred during the evaluation. These failures doesn't result in
-    * an evaluation failure but may indicate an unintended behavior. Use them for debugging purpose.
+  /** Returns the suppressed failures as a Java List for interoperability. See
+    * [[suppressedFailures]] for details.
     */
   def getSuppressedFailures: java.util.List[EvaluationFailure] =
     suppressedFailures.asJava
