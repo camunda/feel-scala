@@ -92,14 +92,8 @@ case class ZonedTime(time: LocalTime, offset: ZoneOffset, zone: Option[ZoneId]) 
 
   def formatToIso: String = {
     val localTime  = localTimeFormatter.format(time)
-    val withOffset = localTime + offsetFormatter.format(offset)
-
-    if (hasTimeZone) {
-      val zoneId = zone.get.getId
-      s"$withOffset[$zoneId]"
-    } else {
-      withOffset
-    }
+    // truncate the timezone ID if present, to conform to ISO-8601
+    localTime + offsetFormatter.format(offset)
   }
 
   def withDate(date: LocalDate): ZonedDateTime = {
