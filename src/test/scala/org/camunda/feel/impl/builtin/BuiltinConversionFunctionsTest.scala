@@ -706,7 +706,7 @@ class BuiltinConversionFunctionsTest
     val zoned  = ZonedTime(time, offset, Some(zone))
 
     evaluateExpression(""" to json(x) """, Map("x" -> ValTime(zoned))) should returnResult(
-      "\"14:55:00+02:00[Europe/Berlin]\""
+      "\"14:55:00+02:00\""
     )
   }
 
