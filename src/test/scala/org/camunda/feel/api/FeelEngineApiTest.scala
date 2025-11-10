@@ -209,4 +209,38 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.toEither should be(Right(evaluationResult.result))
   }
 
+  "A Java consumer of the FEEL engine API" should "get the result" in {
+    val javaEngine       = new FeelEngineApiJava()
+    val evaluationResult =
+      javaEngine.evaluateExpression("1 + x", java.util.Collections.singletonMap("x", 2))
+
+    evaluationResult.getResult shouldBe 3
+
+    evaluationResult.getSuppressedFailures shouldBe empty
+  }
+
+  it should "get suppressed failures" in {
+    val javaEngine       = new FeelEngineApiJava()
+    val evaluationResult = javaEngine.evaluateExpression("1 + x", java.util.Collections.emptyMap())
+
+    evaluationResult.getResult shouldBe null
+
+    evaluationResult.getSuppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'"
+      )
+    )
+  }
+
+  it should "get a failure message" in {
+    val javaEngine = new FeelEngineApiJava()
+
+    val exception = intercept[RuntimeException](
+      javaEngine.evaluateExpression("x +", java.util.Collections.emptyMap())
+    )
+
+    exception.getMessage should startWith("failed to parse expression")
+  }
+
 }
