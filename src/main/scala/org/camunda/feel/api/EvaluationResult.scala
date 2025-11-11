@@ -18,6 +18,8 @@ package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine.Failure
 
+import scala.jdk.CollectionConverters.SeqHasAsJava
+
 /** The result of an expression evaluation.
   */
 sealed trait EvaluationResult {
@@ -34,8 +36,8 @@ sealed trait EvaluationResult {
     */
   val isSuccess: Boolean
 
-  /** The suppressed failures that occurred during the evaluation. These failures doesn't result in
-    * an evaluation failure but may indicate an unintended behavior. Use them for debugging purpose.
+  /** The suppressed failures that occurred during the evaluation. These failures don't result in an
+    * evaluation failure but may indicate an unintended behavior. Use them for debugging purpose.
     */
   val suppressedFailures: List[EvaluationFailure]
 
@@ -53,6 +55,12 @@ sealed trait EvaluationResult {
   def toEither: Either[Failure, Any] =
     if (isSuccess) Right(result)
     else Left(failure)
+
+  /** Returns the suppressed failures as a Java List for interoperability. See
+    * [[suppressedFailures]] for details.
+    */
+  def getSuppressedFailures: java.util.List[EvaluationFailure] =
+    suppressedFailures.asJava
 
 }
 
