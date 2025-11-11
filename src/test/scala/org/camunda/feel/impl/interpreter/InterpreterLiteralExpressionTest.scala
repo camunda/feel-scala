@@ -168,6 +168,17 @@ class InterpreterLiteralExpressionTest
     )
   }
 
+  it should "be defined in ISO format with timezone" in {
+    evaluateExpression(
+      """ date and time("2021-09-08T10:30:00+02:00[Europe/Berlin]") """
+    ) should returnResult(
+      ZonedDateTime.of(
+        LocalDateTime.parse("2021-09-08T10:30:00"),
+        ZoneId.of("Europe/Berlin")
+      )
+    )
+  }
+
   it should "be defined with '@' and no offset" in {
     evaluateExpression(""" @"2021-09-08T10:30:00" """) should returnResult(
       LocalDateTime.parse("2021-09-08T10:30:00")
@@ -182,6 +193,17 @@ class InterpreterLiteralExpressionTest
 
   it should "be defined with '@' and timezone" in {
     evaluateExpression(""" @"2021-09-08T10:30:00@Europe/Berlin" """) should returnResult(
+      ZonedDateTime.of(
+        LocalDateTime.parse("2021-09-08T10:30:00"),
+        ZoneId.of("Europe/Berlin")
+      )
+    )
+  }
+
+  it should "be defined with '@' in ISO format with timezone" in {
+    evaluateExpression(
+      """ @"2021-09-08T10:30:00+02:00[Europe/Berlin]" """
+    ) should returnResult(
       ZonedDateTime.of(
         LocalDateTime.parse("2021-09-08T10:30:00"),
         ZoneId.of("Europe/Berlin")

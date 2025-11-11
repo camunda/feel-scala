@@ -175,6 +175,16 @@ class BuiltinConversionFunctionsTest
     ) should returnNull()
   }
 
+  it should "convert a string in ISO format with timezone ID" in {
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-06-14T14:55:00+02:00[Europe/Berlin]")
+    ) should returnResult(
+      ZonedDateTime.parse("2023-06-14T14:55:00+02:00[Europe/Berlin]")
+    )
+  }
+
   "A time() function" should "convert String" in {
 
     evaluateExpression(""" time(x) """, Map("x" -> "23:59:00")) should returnResult(
