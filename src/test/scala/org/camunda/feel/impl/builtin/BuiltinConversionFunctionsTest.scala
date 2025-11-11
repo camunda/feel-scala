@@ -91,6 +91,13 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(
       ZonedDateTime.parse("2012-12-24T23:59:00+01:00")
     )
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2012-12-24T23:59:00@Europe/Berlin")
+    ) should returnResult(
+      ZonedDateTime.parse("2012-12-24T23:59:00+01:00[Europe/Berlin]")
+    )
   }
 
   it should "convert (DateTime, Timezone)" in {
