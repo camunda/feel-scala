@@ -27,6 +27,8 @@ import org.camunda.feel.{
   Time,
   YearMonthDuration,
   dateTimeFormatter,
+  dateTimeFormatterWithOffset,
+  dateTimeFormatterWithZoneId,
   localDateTimeFormatter,
   localTimeFormatter
 }
@@ -182,26 +184,24 @@ case class ValDateTime(value: DateTime) extends Val {
     "second"      -> ValNumber(value.getSecond),
     "time offset" -> ValDayTimeDuration(Duration.ofSeconds(value.getOffset.getTotalSeconds)),
     "timezone"    -> {
-      if (hasTimeZone) ValString(value.getZone.getId)
+      if (ValDateTime.hasTimeZone(value)) ValString(value.getZone.getId)
       else ValNull
     }
   )
-
-  private def hasTimeZone = !value.getOffset.equals(value.getZone)
 
   override def toString: String = ValDateTime.format(value)
 }
 
 object ValDateTime {
 
-  private val dateTimeOffsetZoneIdPattern = Pattern.compile("(.*)([+-]\\d{2}:\\d{2}|Z)(@.*)")
+  def hasTimeZone(value: DateTime): Boolean = !value.getOffset.equals(value.getZone)
 
   def format(value: DateTime): String = {
-    val formattedDateTime = value.format(dateTimeFormatter)
-    // remove offset-id if zone-id is present
-    dateTimeOffsetZoneIdPattern
-      .matcher(formattedDateTime)
-      .replaceAll("$1$3")
+    if (hasTimeZone(value)) {
+      value.format(dateTimeFormatterWithZoneId)
+    } else {
+      value.format(dateTimeFormatterWithOffset)
+    }
   }
 
 }
