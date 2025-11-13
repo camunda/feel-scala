@@ -101,7 +101,7 @@ package object feel {
     offsetTimePattern.matcher(time).matches
 
   private lazy val offsetDateTimePattern = Pattern.compile(
-    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?([+-][01][0-9]:[0-5][0-9]|Z|@.*)"""
+    """-?([1-9]\d{0,4})?\d{4}-[01][0-9]-[0-3]\dT[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?(\.\d{1,9})?(((([+-][01][0-9]:[0-5][0-9])|Z)(\[.+\])?)|@.*)"""
   )
 
   def isOffsetDateTime(dateTime: String): Boolean =
@@ -157,6 +157,11 @@ package object feel {
     .appendOffsetId()
     .optionalEnd()
     .optionalStart()
+    .appendLiteral("[")
+    .appendZoneRegionId()
+    .appendLiteral("]")
+    .optionalEnd()
+    .optionalStart()
     .appendLiteral("@")
     .appendZoneRegionId()
     .optionalEnd()
@@ -202,6 +207,21 @@ package object feel {
     .append(dateFormatter)
     .append(timeFormatterWithPrefix)
     .append(offsetFormatter)
+    .toFormatter()
+    .withResolverStyle(ResolverStyle.STRICT)
+
+  val dateTimeFormatterWithOffset = new DateTimeFormatterBuilder()
+    .append(dateFormatter)
+    .append(timeFormatterWithPrefix)
+    .appendOffsetId()
+    .toFormatter()
+    .withResolverStyle(ResolverStyle.STRICT)
+
+  val dateTimeFormatterWithZoneId = new DateTimeFormatterBuilder()
+    .append(dateFormatter)
+    .append(timeFormatterWithPrefix)
+    .appendLiteral("@")
+    .appendZoneRegionId()
     .toFormatter()
     .withResolverStyle(ResolverStyle.STRICT)
 

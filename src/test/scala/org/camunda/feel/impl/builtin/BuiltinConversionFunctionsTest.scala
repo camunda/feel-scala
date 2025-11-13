@@ -91,6 +91,13 @@ class BuiltinConversionFunctionsTest
     ) should returnResult(
       ZonedDateTime.parse("2012-12-24T23:59:00+01:00")
     )
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2012-12-24T23:59:00@Europe/Berlin")
+    ) should returnResult(
+      ZonedDateTime.parse("2012-12-24T23:59:00+01:00[Europe/Berlin]")
+    )
   }
 
   it should "convert (DateTime, Timezone)" in {
@@ -166,6 +173,16 @@ class BuiltinConversionFunctionsTest
       """ date and time(x) """,
       Map("x" -> "2023-06-31T10:00:00+02:00")
     ) should returnNull()
+  }
+
+  it should "convert a string in ISO format with timezone ID" in {
+
+    evaluateExpression(
+      """ date and time(x) """,
+      Map("x" -> "2023-06-14T14:55:00+02:00[Europe/Berlin]")
+    ) should returnResult(
+      ZonedDateTime.parse("2023-06-14T14:55:00+02:00[Europe/Berlin]")
+    )
   }
 
   "A time() function" should "convert String" in {

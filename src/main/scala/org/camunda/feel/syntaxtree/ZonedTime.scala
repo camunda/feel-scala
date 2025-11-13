@@ -91,7 +91,7 @@ case class ZonedTime(time: LocalTime, offset: ZoneOffset, zone: Option[ZoneId]) 
   }
 
   def formatToIso: String = {
-    val localTime  = localTimeFormatter.format(time)
+    val localTime = localTimeFormatter.format(time)
     // Omit the timezone ID to conform to the basic ISO-8601 format, which only includes the offset.
     localTime + offsetFormatter.format(offset)
   }
