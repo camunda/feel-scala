@@ -514,7 +514,7 @@ class InterpreterListExpressionTest
 
   it should "compute a long list" in {
     evaluateExpression(
-        """count(for x in 0..1000000 return "Hi there")""",
+      """count(for x in 0..1000000 return "Hi there")"""
     ) should returnResult(1000001)
   }
 }
