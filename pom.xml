@@ -11,7 +11,7 @@
 
   <groupId>org.camunda.feel</groupId>
   <artifactId>feel-engine</artifactId>
-  <version>1.20.0-SNAPSHOT</version>
+  <version>1.21.0-SNAPSHOT</version>
   <name>FEEL Scala Engine</name>
 
   <properties>

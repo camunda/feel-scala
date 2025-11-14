@@ -1,0 +1,39 @@
+---
+id: chapter-6
+title: "Chapter 6"
+---
+
+import LiveFeel from "@site/src/components/LiveFeel";
+import dedent from "dedent";
+
+Zee took a short rest and continued walking to CamundaCon. :de: On the road, he passed mountains,
+fields, and woods. :mountain: :deciduous_tree: After a few days, he realized that he walked in cycles.
+:dizzy_face: Unsure about right way, he looks at the trail markers. :large_red_square:
+:large_blue_circle: :large_orange_diamond:
+
+Can you help him to choose the right way to Berlin?
+
+<LiveFeel
+  defaultExpression={dedent`
+    // use list operators and return the right route
+    routes`}
+    feelContext='{"routes": [
+    {"route":"red", "stops":["Cologne", "Frankfurt", "Nuremberg", "Munich"]},
+    {"route":"blue", "stops":["Cologne", "Paderborn", "Hanover", "Berlin"]},
+    {"route":"yellow", "stops":["Cologne", "Münster", "Bremen", "Hamburg"]}]}'
+  metadata={{ page: "challenge-6" }}
+/>
+
+<details>
+  <summary>Solution</summary>
+  <div>
+    <div>
+      Zee follows the blue route and reaches CamundaCon just-in-time. He is happy to be there
+      and meet the community.
+    </div>
+    <br />
+    <pre title={'Expression'}>
+      routes["Berlin" in stops][1].route
+    </pre>
+  </div>
+</details>
