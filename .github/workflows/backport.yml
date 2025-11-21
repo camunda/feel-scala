@@ -23,7 +23,7 @@ jobs:
         startsWith(github.event.comment.body, '/backport')
       )
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Create backport PRs
         uses: zeebe-io/backport-action@v3.4.1
         with:
