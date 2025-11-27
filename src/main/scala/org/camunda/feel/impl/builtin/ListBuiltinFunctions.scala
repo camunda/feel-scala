@@ -378,14 +378,14 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       list: Seq[Val],
       item: Val,
       from: Int = 0,
-      indexList: Seq[Int] = Seq()
+      indexList: List[Int] = Nil
   ): Seq[Int] = {
     val index = list.indexOf(item, from)
 
     if (index >= 0) {
-      indexOfList(list, item, index + 1, indexList ++ Seq(index + 1))
+      indexOfList(list, item, index + 1, (index + 1) :: indexList)
     } else {
-      indexList
+      indexList.reverse
     }
   }
 
@@ -408,14 +408,13 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     )
 
   private def distinct(list: Seq[Val]): Seq[Val] = {
-    list.foldLeft(Seq[Val]())((result, item) =>
-      if (result.exists(y => valueComparator.equals(item, y))) {
-        // duplicate value
-        result
-      } else {
-        result :+ item
+    val result = scala.collection.mutable.ArrayBuffer.empty[Val]
+    list.foreach { item =>
+      if (!result.exists(y => valueComparator.equals(item, y))) {
+        result += item
       }
-    )
+    }
+    result.toSeq
   }
 
   private def duplicateValuesFunction =
