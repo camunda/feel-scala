@@ -73,7 +73,7 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
   it should "convert from java.lang.Float" in {
 
-    valueMapper.toVal(new java.lang.Float(2.4)) should be(ValNumber(2.4f))
+    valueMapper.toVal(java.lang.Float.valueOf(2.4f)) should be(ValNumber(2.4f))
   }
 
   it should "convert from Double" in {

@@ -695,15 +695,18 @@ object FeelParser {
   }
 
   private def translateEscapes(input: String): String = {
-    // replace all escape sequences
+    // Replace escape sequences without using lookbehind (not supported in Scala Native).
+    // Strategy: first protect escaped backslashes, then replace escapes, then restore.
+    val placeholder = "\u0000BACKSLASH\u0000" // unlikely to appear in input
     input
-      .replaceAll("(?<!\\\\)\\\\n", "\n")  // new line
-      .replaceAll("(?<!\\\\)\\\\r", "\r")  // carriage return
-      .replaceAll("(?<!\\\\)\\\\t", "\t")  // tab
-      .replaceAll("(?<!\\\\)\\\\b", "\b")  // backspace
-      .replaceAll("(?<!\\\\)\\\\f", "\f")  // form feed
-      .replaceAll("(?<!\\\\)\\\\'", "'")   // single quote
-      .replaceAll("(?<!\\\\)\\\\\"", "\"") // double quote
-      .replaceAll("\\\\\\\\", "\\\\")      // backslash (for regex characters)
+      .replace("\\\\", placeholder)           // protect escaped backslashes
+      .replace("\\n", "\n")                   // new line
+      .replace("\\r", "\r")                   // carriage return
+      .replace("\\t", "\t")                   // tab
+      .replace("\\b", "\b")                   // backspace
+      .replace("\\f", "\f")                   // form feed
+      .replace("\\'", "'")                    // single quote
+      .replace("\\\"", "\"")                  // double quote
+      .replace(placeholder, "\\")             // restore backslashes
   }
 }
