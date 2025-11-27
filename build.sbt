@@ -19,7 +19,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Full)
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0",
-      "io.github.cquiroz" %%% "scala-java-time" % "2.5.0"
+      "io.github.cquiroz" %%% "scala-java-time" % "2.5.0",
+      "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.5.0"
     ),
     scalaJSLinkerConfig ~= { _.withESFeatures(_.withESVersion(ESVersion.ES2018)).withClosureCompilerIfAvailable(true).withMinify(true).withModuleKind(ModuleKind.CommonJSModule)}
   )

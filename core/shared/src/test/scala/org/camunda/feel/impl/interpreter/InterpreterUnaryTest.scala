@@ -119,13 +119,13 @@ class InterpreterUnaryTest
 
   it should "compare to a field of a bean" in {
 
-    class A(val b: Int)
+    case class A(b: Int)
 
-    evaluateUnaryTests("a.b", 3, Map("a" -> new A(3))) should returnResult(true)
-    evaluateUnaryTests("a.b", 3, Map("a" -> new A(4))) should returnResult(false)
+    evaluateUnaryTests("a.b", 3, Map("a" -> A(3))) should returnResult(true)
+    evaluateUnaryTests("a.b", 3, Map("a" -> A(4))) should returnResult(false)
 
-    evaluateUnaryTests("< a.b", 3, Map("a" -> new A(4))) should returnResult(true)
-    evaluateUnaryTests("< a.b", 3, Map("a" -> new A(2))) should returnResult(false)
+    evaluateUnaryTests("< a.b", 3, Map("a" -> A(4))) should returnResult(true)
+    evaluateUnaryTests("< a.b", 3, Map("a" -> A(2))) should returnResult(false)
   }
 
   it should "compare to null" in {

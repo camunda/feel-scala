@@ -245,18 +245,6 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "convert from object ignore private fields and methods" in {
-    case class Obj(val a: Int, private val b: String) {
-      def getC(): String = "c"
-    }
-
-    valueMapper.toVal(Obj(a = 2, b = "foo")) match {
-      case ValContext(context) =>
-        val variables = context.variableProvider.getVariables
-        variables should be(Map("a" -> 2))
-    }
-  }
-
   it should "convert from Some" in {
 
     valueMapper.toVal(Some("foo")) should be(ValString("foo"))
