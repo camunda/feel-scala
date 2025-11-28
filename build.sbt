@@ -23,11 +23,24 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform).crossType(
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0",
-
     ),
     scalaJSLinkerConfig ~= { _.withESFeatures(_.withESVersion(ESVersion.ES2018)).withClosureCompilerIfAvailable(true).withMinify(true).withModuleKind(ModuleKind.CommonJSModule)}
   )
   .nativeSettings(
     libraryDependencies ++= Seq(
     )
+  )
+
+lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform).crossType(CrossType.Full)
+  .withoutSuffixFor(JVMPlatform)
+  .dependsOn(core)
+  .settings(
+    scalaVersion := "2.13.18",
+    name := "cli"
+  )
+  .jsSettings(
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSLinkerConfig ~= { _.withESFeatures(_.withESVersion(ESVersion.ES2018)).withModuleKind(ModuleKind.CommonJSModule)}
+  )
+  .nativeSettings(
   )
