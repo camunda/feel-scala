@@ -16,7 +16,6 @@
  */
 package org.camunda.feel.impl.builtin
 
-import com.github.plokhotnyuk.jsoniter_scala.core._
 import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
@@ -38,6 +37,7 @@ import org.camunda.feel.{
   stringToNumber,
   stringToYearMonthDuration
 }
+import ujson._
 
 import java.math.BigDecimal
 import java.time._
@@ -46,92 +46,46 @@ import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
 
-  /** Custom codec for parsing and serializing Val types to/from JSON. */
-  private implicit val valCodec: JsonValueCodec[Val] = new JsonValueCodec[Val] {
+  /** Converts a ujson.Value to a Val */
+  private def jsonToVal(json: Value): Val = json match {
+    case Null        => ValNull
+    case Bool(b)     => ValBoolean(b)
+    case Str(s)      => ValString(s)
+    case Num(n)      => ValNumber(BigDecimal.valueOf(n))
+    case Arr(items)  => ValList(items.map(jsonToVal).toList)
+    case Obj(fields) => ValContext(StaticContext(variables = fields.map { case (k, v) => k -> jsonToVal(v) }.toMap))
+  }
 
-    override def decodeValue(in: JsonReader, default: Val): Val = {
-      val token = in.nextToken()
-      if (token == '"') {
-        in.rollbackToken()
-        ValString(in.readString(null))
-      } else if (token == 't' || token == 'f') {
-        in.rollbackToken()
-        ValBoolean(in.readBoolean())
-      } else if (token >= '0' && token <= '9' || token == '-') {
-        in.rollbackToken()
-        ValNumber(in.readBigDecimal(null))
-      } else if (token == '[') {
-        val buf = new scala.collection.mutable.ArrayBuffer[Val]
-        if (!in.isNextToken(']')) {
-          in.rollbackToken()
-          do {
-            buf += decodeValue(in, default)
-          } while (in.isNextToken(','))
-          if (!in.isCurrentToken(']')) {
-            in.arrayEndOrCommaError()
-          }
-        }
-        ValList(buf.toList)
-      } else if (token == '{') {
-        val buf = new scala.collection.mutable.LinkedHashMap[String, Val]
-        if (!in.isNextToken('}')) {
-          in.rollbackToken()
-          do {
-            val key = in.readKeyAsString()
-            buf += (key -> decodeValue(in, default))
-          } while (in.isNextToken(','))
-          if (!in.isCurrentToken('}')) {
-            in.objectEndOrCommaError()
-          }
-        }
-        ValContext(StaticContext(variables = buf.toMap))
-      } else if (token == 'n') {
-        in.readNullOrError(null, "expected null")
-        ValNull
-      } else {
-        in.decodeError("expected JSON value")
-      }
-    }
+  /** Converts a Val to a ujson.Value */
+  private def valToJson(value: Val): Value = value match {
+    case ValNull              => Null
+    case ValBoolean(b)        => Bool(b)
+    case ValString(s)         => Str(s)
+    case ValNumber(n)         => Num(n.doubleValue)
 
-    override def encodeValue(value: Val, out: JsonWriter): Unit = value match {
-      case ValNull              => out.writeNull()
-      case ValString(s)         => out.writeVal(s)
-      case ValBoolean(b)        => out.writeVal(b)
-      case ValNumber(n)         => out.writeVal(n.underlying())
+    case ValDate(d)           => Str(d.format(DateTimeFormatter.ISO_LOCAL_DATE))
+    case ValTime(t)           => Str(t.formatToIso)
+    case ValDateTime(dt)      => Str(dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+    case ValLocalTime(t)      => Str(t.format(DateTimeFormatter.ISO_LOCAL_TIME))
+    case ValLocalDateTime(dt) => Str(dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 
-      case ValDate(d)           => out.writeVal(d.format(DateTimeFormatter.ISO_LOCAL_DATE))
-      case ValTime(t)           => out.writeVal(t.formatToIso)
-      case ValDateTime(dt)      => out.writeVal(dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
-      case ValLocalTime(t)      => out.writeVal(t.format(DateTimeFormatter.ISO_LOCAL_TIME))
-      case ValLocalDateTime(dt) => out.writeVal(dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+    case ValDayTimeDuration(dur)   => Str(dur.toString)
+    case ValYearMonthDuration(dur) => Str(dur.toString)
 
-      case ValDayTimeDuration(dur)   => out.writeVal(dur.toString)
-      case ValYearMonthDuration(dur) => out.writeVal(dur.toString)
+    case ValList(items) => Arr.from(items.map(valToJson))
 
-      case ValList(items) =>
-        out.writeArrayStart()
-        items.foreach(item => encodeValue(item, out))
-        out.writeArrayEnd()
+    case ValContext(context) =>
+      Obj.from(context.variableProvider.getVariables.map { case (k, v) =>
+        k -> valToJson(valueMapper.toVal(v))
+      })
 
-      case ValContext(context) =>
-        out.writeObjectStart()
-        context.variableProvider.getVariables.foreach { case (key, v) =>
-          out.writeKey(key)
-          encodeValue(valueMapper.toVal(v), out)
-        }
-        out.writeObjectEnd()
+    case f: ValFunction => Str(f.toString)
+    case r: ValRange    => Str(r.toString)
 
-      case f: ValFunction => out.writeVal(f.toString)
-
-      case r: ValRange => out.writeVal(r.toString)
-
-      case other =>
-        throw new IllegalArgumentException(
-          s"Unsupported or unrecognized value for JSON serialization: ${other.getClass.getName}"
-        )
-    }
-
-    override def nullValue: Val = ValNull
+    case other =>
+      throw new IllegalArgumentException(
+        s"Unsupported value for JSON serialization: ${other.getClass.getName}"
+      )
   }
 
   def functions = Map(
@@ -144,6 +98,29 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     "years and months duration" -> List(durationFunction2),
     "from json"                 -> List(fromJsonFunction),
     "to json"                   -> List(toJsonFunction)
+  )
+
+  private def fromJsonFunction: ValFunction = builtinFunction(
+    params = List("json"),
+    invoke = {
+      case List(ValNull)         => ValNull
+      case List(json: ValString) =>
+        Try(jsonToVal(ujson.read(json.value)))
+          .getOrElse {
+            ValError(s"Failed to parse JSON from '${json.value}'")
+          }
+    }
+  )
+
+  private def toJsonFunction: ValFunction = builtinFunction(
+    params = List("value"),
+    invoke = { case List(value) =>
+      Try {
+        ValString(ujson.write(valToJson(value)))
+      }.getOrElse {
+        ValError(s"Failed to convert value to JSON: ${value.getClass.getSimpleName}")
+      }
+    }
   )
 
   private def dateFunction = builtinFunction(
@@ -391,30 +368,6 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
         ValYearMonthDuration(Period.between(from.toLocalDate(), to).withDays(0).normalized)
       case List(ValLocalDateTime(from), ValDate(to))          =>
         ValYearMonthDuration(Period.between(from.toLocalDate(), to).withDays(0).normalized)
-    }
-  )
-
-  private def fromJsonFunction: ValFunction = builtinFunction(
-    params = List("json"),
-    invoke = {
-      case List(ValNull)         => ValNull
-      case List(json: ValString) =>
-        Try(readFromString[Val](json.value))
-          .getOrElse {
-            ValError(s"Failed to parse JSON from '${json.value}'")
-          }
-    }
-  )
-
-  private def toJsonFunction: ValFunction = builtinFunction(
-    params = List("value"),
-    invoke = { case List(obj) =>
-      Try {
-        val jsonString = writeToString(obj)
-        ValString(jsonString)
-      }.getOrElse({
-        ValError(s"Failed to convert value to JSON: ${obj.getClass.getSimpleName}")
-      })
     }
   )
 

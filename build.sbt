@@ -6,9 +6,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %%% "scalatest" % "3.2.10" % Test,
   "com.lihaoyi" %%% "fastparse" % "3.1.1",
   "org.scala-js" %% "scalajs-stubs" % "1.1.0",
-  "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.38.5",
-"com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-macros" % "2.38.5"
-
+  "com.lihaoyi" %%% "ujson" % "4.1.0"
 ))
 lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Full)
   .withoutSuffixFor(JVMPlatform)
