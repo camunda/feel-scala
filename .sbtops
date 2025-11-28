@@ -1,0 +1,4 @@
+# set memory options
+#
+#-mem   <integer>
+-mem 4096
