@@ -33,11 +33,11 @@ class ListPerformanceTest
 
   // Time limit for operations - should complete well under this with O(n) complexity
   // With O(n²) complexity, these would take much longer
-  val timeLimitMs = 30000
+  val timeLimitMs = 10000
 
   "A distinct values function" should "handle large lists efficiently" in {
     // Generate list with duplicates: [1,1,2,2,3,3,...,n,n]
-    val listSize           = 10000
+    val listSize           = 1_000_000
     val listWithDuplicates = (1 to listSize).flatMap(i => Seq(i, i)).toList
 
     val start   = System.currentTimeMillis()
@@ -50,19 +50,21 @@ class ListPerformanceTest
 
   "An index of function" should "handle large lists with many matches efficiently" in {
     // List with repeated value to find multiple indices
-    val listSize   = 100000
-    val listOfOnes = List.fill(listSize)(1)
+    val listSize = 1_000_000
 
-    val start   = System.currentTimeMillis()
-    val result  = evaluateExpression("index of(xs, 1)", Map("xs" -> listOfOnes))
-    val elapsed = System.currentTimeMillis() - start
+    for (listOfOnes <- Seq(List.fill(listSize)(1), Vector.fill(listSize)(1))) {
 
-    result should returnResult((1 to listSize).toList)
-    elapsed should be < timeLimitMs.toLong
+      val start   = System.currentTimeMillis()
+      val result  = evaluateExpression("index of(xs, 1)", Map("xs" -> listOfOnes))
+      val elapsed = System.currentTimeMillis() - start
+
+      result should returnResult((1 to listSize).toList)
+      elapsed should be < timeLimitMs.toLong
+    }
   }
 
   "A union function" should "handle large lists efficiently" in {
-    val listSize = 100000
+    val listSize = 1_000_000
     val list1    = (1 to listSize).toList
     val list2    = (listSize / 2 to listSize + listSize / 2).toList
 
@@ -75,7 +77,7 @@ class ListPerformanceTest
   }
 
   "A for loop building a list" should "handle many iterations efficiently" in {
-    val iterations = 100000
+    val iterations = 1_000_000
 
     val start   = System.currentTimeMillis()
     val result  = evaluateExpression("for i in 1..n return i * 2", Map("n" -> iterations))
@@ -86,9 +88,9 @@ class ListPerformanceTest
   }
 
   "Nested for loops" should "handle moderate sizes efficiently" in {
-    // 300 x 300 = 90,000 total iterations
+    // 300 x 3000 = 900,000 total iterations
     val outerSize = 300
-    val innerSize = 300
+    val innerSize = 3000
 
     val start   = System.currentTimeMillis()
     val result  = evaluateExpression(
@@ -101,7 +103,7 @@ class ListPerformanceTest
   }
 
   "A flatten function" should "handle deeply nested lists efficiently" in {
-    val listSize   = 100000
+    val listSize   = 1_000_000
     // Create [[1],[2],[3],...,[n]]
     val nestedList = (1 to listSize).map(i => List(i)).toList
 
@@ -114,7 +116,7 @@ class ListPerformanceTest
   }
 
   "A filter expression" should "handle large lists efficiently" in {
-    val listSize = 100000
+    val listSize = 1_000_000
     val list     = (1 to listSize).toList
 
     val start   = System.currentTimeMillis()
@@ -127,7 +129,7 @@ class ListPerformanceTest
 
   "Collecting evaluation failures" should "handle many failures efficiently" in {
     // Expression that generates many suppressed failures
-    val iterations = 100000
+    val iterations = 1_000_000
     val start      = System.currentTimeMillis()
     // Each iteration tries to access a non-existing variable, generating a failure
     val result     = evaluateExpression(
@@ -140,7 +142,7 @@ class ListPerformanceTest
   }
 
   "Append function" should "handle large lists efficiently" in {
-    val listSize = 100000
+    val listSize = 1_000_000
     val list     = (1 to listSize).toList
 
     val start   = System.currentTimeMillis()
@@ -155,7 +157,7 @@ class ListPerformanceTest
   }
 
   "Concatenate function" should "handle multiple large lists efficiently" in {
-    val listSize = 100000
+    val listSize = 1_000_000
     val list1    = (1 to listSize).toList
     val list2    = (listSize + 1 to listSize * 2).toList
     val list3    = (listSize * 2 + 1 to listSize * 3).toList
