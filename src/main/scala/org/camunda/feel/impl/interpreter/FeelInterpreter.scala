@@ -391,7 +391,12 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
   private def isComparable(values: Val*): Boolean = values.forall(_.isComparable)
 
-  private def hasSameType(values: Val*): Boolean = values.map(_.getClass).distinct.size == 1
+  private def hasSameType(values: Val*): Boolean = {
+    values.nonEmpty && {
+      val firstClass = values.head.getClass
+      values.tail.forall(_.getClass == firstClass)
+    }
+  }
 
   // ======== type checks ====================
 
