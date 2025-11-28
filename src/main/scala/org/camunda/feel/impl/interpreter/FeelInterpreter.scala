@@ -709,7 +709,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
     val paramList: List[Val] = params match {
       case PositionalFunctionParameters(params) => {
 
-        if (function.hasVarArgs && function.params.size > 0) {
+        if (function.hasVarArgs && function.params.nonEmpty) {
           val size = function.params.size - 1
 
           val args: List[Val] = params take (size) map eval
