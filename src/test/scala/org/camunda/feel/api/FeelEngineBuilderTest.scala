@@ -29,7 +29,7 @@ class FeelEngineBuilderTest extends AnyFlatSpec with Matchers {
 
   it should "build a preconfigured Java engine and evaluate expression" in {
     val javaBuilder = new FeelEngineBuilderJava()
-    val engine = javaBuilder.buildEngine()
+    val engine      = javaBuilder.buildEngine()
 
     val evaluationResult = engine.evaluateExpression("[1,2]")
 
