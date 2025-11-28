@@ -22,8 +22,8 @@ import org.scalatest.matchers.should.Matchers
 
 /** Performance tests to detect O(n²) regressions in list operations.
   *
-  * These tests use moderately large lists and set time limits to catch performance regressions. If
-  * list operations use O(n) append instead of O(1), these tests will timeout.
+  * These tests use large lists (100K+ elements) and set time limits to catch performance
+  * regressions. If list operations use O(n) append instead of O(1), these tests will timeout.
   */
 class ListPerformanceTest
     extends AnyFlatSpec
@@ -33,15 +33,15 @@ class ListPerformanceTest
 
   // Time limit for operations - should complete well under this with O(n) complexity
   // With O(n²) complexity, these would take much longer
-  val timeLimitMs = 5000
+  val timeLimitMs = 30000
 
   "A distinct values function" should "handle large lists efficiently" in {
-    // Generate list with duplicates: [1,1,2,2,3,3,...,500,500]
-    val listSize = 500
-    val listExpr = (1 to listSize).flatMap(i => Seq(i, i)).mkString("[", ",", "]")
+    // Generate list with duplicates: [1,1,2,2,3,3,...,n,n]
+    val listSize           = 10000
+    val listWithDuplicates = (1 to listSize).flatMap(i => Seq(i, i)).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"distinct values($listExpr)")
+    val result  = evaluateExpression("distinct values(xs)", Map("xs" -> listWithDuplicates))
     val elapsed = System.currentTimeMillis() - start
 
     result should returnResult((1 to listSize).toList)
@@ -50,11 +50,11 @@ class ListPerformanceTest
 
   "An index of function" should "handle large lists with many matches efficiently" in {
     // List with repeated value to find multiple indices
-    val listSize = 1000
-    val listExpr = (1 to listSize).map(_ => 1).mkString("[", ",", "]")
+    val listSize   = 100000
+    val listOfOnes = List.fill(listSize)(1)
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"index of($listExpr, 1)")
+    val result  = evaluateExpression("index of(xs, 1)", Map("xs" -> listOfOnes))
     val elapsed = System.currentTimeMillis() - start
 
     result should returnResult((1 to listSize).toList)
@@ -62,12 +62,12 @@ class ListPerformanceTest
   }
 
   "A union function" should "handle large lists efficiently" in {
-    val listSize = 300
-    val list1    = (1 to listSize).mkString("[", ",", "]")
-    val list2    = (listSize / 2 to listSize + listSize / 2).mkString("[", ",", "]")
+    val listSize = 100000
+    val list1    = (1 to listSize).toList
+    val list2    = (listSize / 2 to listSize + listSize / 2).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"union($list1, $list2)")
+    val result  = evaluateExpression("union(xs, ys)", Map("xs" -> list1, "ys" -> list2))
     val elapsed = System.currentTimeMillis() - start
 
     // union should contain distinct values from both lists
@@ -75,10 +75,10 @@ class ListPerformanceTest
   }
 
   "A for loop building a list" should "handle many iterations efficiently" in {
-    val iterations = 1000
+    val iterations = 100000
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"for i in 1..$iterations return i * 2")
+    val result  = evaluateExpression("for i in 1..n return i * 2", Map("n" -> iterations))
     val elapsed = System.currentTimeMillis() - start
 
     result should returnResult((1 to iterations).map(_ * 2).toList)
@@ -86,24 +86,27 @@ class ListPerformanceTest
   }
 
   "Nested for loops" should "handle moderate sizes efficiently" in {
-    val outerSize = 50
-    val innerSize = 50
+    // 300 x 300 = 90,000 total iterations
+    val outerSize = 300
+    val innerSize = 300
 
     val start   = System.currentTimeMillis()
-    val result  =
-      evaluateExpression(s"for i in 1..$outerSize return for j in 1..$innerSize return i * j")
+    val result  = evaluateExpression(
+      "for i in 1..outer return for j in 1..inner return i * j",
+      Map("outer" -> outerSize, "inner" -> innerSize)
+    )
     val elapsed = System.currentTimeMillis() - start
 
     elapsed should be < timeLimitMs.toLong
   }
 
   "A flatten function" should "handle deeply nested lists efficiently" in {
-    val listSize   = 100
-    // Create [[1],[2],[3],...,[100]]
-    val nestedList = (1 to listSize).map(i => s"[$i]").mkString("[", ",", "]")
+    val listSize   = 100000
+    // Create [[1],[2],[3],...,[n]]
+    val nestedList = (1 to listSize).map(i => List(i)).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"flatten($nestedList)")
+    val result  = evaluateExpression("flatten(xs)", Map("xs" -> nestedList))
     val elapsed = System.currentTimeMillis() - start
 
     result should returnResult((1 to listSize).toList)
@@ -111,24 +114,25 @@ class ListPerformanceTest
   }
 
   "A filter expression" should "handle large lists efficiently" in {
-    val listSize = 1000
-    val listExpr = (1 to listSize).mkString("[", ",", "]")
+    val listSize = 100000
+    val list     = (1 to listSize).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"$listExpr[item > 500]")
+    val result  = evaluateExpression("xs[item > n]", Map("xs" -> list, "n" -> (listSize / 2)))
     val elapsed = System.currentTimeMillis() - start
 
-    result should returnResult((501 to listSize).toList)
+    result should returnResult((listSize / 2 + 1 to listSize).toList)
     elapsed should be < timeLimitMs.toLong
   }
 
   "Collecting evaluation failures" should "handle many failures efficiently" in {
     // Expression that generates many suppressed failures
-    val iterations = 500
+    val iterations = 100000
     val start      = System.currentTimeMillis()
     // Each iteration tries to access a non-existing variable, generating a failure
     val result     = evaluateExpression(
-      s"for i in 1..$iterations return if nonExistingVar = null then i else 0"
+      "for i in 1..n return if nonExistingVar = null then i else 0",
+      Map("n" -> iterations)
     )
     val elapsed    = System.currentTimeMillis() - start
 
@@ -136,25 +140,31 @@ class ListPerformanceTest
   }
 
   "Append function" should "handle large lists efficiently" in {
-    val listSize = 500
-    val listExpr = (1 to listSize).mkString("[", ",", "]")
+    val listSize = 100000
+    val list     = (1 to listSize).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"append($listExpr, 501, 502, 503)")
+    val result  = evaluateExpression(
+      "append(xs, a, b, c)",
+      Map("xs" -> list, "a" -> (listSize + 1), "b" -> (listSize + 2), "c" -> (listSize + 3))
+    )
     val elapsed = System.currentTimeMillis() - start
 
-    result should returnResult((1 to 503).toList)
+    result should returnResult((1 to (listSize + 3)).toList)
     elapsed should be < timeLimitMs.toLong
   }
 
   "Concatenate function" should "handle multiple large lists efficiently" in {
-    val listSize = 300
-    val list1    = (1 to listSize).mkString("[", ",", "]")
-    val list2    = (listSize + 1 to listSize * 2).mkString("[", ",", "]")
-    val list3    = (listSize * 2 + 1 to listSize * 3).mkString("[", ",", "]")
+    val listSize = 100000
+    val list1    = (1 to listSize).toList
+    val list2    = (listSize + 1 to listSize * 2).toList
+    val list3    = (listSize * 2 + 1 to listSize * 3).toList
 
     val start   = System.currentTimeMillis()
-    val result  = evaluateExpression(s"concatenate($list1, $list2, $list3)")
+    val result  = evaluateExpression(
+      "concatenate(xs, ys, zs)",
+      Map("xs" -> list1, "ys" -> list2, "zs" -> list3)
+    )
     val elapsed = System.currentTimeMillis() - start
 
     result should returnResult((1 to listSize * 3).toList)
