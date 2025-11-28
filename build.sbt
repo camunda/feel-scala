@@ -1,20 +1,23 @@
 import org.scalajs.linker.interface.ESVersion
 
-val sharedSettings = Seq(scalaVersion := "2.13.16",
+val sharedSettings = Seq(scalaVersion := "2.13.18",
 name := "core",
 libraryDependencies ++= Seq(
   "org.scalatest" %%% "scalatest" % "3.2.10" % Test,
   "com.lihaoyi" %%% "fastparse" % "3.1.1",
   "org.scala-js" %% "scalajs-stubs" % "1.1.0",
+  "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.38.5",
+"com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-macros" % "2.38.5"
+
 ))
 lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Full)
   .withoutSuffixFor(JVMPlatform)
   .settings(sharedSettings)
   .jvmSettings(
     libraryDependencies ++= Seq(
-      "org.apache.logging.log4j" % "log4j-api" % "2.24.3",
-      "org.apache.logging.log4j" % "log4j-core" % "2.24.3",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.24.3",
+      "org.apache.logging.log4j" % "log4j-api" % "2.25.2",
+      "org.apache.logging.log4j" % "log4j-core" % "2.25.2",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.25.2",
     ))
   .jsSettings(
     libraryDependencies ++= Seq(
