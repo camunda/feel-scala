@@ -200,7 +200,7 @@ object EvalContext {
   }
 
   private def toSortedVariableProvider(variables: Map[String, Any]): VariableProvider =
-    StaticVariableProvider(SeqMap[String, Any]() ++ variables)
+    StaticVariableProvider(SeqMap.from[String, Any](variables))
 
   private def toSortedVariableProvider(entry: (String, Any)): VariableProvider =
     StaticVariableProvider(SeqMap(entry))
