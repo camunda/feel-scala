@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.builtin
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.github.plokhotnyuk.jsoniter_scala.core._
+import org.camunda.feel.context.Context.StaticContext
 import org.camunda.feel.impl.builtin.BuiltinFunction.builtinFunction
 import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
@@ -42,14 +42,97 @@ import org.camunda.feel.{
 import java.math.BigDecimal
 import java.time._
 import java.time.format.DateTimeFormatter
-import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
-  private val jsonMapper = JsonMapper
-    .builder()
-    .addModule(DefaultScalaModule)
-    .build()
+
+  /** Custom codec for parsing and serializing Val types to/from JSON. */
+  private implicit val valCodec: JsonValueCodec[Val] = new JsonValueCodec[Val] {
+
+    override def decodeValue(in: JsonReader, default: Val): Val = {
+      val token = in.nextToken()
+      if (token == '"') {
+        in.rollbackToken()
+        ValString(in.readString(null))
+      } else if (token == 't' || token == 'f') {
+        in.rollbackToken()
+        ValBoolean(in.readBoolean())
+      } else if (token >= '0' && token <= '9' || token == '-') {
+        in.rollbackToken()
+        ValNumber(in.readBigDecimal(null))
+      } else if (token == '[') {
+        val buf = new scala.collection.mutable.ArrayBuffer[Val]
+        if (!in.isNextToken(']')) {
+          in.rollbackToken()
+          do {
+            buf += decodeValue(in, default)
+          } while (in.isNextToken(','))
+          if (!in.isCurrentToken(']')) {
+            in.arrayEndOrCommaError()
+          }
+        }
+        ValList(buf.toList)
+      } else if (token == '{') {
+        val buf = new scala.collection.mutable.LinkedHashMap[String, Val]
+        if (!in.isNextToken('}')) {
+          in.rollbackToken()
+          do {
+            val key = in.readKeyAsString()
+            buf += (key -> decodeValue(in, default))
+          } while (in.isNextToken(','))
+          if (!in.isCurrentToken('}')) {
+            in.objectEndOrCommaError()
+          }
+        }
+        ValContext(StaticContext(variables = buf.toMap))
+      } else if (token == 'n') {
+        in.readNullOrError(null, "expected null")
+        ValNull
+      } else {
+        in.decodeError("expected JSON value")
+      }
+    }
+
+    override def encodeValue(value: Val, out: JsonWriter): Unit = value match {
+      case ValNull              => out.writeNull()
+      case ValString(s)         => out.writeVal(s)
+      case ValBoolean(b)        => out.writeVal(b)
+      case ValNumber(n)         => out.writeVal(n.underlying())
+
+      case ValDate(d)           => out.writeVal(d.format(DateTimeFormatter.ISO_LOCAL_DATE))
+      case ValTime(t)           => out.writeVal(t.formatToIso)
+      case ValDateTime(dt)      => out.writeVal(dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+      case ValLocalTime(t)      => out.writeVal(t.format(DateTimeFormatter.ISO_LOCAL_TIME))
+      case ValLocalDateTime(dt) => out.writeVal(dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+
+      case ValDayTimeDuration(dur)   => out.writeVal(dur.toString)
+      case ValYearMonthDuration(dur) => out.writeVal(dur.toString)
+
+      case ValList(items) =>
+        out.writeArrayStart()
+        items.foreach(item => encodeValue(item, out))
+        out.writeArrayEnd()
+
+      case ValContext(context) =>
+        out.writeObjectStart()
+        context.variableProvider.getVariables.foreach { case (key, v) =>
+          out.writeKey(key)
+          encodeValue(valueMapper.toVal(v), out)
+        }
+        out.writeObjectEnd()
+
+      case f: ValFunction => out.writeVal(f.toString)
+
+      case r: ValRange => out.writeVal(r.toString)
+
+      case other =>
+        throw new IllegalArgumentException(
+          s"Unsupported or unrecognized value for JSON serialization: ${other.getClass.getName}"
+        )
+    }
+
+    override def nullValue: Val = ValNull
+  }
 
   def functions = Map(
     "date"                      -> List(dateFunction, dateFunction3),
@@ -316,7 +399,7 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     invoke = {
       case List(ValNull)         => ValNull
       case List(json: ValString) =>
-        Try(jsonMapper.readValue(json.value, classOf[Any]))
+        Try(readFromString[Val](json.value))
           .getOrElse {
             ValError(s"Failed to parse JSON from '${json.value}'")
           }
@@ -327,7 +410,7 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     params = List("value"),
     invoke = { case List(obj) =>
       Try {
-        val jsonString = jsonMapper.writeValueAsString(convertToJsonValue(obj))
+        val jsonString = writeToString(obj)
         ValString(jsonString)
       }.getOrElse({
         ValError(s"Failed to convert value to JSON: ${obj.getClass.getSimpleName}")
@@ -387,37 +470,5 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     } else {
       ValError(s"Failed to parse duration from '$d'")
     }
-  }
-
-  private def convertToJsonValue(value: Val): Any = value match {
-    case ValNull       => null
-    case ValString(s)  => s
-    case ValBoolean(b) => b
-    case ValNumber(n)  => n.underlying()
-
-    case ValDate(d)           => d.format(DateTimeFormatter.ISO_LOCAL_DATE)
-    case ValTime(t)           => t.formatToIso
-    case ValDateTime(dt)      => dt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-    case ValLocalTime(t)      => t.format(DateTimeFormatter.ISO_LOCAL_TIME)
-    case ValLocalDateTime(dt) => dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-
-    case ValDayTimeDuration(dur)   => dur.toString
-    case ValYearMonthDuration(dur) => dur.toString
-
-    case ValList(items) => items.map(convertToJsonValue).asJava
-
-    case ValContext(context) =>
-      context.variableProvider.getVariables.map { case (key, value) =>
-        key -> convertToJsonValue(valueMapper.toVal(value))
-      }.asJava
-
-    case f: ValFunction => f.toString
-
-    case r: ValRange => r.toString
-
-    case other =>
-      throw new IllegalArgumentException(
-        s"Unsupported or unrecognized value for JSON serialization: ${other.getClass.getName}"
-      )
   }
 }
