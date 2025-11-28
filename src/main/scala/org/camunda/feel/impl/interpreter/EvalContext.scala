@@ -92,6 +92,19 @@ class EvalContext(
     case (k: String, v)              => addVariable(k, v)
   }
 
+  /** Adds a variable without merging maps - uses CompositeVariableProvider for O(1) context
+    * creation. Preferred for hot paths like for-loops where the same context is extended many
+    * times.
+    */
+  def addLazy(key: String, variable: Val): EvalContext = new EvalContext(
+    valueMapper = valueMapper,
+    variableProvider = CompositeVariableProvider(
+      List(StaticVariableProvider(Map(key -> variable)), variableProvider)
+    ),
+    functionProvider = functionProvider,
+    failureCollector = failureCollector
+  )
+
   private def addVariable(key: String, variable: Val): EvalContext = new EvalContext(
     valueMapper = valueMapper,
     variableProvider = mergeVariableProvider(
@@ -118,6 +131,18 @@ class EvalContext(
       variableProvider,
       toSortedVariableProvider(newVariables)
     ),
+    functionProvider = functionProvider,
+    failureCollector = failureCollector
+  )
+
+  /** Adds variables without merging maps - uses CompositeVariableProvider for O(1) context
+    * creation. Preferred for hot paths like for-loops where the same context is extended many
+    * times.
+    */
+  def addAllLazy(newVariables: Map[String, Val]): EvalContext = new EvalContext(
+    valueMapper = valueMapper,
+    variableProvider =
+      CompositeVariableProvider(List(StaticVariableProvider(newVariables), variableProvider)),
     functionProvider = functionProvider,
     failureCollector = failureCollector
   )
