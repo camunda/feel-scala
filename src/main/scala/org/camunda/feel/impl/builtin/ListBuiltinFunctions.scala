@@ -385,20 +385,17 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       }
     )
 
-  @tailrec
-  private def indexOfList(
-      list: Seq[Val],
-      item: Val,
-      from: Int = 0,
-      indexList: List[Int] = Nil
-  ): Seq[Int] = {
-    val index = list.indexOf(item, from)
-
-    if (index >= 0) {
-      indexOfList(list, item, index + 1, (index + 1) :: indexList)
-    } else {
-      indexList.reverse
+  private def indexOfList(list: Seq[Val], item: Val): Seq[Int] = {
+    val indexed = list match {
+      case iv: IndexedSeq[Val] => iv
+      case _                   => list.toIndexedSeq
     }
+    @tailrec
+    def loop(idx: Int, acc: List[Int]): List[Int] =
+      if (idx >= indexed.length) acc.reverse
+      else if (valueComparator.equals(indexed(idx), item)) loop(idx + 1, (idx + 1) :: acc)
+      else loop(idx + 1, acc)
+    loop(0, Nil)
   }
 
   private def unionFunction = builtinFunction(
