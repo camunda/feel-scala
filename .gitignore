@@ -32,4 +32,6 @@ project/plugins/project/
 .metals/
 .bsp/
 
+**/metals.sbt
+
 .ammonite/
