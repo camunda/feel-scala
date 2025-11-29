@@ -53,15 +53,16 @@ class ConversionBuiltinFunctions(valueMapper: ValueMapper) {
     case Str(s)      => ValString(s)
     case Num(n)      => ValNumber(BigDecimal.valueOf(n))
     case Arr(items)  => ValList(items.map(jsonToVal).toList)
-    case Obj(fields) => ValContext(StaticContext(variables = fields.map { case (k, v) => k -> jsonToVal(v) }.toMap))
+    case Obj(fields) =>
+      ValContext(StaticContext(variables = fields.map { case (k, v) => k -> jsonToVal(v) }.toMap))
   }
 
   /** Converts a Val to a ujson.Value */
   private def valToJson(value: Val): Value = value match {
-    case ValNull              => Null
-    case ValBoolean(b)        => Bool(b)
-    case ValString(s)         => Str(s)
-    case ValNumber(n)         => Num(n.doubleValue)
+    case ValNull       => Null
+    case ValBoolean(b) => Bool(b)
+    case ValString(s)  => Str(s)
+    case ValNumber(n)  => Num(n.doubleValue)
 
     case ValDate(d)           => Str(d.format(DateTimeFormatter.ISO_LOCAL_DATE))
     case ValTime(t)           => Str(t.formatToIso)

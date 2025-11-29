@@ -24,9 +24,9 @@ import scala.scalajs.js
 /** A context that wraps the fields and methods of a given object for Scala.js
   *
   * In Scala.js, Scala classes are compiled to JavaScript objects where:
-  * - Public val fields become properties
-  * - Methods become functions on the prototype
-  * - Getter methods (getX, isX) can be used as property accessors
+  *   - Public val fields become properties
+  *   - Methods become functions on the prototype
+  *   - Getter methods (getX, isX) can be used as property accessors
   *
   * @param obj
   *   the object to be wrapped
@@ -40,27 +40,29 @@ case class ObjectContext(obj: Any) extends Context {
     obj match {
       case product: Product =>
         product.productElementNames.toSeq
-      case _ =>
+      case _                =>
         def getProtoKeys(proto: js.Object): Seq[String] = {
           if (proto == null || js.isUndefined(proto)) {
             Seq.empty
           } else {
-            val keys = js.Object.keys(proto).toSeq
+            val keys        = js.Object.keys(proto).toSeq
             val parentProto = js.Object.getPrototypeOf(proto)
             // Stop at Object.prototype
-            if (parentProto == null || js.isUndefined(parentProto) || 
-                js.Object.keys(parentProto).isEmpty) {
+            if (
+              parentProto == null || js.isUndefined(parentProto) ||
+              js.Object.keys(parentProto).isEmpty
+            ) {
               keys
             } else {
               keys ++ getProtoKeys(parentProto)
             }
           }
         }
-        
-        val objKeys = js.Object.keys(obj.asInstanceOf[js.Object]).toSeq
-        val proto = js.Object.getPrototypeOf(obj.asInstanceOf[js.Object])
+
+        val objKeys   = js.Object.keys(obj.asInstanceOf[js.Object]).toSeq
+        val proto     = js.Object.getPrototypeOf(obj.asInstanceOf[js.Object])
         val protoKeys = getProtoKeys(proto)
-        
+
         (objKeys ++ protoKeys).distinct.filterNot(k => k == "constructor" || k.startsWith("$"))
     }
   }
@@ -69,7 +71,7 @@ case class ObjectContext(obj: Any) extends Context {
   private lazy val zeroArgMethods: Map[String, js.Dynamic] = {
     obj match {
       case _: Product => Map.empty
-      case _ =>
+      case _          =>
         allKeys.flatMap { key =>
           val prop = jsObj.selectDynamic(key)
           if (js.typeOf(prop) == "function") {
@@ -104,7 +106,8 @@ case class ObjectContext(obj: Any) extends Context {
     override def getVariable(name: String): Option[Any] = {
       obj match {
         case product: Product =>
-          product.productElementNames.zip(product.productIterator)
+          product.productElementNames
+            .zip(product.productIterator)
             .find(_._1 == name)
             .map(_._2)
 
@@ -125,7 +128,7 @@ case class ObjectContext(obj: Any) extends Context {
               zeroArgMethods.get(boolGetterName).flatMap { method =>
                 invokeIfZeroArgFunction(method).filter {
                   case _: Boolean => true
-                  case _ => false
+                  case _          => false
                 }
               }
             }
@@ -139,7 +142,7 @@ case class ObjectContext(obj: Any) extends Context {
           product.productElementNames.toSeq
 
         case _ =>
-          // Return direct properties (non-functions) 
+          // Return direct properties (non-functions)
           val directProps = allKeys.filter { key =>
             val prop = jsObj.selectDynamic(key)
             !js.isUndefined(prop) && js.typeOf(prop) != "function"
@@ -154,7 +157,7 @@ case class ObjectContext(obj: Any) extends Context {
               invokeIfZeroArgFunction(zeroArgMethods(methodName)) match {
                 case Some(_: Boolean) =>
                   Some(methodName.drop(2).head.toLower + methodName.drop(3))
-                case _ => None
+                case _                => None
               }
             } else {
               None
@@ -172,27 +175,30 @@ case class ObjectContext(obj: Any) extends Context {
         case _: Product => List.empty
 
         case _ =>
-          zeroArgMethods.get(name).map { method =>
-            // For now, we only support zero-argument methods
-            // Getting parameter info at runtime in JS is complex
-            ValFunction(
-              params = List.empty,
-              invoke = _ => {
-                try {
-                  method.apply(jsObj).asInstanceOf[Any]
-                } catch {
-                  case e: Throwable => null
+          zeroArgMethods
+            .get(name)
+            .map { method =>
+              // For now, we only support zero-argument methods
+              // Getting parameter info at runtime in JS is complex
+              ValFunction(
+                params = List.empty,
+                invoke = _ => {
+                  try {
+                    method.apply(jsObj).asInstanceOf[Any]
+                  } catch {
+                    case e: Throwable => null
+                  }
                 }
-              }
-            )
-          }.toList
+              )
+            }
+            .toList
       }
     }
 
     override def functionNames: Iterable[String] = {
       obj match {
         case _: Product => Iterable.empty
-        case _ => zeroArgMethods.keys
+        case _          => zeroArgMethods.keys
       }
     }
   }

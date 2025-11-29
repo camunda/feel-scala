@@ -105,8 +105,6 @@ class BuiltinValueMapperInputTest extends AnyFlatSpec with Matchers {
       .getOrElse() shouldBe true
   }
 
-
-
   it should "read scala string from object getter with attribute notation" in {
     val pojo = new MyScalaType()
 

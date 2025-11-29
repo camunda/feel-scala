@@ -22,12 +22,12 @@ import org.camunda.feel.valuemapper.ValueMapper
 
 object JavaFunctionInvoker {
   def invokeJavaFunction(
-                          className: String,
-                          methodName: String,
-                          arguments: List[String],
-                          paramValues: List[Val],
-                          valueMapper: ValueMapper
-                        ): Val = {
+      className: String,
+      methodName: String,
+      arguments: List[String],
+      paramValues: List[Val],
+      valueMapper: ValueMapper
+  ): Val = {
     val clazz = JavaClassMapper.loadClass(className)
 
     val argTypes = arguments map JavaClassMapper.loadClass

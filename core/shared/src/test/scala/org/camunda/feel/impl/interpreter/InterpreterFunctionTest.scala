@@ -256,6 +256,4 @@ class InterpreterFunctionTest
     ) should returnResult(3)
   }
 
-
-
 }

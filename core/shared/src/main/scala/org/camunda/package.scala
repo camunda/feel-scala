@@ -16,7 +16,6 @@
  */
 package org.camunda
 
-
 import java.time.temporal.ChronoField.{
   DAY_OF_MONTH,
   HOUR_OF_DAY,
