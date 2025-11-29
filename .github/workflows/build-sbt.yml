@@ -26,10 +26,10 @@ jobs:
     - name: Cache
       uses: actions/cache@v4
       with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.cache/coursier/
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/*.sbt') }}
         restore-keys: |
           ${{ runner.os }}-maven-
 
-    - name: Run Maven
-      run: mvn -B clean -P checkFormat verify
+    - name: Run SBT
+      run: sbt test
