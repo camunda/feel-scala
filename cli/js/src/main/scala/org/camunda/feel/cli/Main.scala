@@ -53,10 +53,7 @@ object Main {
         "> ",
         { (line: String) =>
           if (line.trim.nonEmpty) {
-            FeelEvaluator.evaluate(line) match {
-              case Right(result) => println(result)
-              case Left(error)   => System.err.println(error)
-            }
+            evalExpression(line.trim)
           }
           prompt()
         }

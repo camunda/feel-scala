@@ -11,7 +11,7 @@ object FeelEvaluator {
   def evaluate(expression: String): Either[String, String] = {
     val result = engine.evaluateExpression(expression)
     if (result.isSuccess) {
-      Right(result.result.toString)
+      Right(Option(result.result).fold("null")(_.toString))
     } else {
       Left(s"Error: ${result.failure}")
     }
