@@ -2,9 +2,32 @@ package org.camunda.feel.cli
 
 import caseapp._
 
-object Main extends CaseApp[CliOptions] {
+// Define options outside main object
+case class MyOptions(
+  @HelpMessage("Evaluate a single FEEL expression")
+  @Name("e")
+  @Name("expression")
+  expression: Option[String] = None,
+  
+  @HelpMessage("Evaluate expressions from a file")
+  @Name("f")
+  @Name("file")
+  file: Option[String] = None,
+  
+  @HelpMessage("JSON context for variable evaluation")
+  @Name("c")
+  @Name("context")
+  context: Option[String] = None,
+  
+  @HelpMessage("Enable verbose output")
+  @Name("v")
+  @Name("verbose")
+  verbose: Boolean = false
+)
 
-  override def run(options: CliOptions, remainingArgs: RemainingArgs): Unit = {
+object Main extends CaseApp[MyOptions] {
+
+  override def run(options: MyOptions, remainingArgs: RemainingArgs): Unit = {
 
 // Validate that either expression or file is provided
     if (options.expression.isEmpty && options.file.isEmpty) {

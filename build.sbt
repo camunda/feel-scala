@@ -48,7 +48,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     scalaVersion := "2.13.18",
     name         := "cli",
     libraryDependencies ++= Seq(
-      "com.github.alexarchambault" %%% "case-app" % "2.1.0"
+      "com.github.alexarchambault" %%% "case-app"  % "2.1.0",
+      "org.scalatest"              %%% "scalatest" % "3.2.19" % Test
     )
   )
   .jsSettings(

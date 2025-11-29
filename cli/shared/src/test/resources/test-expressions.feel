@@ -1,0 +1,7 @@
+# Test FEEL expressions
+1 + 1
+2 * 3
+5 > 3
+"hello" + " " + "world"
+x + y
+price * quantity
