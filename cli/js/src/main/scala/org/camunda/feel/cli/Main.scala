@@ -13,8 +13,8 @@ object Readline extends js.Object {
 @js.native
 trait ReadlineInterface extends js.Object {
   def question(query: String, callback: js.Function1[String, Unit]): Unit = js.native
-  def close(): Unit = js.native
-  def on(event: String, callback: js.Function0[Unit]): Unit = js.native
+  def close(): Unit                                                       = js.native
+  def on(event: String, callback: js.Function0[Unit]): Unit               = js.native
 }
 
 object Main {
@@ -41,26 +41,34 @@ object Main {
     println("Enter expressions (Ctrl+D to exit):")
     println()
 
-    val rl = Readline.createInterface(js.Dynamic.literal(
-      input = global.process.stdin,
-      output = global.process.stdout
-    ))
+    val rl = Readline.createInterface(
+      js.Dynamic.literal(
+        input = global.process.stdin,
+        output = global.process.stdout
+      )
+    )
 
     def prompt(): Unit = {
-      rl.question("> ", { (line: String) =>
-        if (line.trim.nonEmpty) {
-          FeelEvaluator.evaluate(line) match {
-            case Right(result) => println(result)
-            case Left(error)   => System.err.println(error)
+      rl.question(
+        "> ",
+        { (line: String) =>
+          if (line.trim.nonEmpty) {
+            FeelEvaluator.evaluate(line) match {
+              case Right(result) => println(result)
+              case Left(error)   => System.err.println(error)
+            }
           }
+          prompt()
         }
-        prompt()
-      })
+      )
     }
 
-    rl.on("close", { () =>
-      println()
-    })
+    rl.on(
+      "close",
+      { () =>
+        println()
+      }
+    )
 
     prompt()
   }
