@@ -699,14 +699,14 @@ object FeelParser {
     // Strategy: first protect escaped backslashes, then replace escapes, then restore.
     val placeholder = "\u0000BACKSLASH\u0000" // unlikely to appear in input
     input
-      .replace("\\\\", placeholder)           // protect escaped backslashes
-      .replace("\\n", "\n")                   // new line
-      .replace("\\r", "\r")                   // carriage return
-      .replace("\\t", "\t")                   // tab
-      .replace("\\b", "\b")                   // backspace
-      .replace("\\f", "\f")                   // form feed
-      .replace("\\'", "'")                    // single quote
-      .replace("\\\"", "\"")                  // double quote
-      .replace(placeholder, "\\")             // restore backslashes
+      .replace("\\\\", placeholder) // protect escaped backslashes
+      .replace("\\n", "\n")         // new line
+      .replace("\\r", "\r")         // carriage return
+      .replace("\\t", "\t")         // tab
+      .replace("\\b", "\b")         // backspace
+      .replace("\\f", "\f")         // form feed
+      .replace("\\'", "'")          // single quote
+      .replace("\\\"", "\"")        // double quote
+      .replace(placeholder, "\\")   // restore backslashes
   }
 }

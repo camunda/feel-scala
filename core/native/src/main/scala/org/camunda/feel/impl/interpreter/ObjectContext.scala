@@ -21,8 +21,8 @@ import org.camunda.feel.syntaxtree.ValFunction
 
 /** A context that wraps the fields of a given object for Scala Native.
   *
-  * In Scala Native, reflection is not available, so this implementation
-  * only supports Product types (case classes, tuples).
+  * In Scala Native, reflection is not available, so this implementation only supports Product types
+  * (case classes, tuples).
   *
   * @param obj
   *   the object to be wrapped
@@ -33,10 +33,11 @@ case class ObjectContext(obj: Any) extends Context {
     override def getVariable(name: String): Option[Any] = {
       obj match {
         case product: Product =>
-          product.productElementNames.zip(product.productIterator)
+          product.productElementNames
+            .zip(product.productIterator)
             .find(_._1 == name)
             .map(_._2)
-        case _ =>
+        case _                =>
           None
       }
     }
@@ -45,7 +46,7 @@ case class ObjectContext(obj: Any) extends Context {
       obj match {
         case product: Product =>
           product.productElementNames.toSeq
-        case _ =>
+        case _                =>
           Iterable.empty
       }
     }
@@ -53,6 +54,6 @@ case class ObjectContext(obj: Any) extends Context {
 
   override val functionProvider: FunctionProvider = new FunctionProvider {
     override def getFunctions(name: String): List[ValFunction] = List.empty
-    override def functionNames: Iterable[String] = Iterable.empty
+    override def functionNames: Iterable[String]               = Iterable.empty
   }
 }

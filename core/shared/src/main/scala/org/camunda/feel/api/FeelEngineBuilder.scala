@@ -28,7 +28,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportAll, JSExportTopLevel}
   */
 @JSExportTopLevel("FeelEngineBuilder")
 @JSExportAll
-case class FeelEngineBuilder (
+case class FeelEngineBuilder(
     functionProvider: FunctionProvider = defaultFunctionProvider,
     valueMapper: ValueMapper = FeelEngine.defaultValueMapper,
     customValueMappers: List[CustomValueMapper] = List.empty,

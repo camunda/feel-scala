@@ -23,10 +23,24 @@ import org.camunda.feel.FeelEngine
 import org.camunda.feel.impl.SpiServiceLoader
 import org.camunda.feel.syntaxtree.{Exp, ParsedExpression}
 
-import javax.script.{AbstractScriptEngine, Bindings, Compilable, CompiledScript, ScriptContext, ScriptEngine, ScriptEngineFactory, ScriptException, SimpleBindings}
+import javax.script.{
+  AbstractScriptEngine,
+  Bindings,
+  Compilable,
+  CompiledScript,
+  ScriptContext,
+  ScriptEngine,
+  ScriptEngineFactory,
+  ScriptException,
+  SimpleBindings
+}
 import scala.annotation.tailrec
 
-trait FeelScriptEngine extends AbstractScriptEngine with AbstractFeelScriptEngine with ScriptEngine with Compilable {
+trait FeelScriptEngine
+    extends AbstractScriptEngine
+    with AbstractFeelScriptEngine
+    with ScriptEngine
+    with Compilable {
 
   lazy val engine: FeelEngine =
     new FeelEngine(
@@ -38,7 +52,6 @@ trait FeelScriptEngine extends AbstractScriptEngine with AbstractFeelScriptEngin
   def getFactory: ScriptEngineFactory = factory
 
   def createBindings(): Bindings = new SimpleBindings
-
 
   def eval(reader: Reader, context: ScriptContext): Object = {
     val script = readerAsString(reader)

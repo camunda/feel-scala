@@ -22,8 +22,8 @@ import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 
-/** JVM-specific tests for DefaultValueMapper that rely on JVM reflection semantics.
-  * These tests verify behavior that differs between JVM and JS platforms.
+/** JVM-specific tests for DefaultValueMapper that rely on JVM reflection semantics. These tests
+  * verify behavior that differs between JVM and JS platforms.
   */
 class DefaultValueMapperJvmTest extends AnyFlatSpec with Matchers {
 

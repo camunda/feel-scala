@@ -280,7 +280,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           paramValues =>
             body match {
               case JavaFunctionInvocation(className, methodName, arguments) =>
-                try{
+                try {
                   JavaFunctionInvoker.invokeJavaFunction(
                     className,
                     methodName,
@@ -863,7 +863,6 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       list(i.toInt)
     }
   }
-
   private def filterContext(x: Val)(implicit context: EvalContext): EvalContext =
     x match {
       case ValContext(ctx: Context) => context.add("item" -> x).merge(ctx)
@@ -914,7 +913,6 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           ValNull
         }
     }
-
 
   private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
     withValues(

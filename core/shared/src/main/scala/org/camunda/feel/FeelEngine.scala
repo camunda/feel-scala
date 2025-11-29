@@ -17,8 +17,19 @@
 package org.camunda.feel
 
 import fastparse.Parsed
-import org.camunda.feel.FeelEngine.{Configuration, EvalExpressionResult, EvalUnaryTestsResult, Failure}
-import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType, EvaluationResult, FailedEvaluationResult, SuccessfulEvaluationResult}
+import org.camunda.feel.FeelEngine.{
+  Configuration,
+  EvalExpressionResult,
+  EvalUnaryTestsResult,
+  Failure
+}
+import org.camunda.feel.api.{
+  EvaluationFailure,
+  EvaluationFailureType,
+  EvaluationResult,
+  FailedEvaluationResult,
+  SuccessfulEvaluationResult
+}
 import org.camunda.feel.context.{Context, FunctionProvider}
 import org.camunda.feel.impl.interpreter.{BuiltinFunctions, EvalContext, FeelInterpreter}
 import org.camunda.feel.impl.parser.{ExpressionValidator, FeelParser}
@@ -29,7 +40,6 @@ import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 import scala.jdk.CollectionConverters.MapHasAsScala
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.util.Try
-
 
 object FeelEngine {
 

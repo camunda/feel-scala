@@ -33,14 +33,12 @@ trait AbstractFeelScriptEngine {
 
   def engine: FeelEngine
 
-
   def eval(script: String, context: ScriptContext): Object = {
     val engineContext = getEngineContext(context)
     val result        = eval(script, engineContext)
 
     handleEvaluationResult(result)
   }
-
 
   protected def handleEvaluationResult(result: EvalExpressionResult): Object =
     result match {

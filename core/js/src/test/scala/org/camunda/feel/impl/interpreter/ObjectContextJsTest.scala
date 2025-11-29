@@ -22,11 +22,11 @@ import org.scalatest.matchers.should.Matchers
 import scala.scalajs.js
 
 /** Scala.js-specific tests for ObjectContext.
-  * 
+  *
   * These tests verify that ObjectContext correctly handles:
-  * - Scala case classes (Product types)
-  * - JavaScript objects (js.Object / js.Dynamic)
-  * - Property access patterns specific to the JS runtime
+  *   - Scala case classes (Product types)
+  *   - JavaScript objects (js.Object / js.Dynamic)
+  *   - Property access patterns specific to the JS runtime
   */
 class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
@@ -58,11 +58,11 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "handle case class with various types" in {
     case class Data(
-      stringVal: String,
-      intVal: Int,
-      longVal: Long,
-      doubleVal: Double,
-      boolVal: Boolean
+        stringVal: String,
+        intVal: Int,
+        longVal: Long,
+        doubleVal: Double,
+        boolVal: Boolean
     )
     val ctx = ObjectContext(Data("hello", 42, 100L, 3.14, true))
 
@@ -92,10 +92,10 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
   it should "handle nested case classes" in {
     case class Address(city: String, zip: String)
     case class Person(name: String, address: Address)
-    
+
     val address = Address("Berlin", "10115")
-    val person = Person("Alice", address)
-    val ctx = ObjectContext(person)
+    val person  = Person("Alice", address)
+    val ctx     = ObjectContext(person)
 
     ctx.variableProvider.getVariable("name") shouldBe Some("Alice")
     ctx.variableProvider.getVariable("address") shouldBe Some(address)
@@ -117,7 +117,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "handle case class with Option field" in {
     case class Container(maybeValue: Option[String])
-    
+
     val ctxSome = ObjectContext(Container(Some("value")))
     ctxSome.variableProvider.getVariable("maybeValue") shouldBe Some(Some("value"))
 
@@ -139,7 +139,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   "ObjectContext with tuple" should "access elements by name" in {
     val tuple = ("Alice", 30)
-    val ctx = ObjectContext(tuple)
+    val ctx   = ObjectContext(tuple)
 
     ctx.variableProvider.getVariable("_1") shouldBe Some("Alice")
     ctx.variableProvider.getVariable("_2") shouldBe Some(30)
@@ -147,7 +147,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "return tuple element names via keys" in {
     val tuple = ("Alice", 30, true)
-    val ctx = ObjectContext(tuple)
+    val ctx   = ObjectContext(tuple)
 
     ctx.variableProvider.keys.toSet shouldBe Set("_1", "_2", "_3")
   }
@@ -158,7 +158,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   "ObjectContext with js.Dynamic.literal" should "access properties" in {
     val jsObj = js.Dynamic.literal(name = "Bob", age = 25)
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.variableProvider.getVariable("name") shouldBe Some("Bob")
     ctx.variableProvider.getVariable("age") shouldBe Some(25)
@@ -166,22 +166,22 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "return None for non-existent properties" in {
     val jsObj = js.Dynamic.literal(name = "Bob")
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.variableProvider.getVariable("nonExistent") shouldBe None
   }
 
   it should "return property names via keys" in {
     val jsObj = js.Dynamic.literal(name = "Bob", age = 25, active = true)
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.variableProvider.keys.toSet should contain allOf ("name", "age", "active")
   }
 
   it should "handle nested js objects" in {
     val address = js.Dynamic.literal(city = "Berlin", zip = "10115")
-    val person = js.Dynamic.literal(name = "Bob", address = address)
-    val ctx = ObjectContext(person)
+    val person  = js.Dynamic.literal(name = "Bob", address = address)
+    val ctx     = ObjectContext(person)
 
     ctx.variableProvider.getVariable("name") shouldBe Some("Bob")
     val retrievedAddress = ctx.variableProvider.getVariable("address")
@@ -190,7 +190,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "handle js object with null values" in {
     val jsObj = js.Dynamic.literal(name = "Bob", nickname = null)
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.variableProvider.getVariable("name") shouldBe Some("Bob")
     ctx.variableProvider.getVariable("nickname") shouldBe Some(null)
@@ -198,14 +198,14 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "handle empty js object" in {
     val jsObj = js.Dynamic.literal()
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.variableProvider.keys shouldBe empty
   }
 
   it should "handle js object with array values" in {
     val jsObj = js.Dynamic.literal(items = js.Array(1, 2, 3))
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     val items = ctx.variableProvider.getVariable("items")
     items shouldBe defined
@@ -219,11 +219,11 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
     val jsObj = js.Dynamic.literal(
       getValue = js.defined { () => 42 }
     )
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     val functions = ctx.functionProvider.getFunctions("getValue")
     functions should have length 1
-    
+
     val result = functions.head.invoke(List.empty)
     result shouldBe 42
   }
@@ -234,7 +234,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
       bar = js.defined { () => "bar" },
       data = "not a function"
     )
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     val funcNames = ctx.functionProvider.functionNames.toSet
     funcNames should contain("foo")
@@ -243,7 +243,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "return empty list for non-existent function" in {
     val jsObj = js.Dynamic.literal(name = "Bob")
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     ctx.functionProvider.getFunctions("nonExistent") shouldBe empty
   }
@@ -258,7 +258,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
       name = "Bob",
       `$internal` = "hidden"
     )
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     val keys = ctx.variableProvider.keys.toSeq
     keys should contain("name")
@@ -267,7 +267,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
 
   it should "filter out constructor from keys" in {
     val jsObj = js.Dynamic.literal(name = "Bob")
-    val ctx = ObjectContext(jsObj)
+    val ctx   = ObjectContext(jsObj)
 
     // constructor should not appear in the keys list
     ctx.variableProvider.keys.toSeq should not contain "constructor"
@@ -280,7 +280,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
   "ObjectContext in FEEL context" should "work with simple case class for variable access" in {
     case class Order(orderId: String, amount: Double, isPaid: Boolean)
     val order = Order("ORD-123", 99.99, true)
-    val ctx = ObjectContext(order)
+    val ctx   = ObjectContext(order)
 
     // Simulate what FEEL interpreter does
     ctx.variableProvider.getVariable("orderId") shouldBe Some("ORD-123")
@@ -298,7 +298,7 @@ class ObjectContextJsTest extends AnyFlatSpec with Matchers {
       items = List(Item("Widget", 10.0), Item("Gadget", 20.0)),
       total = 30.0
     )
-    val ctx = ObjectContext(order)
+    val ctx   = ObjectContext(order)
 
     ctx.variableProvider.getVariable("customer") shouldBe Some(order.customer)
     ctx.variableProvider.getVariable("items") shouldBe Some(order.items)

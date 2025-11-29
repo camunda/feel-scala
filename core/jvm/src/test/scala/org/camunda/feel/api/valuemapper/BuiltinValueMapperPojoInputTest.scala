@@ -24,7 +24,7 @@ import org.camunda.feel.valuemapper.{SimpleBooleanTestPojo, SimpleTestPojo}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class BuiltinValueMapperPojoInputTest  extends AnyFlatSpec  with Matchers{
+class BuiltinValueMapperPojoInputTest extends AnyFlatSpec with Matchers {
   val engine =
     new FeelEngine(null, CompositeValueMapper(List(new JavaValueMapper())))
 
