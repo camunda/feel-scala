@@ -18,9 +18,11 @@ package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine.Failure
 import org.camunda.feel.syntaxtree.{ConstNull, ParsedExpression}
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 /** The result of an expression parsing.
   */
+
 sealed trait ParseResult {
 
   /** The parsed expression if the parsing was successful.
@@ -48,11 +50,13 @@ sealed trait ParseResult {
 
 }
 
+@JSExportTopLevel("SuccessfulParseResult")
 case class SuccessfulParseResult(parsedExpression: ParsedExpression) extends ParseResult {
   override val isSuccess: Boolean = true
   override val failure: Failure   = Failure("<success>")
 }
 
+@JSExportTopLevel("FailedParseResult")
 case class FailedParseResult(expression: String, failure: Failure) extends ParseResult {
   override val isSuccess: Boolean                 = false
   override val parsedExpression: ParsedExpression = ParsedExpression(ConstNull, expression)

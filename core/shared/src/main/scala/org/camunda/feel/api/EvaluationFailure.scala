@@ -16,6 +16,9 @@
  */
 package org.camunda.feel.api
 
+import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.annotation.JSExportAll
+
 /** A failure that occurred during the evaluation of an FEEL expression.
   *
   * @param failureType
@@ -23,6 +26,8 @@ package org.camunda.feel.api
   * @param failureMessage
   *   The message that describes the failure.
   */
+@JSExportTopLevel("EvaluationFailure")
+@JSExportAll
 case class EvaluationFailure(
     failureType: EvaluationFailureType,
     failureMessage: String

@@ -16,10 +16,15 @@
  */
 package org.camunda.feel.api
 
+import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.annotation.JSExportAll
+
 sealed trait EvaluationFailureType
 
 /** Defines the type of an evaluation failure.
   */
+@JSExportTopLevel("EvaluationFailureType")
+@JSExportAll
 object EvaluationFailureType {
 
   case object UNKNOWN extends EvaluationFailureType

@@ -19,9 +19,12 @@ package org.camunda.feel.api
 import org.camunda.feel.FeelEngine.Failure
 
 import scala.jdk.CollectionConverters.SeqHasAsJava
+import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.annotation.JSExportAll
 
 /** The result of an expression evaluation.
   */
+
 sealed trait EvaluationResult {
 
   /** The result value of the evaluation.
@@ -64,6 +67,8 @@ sealed trait EvaluationResult {
 
 }
 
+@JSExportTopLevel("SuccessfulEvaluationResult")
+@JSExportAll
 case class SuccessfulEvaluationResult(
     result: Any,
     suppressedFailures: List[EvaluationFailure] = List.empty
@@ -72,6 +77,8 @@ case class SuccessfulEvaluationResult(
   override val failure: Failure   = Failure("<success>")
 }
 
+@JSExportTopLevel("FailedEvaluationResult")
+@JSExportAll
 case class FailedEvaluationResult(
     failure: Failure,
     suppressedFailures: List[EvaluationFailure] = List.empty
