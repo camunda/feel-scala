@@ -32,4 +32,3 @@ object CliOptions {
   implicit val parser: Parser[CliOptions] = Parser.derive
   implicit val help: Help[CliOptions]     = Help.derive
 }
-
