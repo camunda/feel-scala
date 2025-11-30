@@ -4,25 +4,22 @@ import caseapp._
 
 // Define options outside main object
 case class MyOptions(
-  @HelpMessage("Evaluate a single FEEL expression")
-  @Name("e")
-  @Name("expression")
-  expression: Option[String] = None,
-  
-  @HelpMessage("Evaluate expressions from a file")
-  @Name("f")
-  @Name("file")
-  file: Option[String] = None,
-  
-  @HelpMessage("JSON context for variable evaluation")
-  @Name("c")
-  @Name("context")
-  context: Option[String] = None,
-  
-  @HelpMessage("Enable verbose output")
-  @Name("v")
-  @Name("verbose")
-  verbose: Boolean = false
+    @HelpMessage("Evaluate a single FEEL expression")
+    @Name("e")
+    @Name("expression")
+    expression: Option[String] = None,
+    @HelpMessage("Evaluate expressions from a file")
+    @Name("f")
+    @Name("file")
+    file: Option[String] = None,
+    @HelpMessage("JSON context for variable evaluation")
+    @Name("c")
+    @Name("context")
+    context: Option[String] = None,
+    @HelpMessage("Enable verbose output")
+    @Name("v")
+    @Name("verbose")
+    verbose: Boolean = false
 )
 
 object Main extends CaseApp[MyOptions] {
@@ -67,4 +64,3 @@ object Main extends CaseApp[MyOptions] {
     }
   }
 }
-
