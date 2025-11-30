@@ -1,9 +1,12 @@
 import org.scalajs.linker.interface.ESVersion
 import scalanativecrossproject.NativePlatform
 
+lazy val installJS = taskKey[Unit]("Compile JS and copy to feel-playground/vendor")
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 val sharedSettings = Seq(
-  scalaVersion := "2.13.18",
-  name         := "core",
+  scalaVersion      := "2.13.18",
+  name              := "core",
   libraryDependencies ++= Seq(
     "com.lihaoyi"       %%% "fastparse"            % "3.1.1",
     "org.scala-js"       %% "scalajs-stubs"        % "1.1.0",
@@ -11,7 +14,9 @@ val sharedSettings = Seq(
     "org.scalatest"     %%% "scalatest"            % "3.2.19" % Test,
     "io.github.cquiroz" %%% "scala-java-time"      % "2.6.0",
     "io.github.cquiroz" %%% "scala-java-time-tzdb" % "2.6.0"
-  )
+  ),
+  Compile / compile := (Compile / compile).dependsOn(Compile / scalafmt).value,
+  Test / compile    := (Test / compile).dependsOn(Test / scalafmt).value
 )
 lazy val core      = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
@@ -33,6 +38,23 @@ lazy val core      = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         .withClosureCompilerIfAvailable(true)
         .withMinify(false)
         .withModuleKind(ModuleKind.CommonJSModule)
+    },
+    installJS := {
+      val linked    = (Compile / fastLinkJS).value
+      val outputDir = (Compile / fastLinkJSOutput).value
+      val targetDir = baseDirectory.value / ".." / ".." / ".." / "feel-playground" / "vendor"
+      for {
+        jsFileName <- linked.data.publicModules.map(_.jsFileName)
+      } {
+        val jsFile  = outputDir / jsFileName
+        val mapFile = outputDir / (jsFileName + ".map")
+        IO.copyFile(jsFile, targetDir / jsFileName)
+        println(s"Copied $jsFile to ${targetDir / jsFileName}")
+        if (mapFile.exists()) {
+          IO.copyFile(mapFile, targetDir / (jsFileName + ".map"))
+          println(s"Copied $mapFile to ${targetDir / (jsFileName + ".map")}")
+        }
+      }
     }
   )
   .nativeSettings(
@@ -55,7 +77,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= {
-      _.withESFeatures(_.withESVersion(ESVersion.ES2018)).withModuleKind(ModuleKind.CommonJSModule)
+      _.withESFeatures(_.withESVersion(ESVersion.ES2018))
+        .withModuleKind(ModuleKind.CommonJSModule)
     }
   )
   .nativeSettings(
