@@ -4,7 +4,7 @@ import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class InterpreterFunctionTest
+class JavaInterpreterFunctionTest
     extends AnyFlatSpec
     with Matchers
     with FeelEngineTest
