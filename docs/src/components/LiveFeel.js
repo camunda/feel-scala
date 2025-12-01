@@ -3,7 +3,9 @@ import axios from "axios";
 import Editor from "@site/src/components/Editor";
 import CodeBlock from "@theme/CodeBlock";
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import { FailedEvaluationResult, SuccessfulEvaluationResult, JSFeelEngine } from '../../../core/js/target/scala-2.13/core-fastopt/main.js'
 
+const engine = new JSFeelEngine()
 const LiveFeel = ({
   defaultExpression,
   feelContext,
@@ -34,7 +36,7 @@ const LiveFeel = ({
   const contextErrorPattern = /^.+at position (?<position>\d+)$/gm;
 
   const parseContext = () => {
-    if (!feelContext  || context.trim().length === 0) {
+    if (!feelContext || context.trim().length === 0) {
       return {};
     }
     return JSON.parse(context);
@@ -58,36 +60,14 @@ const LiveFeel = ({
   }
 
   function evaluate(parsedContext) {
-    axios
-      .post(
-          "https://feel.upgradingdave.com/api/v1/feel/evaluate",
-        {
-          expression: expression,
-          context: parsedContext,
-          metadata: {
-            ...metadata,
-          },
-        },
-        {
-          headers: {
-            accept: "*/*",
-            "content-type": "application/json",
-          },
-        }
-      )
-      .then((response) => {
-        if (response?.data?.error) {
-          const errorMessage = response.data.error;
-          const match = errorPattern.exec(errorMessage);
-          onError({
-            message: errorMessage,
-            line: match?.groups?.line,
-            position: match?.groups?.position,
-          }, response.data.warnings);
-        } else {
-          onResult(response.data);
-        }
-      });
+    let result = engine.evaluate(expression, parsedContext)
+
+    console.log(result)
+    if (result.isSuccess) {
+      return onResult(result)
+    } else {
+      return onError({ message: result.failure }, warnings)
+    }
   }
 
   function onResult(data) {
@@ -168,56 +148,56 @@ const LiveFeel = ({
   }
 
   return (
-      <div>
-        <h2>Expression</h2>
-        <Editor onChange={setExpression} language="js">
-          {expression}
-        </Editor>
+    <div>
+      <h2>Expression</h2>
+      <Editor onChange={setExpression} language="js">
+        {expression}
+      </Editor>
 
-        {feelContext && (
-            <div>
-              <h2>Context</h2>
-              <i>
-                A JSON document that is used to
-                resolve <strong>variables</strong>{" "}
-                in the expression.
-              </i>
-              <Editor onChange={setContext} language="json">
-                {context}
-              </Editor>
-            </div>
-        )}
+      {feelContext && (
+        <div>
+          <h2>Context</h2>
+          <i>
+            A JSON document that is used to
+            resolve <strong>variables</strong>{" "}
+            in the expression.
+          </i>
+          <Editor onChange={setContext} language="json">
+            {context}
+          </Editor>
+        </div>
+      )}
 
-        <button
-            onClick={tryEvaluate}
-            className="button button--primary button--lg"
-        >
-          Evaluate
-        </button>
+      <button
+        onClick={tryEvaluate}
+        className="button button--primary button--lg"
+      >
+        Evaluate
+      </button>
 
-        <button
-            onClick={copyToClipboard}
-            className="button button--secondary button--lg"
-            title="Copy an URL to the clipboard for sharing the expression"
-            style={{ "margin-left": "10px"}}
-        >
-          Share
-        </button>
+      <button
+        onClick={copyToClipboard}
+        className="button button--secondary button--lg"
+        title="Copy an URL to the clipboard for sharing the expression"
+        style={{ "margin-left": "10px" }}
+      >
+        Share
+      </button>
 
-        <br/>
-        <br/>
-        <h2>Result</h2>
-        <CodeBlock title={resultTitle()} language="json">
-          {result || error?.message}
-        </CodeBlock>
-        <br/>
-        <h2>Warnings</h2>
-        <CodeBlock>
-          {warnings?.map((item, i) =>
-              <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
-        </CodeBlock>
+      <br />
+      <br />
+      <h2>Result</h2>
+      <CodeBlock title={resultTitle()} language="json">
+        {result || error?.message}
+      </CodeBlock>
+      <br />
+      <h2>Warnings</h2>
+      <CodeBlock>
+        {warnings?.map((item, i) =>
+          <li key={i}>[{item.type}] {item.message}</li>) || "<none>"}
+      </CodeBlock>
 
-      </div>
+    </div>
   );
 };
 
