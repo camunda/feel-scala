@@ -1,10 +1,14 @@
 package org.camunda.feel.cli
 
-import java.io.File
+import java.nio.file.Paths
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
 class CliTest extends AnyFunSuite with Matchers {
+
+  // Use filesystem path instead of classloader resources (not available in Scala Native)
+  private val testResourcesPath =
+    Paths.get("cli", "shared", "src", "test", "resources").toAbsolutePath.toString
 
   test("FeelEvaluator should evaluate single expression") {
     val result = FeelEvaluator.evaluate("1 + 2")
@@ -17,7 +21,7 @@ class CliTest extends AnyFunSuite with Matchers {
   }
 
   test("FeelEvaluator should evaluate expressions from file") {
-    val filePath = getClass.getResource("/test-expressions.feel").getPath
+    val filePath = Paths.get(testResourcesPath, "test-expressions.feel").toString
     val result   = FeelEvaluator.evaluateFile(filePath)
     result match {
       case Right(results) =>
@@ -35,7 +39,7 @@ class CliTest extends AnyFunSuite with Matchers {
   }
 
   test("FeelEvaluator should evaluate expressions from file with context") {
-    val filePath = getClass.getResource("/test-expressions.feel").getPath
+    val filePath = Paths.get(testResourcesPath, "test-expressions.feel").toString
     val context  = "{\"x\": 10, \"y\": 20, \"price\": 5.5, \"quantity\": 3}"
     val result   = FeelEvaluator.evaluateFile(filePath, Some(context))
     result match {
