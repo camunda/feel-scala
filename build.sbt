@@ -78,6 +78,8 @@ lazy val cli = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= {
       _.withESFeatures(_.withESVersion(ESVersion.ES2018))
+        .withClosureCompiler(false)
+        .withMinify(false)
         .withModuleKind(ModuleKind.CommonJSModule)
     }
   )
