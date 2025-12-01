@@ -17,7 +17,6 @@
 package org.camunda.feel.impl.valuemapper
 
 import java.time._
-
 import org.camunda.feel._
 import org.camunda.feel.context.Context
 import org.camunda.feel.impl._
@@ -25,6 +24,9 @@ import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+
+import java.text.SimpleDateFormat
+import java.util
 
 /** @author
   *   Philipp Ossler
@@ -185,13 +187,15 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
     ) should be(ValDateTime("2017-04-02T12:04:30@Europe/Paris"))
   }
 
-//  it should "convert from java.util.Date" in {
-//
-//    val format   = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-//    val dateTime = LocalDateTime.parse("2017-04-02T12:04:30")
-//
-//    valueMapper.toVal(format.parse("2017-04-02T12:04:30")) should be(ValLocalDateTime(dateTime))
-//  }
+  it should "convert from java.util.Date" in {
+
+    val dateTime = LocalDateTime.of(2017, 4, 2, 12, 4, 30).atZone(ZoneId.of("UTC"))
+
+    val date                  = new util.Date(dateTime.toInstant.toEpochMilli)
+    // java.util.Date is converted using the system's default timezone
+    val expectedLocalDateTime = dateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime
+    valueMapper.toVal(date) should be(ValLocalDateTime(expectedLocalDateTime))
+  }
 
   it should "convert from Period" in {
 
