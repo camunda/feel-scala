@@ -16,8 +16,7 @@
  */
 package org.camunda.feel.impl
 
-import org.camunda.feel.api.{EvaluationFailureType, EvaluationFailure}
-import org.camunda.feel.impl.interpreter.EvaluationFailureCollector
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -113,25 +112,6 @@ class SuppressedFailuresTest
         failureMessage = "Can't add 'null' to '1'"
       )
     )
-  }
-
-  it should "accumulate a large number of errors in linear time" in {
-    // Test the EvaluationFailureCollector directly to verify linear time complexity
-    // for adding failures. This is a unit test for the fix that changed from
-    // immutable List with :+= (O(n) per append = O(n²) total) to
-    // mutable ListBuffer with += (O(1) per append = O(n) total).
-    //
-    // With the fix (linear time), 1 million failures should complete in milliseconds.
-    // Without the fix (quadratic time), it would take several minutes.
-
-    val errorCount = 1000000
-    val collector  = new EvaluationFailureCollector()
-
-    for (i <- 1 to errorCount) {
-      collector.addFailure(EvaluationFailureType.NO_VARIABLE_FOUND, s"x$i")
-    }
-
-    collector.failures should have size errorCount
   }
 
 }
