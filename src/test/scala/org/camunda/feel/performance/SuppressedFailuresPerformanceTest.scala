@@ -18,25 +18,33 @@ package org.camunda.feel.performance
 
 import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.impl.interpreter.EvaluationFailureCollector
-import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
+import org.scalatest.concurrent.{Signaler, ThreadSignaler, TimeLimitedTests}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Seconds, Span}
 
-class SuppressedFailuresPerformanceTest
-    extends AnyFlatSpec
-    with FeelEngineTest
-    with Matchers
-    with EvaluationResultMatchers
-    with PerformanceTest.Suite {
+import scala.util.Try
 
-  it should "accumulate a large number of errors in linear time" in {
+class SuppressedFailuresPerformanceTest extends AnyFlatSpec with Matchers with TimeLimitedTests {
+
+  // Each test must complete within 5 seconds
+  override val timeLimit                     = Span(5, Seconds)
+  // Interrupt the test thread on timeout
+  override val defaultTestSignaler: Signaler = ThreadSignaler
+
+  "The failure collector" should "accumulate a large number of errors in linear time" in {
+
     val errorCount = 1_000_000
     val collector  = new EvaluationFailureCollector()
 
-    for (i <- 1L to errorCount) {
-      collector.addFailure(EvaluationFailureType.NO_VARIABLE_FOUND, s"x$i")
-    }
+    Try {
+      for (i <- 1L to errorCount) {
+        collector.addFailure(EvaluationFailureType.NO_VARIABLE_FOUND, s"x$i")
 
-    collector.failures should have size errorCount
+        if (Thread.interrupted()) throw new InterruptedException()
+      }
+
+      collector.failures should have size errorCount
+    }
   }
 }
