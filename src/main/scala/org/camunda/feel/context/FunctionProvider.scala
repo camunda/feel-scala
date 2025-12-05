@@ -66,9 +66,7 @@ object FunctionProvider {
   case class CompositeFunctionProvider(providers: List[FunctionProvider]) extends FunctionProvider {
 
     override def getFunctions(name: String): List[ValFunction] =
-      providers.foldLeft(List[ValFunction]())((functions, provider) =>
-        functions ++ provider.getFunctions(name)
-      )
+      providers.flatMap(_.getFunctions(name))
 
     override def functionNames: Iterable[String] =
       providers.flatMap(_.functionNames)

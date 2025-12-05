@@ -32,10 +32,22 @@ import org.camunda.feel.syntaxtree.{
 import org.camunda.feel.valuemapper.ValueMapper
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
 
   private val valueComparator = new ValComparator(valueMapper)
+
+  /** Wrapper class for Val that uses ValComparator for equals and hashCode. This enables using Val
+    * objects in hash-based collections like LinkedHashSet while respecting FEEL equality semantics.
+    */
+  private class ValKey(val value: Val) {
+    override def hashCode(): Int           = valueComparator.hashCode(value)
+    override def equals(obj: Any): Boolean = obj match {
+      case other: ValKey => valueComparator.equals(value, other.value)
+      case _             => false
+    }
+  }
 
   def functions = Map(
     "list contains"    -> List(listContainsFunction),
@@ -373,20 +385,17 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       }
     )
 
-  @tailrec
-  private def indexOfList(
-      list: Seq[Val],
-      item: Val,
-      from: Int = 0,
-      indexList: Seq[Int] = Seq()
-  ): Seq[Int] = {
-    val index = list.indexOf(item, from)
-
-    if (index >= 0) {
-      indexOfList(list, item, index + 1, indexList ++ Seq(index + 1))
-    } else {
-      indexList
+  private def indexOfList(list: Seq[Val], item: Val): Seq[Int] = {
+    val indexed = list match {
+      case iv: IndexedSeq[Val] => iv
+      case _                   => list.toIndexedSeq
     }
+    @tailrec
+    def loop(idx: Int, acc: List[Int]): List[Int] =
+      if (idx >= indexed.length) acc.reverse
+      else if (valueComparator.equals(indexed(idx), item)) loop(idx + 1, (idx + 1) :: acc)
+      else loop(idx + 1, acc)
+    loop(0, Nil)
   }
 
   private def unionFunction = builtinFunction(
@@ -408,14 +417,8 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     )
 
   private def distinct(list: Seq[Val]): Seq[Val] = {
-    list.foldLeft(Seq[Val]())((result, item) =>
-      if (result.exists(y => valueComparator.equals(item, y))) {
-        // duplicate value
-        result
-      } else {
-        result :+ item
-      }
-    )
+    val seen = mutable.LinkedHashSet[ValKey]()
+    list.filter(item => seen.add(new ValKey(item)))
   }
 
   private def duplicateValuesFunction =
