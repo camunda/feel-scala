@@ -223,6 +223,7 @@
         <configuration>
           <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
           <junitxml>.</junitxml>
+          <filereports>TestSuite.txt</filereports>
         </configuration>
         <executions>
           <execution>
@@ -230,27 +231,7 @@
             <goals>
               <goal>test</goal>
             </goals>
-              <configuration>
-                  <tagsToExclude>org.camunda.feel.PerformanceTest</tagsToExclude>
-                  <filereports>TestSuite.txt</filereports>
-              </configuration>
           </execution>
-            <execution>
-                <configuration>
-                    <!-- Fork JVM for tests to enable timeout and process isolation -->
-                    <forkMode>once</forkMode>
-                    <!-- Kill forked process after 60 seconds to prevent hanging tests -->
-                    <forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
-                    <tagsToInclude>org.camunda.feel.PerformanceTest</tagsToInclude>
-                    <membersOnlySuites>org.camunda.feel.performance</membersOnlySuites>
-                    <filereports>PerformanceTestSuite.txt</filereports>
-                </configuration>
-                <id>performance-test</id>
-                <goals>
-                    <goal>test</goal>
-                </goals>
-
-            </execution>
         </executions>
       </plugin>
 
