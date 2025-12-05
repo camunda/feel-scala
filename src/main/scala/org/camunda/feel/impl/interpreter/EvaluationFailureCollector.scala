@@ -18,18 +18,22 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
 
+import scala.collection.mutable.ListBuffer
+
 class EvaluationFailureCollector {
 
-  var failures: List[EvaluationFailure] = List.empty
+  private val failuresBuffer: ListBuffer[EvaluationFailure] = ListBuffer.empty
+
+  def failures: List[EvaluationFailure] = failuresBuffer.toList
 
   def addFailure(failureType: EvaluationFailureType, failureMessage: String): Unit = {
-    failures :+= EvaluationFailure(
+    failuresBuffer += EvaluationFailure(
       failureType = failureType,
       failureMessage = failureMessage
     )
   }
 
-  override def toString: String = failures
+  override def toString: String = failuresBuffer
     .map { case EvaluationFailure(failureType, message) => s"* [$failureType] $message" }
     .mkString("\n")
 }
