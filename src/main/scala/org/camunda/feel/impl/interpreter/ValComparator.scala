@@ -27,6 +27,31 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case _                   => false
   }
 
+  def hashCode(x: Val): Int = x match {
+    case ValNull                 => 0
+    case ValNumber(n)            => n.hashCode()
+    case ValBoolean(b)           => b.hashCode()
+    case ValString(s)            => s.hashCode()
+    case ValDate(d)              => d.hashCode()
+    case ValLocalTime(t)         => t.hashCode()
+    case ValTime(t)              => t.hashCode()
+    case ValLocalDateTime(dt)    => dt.hashCode()
+    case ValDateTime(dt)         => dt.hashCode()
+    case ValYearMonthDuration(d) => d.hashCode()
+    case ValDayTimeDuration(d)   => d.hashCode()
+    case ValList(items)          => items.map(hashCode).hashCode()
+    case ValContext(ctx)         => hashCodeContext(ctx)
+    case _                       => 0
+  }
+
+  private def hashCodeContext(ctx: Context): Int = {
+    ctx.variableProvider.getVariables
+      .map { case (k, v) =>
+        k.hashCode() ^ hashCode(valueMapper.toVal(v))
+      }
+      .hashCode()
+  }
+
   def compare(x: Val, y: Val): Val = (x, y) match {
     // both values are null
     case (ValNull, _)                                       => ValBoolean(ValNull == y.toOption.getOrElse(ValNull))
