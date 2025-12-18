@@ -53,4 +53,54 @@ class InterpreterInterruptionTest extends AnyFlatSpec with Matchers with FeelEng
 
     wasInterrupted should be(true)
   }
+
+  it should "be interrupted while materializing a large iteration range" in {
+    val countDownLatch = new java.util.concurrent.CountDownLatch(1)
+
+    val thread = new Thread {
+      override def run {
+        try {
+          // This interrupts inside IterationContext (1..N) materialization.
+          // Without cooperative interrupt checks, this can run for a long time even after interrupt.
+          // Use a range large enough to be "hot" but avoid risking OOM.
+          evaluateExpression(expression = "for x in 1..(2 ** 24) return x")
+        } catch {
+          case _: InterruptedException =>
+            countDownLatch.countDown()
+        }
+      }
+    }
+
+    thread.start()
+    Thread.sleep(50) // Let evaluation start
+    thread.interrupt()
+    val wasInterrupted = countDownLatch.await(1, TimeUnit.SECONDS)
+
+    wasInterrupted should be(true)
+  }
+
+  it should "be interrupted while expanding a large cartesian product" in {
+    val countDownLatch = new java.util.concurrent.CountDownLatch(1)
+
+    val thread = new Thread {
+      override def run {
+        try {
+          // This interrupts inside cartesian product expansion (flattenAndZipLists).
+          // This size intentionally creates a large eager expansion; the goal is to ensure
+          // interruption is checked inside the nested expansion loops.
+          evaluateExpression(expression = "for x in 1..1500, y in 1..1500 return x + y")
+        } catch {
+          case _: InterruptedException =>
+            countDownLatch.countDown()
+        }
+      }
+    }
+
+    thread.start()
+    Thread.sleep(50) // Let evaluation start
+    thread.interrupt()
+    val wasInterrupted = countDownLatch.await(1, TimeUnit.SECONDS)
+
+    wasInterrupted should be(true)
+  }
 }

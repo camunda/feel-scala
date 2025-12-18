@@ -43,6 +43,18 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
   private val valueComparator = new ValComparator(valueMapper)
 
+  // Frequency for cooperative interruption checks inside tight loops.
+  // Keep this as a power-of-two so we can use a cheap bitmask check.
+  private val interruptCheckInterval = 1024
+
+  @inline private def checkInterrupted(): Unit = {
+    // Thread.interrupted() also clears the interrupted flag.
+    // We convert it to an InterruptedException, which is already handled by the timeout layer.
+    if (Thread.interrupted()) {
+      throw new InterruptedException()
+    }
+  }
+
   def eval(expression: Exp)(implicit context: EvalContext): Val = {
     // Check if the current thread was interrupted, otherwise long-running evaluations can not be interrupted and fully block the thread
     if (Thread.interrupted()) {
@@ -235,12 +247,23 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           eval(start),
           eval(end),
           (x, y) => {
-            val range = if (x < y) {
-              (x to y).by(1)
-            } else {
-              (x to y).by(-1)
+            val step  = if (x < y) 1 else -1
+            val range = (x to y).by(step)
+
+            // Materialize the range to a ValList. Use an explicit iterator + periodic interrupt
+            // checks so timeouts can cancel large ranges promptly.
+            val values = Vector.newBuilder[Val]
+            var i      = 0
+            val it     = range.iterator
+            while (it.hasNext) {
+              if ((i & (interruptCheckInterval - 1)) == 0) {
+                checkInterrupted()
+              }
+              values += ValNumber(it.next())
+              i += 1
             }
-            ValList(range.map(ValNumber))
+
+            ValList(values.result())
           }
         )
 
@@ -321,9 +344,21 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       op: (R, T) => Either[ValError, R],
       resultMapping: R => Val
   ): Val = {
+    // Manual loop instead of foldLeft so we can:
+    //  - periodically check interrupts (timeout cancellation)
+    //  - stop eagerly once the first ValError appears
+    val iterator                    = it.iterator
+    var result: Either[ValError, R] = Right(start)
+    var i                           = 0
 
-    val result = it.foldLeft[Either[ValError, R]](Right(start)) { (result, x) =>
-      result.flatMap(xs => op(xs, x))
+    while (iterator.hasNext && result.isRight) {
+      if ((i & (interruptCheckInterval - 1)) == 0) {
+        checkInterrupted()
+      }
+
+      val x = iterator.next()
+      result = result.flatMap(xs => op(xs, x))
+      i += 1
     }
 
     result match {
@@ -486,17 +521,35 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def atLeastOneValue(items: Seq[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
   ): Val = {
-    items.foldLeft(f(false)) {
-      case (ValBoolean(true), _)          => f(true)
-      case (fatalError: ValFatalError, _) => fatalError
-      case (ValNull, item)                =>
-        item() match {
-          case ValBoolean(true)          => f(true)
-          case fatalError: ValFatalError => fatalError
-          case _                         => ValNull
-        }
-      case (_, item)                      => withBooleanOrNull(item(), f)
+    val iterator    = items.iterator
+    var result: Val = f(false)
+    var i           = 0
+
+    while (iterator.hasNext) {
+      if ((i & (interruptCheckInterval - 1)) == 0) {
+        checkInterrupted()
+      }
+
+      result match {
+        case ValBoolean(true)          =>
+          return f(true)
+        case fatalError: ValFatalError =>
+          return fatalError
+        case ValNull                   =>
+          iterator.next()() match {
+            case ValBoolean(true)          => return f(true)
+            case fatalError: ValFatalError => return fatalError
+            case _                         => result = ValNull
+          }
+        case _                         =>
+          val item = iterator.next()
+          result = withBooleanOrNull(item(), f)
+      }
+
+      i += 1
     }
+
+    result
   }
 
   private def all(xs: List[Exp], f: Boolean => Val)(implicit context: EvalContext): Val =
@@ -505,17 +558,35 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
   private def allValues(items: Seq[() => Val], f: Boolean => Val)(implicit
       context: EvalContext
   ): Val = {
-    items.foldLeft(f(true)) {
-      case (ValBoolean(false), _)         => f(false)
-      case (fatalError: ValFatalError, _) => fatalError
-      case (ValNull, item)                =>
-        item() match {
-          case ValBoolean(false)         => f(false)
-          case fatalError: ValFatalError => fatalError
-          case _                         => ValNull
-        }
-      case (_, item)                      => withBooleanOrNull(item(), f)
+    val iterator    = items.iterator
+    var result: Val = f(true)
+    var i           = 0
+
+    while (iterator.hasNext) {
+      if ((i & (interruptCheckInterval - 1)) == 0) {
+        checkInterrupted()
+      }
+
+      result match {
+        case ValBoolean(false)         =>
+          return f(false)
+        case fatalError: ValFatalError =>
+          return fatalError
+        case ValNull                   =>
+          iterator.next()() match {
+            case ValBoolean(false)         => return f(false)
+            case fatalError: ValFatalError => return fatalError
+            case _                         => result = ValNull
+          }
+        case _                         =>
+          val item = iterator.next()
+          result = withBooleanOrNull(item(), f)
+      }
+
+      i += 1
     }
+
+    result
   }
 
   private def checkEquality(x: Val, y: Val)(implicit context: EvalContext): Val =
@@ -772,12 +843,53 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
   private def flattenAndZipLists(lists: List[(String, ValList)]): Seq[Map[String, Val]] =
     lists match {
-      case Nil                  => Seq.empty
-      case (name, list) :: Nil  => list.itemsAsSeq.map(v => Map(name -> v)) // flatten
-      case (name, list) :: tail =>
-        for {
-          v <- list.itemsAsSeq; values <- flattenAndZipLists(tail)
-        } yield values + (name -> v) // zip
+      case Nil => Seq.empty
+      case _   =>
+        // Build the cartesian product eagerly (this is what the previous implementation did too),
+        // but add periodic interrupt checks so a timeout can stop large expansions promptly.
+        // We process from right-to-left to preserve the iteration order of the previous
+        // recursive implementation (head list is the outer loop).
+        var acc: Vector[Map[String, Val]] = Vector(Map.empty)
+        var listIndex                     = 0
+
+        val reversed = lists.reverse
+        val listIt   = reversed.iterator
+        while (listIt.hasNext) {
+          if ((listIndex & (interruptCheckInterval - 1)) == 0) {
+            checkInterrupted()
+          }
+
+          val (name, list) = listIt.next()
+          val items        = list.itemsAsSeq
+          val nextAcc      = Vector.newBuilder[Map[String, Val]]
+
+          var itemIndex = 0
+          val itemIt    = items.iterator
+          while (itemIt.hasNext) {
+            if ((itemIndex & (interruptCheckInterval - 1)) == 0) {
+              checkInterrupted()
+            }
+
+            val v        = itemIt.next()
+            var accIndex = 0
+            val accIt    = acc.iterator
+            while (accIt.hasNext) {
+              if ((accIndex & (interruptCheckInterval - 1)) == 0) {
+                checkInterrupted()
+              }
+              nextAcc += (accIt.next() + (name -> v))
+              accIndex += 1
+            }
+
+            itemIndex += 1
+          }
+
+          acc = nextAcc.result()
+          listIndex += 1
+        }
+
+        acc
+
     }
 
   private def filterList(list: Seq[Val], filter: Val => Val)(implicit

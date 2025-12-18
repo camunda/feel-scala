@@ -23,6 +23,9 @@ import org.camunda.feel.impl.JavaValueMapper
 import org.camunda.feel.valuemapper.{CustomValueMapper, ValueMapper}
 import org.camunda.feel.valuemapper.ValueMapper.CompositeValueMapper
 
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
+
 /** Builds a new instance of the FEEL engine. Use the setters to customize the engine.
   */
 case class FeelEngineBuilder private (
@@ -73,6 +76,25 @@ case class FeelEngineBuilder private (
       clock = clock
     )
   )
+
+  /** Creates a new engine that applies the given default evaluation timeout.
+    *
+    * The evaluation is run on a separate thread and interrupted on timeout.
+    */
+  def buildWithEvaluationTimeout(timeout: FiniteDuration): FeelEngineApi =
+    new TimedFeelEngineApi(
+      engine = new FeelEngine(
+        functionProvider = functionProvider,
+        valueMapper = valueMapper,
+        configuration = configuration,
+        clock = clock
+      ),
+      timeout = timeout
+    )
+
+  /** Java-friendly overload. */
+  def buildWithEvaluationTimeout(timeout: java.time.Duration): FeelEngineApi =
+    buildWithEvaluationTimeout(timeout.toMillis.millis)
 
 }
 

@@ -17,10 +17,15 @@
 package org.camunda.feel.api
 
 import org.camunda.feel.FeelEngine
+import org.camunda.feel.FeelEngine.Failure
 import org.camunda.feel.context.Context
+import org.camunda.feel.impl.InterruptibleTimeout
 import org.camunda.feel.impl.interpreter.EvalContext
 import org.camunda.feel.syntaxtree.ParsedExpression
 
+import java.util.concurrent.RejectedExecutionException
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 import scala.jdk.CollectionConverters.MapHasAsScala
 
 /** The API to interact with the FEEL engine.
@@ -29,6 +34,56 @@ import scala.jdk.CollectionConverters.MapHasAsScala
   *   the FEEL engine to interact with
   */
 class FeelEngineApi(engine: FeelEngine) {
+
+  // Timeout support is implemented at the API layer (and not in FeelEngine) to keep the core engine
+  // API stable and backward-compatible. A timeout works by evaluating on a worker thread and
+  // interrupting it on expiry; stopping is therefore cooperative.
+
+  private def failedTimedOut(expression: String, timeout: FiniteDuration): EvaluationResult =
+    FailedEvaluationResult(
+      failure = Failure(
+        s"failed to evaluate expression '$expression': evaluation timed out after ${timeout.toMillis}ms"
+      )
+    )
+
+  private def failedInterrupted(expression: String): EvaluationResult =
+    FailedEvaluationResult(
+      failure = Failure(
+        s"failed to evaluate expression '$expression': evaluation interrupted"
+      )
+    )
+
+  private def failedRejected(expression: String): EvaluationResult =
+    FailedEvaluationResult(
+      failure = Failure(
+        s"failed to evaluate expression '$expression': evaluation rejected because the timeout executor is saturated"
+      )
+    )
+
+  private def withTimeout(
+      expression: String,
+      timeout: FiniteDuration
+  )(
+      thunk: => EvaluationResult
+  ): EvaluationResult = {
+    try {
+      // Run evaluation on a worker thread so we can cancel/interrupt it on timeout.
+      // This is cooperative cancellation: evaluation stops promptly only if it reacts to interrupts
+      // (e.g. blocking calls like Thread.sleep, or explicit interrupt checks inside the interpreter).
+      InterruptibleTimeout.run(timeout) {
+        thunk
+      }
+    } catch {
+      case InterruptibleTimeout.TimedOut(_)   => failedTimedOut(expression, timeout)
+      case InterruptibleTimeout.Interrupted() => failedInterrupted(expression)
+      case InterruptibleTimeout.Rejected(_)   => failedRejected(expression)
+      case _: RejectedExecutionException      => failedRejected(expression)
+      case _: InterruptedException            =>
+        // Preserve the caller thread's interrupted status.
+        Thread.currentThread().interrupt()
+        failedInterrupted(expression)
+    }
+  }
 
   // =========== parse expression ===========
 
@@ -82,6 +137,29 @@ class FeelEngineApi(engine: FeelEngine) {
       expression = expression,
       context = context
     )
+
+  /** Evaluates a parsed expression with the given context and a timeout.
+    */
+  def evaluate(
+      expression: ParsedExpression,
+      context: Context,
+      timeout: FiniteDuration
+  ): EvaluationResult =
+    withTimeout(expression.text, timeout) {
+      engine.evaluate(
+        expression = expression,
+        context = context
+      )
+    }
+
+  /** Evaluates a parsed expression with the given context and a timeout.
+    */
+  def evaluate(
+      expression: ParsedExpression,
+      context: Context,
+      timeout: java.time.Duration
+  ): EvaluationResult =
+    evaluate(expression, context, timeout.toMillis.millis)
 
   /** Evaluates a parsed expression with the given context.
     *
@@ -139,6 +217,31 @@ class FeelEngineApi(engine: FeelEngine) {
       expression = expression,
       context = createContextWithInput(context, inputValue)
     )
+
+  /** Evaluates a parsed unary-tests expression with the given input value, context and a timeout.
+    */
+  def evaluateWithInput(
+      expression: ParsedExpression,
+      inputValue: Any,
+      context: Context,
+      timeout: FiniteDuration
+  ): EvaluationResult =
+    withTimeout(expression.text, timeout) {
+      engine.evaluate(
+        expression = expression,
+        context = createContextWithInput(context, inputValue)
+      )
+    }
+
+  /** Evaluates a parsed unary-tests expression with the given input value, context and a timeout.
+    */
+  def evaluateWithInput(
+      expression: ParsedExpression,
+      inputValue: Any,
+      context: Context,
+      timeout: java.time.Duration
+  ): EvaluationResult =
+    evaluateWithInput(expression, inputValue, context, timeout.toMillis.millis)
 
   /** Evaluates a parsed unary-tests expression with the given input value and context.
     *
@@ -209,6 +312,35 @@ class FeelEngineApi(engine: FeelEngine) {
         )
     }
 
+  /** Evaluates an FEEL expression with the given context and a timeout.
+    */
+  def evaluateExpression(
+      expression: String,
+      context: Context,
+      timeout: FiniteDuration
+  ): EvaluationResult =
+    engine.parseExpression(expression = expression) match {
+      case Right(parsedExpression) =>
+        evaluate(
+          expression = parsedExpression,
+          context = context,
+          timeout = timeout
+        )
+      case Left(parseFailure)      =>
+        FailedEvaluationResult(
+          failure = parseFailure
+        )
+    }
+
+  /** Evaluates an FEEL expression with the given context and a timeout.
+    */
+  def evaluateExpression(
+      expression: String,
+      context: Context,
+      timeout: java.time.Duration
+  ): EvaluationResult =
+    evaluateExpression(expression, context, timeout.toMillis.millis)
+
   /** Evaluates an FEEL expression with the given context. This is a shortcut and skips the explicit
     * parsing step before the evaluation.
     *
@@ -273,6 +405,37 @@ class FeelEngineApi(engine: FeelEngine) {
           failure = parseFailure
         )
     }
+
+  /** Evaluates an FEEL unary-tests expression with the given input value, context and a timeout.
+    */
+  def evaluateUnaryTests(
+      expression: String,
+      inputValue: Any,
+      context: Context,
+      timeout: FiniteDuration
+  ): EvaluationResult =
+    engine.parseUnaryTests(expression = expression) match {
+      case Right(parsedExpression) =>
+        evaluate(
+          expression = parsedExpression,
+          context = createContextWithInput(context, inputValue),
+          timeout = timeout
+        )
+      case Left(parseFailure)      =>
+        FailedEvaluationResult(
+          failure = parseFailure
+        )
+    }
+
+  /** Evaluates an FEEL unary-tests expression with the given input value, context and a timeout.
+    */
+  def evaluateUnaryTests(
+      expression: String,
+      inputValue: Any,
+      context: Context,
+      timeout: java.time.Duration
+  ): EvaluationResult =
+    evaluateUnaryTests(expression, inputValue, context, timeout.toMillis.millis)
 
   /** Evaluates an FEEL unary-tests expression with the given input value and context. This is a
     * shortcut and skips the explicit parsing step before the evaluation.
