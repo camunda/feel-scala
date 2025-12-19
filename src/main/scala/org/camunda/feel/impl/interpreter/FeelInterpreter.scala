@@ -179,7 +179,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             iterators,
             p =>
               atLeastOneValue(
-                p.map(vars => () => eval(condition)(context.addAll(vars))),
+                p.map(vars => () => eval(condition)(context.addAllLazy(vars))),
                 ValBoolean
               )
           )
@@ -188,7 +188,8 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
         withValOrNull(
           withCartesianProduct(
             iterators,
-            p => allValues(p.map(vars => () => eval(condition)(context.addAll(vars))), ValBoolean)
+            p =>
+              allValues(p.map(vars => () => eval(condition)(context.addAllLazy(vars))), ValBoolean)
           )
         )
       case For(iterators, exp)             =>
@@ -198,7 +199,8 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             p => {
               var partial = Vector.empty[Val]
               val results = p.map { vars =>
-                val iterationContext = context.addAll(vars).add("partial" -> ValList(partial))
+                val iterationContext =
+                  context.addAllLazy(vars).addLazy("partial", ValList(partial))
                 val value            = eval(exp)(iterationContext)
                 partial = partial :+ value
                 value
@@ -305,8 +307,8 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       resultMapping: Seq[R] => Val
   ): Val = {
 
-    foldEither[T, Seq[R]](
-      Seq.empty,
+    foldEither[T, Vector[R]](
+      Vector.empty,
       it,
       { case (xs, x) =>
         f(x).map(xs :+ _)
@@ -714,7 +716,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
     val paramList: List[Val] = params match {
       case PositionalFunctionParameters(params) => {
 
-        if (function.hasVarArgs && function.params.size > 0) {
+        if (function.hasVarArgs && function.params.nonEmpty) {
           val size = function.params.size - 1
 
           val args: List[Val] = params take (size) map eval

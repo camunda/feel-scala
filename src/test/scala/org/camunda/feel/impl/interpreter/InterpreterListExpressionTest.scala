@@ -233,6 +233,24 @@ class InterpreterListExpressionTest
     ) should returnResult(List(1, 1, 2, 3, 5, 8, 13, 21))
   }
 
+  it should "shadow an outer variable with the same name" in {
+    evaluateExpression(
+      expression = "for x in [1,2] return x + a",
+      variables = Map("a" -> 10, "x" -> 999)
+    ) should returnResult(List(11, 12))
+  }
+
+  it should "shadow variables in nested for loops" in {
+    evaluateExpression(
+      "for x in [1,2] return for x in [10,20] return x"
+    ) should returnResult(List(List(10, 20), List(10, 20)))
+
+    evaluateExpression(
+      expression = "for x in [1,2] return for y in [10,20] return x + y",
+      variables = Map("x" -> 999, "y" -> 888)
+    ) should returnResult(List(List(11, 21), List(12, 22)))
+  }
+
   it should "return null if the value is not a list" in {
     evaluateExpression(
       expression = "for item in x return item * 2"
