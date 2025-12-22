@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl
 
-import org.camunda.feel.api.{EvaluationFailureType, EvaluationFailure}
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

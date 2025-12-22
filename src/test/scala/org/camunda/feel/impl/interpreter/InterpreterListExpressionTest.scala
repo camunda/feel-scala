@@ -509,5 +509,4 @@ class InterpreterListExpressionTest
       "Expected list but found 'null'"
     ))
   }
-
 }
