@@ -48,11 +48,11 @@ class ValComparator(private val valueMapper: ValueMapper) {
   }
 
   private def hashCodeContext(ctx: Context): Int = {
-    ctx.variableProvider.getVariables
+    ctx.variableProvider.getVariables.iterator
       .map { case (k, v) =>
         k.hashCode() ^ hashCode(valueMapper.toVal(v))
       }
-      .hashCode()
+      .foldLeft(0)(_ ^ _)
   }
 
   def compare(x: Val, y: Val): Val = (x, y) match {
