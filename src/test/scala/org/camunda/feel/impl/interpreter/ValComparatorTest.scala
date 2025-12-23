@@ -22,10 +22,11 @@ import org.camunda.feel.syntaxtree._
 import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.collection.immutable.ListMap
 
-class ValComparatorTest extends AnyFlatSpec with Matchers {
+class ValComparatorTest extends AnyFlatSpec with Matchers with TableDrivenPropertyChecks {
 
   private val comparator = new ValComparator(ValueMapper.defaultValueMapper)
 
@@ -52,80 +53,88 @@ class ValComparatorTest extends AnyFlatSpec with Matchers {
     comparator.compare(ValFatalError("x"), ValNull) shouldBe ValBoolean(false)
   }
 
-  it should "compare simple FEEL values" in {
-    assertEqualsAndHashCode(ValNumber(1), ValNumber(1))
-    assertNotEquals(ValNumber(1), ValNumber(2))
-
-    assertEqualsAndHashCode(ValBoolean(true), ValBoolean(true))
-    assertNotEquals(ValBoolean(true), ValBoolean(false))
-
-    assertEqualsAndHashCode(ValString("a"), ValString("a"))
-    assertNotEquals(ValString("a"), ValString("b"))
-
-    assertEqualsAndHashCode(ValDate("2017-04-02"), ValDate("2017-04-02"))
-    assertNotEquals(ValDate("2017-04-02"), ValDate("2017-04-03"))
-
-    assertEqualsAndHashCode(ValLocalTime("12:04:30"), ValLocalTime("12:04:30"))
-    assertNotEquals(ValLocalTime("12:04:30"), ValLocalTime("12:04:31"))
-
-    assertEqualsAndHashCode(ValTime("12:04:30+01:00"), ValTime("12:04:30+01:00"))
-    assertNotEquals(ValTime("12:04:30+01:00"), ValTime("12:04:30+02:00"))
-
-    assertEqualsAndHashCode(
-      ValLocalDateTime("2017-04-02T12:04:30"),
-      ValLocalDateTime("2017-04-02T12:04:30")
-    )
-    assertNotEquals(
-      ValLocalDateTime("2017-04-02T12:04:30"),
-      ValLocalDateTime("2017-04-02T12:04:31")
+  it should "compare equal simple FEEL values" in {
+    val equalValues = Table(
+      ("x", "y"),
+      (ValNumber(1), ValNumber(1)),
+      (ValBoolean(true), ValBoolean(true)),
+      (ValString("a"), ValString("a")),
+      (ValDate("2017-04-02"), ValDate("2017-04-02")),
+      (ValLocalTime("12:04:30"), ValLocalTime("12:04:30")),
+      (ValTime("12:04:30+01:00"), ValTime("12:04:30+01:00")),
+      (ValLocalDateTime("2017-04-02T12:04:30"), ValLocalDateTime("2017-04-02T12:04:30")),
+      (ValDateTime("2017-04-02T12:04:30+01:00"), ValDateTime("2017-04-02T12:04:30+01:00")),
+      (ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y4M")),
+      (ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H22M"))
     )
 
-    assertEqualsAndHashCode(
-      ValDateTime("2017-04-02T12:04:30+01:00"),
-      ValDateTime("2017-04-02T12:04:30+01:00")
-    )
-    assertNotEquals(
-      ValDateTime("2017-04-02T12:04:30+01:00"),
-      ValDateTime("2017-04-02T12:04:30+02:00")
-    )
-
-    assertEqualsAndHashCode(ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y4M"))
-    assertNotEquals(ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y5M"))
-
-    assertEqualsAndHashCode(ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H22M"))
-    assertNotEquals(ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H23M"))
+    forAll(equalValues) { (x, y) =>
+      assertEqualsAndHashCode(x, y)
+    }
   }
 
-  it should "compare lists (including nested lists)" in {
-    assertEqualsAndHashCode(
-      ValList(Seq(ValNumber(1), ValString("a"))),
-      ValList(Seq(ValNumber(1), ValString("a")))
+  it should "compare different simple FEEL values" in {
+    val notEqualValues = Table(
+      ("x", "y"),
+      (ValNumber(1), ValNumber(2)),
+      (ValBoolean(true), ValBoolean(false)),
+      (ValString("a"), ValString("b")),
+      (ValDate("2017-04-02"), ValDate("2017-04-03")),
+      (ValLocalTime("12:04:30"), ValLocalTime("12:04:31")),
+      (ValTime("12:04:30+01:00"), ValTime("12:04:30+02:00")),
+      (ValLocalDateTime("2017-04-02T12:04:30"), ValLocalDateTime("2017-04-02T12:04:31")),
+      (ValDateTime("2017-04-02T12:04:30+01:00"), ValDateTime("2017-04-02T12:04:30+02:00")),
+      (ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y5M")),
+      (ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H23M"))
     )
 
-    assertNotEquals(
-      ValList(Seq(ValNumber(1), ValString("a"))),
-      ValList(Seq(ValNumber(1), ValString("b")))
+    forAll(notEqualValues) { (x, y) =>
+      assertNotEquals(x, y)
+    }
+  }
+
+  it should "compare equal lists (including nested lists)" in {
+    val equalLists = Table(
+      ("x", "y"),
+      (
+        ValList(Seq(ValNumber(1), ValString("a"))),
+        ValList(Seq(ValNumber(1), ValString("a")))
+      ),
+      (
+        ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x"))))),
+        ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x")))))
+      )
     )
 
-    assertNotEquals(
-      ValList(Seq(ValNumber(1), ValString("a"))),
-      ValList(Seq(ValString("a"), ValNumber(1)))
+    forAll(equalLists) { (x, y) =>
+      assertEqualsAndHashCode(x, y)
+    }
+  }
+
+  it should "compare different lists" in {
+    val notEqualLists = Table(
+      ("x", "y"),
+      (
+        ValList(Seq(ValNumber(1), ValString("a"))),
+        ValList(Seq(ValNumber(1), ValString("b")))
+      ),
+      (
+        ValList(Seq(ValNumber(1), ValString("a"))),
+        ValList(Seq(ValString("a"), ValNumber(1)))
+      ),
+      (
+        ValList(Seq(ValNumber(1), ValString("a"))),
+        ValList(Seq(ValNumber(1), ValString("a"), ValString("x")))
+      ),
+      (
+        ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x"))))),
+        ValList(Seq(ValList(Seq(ValNumber(2))), ValList(Seq(ValString("x")))))
+      )
     )
 
-    assertNotEquals(
-      ValList(Seq(ValNumber(1), ValString("a"))),
-      ValList(Seq(ValNumber(1), ValString("a"), ValString("x")))
-    )
-
-    assertEqualsAndHashCode(
-      ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x"))))),
-      ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x")))))
-    )
-
-    assertNotEquals(
-      ValList(Seq(ValList(Seq(ValNumber(1))), ValList(Seq(ValString("x"))))),
-      ValList(Seq(ValList(Seq(ValNumber(2))), ValList(Seq(ValString("x")))))
-    )
+    forAll(notEqualLists) { (x, y) =>
+      assertNotEquals(x, y)
+    }
   }
 
   it should "compare contexts using ValueMapper.toVal" in {
@@ -148,15 +157,16 @@ class ValComparatorTest extends AnyFlatSpec with Matchers {
   }
 
   it should "return an error for values of different types" in {
-    comparator.compare(ValNumber(1), ValBoolean(true)) shouldBe ValError(
-      "Can't compare '1' with 'true'"
+    val comparisons = Table(
+      ("x", "y", "expected"),
+      (ValNumber(1), ValBoolean(true), ValError("Can't compare '1' with 'true'")),
+      (ValNumber(1), ValString("a"), ValError("Can't compare '1' with '\"a\"'")),
+      (ValNumber(1), ValDayTimeDuration("P1D"), ValError("Can't compare '1' with 'P1D'"))
     )
-    comparator.compare(ValNumber(1), ValString("a")) shouldBe ValError(
-      "Can't compare '1' with '\"a\"'"
-    )
-    comparator.compare(ValNumber(1), ValDayTimeDuration("P1D")) shouldBe ValError(
-      "Can't compare '1' with 'P1D'"
-    )
+
+    forAll(comparisons) { (x, y, expected) =>
+      comparator.compare(x, y) shouldBe expected
+    }
   }
 
   it should "return an error for unsupported Val types" in {
@@ -186,36 +196,34 @@ class ValComparatorTest extends AnyFlatSpec with Matchers {
     )
   }
 
-  "ValComparator.hashCode" should "compute hash codes for supported Val types" in {
+  "ValComparator.hashCode" should "compute hash codes for null-like values" in {
     comparator.hashCode(ValNull) shouldBe 0
     comparator.hashCode(ValError("boom")) shouldBe 0
+  }
 
-    assertEqualsAndHashCode(ValNumber(1), ValNumber(1))
-    assertEqualsAndHashCode(ValBoolean(true), ValBoolean(true))
-    assertEqualsAndHashCode(ValString("a"), ValString("a"))
-    assertEqualsAndHashCode(ValDate("2017-04-02"), ValDate("2017-04-02"))
-    assertEqualsAndHashCode(ValLocalTime("12:04:30"), ValLocalTime("12:04:30"))
-    assertEqualsAndHashCode(ValTime("12:04:30+01:00"), ValTime("12:04:30+01:00"))
-    assertEqualsAndHashCode(
-      ValLocalDateTime("2017-04-02T12:04:30"),
-      ValLocalDateTime("2017-04-02T12:04:30")
-    )
-    assertEqualsAndHashCode(
-      ValDateTime("2017-04-02T12:04:30+01:00"),
-      ValDateTime("2017-04-02T12:04:30+01:00")
-    )
-    assertEqualsAndHashCode(ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y4M"))
-    assertEqualsAndHashCode(ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H22M"))
-
-    assertEqualsAndHashCode(
-      ValList(Seq(ValNumber(1), ValString("a"))),
-      ValList(Seq(ValNumber(1), ValString("a")))
+  it should "compute hash codes for supported Val types" in {
+    val supportedValues = Table(
+      ("x", "y"),
+      (ValNumber(1), ValNumber(1)),
+      (ValBoolean(true), ValBoolean(true)),
+      (ValString("a"), ValString("a")),
+      (ValDate("2017-04-02"), ValDate("2017-04-02")),
+      (ValLocalTime("12:04:30"), ValLocalTime("12:04:30")),
+      (ValTime("12:04:30+01:00"), ValTime("12:04:30+01:00")),
+      (ValLocalDateTime("2017-04-02T12:04:30"), ValLocalDateTime("2017-04-02T12:04:30")),
+      (ValDateTime("2017-04-02T12:04:30+01:00"), ValDateTime("2017-04-02T12:04:30+01:00")),
+      (ValYearMonthDuration("P2Y4M"), ValYearMonthDuration("P2Y4M")),
+      (ValDayTimeDuration("PT4H22M"), ValDayTimeDuration("PT4H22M")),
+      (ValList(Seq(ValNumber(1), ValString("a"))), ValList(Seq(ValNumber(1), ValString("a")))),
+      (
+        ValContext(Context.StaticContext(Map("a" -> 1, "b" -> "x"))),
+        ValContext(Context.StaticContext(Map("a" -> 1, "b" -> "x")))
+      )
     )
 
-    assertEqualsAndHashCode(
-      ValContext(Context.StaticContext(Map("a" -> 1, "b" -> "x"))),
-      ValContext(Context.StaticContext(Map("a" -> 1, "b" -> "x")))
-    )
+    forAll(supportedValues) { (x, y) =>
+      assertEqualsAndHashCode(x, y)
+    }
   }
 
   it should "compute the same hash code for contexts with key order differences" in {
