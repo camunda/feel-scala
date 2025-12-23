@@ -74,11 +74,12 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case (ValContext(x), ValContext(y))                     => compare(x, y)
     // values have a different type
     case _                                                  => ValError(s"Can't compare '$x' with '$y'")
+
   }
 
   private def compare(x: Seq[Val], y: Seq[Val]): ValBoolean = {
     ValBoolean(
-      x.size == y.size && x.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
+      x.size == y.size && x.iterator.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
     )
   }
 
