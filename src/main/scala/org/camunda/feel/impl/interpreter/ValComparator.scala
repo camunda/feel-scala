@@ -27,6 +27,34 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case _                   => false
   }
 
+  def hashCode(x: Val): Int = x match {
+    case ValNull                 => 0
+    case ValNumber(n)            => n.hashCode()
+    case ValBoolean(b)           => b.hashCode()
+    case ValString(s)            => s.hashCode()
+    case ValDate(d)              => d.hashCode()
+    case ValLocalTime(t)         => t.hashCode()
+    case ValTime(t)              => t.hashCode()
+    case ValLocalDateTime(dt)    => dt.hashCode()
+    case ValDateTime(dt)         => dt.hashCode()
+    case ValYearMonthDuration(d) => d.hashCode()
+    case ValDayTimeDuration(d)   => d.hashCode()
+    case ValList(items)          => items.map(hashCode).hashCode()
+    case ValContext(ctx)         => hashCodeContext(ctx)
+    case _: ValError             => 0
+    case _: ValRange             => x.hashCode()
+    case _: ValFunction          => x.hashCode()
+    case _: ValFatalError        => x.hashCode()
+  }
+
+  private def hashCodeContext(ctx: Context): Int = {
+    ctx.variableProvider.getVariables.iterator
+      .map { case (k, v) =>
+        k.hashCode() ^ hashCode(valueMapper.toVal(v))
+      }
+      .foldLeft(0)(_ ^ _)
+  }
+
   def compare(x: Val, y: Val): Val = (x, y) match {
     // both values are null
     case (ValNull, _)                                       => ValBoolean(ValNull == y.toOption.getOrElse(ValNull))
@@ -46,11 +74,12 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case (ValContext(x), ValContext(y))                     => compare(x, y)
     // values have a different type
     case _                                                  => ValError(s"Can't compare '$x' with '$y'")
+
   }
 
   private def compare(x: Seq[Val], y: Seq[Val]): ValBoolean = {
     ValBoolean(
-      x.size == y.size && x.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
+      x.size == y.size && x.iterator.zip(y).forall { case (itemX, itemY) => equals(itemX, itemY) }
     )
   }
 
