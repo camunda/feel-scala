@@ -41,7 +41,10 @@ class ValComparator(private val valueMapper: ValueMapper) {
     case ValDayTimeDuration(d)   => d.hashCode()
     case ValList(items)          => items.map(hashCode).hashCode()
     case ValContext(ctx)         => hashCodeContext(ctx)
-    case _                       => 0
+    case _: ValError             => 0
+    case _: ValRange             => x.hashCode()
+    case _: ValFunction          => x.hashCode()
+    case _: ValFatalError        => x.hashCode()
   }
 
   private def hashCodeContext(ctx: Context): Int = {
