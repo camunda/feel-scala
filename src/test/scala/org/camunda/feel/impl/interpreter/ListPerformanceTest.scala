@@ -57,7 +57,7 @@ class ListPerformanceTest
     result.success.value should returnResult((1 to listSize).toVector)
   }
 
-  "An index of function" should "handle large lists with many matches efficiently" ignore {
+  "An index of function" should "handle large lists with many matches efficiently" in {
     // List with repeated value to find multiple indices
     val listOfOnes = List.fill(listSize)(1)
 
