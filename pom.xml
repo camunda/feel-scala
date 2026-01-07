@@ -333,6 +333,19 @@
               <differenceType>7009</differenceType>
               <method>* validator()</method>
             </ignored>
+            <!-- ignore changes related to type changes in compiler generated methods -->
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/ValList</className>
+              <differenceType>7002</differenceType>
+              <method>scala.collection.immutable.List copy$default$1()</method>
+            </ignored>
+            <ignored>
+              <className>org/camunda/feel/syntaxtree/Val</className>
+              <differenceType>7005</differenceType>
+              <method>* $anonfun$*(*scala.collection.immutable.List*, *)</method>
+              <to>* $anonfun$*(*scala.collection.immutable.Seq*, *)</to>
+            </ignored>
+
             <!-- ignore auto-generated Scala functions -->
             <ignored>
               <className>org/camunda/feel/syntaxtree/**</className>

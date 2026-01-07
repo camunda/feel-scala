@@ -311,8 +311,21 @@ case class ValContext(context: Context) extends Val {
     .mkString(start = "{", sep = ", ", end = "}")
 }
 
-case class ValList(items: List[Val]) extends Val {
-  override def toString: String = items.mkString(start = "[", sep = ", ", end = "]")
+case class ValList(itemsAsSeq: Seq[Val]) extends Val {
+
+  override def toString: String = itemsAsSeq.mkString(start = "[", sep = ", ", end = "]")
+
+  // / BACKWARD COMPATIBILITY ///
+  // / Following methods are added only for backwards compatibility
+  def this(items: List[Val]) = this(items: Seq[Val])
+  @deprecated("1.19.4", "Use itemsAsSeq instead to avoid a copy")
+  def items: List[Val] = itemsAsSeq.toList
+  def copy(items: List[Val]): ValList = new ValList(items)
+}
+
+object ValList {
+  def apply(items: List[Val]): ValList = new ValList(items)
+  def apply(items: Seq[Val]): ValList  = new ValList(items)
 }
 
 case class ValRange(start: RangeBoundary, end: RangeBoundary) extends Val {

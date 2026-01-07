@@ -108,13 +108,13 @@ class DefaultValueMapperTest extends AnyFlatSpec with Matchers {
 
   it should "convert from List" in {
 
-    valueMapper.toVal(List(1, 2)) should be(ValList(List(ValNumber(1), ValNumber(2))))
+    valueMapper.toVal(List(1, 2)) should be(ValList(Seq(ValNumber(1), ValNumber(2))))
   }
 
   it should "convert from java.util.List" in {
 
     valueMapper.toVal(java.util.Arrays.asList(1, 2)) should be(
-      ValList(List(ValNumber(1), ValNumber(2)))
+      ValList(Seq(ValNumber(1), ValNumber(2)))
     )
   }
 
