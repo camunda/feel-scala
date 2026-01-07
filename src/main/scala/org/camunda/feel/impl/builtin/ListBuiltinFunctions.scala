@@ -122,7 +122,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     hasVarArgs = true
   )
 
-  private def withListOfNumbers(list: List[Val], f: List[Number] => Val): Val = {
+  private def withListOfNumbers(list: Seq[Val], f: Seq[Number] => Val): Val = {
     list
       .map(_ match {
         case n: ValNumber => n
@@ -130,7 +130,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       })
       .find(_.isInstanceOf[ValError]) match {
       case Some(e) => e
-      case None    => f(list.asInstanceOf[List[ValNumber]].map(_.value))
+      case None    => f(list.asInstanceOf[Seq[ValNumber]].map(_.value))
     }
   }
 
@@ -208,7 +208,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def modeFunction = builtinFunction(
     params = List("list"),
     invoke = {
-      case List(ValList(list)) if list.isEmpty => ValList(List.empty)
+      case List(ValList(list)) if list.isEmpty => ValList(Seq.empty)
       case List(ValList(list))                 =>
         withListOfNumbers(
           list,
@@ -228,7 +228,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
               .map(_._1)
               .sorted
 
-            ValList(modeElements.map(ValNumber))
+            ValList(modeElements.map(ValNumber).toSeq)
           }
         )
     },
@@ -244,7 +244,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       hasVarArgs = true
     )
 
-  private def all(items: List[Val]): Val = {
+  private def all(items: Seq[Val]): Val = {
     items.foldLeft[Val](ValBoolean(true)) {
       case (ValBoolean(false), _)               => ValBoolean(false)
       case (ValBoolean(true), item: ValBoolean) => item
@@ -262,7 +262,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       hasVarArgs = true
     )
 
-  private def atLeastOne(items: List[Val]): Val = {
+  private def atLeastOne(items: Seq[Val]): Val = {
     items.foldLeft[Val](ValBoolean(false)) {
       case (ValBoolean(true), _)                 => ValBoolean(true)
       case (ValBoolean(false), item: ValBoolean) => item
@@ -297,7 +297,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     }
   )
 
-  private def listIndex(list: List[_], index: Int) =
+  private def listIndex(list: Seq[_], index: Int) =
     if (index > 0) {
       index - 1
     } else {
@@ -320,7 +320,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
         lists
           .flatMap(_ match {
             case ValList(list) => list
-            case v             => List(v)
+            case v             => Seq(v)
           })
           .toList
       )
@@ -336,7 +336,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
       case List(ValList(list), ValNumber(position), newItem: Val)    =>
         ValList(
           list
-            .take(listIndex(list, position.intValue)) ++ (newItem :: Nil) ++ list
+            .take(listIndex(list, position.intValue)) ++ Seq(newItem) ++ list
             .drop(listIndex(list, position.intValue))
         )
     }
@@ -368,21 +368,21 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     builtinFunction(
       params = List("list", "match"),
       invoke = { case List(ValList(list), m: Val) =>
-        ValList(indexOfList(list, m) map (ValNumber(_)))
+        ValList(indexOfList(list, m).map(ValNumber(_)).toSeq)
       }
     )
 
   @tailrec
   private def indexOfList(
-      list: List[Val],
+      list: Seq[Val],
       item: Val,
       from: Int = 0,
-      indexList: List[Int] = List()
-  ): List[Int] = {
+      indexList: Seq[Int] = Seq()
+  ): Seq[Int] = {
     val index = list.indexOf(item, from)
 
     if (index >= 0) {
-      indexOfList(list, item, index + 1, indexList ++ List(index + 1))
+      indexOfList(list, item, index + 1, indexList ++ Seq(index + 1))
     } else {
       indexList
     }
@@ -395,7 +395,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
         case ValList(list) => list
         case v             => List(v)
       }
-      ValList(distinct(listOfLists))
+      ValList(distinct(listOfLists).toSeq)
     },
     hasVarArgs = true
   )
@@ -403,11 +403,11 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   private def distinctValuesFunction =
     builtinFunction(
       params = List("list"),
-      invoke = { case List(ValList(list)) => ValList(distinct(list)) }
+      invoke = { case List(ValList(list)) => ValList(distinct(list).toSeq) }
     )
 
-  private def distinct(list: List[Val]): List[Val] = {
-    list.foldLeft(List[Val]())((result, item) =>
+  private def distinct(list: Seq[Val]): Seq[Val] = {
+    list.foldLeft(Seq[Val]())((result, item) =>
       if (result.exists(y => valueComparator.equals(item, y))) {
         // duplicate value
         result
@@ -424,7 +424,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
         val duplicatedValues =
           distinct(list).filter(x => list.count(valueComparator.equals(_, x)) > 1)
 
-        ValList(duplicatedValues)
+        ValList(duplicatedValues.toSeq)
       }
     )
 
@@ -432,14 +432,14 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
     builtinFunction(
       params = List("list"),
       invoke = { case List(ValList(list)) =>
-        ValList(flatten(list))
+        ValList(flatten(list).toSeq)
       }
     )
 
-  private def flatten(list: List[Val]): List[Val] = {
-    list.flatten {
+  private def flatten(list: Seq[Val]): Seq[Val] = {
+    list.flatMap {
       case ValList(items) => flatten(items)
-      case item           => List(item)
+      case item           => Seq(item)
     }
   }
 
@@ -498,7 +498,7 @@ class ListBuiltinFunctions(private val valueMapper: ValueMapper) {
   )
 
   private def joinStringList(
-      list: List[Val],
+      list: Seq[Val],
       delimiter: String = "",
       prefix: String = "",
       suffix: String = ""

@@ -19,9 +19,11 @@ package org.camunda.feel.impl.interpreter
 import org.camunda.feel.api.EvaluationFailureType
 import org.camunda.feel.api.EvaluationFailureType.INVALID_TYPE
 import org.camunda.feel.context.{CustomContext, VariableProvider}
+import org.camunda.feel.impl.EvaluationResultMatchers.returnResult
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
 import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should
 import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable.ListBuffer
@@ -508,5 +510,11 @@ class InterpreterListExpressionTest
       INVALID_TYPE,
       "Expected list but found 'null'"
     ))
+  }
+
+  it should "compute a long list" in {
+    evaluateExpression(
+      """count(for x in 0..1000000 return "Hi there")"""
+    ) should returnResult(1000001)
   }
 }

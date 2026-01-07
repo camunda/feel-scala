@@ -173,11 +173,11 @@ class StringRepresentationTypeTest extends AnyFlatSpec with Matchers {
   }
 
   "A list" should "return '[1, 2]' " in {
-    ValList(List(ValNumber(1), ValNumber(2))).toString should be("[1, 2]")
+    ValList(Seq(ValNumber(1), ValNumber(2))).toString should be("[1, 2]")
   }
 
   it should "return '[]' " in {
-    ValList(List()).toString should be("[]")
+    ValList(Seq.empty).toString should be("[]")
   }
 
   "A context" should "return '{x:1, y:2}' " in {
