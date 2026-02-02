@@ -133,7 +133,7 @@ class FeelEngine(
       s"configuration: $configuration]"
   )
 
-  private def rootContext(): EvalContext = EvalContext.create(
+  private val rootContext: EvalContext = EvalContext.create(
     valueMapper = valueMapper,
     functionProvider = FunctionProvider.CompositeFunctionProvider(
       List(
@@ -330,7 +330,7 @@ class FeelEngine(
   @deprecated def evaluate(expression: ParsedExpression, context: Context): EvaluationResult =
     Try {
       validate(expression) match {
-        case Right(_)      => eval(expression, rootContext().merge(context))
+        case Right(_)      => eval(expression, rootContext.mergeWithFreshFailureCollector(context))
         case Left(failure) => FailedEvaluationResult(failure = failure)
       }
     }.recover(failure =>

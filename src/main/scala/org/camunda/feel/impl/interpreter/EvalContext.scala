@@ -87,6 +87,16 @@ class EvalContext(
     merge(wrappedContext)
   }
 
+  def mergeWithFreshFailureCollector(otherContext: Context): EvalContext = {
+    val wrappedContext = wrap(otherContext, valueMapper)
+    new EvalContext(
+      valueMapper = valueMapper,
+      variableProvider = mergeVariableProvider(variableProvider, wrappedContext.variableProvider),
+      functionProvider = mergeFunctionProviders(functionProvider, wrappedContext.functionProvider),
+      failureCollector = new EvaluationFailureCollector
+    )
+  }
+
   def add(entry: (String, Val)): EvalContext = entry match {
     case (k: String, f: ValFunction) => addFunction(k, f)
     case (k: String, v)              => addVariable(k, v)
