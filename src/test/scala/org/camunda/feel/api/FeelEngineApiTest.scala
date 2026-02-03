@@ -22,6 +22,8 @@ import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import scala.jdk.CollectionConverters._
+
 class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
   private val engine: FeelEngineApi = FeelEngineBuilder().build()
@@ -174,12 +176,10 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures should contain(
-      EvaluationFailure(
-        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No variable found with name 'x'"
-      )
-    )
+    evaluationResult.suppressedFailures.exists(f =>
+      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
+        f.failureMessage == "No variable found with name 'x'"
+    ) should be(true)
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
@@ -198,12 +198,10 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures should contain(
-      EvaluationFailure(
-        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No variable found with name 'x'"
-      )
-    )
+    evaluationResult.suppressedFailures.exists(f =>
+      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
+        f.failureMessage == "No variable found with name 'x'"
+    ) should be(true)
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
@@ -225,12 +223,10 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
     evaluationResult.getResult shouldBe null
 
-    evaluationResult.getSuppressedFailures should contain(
-      EvaluationFailure(
-        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No variable found with name 'x'"
-      )
-    )
+    evaluationResult.getSuppressedFailures.asScala.exists(f =>
+      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
+        f.failureMessage == "No variable found with name 'x'"
+    ) should be(true)
   }
 
   it should "get a failure message" in {
