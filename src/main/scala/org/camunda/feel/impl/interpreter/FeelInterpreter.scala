@@ -162,15 +162,19 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
         )
 
       // context
-      case Ref(names)               =>
+      case r @ Ref(names, _)               =>
         val name = names.head
         context.variable(name) match {
           case _: ValError =>
-            error(EvaluationFailureType.NO_VARIABLE_FOUND, s"No variable found with name '$name'")
+            error(
+              EvaluationFailureType.NO_VARIABLE_FOUND,
+              s"No variable found with name '$name'",
+              r.position
+            )
             ValNull
           case value       => ref(value, names.tail)
         }
-      case PathExpression(exp, key) => withVal(eval(exp), v => path(v, key))
+      case p @ PathExpression(exp, key, _) => withVal(eval(exp), v => path(v, key, p.position))
 
       // list
       case SomeItem(iterators, condition)  =>
@@ -338,6 +342,15 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       context: EvalContext
   ): ValError = {
     context.addFailure(failureType, failureMessage)
+    ValError(failureMessage)
+  }
+
+  private def error(
+      failureType: EvaluationFailureType,
+      failureMessage: String,
+      position: Option[org.camunda.feel.api.Position]
+  )(implicit context: EvalContext): ValError = {
+    context.addFailure(failureType, failureMessage, position)
     ValError(failureMessage)
   }
 
@@ -862,12 +875,14 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       case Nil     => x
       case n :: ns =>
         withVal(
-          path(x, n),
+          path(x, n, None),
           value => ref(value, ns)
         )
     }
 
-  private def path(v: Val, key: String)(implicit context: EvalContext): Val =
+  private def path(v: Val, key: String, position: Option[org.camunda.feel.api.Position] = None)(
+      implicit context: EvalContext
+  ): Val =
     v match {
       case ctx: ValContext =>
         EvalContext.wrap(ctx.context, context.valueMapper).variable(key) match {
@@ -878,16 +893,18 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             }
             error(
               failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-              failureMessage = s"No context entry found with key '$key'. $detailedMessage"
+              failureMessage = s"No context entry found with key '$key'. $detailedMessage",
+              position = position
             )
             ValNull
           case x: Val      => x
         }
-      case ValList(list)   => ValList(list map (item => path(item, key)))
+      case ValList(list)   => ValList(list map (item => path(item, key, position)))
       case ValNull         =>
         error(
           failureType = EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND,
-          failureMessage = s"No context entry found with key '$key'. The context is null"
+          failureMessage = s"No context entry found with key '$key'. The context is null",
+          position = position
         )
         ValNull
       case value           =>
@@ -896,7 +913,8 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           error(
             failureType = EvaluationFailureType.NO_PROPERTY_FOUND,
             failureMessage =
-              s"No property found with name '$key' of value '$value'. Available properties: $propertyNames"
+              s"No property found with name '$key' of value '$value'. Available properties: $propertyNames",
+            position = position
           )
           ValNull
         }

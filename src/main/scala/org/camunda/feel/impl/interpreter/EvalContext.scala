@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.api.{EvaluationFailureType, Position}
 import org.camunda.feel.context.Context.{EmptyContext, StaticContext}
 import org.camunda.feel.context.FunctionProvider.{
   CompositeFunctionProvider,
@@ -124,6 +124,14 @@ class EvalContext(
 
   def addFailure(failureType: EvaluationFailureType, failureMessage: String): Unit = {
     failureCollector.addFailure(failureType, failureMessage)
+  }
+
+  def addFailure(
+      failureType: EvaluationFailureType,
+      failureMessage: String,
+      position: Option[Position]
+  ): Unit = {
+    failureCollector.addFailure(failureType, failureMessage, position)
   }
 
   override def toString: String = variableProvider.getVariables.mkString

@@ -63,12 +63,17 @@ trait EvaluationResultMatchers {
   class SuppressedFailureMatcher(expectedFailure: EvaluationFailure)
       extends Matcher[EvaluationResult] {
     override def apply(evaluationResult: EvaluationResult): MatchResult = {
-      val matchResult = (suppressedFailures: List[EvaluationFailure]) =>
+      val matchResult = (suppressedFailures: List[EvaluationFailure]) => {
+        val matches = suppressedFailures.exists(f =>
+          f.failureType == expectedFailure.failureType &&
+            f.failureMessage == expectedFailure.failureMessage
+        )
         MatchResult(
-          suppressedFailures.contains(expectedFailure),
+          matches,
           s"the evaluation didn't report '$expectedFailure' but '$suppressedFailures'",
           s"the evaluation reported '$expectedFailure' as expected"
         )
+      }
       evaluationResult match {
         case SuccessfulEvaluationResult(_, suppressedFailures) => matchResult(suppressedFailures)
         case FailedEvaluationResult(_, suppressedFailures)     => matchResult(suppressedFailures)

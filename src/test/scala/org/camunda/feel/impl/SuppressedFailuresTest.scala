@@ -102,15 +102,18 @@ class SuppressedFailuresTest
     evaluationResult.hasSuppressedFailures should be(true)
     evaluationResult.suppressedFailures should have size (2)
 
-    evaluationResult.suppressedFailures should contain inOrder (
-      EvaluationFailure(
-        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
-        failureMessage = "No variable found with name 'x'"
-      ),
-      EvaluationFailure(
-        failureType = EvaluationFailureType.INVALID_TYPE,
-        failureMessage = "Can't add 'null' to '1'"
-      )
+    evaluationResult.suppressedFailures(0).failureType should be(
+      EvaluationFailureType.NO_VARIABLE_FOUND
+    )
+    evaluationResult.suppressedFailures(0).failureMessage should be(
+      "No variable found with name 'x'"
+    )
+
+    evaluationResult.suppressedFailures(1).failureType should be(
+      EvaluationFailureType.INVALID_TYPE
+    )
+    evaluationResult.suppressedFailures(1).failureMessage should be(
+      "Can't add 'null' to '1'"
     )
   }
 

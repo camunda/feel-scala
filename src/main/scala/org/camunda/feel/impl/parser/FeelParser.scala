@@ -27,6 +27,7 @@ import fastparse.{
   CharsWhileIn,
   EagerOpsStr,
   End,
+  Index,
   LiteralStr,
   P,
   Parsed,
@@ -34,6 +35,7 @@ import fastparse.{
   StringIn,
   parse
 }
+import org.camunda.feel.api.Position
 import org.camunda.feel.syntaxtree.{
   Addition,
   ArithmeticNegation,
@@ -456,8 +458,8 @@ object FeelParser {
 
   private def variableRef[_: P]: P[Exp] =
     P(
-      qualifiedName
-    ).map(Ref(_))
+      Index ~ qualifiedName ~ Index
+    ).map { case (start, names, end) => Ref(names, Some(Position(start, end))) }
 
   private def inputValue[_: P]: P[Exp] =
     P(
@@ -512,12 +514,12 @@ object FeelParser {
         FunctionInvocation(name, parameters)
       case (names, None)                   =>
         QualifiedFunctionInvocation(
-          Ref(names.dropRight(1)),
+          Ref(names.dropRight(1), None),
           names.last,
           PositionalFunctionParameters(List.empty)
         )
       case (names, Some(parameters))       =>
-        QualifiedFunctionInvocation(Ref(names.dropRight(1)), names.last, parameters)
+        QualifiedFunctionInvocation(Ref(names.dropRight(1), None), names.last, parameters)
     }
 
   // List all built-in function names that contains a reserved word. These names are not allowed as
@@ -546,8 +548,14 @@ object FeelParser {
 
   private def path[_: P](value: Exp): P[Exp] =
     P(
-      ("." ~ (valueProperty | name)).rep(1)
-    ).map(ops => ops.foldLeft(value)(PathExpression))
+      Index ~ ("." ~ (valueProperty | name) ~ Index).rep(1)
+    ).map { case (startIdx, segments) =>
+      segments.foldLeft(value) { case (base, (key, endIdx)) =>
+        // The start position is from the base value's end (or start of the dot)
+        // For simplicity, we use the start position of the whole path expression
+        PathExpression(base, key, Some(Position(startIdx, endIdx)))
+      }
+    }
 
   // list all properties that doesn't match to the regular name (i.e. with whitespaces)
   // - generic parser with whitespace doesn't work because there is no fixed follow-up character

@@ -16,7 +16,7 @@
  */
 package org.camunda.feel.impl.interpreter
 
-import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType}
+import org.camunda.feel.api.{EvaluationFailure, EvaluationFailureType, Position}
 
 import scala.collection.mutable.ListBuffer
 
@@ -29,11 +29,24 @@ class EvaluationFailureCollector {
   def addFailure(failureType: EvaluationFailureType, failureMessage: String): Unit = {
     failuresBuffer += EvaluationFailure(
       failureType = failureType,
-      failureMessage = failureMessage
+      failureMessage = failureMessage,
+      position = None
+    )
+  }
+
+  def addFailure(
+      failureType: EvaluationFailureType,
+      failureMessage: String,
+      position: Option[Position]
+  ): Unit = {
+    failuresBuffer += EvaluationFailure(
+      failureType = failureType,
+      failureMessage = failureMessage,
+      position = position
     )
   }
 
   override def toString: String = failuresBuffer
-    .map { case EvaluationFailure(failureType, message) => s"* [$failureType] $message" }
+    .map { case EvaluationFailure(failureType, message, _) => s"* [$failureType] $message" }
     .mkString("\n")
 }

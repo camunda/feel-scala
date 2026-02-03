@@ -30,7 +30,10 @@ import org.camunda.feel.{
 /** @author
   *   Philipp Ossler
   */
-sealed trait Exp
+sealed trait Exp {
+  // Optional position information for the expression in the source text
+  def position: Option[org.camunda.feel.api.Position] = None
+}
 
 sealed trait Comparison extends Exp {
   val x: Exp
@@ -83,13 +86,21 @@ case class AtLeastOne(xs: List[Exp]) extends Exp
 
 case class Not(x: Exp) extends Exp
 
-case class Ref(names: List[String]) extends Exp
-
-object Ref {
-  def apply(name: String) = new Ref(List(name))
+case class Ref(names: List[String], pos: Option[org.camunda.feel.api.Position] = None) extends Exp {
+  override def position: Option[org.camunda.feel.api.Position] = pos
 }
 
-case class PathExpression(path: Exp, key: String) extends Exp
+object Ref {
+  def apply(name: String) = new Ref(List(name), None)
+}
+
+case class PathExpression(
+    path: Exp,
+    key: String,
+    pos: Option[org.camunda.feel.api.Position] = None
+) extends Exp {
+  override def position: Option[org.camunda.feel.api.Position] = pos
+}
 
 case class Addition(x: Exp, y: Exp) extends Exp
 

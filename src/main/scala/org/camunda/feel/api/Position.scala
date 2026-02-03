@@ -16,20 +16,11 @@
  */
 package org.camunda.feel.api
 
-/** A failure that occurred during the evaluation of an FEEL expression.
+/** Represents a position in the source FEEL expression.
   *
-  * @param failureType
-  *   The type of failure.
-  * @param failureMessage
-  *   The message that describes the failure.
-  * @param position
-  *   The optional position in the source expression where the failure occurred.
+  * @param from
+  *   The start offset (0-based index) in the source string
+  * @param to
+  *   The end offset (0-based index) in the source string
   */
-case class EvaluationFailure(
-    failureType: EvaluationFailureType,
-    failureMessage: String,
-    position: Option[Position] = None
-) {
-
-  override def toString: String = s"[$failureType] $failureMessage"
-}
+case class Position(from: Int, to: Int)

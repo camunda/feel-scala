@@ -109,10 +109,10 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
       iterators.flatMap { case (_, value) => validate(value) } ++ validate(body)
     case Filter(list, filter)            => validate(list) ++ validate(filter)
 
-    case PathExpression(path, _)   => validate(path)
-    case Not(x)                    => validate(x)
-    case UnaryTestExpression(test) => validate(test)
-    case InstanceOf(x, _)          => validate(x)
+    case PathExpression(path, _, _) => validate(path)
+    case Not(x)                     => validate(x)
+    case UnaryTestExpression(test)  => validate(test)
+    case InstanceOf(x, _)           => validate(x)
 
     case _ => Nil
   }
