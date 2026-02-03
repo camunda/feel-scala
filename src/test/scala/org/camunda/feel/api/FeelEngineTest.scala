@@ -105,10 +105,13 @@ class FeelEngineTest extends AnyFlatSpec with Matchers with EitherValues {
 
         evaluationResult.isSuccess should be(true)
         evaluationResult.hasSuppressedFailures should be(true)
-        evaluationResult.suppressedFailures.exists(f =>
-          f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
-            f.failureMessage == "No variable found with name 'x'"
-        ) should be(true)
+        evaluationResult.suppressedFailures should contain(
+          EvaluationFailure(
+            failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+            failureMessage = "No variable found with name 'x'",
+            position = Some(Position(4, 5))
+          )
+        )
 
       case Left(_) => fail("Expected the expression to be parsed successfully")
     }

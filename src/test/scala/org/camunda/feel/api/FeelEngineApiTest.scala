@@ -176,10 +176,13 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures.exists(f =>
-      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
-        f.failureMessage == "No variable found with name 'x'"
-    ) should be(true)
+    evaluationResult.suppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'",
+        position = Some(Position(4, 5))
+      )
+    )
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
@@ -198,10 +201,13 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     evaluationResult.failure should be(Failure("<success>"))
 
     evaluationResult.hasSuppressedFailures should be(true)
-    evaluationResult.suppressedFailures.exists(f =>
-      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
-        f.failureMessage == "No variable found with name 'x'"
-    ) should be(true)
+    evaluationResult.suppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'",
+        position = Some(Position(2, 3))
+      )
+    )
 
     evaluationResult.toEither.isRight should be(true)
     evaluationResult.toEither should be(Right(evaluationResult.result))
@@ -223,10 +229,13 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
     evaluationResult.getResult shouldBe null
 
-    evaluationResult.getSuppressedFailures.asScala.exists(f =>
-      f.failureType == EvaluationFailureType.NO_VARIABLE_FOUND &&
-        f.failureMessage == "No variable found with name 'x'"
-    ) should be(true)
+    evaluationResult.getSuppressedFailures should contain(
+      EvaluationFailure(
+        failureType = EvaluationFailureType.NO_VARIABLE_FOUND,
+        failureMessage = "No variable found with name 'x'",
+        position = Some(Position(4, 5))
+      )
+    )
   }
 
   it should "get a failure message" in {
