@@ -19,8 +19,9 @@ package org.camunda.feel.api
 /** Represents a position in the source FEEL expression.
   *
   * @param from
-  *   The start offset (0-based index) in the source string
+  *   The start offset (0-based index, inclusive) in the source string
   * @param to
-  *   The end offset (0-based index) in the source string
+  *   The end offset (0-based index, exclusive) in the source string. For example, in "x + 1", the
+  *   variable "x" has Position(0, 1).
   */
 case class Position(from: Int, to: Int)

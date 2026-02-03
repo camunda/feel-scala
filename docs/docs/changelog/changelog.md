@@ -10,6 +10,21 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+## 1.21
+
+<MarkerChangelogVersion versionZeebe="TBD" versionC7="TBD" />
+
+**API Improvements:**
+
+* Evaluation failures (warnings) now include source position information
+  * Added `Position` case class with `from` and `to` offsets
+  * `EvaluationFailure` now includes an optional `position: Option[Position]` field
+  * Position tracking is automatically captured for variable and path expression failures
+  * This allows downstream tools (e.g., feel-js) to map failures back to the source expression
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.21.0).
+
+
 ## 1.20
 
 <MarkerChangelogVersion versionZeebe="8.9.0" versionC7="not yet" />

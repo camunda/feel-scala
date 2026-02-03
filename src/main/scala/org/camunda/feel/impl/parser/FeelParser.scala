@@ -548,11 +548,10 @@ object FeelParser {
 
   private def path[_: P](value: Exp): P[Exp] =
     P(
-      Index ~ ("." ~ (valueProperty | name) ~ Index).rep(1)
-    ).map { case (startIdx, segments) =>
-      segments.foldLeft(value) { case (base, (key, endIdx)) =>
-        // The start position is from the base value's end (or start of the dot)
-        // For simplicity, we use the start position of the whole path expression
+      (Index ~ "." ~ (valueProperty | name) ~ Index).rep(1)
+    ).map { segments =>
+      segments.foldLeft(value) { case (base, (startIdx, key, endIdx)) =>
+        // Each segment tracks its own position from the dot to the end of the property/key
         PathExpression(base, key, Some(Position(startIdx, endIdx)))
       }
     }

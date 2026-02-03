@@ -66,7 +66,7 @@ class SuppressedFailuresWithPositionTest
     val failure = result.suppressedFailures.head
 
     failure.failureType should be(EvaluationFailureType.NO_CONTEXT_ENTRY_FOUND)
-    failure.position should be(Some(Position(11, 15)))
+    failure.position should be(Some(Position(13, 15)))
   }
 
   it should "report position in longer expressions" in {
