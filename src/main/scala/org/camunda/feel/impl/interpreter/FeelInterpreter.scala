@@ -304,9 +304,8 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
       f: T => Either[ValError, R],
       resultMapping: Seq[R] => Val
   ): Val = {
-
     foldEither[T, Seq[R]](
-      Seq.empty,
+      Vector.empty,
       it,
       { case (xs, x) =>
         f(x).map(xs :+ _)
