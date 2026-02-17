@@ -109,7 +109,7 @@ class ListPerformanceTest
     result.success.value should returnResult((1 to listSize).toList)
   }
 
-  "A filter expression" should "handle large lists efficiently" ignore {
+  "A filter expression" should "handle large lists efficiently" in {
     val list = (1 to listSize).toList
 
     val result = Try(evaluateExpression("xs[item > n]", Map("xs" -> list, "n" -> (listSize / 2))))
