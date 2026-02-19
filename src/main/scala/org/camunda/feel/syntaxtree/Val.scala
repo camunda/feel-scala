@@ -323,7 +323,7 @@ case class ValList(itemsAsSeq: Seq[Val]) extends Val {
   def copy(items: List[Val]): ValList = new ValList(items)
 }
 
-object ValList {
+object ValList extends (List[Val] => ValList) {
   def apply(items: List[Val]): ValList = new ValList(items)
   def apply(items: Seq[Val]): ValList  = new ValList(items)
 }
