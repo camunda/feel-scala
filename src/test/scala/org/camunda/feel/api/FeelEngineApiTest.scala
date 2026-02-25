@@ -35,6 +35,9 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     parseResult.isFailure should be(false)
     parseResult.failure should be(Failure("<success>"))
 
+    parseResult.variableNames should contain("x")
+    parseResult.variableReferences should contain(VariableReference(Seq("x")))
+
     parseResult.toEither.isRight should be(true)
     parseResult.toEither should be(Right(parseResult.parsedExpression))
   }
@@ -47,6 +50,9 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
 
     parseResult.isFailure should be(false)
     parseResult.failure should be(Failure("<success>"))
+
+    parseResult.variableNames shouldBe empty
+    parseResult.variableReferences shouldBe empty
 
     parseResult.toEither.isRight should be(true)
     parseResult.toEither should be(Right(parseResult.parsedExpression))
@@ -62,6 +68,9 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     parseResult.failure shouldBe a[Failure]
     parseResult.failure.message should startWith("failed to parse expression")
 
+    parseResult.variableNames shouldBe empty
+    parseResult.variableReferences shouldBe empty
+
     parseResult.toEither.isLeft should be(true)
     parseResult.toEither should be(Left(parseResult.failure))
   }
@@ -75,6 +84,9 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     parseResult.isFailure should be(true)
     parseResult.failure shouldBe a[Failure]
     parseResult.failure.message should startWith("failed to parse expression")
+
+    parseResult.variableNames shouldBe empty
+    parseResult.variableReferences shouldBe empty
 
     parseResult.toEither.isLeft should be(true)
     parseResult.toEither should be(Left(parseResult.failure))
@@ -241,6 +253,36 @@ class FeelEngineApiTest extends AnyFlatSpec with Matchers with EitherValues {
     )
 
     exception.getMessage should startWith("failed to parse expression")
+  }
+
+  it should "get the variable names of a parsed expression" in {
+    val parseResult = engine.parseExpression("a.b + c")
+
+    parseResult.getVariableNames shouldBe a[java.util.Set[_]]
+    parseResult.getVariableNames should contain allOf ("a", "c")
+
+    parseResult.parsedExpression.getVariableNames shouldBe a[java.util.Set[_]]
+    parseResult.parsedExpression.getVariableNames should contain allOf ("a", "c")
+  }
+
+  it should "get the variable references of a parsed expression" in {
+    val parseResult = engine.parseExpression("a.b + c")
+
+    parseResult.getVariableReferences shouldBe a[java.util.Set[_]]
+    parseResult.getVariableReferences should contain allOf (
+      VariableReference(Seq("a", "b")),
+      VariableReference(Seq("c"))
+    )
+
+    parseResult.parsedExpression.getVariableReferences shouldBe a[java.util.Set[_]]
+    parseResult.parsedExpression.getVariableReferences should contain allOf (
+      VariableReference(Seq("a", "b")),
+      VariableReference(Seq("c"))
+    )
+
+    val variableReference = parseResult.variableReferences.head
+    variableReference.getFullQualifiedName shouldBe a[java.util.List[_]]
+    variableReference.getFullQualifiedName should contain inOrder ("a", "b")
   }
 
 }

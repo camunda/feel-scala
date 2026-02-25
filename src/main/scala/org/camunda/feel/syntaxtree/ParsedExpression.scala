@@ -16,4 +16,35 @@
  */
 package org.camunda.feel.syntaxtree
 
-case class ParsedExpression(expression: Exp, text: String)
+import org.camunda.feel.api.VariableReference
+import org.camunda.feel.impl.parser.ExpressionVariableExtractor
+
+import scala.jdk.CollectionConverters.SetHasAsJava
+
+case class ParsedExpression(expression: Exp, text: String) {
+
+  /** Returns the variable references from the parsed expression. The references include the
+    * variable names and their nested variable properties (e.g., for an expression `a.b + c` the
+    * references are `[a.b, c]`).
+    */
+  lazy val variableReferences: Set[VariableReference] =
+    ExpressionVariableExtractor.getVariableReferences(expression)
+
+  /** Returns the names of the referenced variables from the parsed expression. The names do not
+    * include nested variable properties, but only the top-level variable names (e.g., for an
+    * expression `a.b + c` the variable names are `[a, c]`).
+    */
+  lazy val variableNames: Set[String] = variableReferences.map(_.variableName)
+
+  /** Returns the variable references from the parsed expression. The references include the
+    * variable names and their nested variable properties (e.g., for an expression `a.b + c` the
+    * references are `[a.b, c]`).
+    */
+  def getVariableReferences: java.util.Set[VariableReference] = variableReferences.asJava
+
+  /** Returns the names of the referenced variables from the parsed expression. The names do not
+    * include nested variable properties, but only the top-level variable names (e.g., for an
+    * expression `a.b + c` the variable names are `[a, c]`).
+    */
+  def getVariableNames: java.util.Set[String] = variableNames.asJava
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.camunda.feel.api
+
+import scala.jdk.CollectionConverters.SeqHasAsJava
+
+/** Represents a reference to a variable in an expression.
+  *
+  * @param fullQualifiedName
+  *   the fully qualified name of the variable
+  */
+case class VariableReference(fullQualifiedName: Seq[String]) {
+
+  /** Creates a reference for a variable with the given name. The name is treated as a fully
+    * qualified name.
+    *
+    * @param variableName
+    *   the name of the variable
+    */
+  def this(variableName: String) = this(Seq(variableName))
+
+  /** Returns the name of the variable being referenced. This is the first element of the fully
+    * qualified name, which represents the top-level variable name. For example, for an expression
+    * `a.b.c`, the variable name is `a`.
+    */
+  val variableName: String = fullQualifiedName.head
+
+  /** Returns the fully qualified name of the variable being referenced.
+    */
+  def getFullQualifiedName: java.util.List[String] = fullQualifiedName.asJava
+
+}
