@@ -37,7 +37,7 @@ case class VariableReference(fullQualifiedName: Seq[String]) {
     * qualified name, which represents the top-level variable name. For example, for an expression
     * `a.b.c`, the variable name is `a`.
     */
-  val variableName: String = fullQualifiedName.head
+  val variableName: String = fullQualifiedName.headOption.getOrElse("<empty>")
 
   /** Returns the fully qualified name of the variable being referenced.
     */
