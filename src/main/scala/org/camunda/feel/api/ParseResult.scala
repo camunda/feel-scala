@@ -39,6 +39,31 @@ sealed trait ParseResult {
     */
   def isFailure: Boolean = !isSuccess
 
+  /** Returns the names of the referenced variables from the parsed expression. The names do not
+    * include nested variable properties, but only the top-level variable names (e.g., for an
+    * expression `a.b + c` the variable names are `[a, c]`).
+    */
+  def variableNames: Set[String] = parsedExpression.variableNames
+
+  /** Returns the variable references from the parsed expression. The references include the
+    * variable names and their nested variable properties (e.g., for an expression `a.b + c` the
+    * references are `[a.b, c]`).
+    */
+  def variableReferences: Set[VariableReference] = parsedExpression.variableReferences
+
+  /** Returns the names of the referenced variables from the parsed expression. The names do not
+    * include nested variable properties, but only the top-level variable names (e.g., for an
+    * expression `a.b + c` the variable names are `[a, c]`).
+    */
+  def getVariableNames: java.util.Set[String] = parsedExpression.getVariableNames
+
+  /** Returns the variable references from the parsed expression. The references include the
+    * variable names and their nested variable properties (e.g., for an expression `a.b + c` the
+    * references are `[a.b, c]`).
+    */
+  def getVariableReferences: java.util.Set[VariableReference] =
+    parsedExpression.getVariableReferences
+
   /** Returns the parsing result as an Either type. If the parsing was successful, it returns the
     * result as Right. Otherwise, it returns the failure as Left.
     */
