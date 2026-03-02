@@ -10,6 +10,16 @@ This page contains an overview of the released versions and highlights the major
 point of view (i.e. focus on features). The complete changelog, including the patch
 versions, can be found on the [GitHub release page](https://github.com/camunda/feel-scala/releases).
 
+## 1.21
+
+<MarkerChangelogVersion versionZeebe="8.9.0" versionC7="not yet" />
+
+**Expressions:**
+
+* Get variable references and names of a parsed expression  
+
+See the full changelog [here](https://github.com/camunda/feel-scala/releases/tag/1.21.0).
+
 ## 1.20
 
 <MarkerChangelogVersion versionZeebe="8.9.0" versionC7="not yet" />
