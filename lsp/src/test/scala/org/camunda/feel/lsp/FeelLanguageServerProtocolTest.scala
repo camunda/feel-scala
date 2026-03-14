@@ -36,7 +36,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
@@ -148,14 +148,25 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
   }
 
   it should "publish diagnostics in fast and interpreter phases" in {
-    val server = new FeelLanguageServer()
+    val analyzer = new FeelAnalyzer() {
+      override def analyzeInterpreter(text: String): List[org.eclipse.lsp4j.Diagnostic] = {
+        val diagnostic = new org.eclipse.lsp4j.Diagnostic(
+          FeelAnalyzer.fullRange(text),
+          "FUNCTION_INVOCATION_FAILURE: simulated warning"
+        )
+        diagnostic.setSeverity(DiagnosticSeverity.Warning)
+        diagnostic.setSource("feel-interpreter")
+        List(diagnostic)
+      }
+    }
+
+    val server = new FeelLanguageServer(analyzer)
     val client = new RecordingLanguageClient()
     server.connect(client)
     server.initialize(new InitializeParams()).get()
 
     val uri        = "file:///phased-diagnostics.feel"
-    val expression =
-      "substring(123, 1, 2) + (1 + null) + (1 / 0) + (\"abc\" - 2) + unknownVar"
+    val expression = "1 + 1"
 
     server.getTextDocumentService.didOpen(
       new DidOpenTextDocumentParams(
@@ -267,7 +278,25 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
   }
 
   it should "suppress stale interpreter diagnostics for older versions" in {
-    val server = new FeelLanguageServer()
+    val firstEvalStarted = new CountDownLatch(1)
+    val releaseFirstEval = new CountDownLatch(1)
+    val interpreterRuns  = new AtomicInteger(0)
+
+    val analyzer = new FeelAnalyzer() {
+      override def analyzeInterpreter(text: String): List[org.eclipse.lsp4j.Diagnostic] = {
+        val run = interpreterRuns.incrementAndGet()
+
+        if (run == 1) {
+          firstEvalStarted.countDown()
+          releaseFirstEval.await()
+          List(newInterpreterDiagnostic(text, "stale-warning"))
+        } else {
+          List(newInterpreterDiagnostic(text, "latest-warning"))
+        }
+      }
+    }
+
+    val server = new FeelLanguageServer(analyzer)
     val client = new RecordingLanguageClient()
     server.connect(client)
     server.initialize(new InitializeParams()).get()
@@ -289,6 +318,8 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     openFast should not be null
     openFast.getVersion should be(1)
 
+    firstEvalStarted.await(1, TimeUnit.SECONDS) should be(true)
+
     server.getTextDocumentService.didChange(
       new DidChangeTextDocumentParams(
         new VersionedTextDocumentIdentifier(uri, 2),
@@ -298,19 +329,24 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
       )
     )
 
-    val observed = Iterator
-      .continually(client.awaitDiagnostics(500))
-      .take(6)
-      .filter(_ != null)
-      .toList
+    val changeFast = client.awaitDiagnostics(500)
+    changeFast should not be null
+    changeFast.getVersion should be(2)
+    changeFast.getDiagnostics.asScala shouldBe empty
 
-    observed.exists(_.getVersion == 2) should be(true)
-    observed.exists(d => d.getVersion == 2 && d.getDiagnostics.asScala.isEmpty) should be(true)
+    val changeInterpreter = client.awaitDiagnostics(1000)
+    changeInterpreter should not be null
+    changeInterpreter.getVersion should be(2)
+    changeInterpreter.getDiagnostics.asScala.exists(
+      _.getMessage.contains("latest-warning")
+    ) should be(
+      true
+    )
 
-    val firstVersion2Index = observed.indexWhere(_.getVersion == 2)
-    if (firstVersion2Index >= 0) {
-      observed.drop(firstVersion2Index + 1).exists(_.getVersion == 1) should be(false)
-    }
+    releaseFirstEval.countDown()
+
+    // Completing the stale version-1 evaluation must not publish diagnostics anymore.
+    client.awaitDiagnostics(300) should be(null)
   }
 
   it should "interrupt long-running interpreter diagnostics evaluation threads" in {
@@ -476,6 +512,16 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
         TokenSpan(lexeme, tokenType)
       }
       .toList
+  }
+
+  private def newInterpreterDiagnostic(
+      text: String,
+      message: String
+  ): org.eclipse.lsp4j.Diagnostic = {
+    val diagnostic = new org.eclipse.lsp4j.Diagnostic(FeelAnalyzer.fullRange(text), message)
+    diagnostic.setSeverity(DiagnosticSeverity.Warning)
+    diagnostic.setSource("feel-interpreter")
+    diagnostic
   }
 
 }
