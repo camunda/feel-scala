@@ -20,6 +20,7 @@
     <version.log4j>2.25.3</version.log4j>
     <version.uuid>5.2.0</version.uuid>
     <version.jackson>2.21.1</version.jackson>
+    <version.lsp4j>0.19.0</version.lsp4j>
 
     <plugin.version.shade>3.6.2</plugin.version.shade>
     <plugin.version.gpg>1.6</plugin.version.gpg>
@@ -107,6 +108,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-scala_2.13</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j</artifactId>
+      <version>${version.lsp4j}</version>
     </dependency>
 
     <dependency>
@@ -417,6 +424,12 @@
                   </excludes>
                 </filter>
               </filters>
+
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.camunda.feel.lsp.FeelLspLauncher</mainClass>
+                </transformer>
+              </transformers>
 
               <relocations>
                 <relocation>

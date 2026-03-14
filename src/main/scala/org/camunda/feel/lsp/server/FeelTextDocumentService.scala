@@ -1,0 +1,111 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.camunda.feel.lsp.server
+
+import org.camunda.feel.lsp.analysis.FeelAnalyzer
+import org.camunda.feel.lsp.model.{DocumentState, DocumentStore}
+import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.services.{LanguageClient, TextDocumentService}
+import org.eclipse.lsp4j.{
+  CompletionItem,
+  CompletionList,
+  CompletionParams,
+  DidChangeTextDocumentParams,
+  DidCloseTextDocumentParams,
+  DidOpenTextDocumentParams,
+  DidSaveTextDocumentParams,
+  Hover,
+  HoverParams,
+  PublishDiagnosticsParams
+}
+
+import java.util
+import java.util.concurrent.CompletableFuture
+import scala.jdk.CollectionConverters.SeqHasAsJava
+
+class FeelTextDocumentService(
+    store: DocumentStore,
+    analyzer: FeelAnalyzer,
+    clientProvider: () => LanguageClient
+) extends TextDocumentService {
+
+  override def didOpen(params: DidOpenTextDocumentParams): Unit = {
+    val document = params.getTextDocument
+    val state    = store.put(
+      uri = document.getUri,
+      version = versionOf(document.getVersion),
+      text = document.getText,
+      analyzer = analyzer
+    )
+
+    publishDiagnostics(state)
+  }
+
+  override def didChange(params: DidChangeTextDocumentParams): Unit = {
+    val document  = params.getTextDocument
+    val maybeOpen = store.update(
+      uri = document.getUri,
+      version = versionOf(document.getVersion),
+      changes = params.getContentChanges,
+      analyzer = analyzer
+    )
+
+    maybeOpen.foreach(publishDiagnostics)
+  }
+
+  override def didClose(params: DidCloseTextDocumentParams): Unit = {
+    store.remove(params.getTextDocument.getUri)
+    val diagnostics = new PublishDiagnosticsParams(
+      params.getTextDocument.getUri,
+      util.Collections.emptyList[org.eclipse.lsp4j.Diagnostic]()
+    )
+    Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
+  }
+
+  override def didSave(params: DidSaveTextDocumentParams): Unit = ()
+
+  override def completion(
+      params: CompletionParams
+  ): CompletableFuture[Either[util.List[CompletionItem], CompletionList]] = {
+    val items = store
+      .get(params.getTextDocument.getUri)
+      .map(document => analyzer.completionItems(document.text, document.analysis))
+      .getOrElse(util.Collections.emptyList[CompletionItem]())
+
+    CompletableFuture.completedFuture(Either.forLeft(items))
+  }
+
+  override def hover(params: HoverParams): CompletableFuture[Hover] = {
+    val hover = store
+      .get(params.getTextDocument.getUri)
+      .map(document => analyzer.hover(document.text, params))
+      .orNull
+
+    CompletableFuture.completedFuture(hover)
+  }
+
+  private def publishDiagnostics(state: DocumentState): Unit = {
+    val diagnostics =
+      new PublishDiagnosticsParams(state.uri, state.analysis.diagnostics.toList.asJava)
+    diagnostics.setVersion(state.version)
+
+    Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
+  }
+
+  private def versionOf(version: Integer): Int = Option(version).map(_.intValue()).getOrElse(0)
+}
+
