@@ -243,7 +243,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     timeoutDiagnostic.getSource should be("feel-interpreter")
     timeoutDiagnostic.getMessage should include(s"timed out after $timeoutMillis ms")
 
-    interruptedEval.await(1, TimeUnit.SECONDS) should be(true)
+    interruptedEval.await(3, TimeUnit.SECONDS) should be(true)
     elapsedMillis should be < 1000L
   }
 

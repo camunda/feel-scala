@@ -118,7 +118,7 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
       server.initialize(new InitializeParams()).get(5, TimeUnit.SECONDS)
 
       val uri            = "file:///timeout-stress.feel"
-      val slowExpression = "for i in 1..10000 return for j in 1..100000 return i * j"
+      val slowExpression = "for i in 1..100000 return for j in 1..100000 return i * j"
 
       server.getTextDocumentService.didOpen(
         new DidOpenTextDocumentParams(
@@ -163,13 +163,19 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
         )
       )
 
-      val fastPhase = client.awaitDiagnostics(1000)
-      fastPhase should not be null
-      fastPhase.getDiagnostics.asScala shouldBe empty
+      val deadlineNanos  = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(1000)
+      val version2Events =
+        scala.collection.mutable.ListBuffer.empty[org.eclipse.lsp4j.PublishDiagnosticsParams]
 
-      val interpreterPhase = client.awaitDiagnostics(1000)
-      interpreterPhase should not be null
-      interpreterPhase.getDiagnostics.asScala shouldBe empty
+      while (version2Events.size < 2 && System.nanoTime() < deadlineNanos) {
+        val event = client.awaitDiagnostics(200)
+        if (event != null && event.getVersion == 2) {
+          version2Events += event
+        }
+      }
+
+      version2Events should have size 2
+      version2Events.foreach(_.getDiagnostics.asScala shouldBe empty)
 
       val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
       elapsedMillis should be < 1000L
@@ -238,6 +244,7 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
     val process = new ProcessBuilder(
       javaBin,
       s"-Dlog4j2.configurationFile=$logConfigPath",
+      "-Dfeel.lsp.executorMode=platform",
       "-cp",
       classpath,
       "org.camunda.feel.lsp.FeelLspLauncher"
