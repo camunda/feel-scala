@@ -137,6 +137,48 @@ When diagnosing issues, start by checking the LSP Console:
 - Interpreter suppressed failures are reported as LSP warnings.
 - Interpreter warnings currently use a full-document range because no precise per-failure source span is available.
 
+### Diagnostics concurrency model
+
+- The server publishes diagnostics in two phases:
+  1. fast diagnostics from parser/static analysis (`didOpen`/`didChange` path)
+  2. interpreter diagnostics computed asynchronously
+- Interpreter diagnostics execution is separated from request handling and uses dedicated executors.
+- In-flight interpreter work is tracked per document URI.
+- On `didClose`, any in-flight interpreter work for that URI is cancelled.
+
+### Timeout and cancellation behavior
+
+- Interpreter diagnostics use a timeout budget (default `5000 ms`).
+- When timeout is reached, evaluation is cancelled via interruption (`Future.cancel(true)`).
+- Timeout is surfaced as an LSP diagnostic:
+  - `source = feel-interpreter`
+  - `severity = Error`
+  - message includes `timed out after <ms> ms`
+- Cancellation due document lifecycle (for example close) suppresses stale publication.
+
+### Executor mode (platform vs virtual)
+
+- Diagnostics executors support two modes:
+  - `virtual` (default)
+  - `platform`
+- Default mode is resolved at server startup and can be overridden with JVM property:
+
+```bash
+java -Dfeel.lsp.executorMode=platform -jar lsp/target/feel-lsp-<version>-complete.jar
+```
+
+- In tests, stdio integration can force `platform` mode for deterministic stress behavior.
+
+### Tuning knobs
+
+- `feel.lsp.executorMode`
+  - `virtual` or `platform`
+  - controls diagnostics/interpreter executor strategy
+- `interpreterTimeoutMillis` (constructor-level wiring in server/service)
+  - controls interpreter diagnostics timeout budget
+- `feel.lsp.log.level`
+  - increases request/diagnostics trace detail during debugging
+
 ### Semantic token behavior
 
 - Token legend is defined in `FeelAnalyzer.SemanticTokenTypes`.
