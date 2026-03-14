@@ -9,8 +9,21 @@ The FEEL-Scala LSP server helps you catch FEEL issues while editing and explore 
 - diagnostics from the FEEL parser and interpreter
 - completions for FEEL code
 - hover information
+- semantic token highlighting (`keyword`, `function`, `variable`, `string`, `number`)
 
 During `initialize`, the offered FEEL version is exposed via `capabilities.experimental.feelLanguageVersion`.
+
+Current `initialize` capabilities include:
+
+- `textDocumentSync: 1` (full document sync)
+- `hoverProvider: true`
+- `completionProvider: {}`
+- `semanticTokensProvider` with:
+  - token types: `keyword`, `function`, `variable`, `string`, `number`
+  - `range: false`
+  - `full: true`
+  - `id: feel-semantic-tokens`
+- `experimental.feelLanguageVersion: 1.3`
 
 ## Diagnostic example (5 problems)
 
