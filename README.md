@@ -31,7 +31,7 @@ Please have a look at the [developer documentation](https://camunda.github.io/fe
 
 This repository includes an experimental Language Server Protocol (LSP) server for FEEL over stdio.
 
-For setup and usage details, see [LSP.md](./LSP.md).
+For setup and usage details, see [`lsp/README.md`](./lsp/README.md).
 
 ## Contribution
 

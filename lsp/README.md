@@ -53,7 +53,7 @@ Install the [LSP4IJ plugin](https://plugins.jetbrains.com/plugin/23257-lsp4ij) a
 - Go to **Languages & Frameworks > Language Server Protocol > Servers**
 - Click **+** to add a new server
 - Set **Name** to `FEEL-Scala LSP`
-- Set **Command** to `java -jar /path/to/feel-engine-<version>.jar`
+- Set **Command** to `java -jar /path/to/feel-lsp-<version>-complete.jar`
 - Go to the **Mappings** tab and then the **file name patterns** tab and add a new mapping:
   - Set **File name patterns** to `*.feel`
   - Set **Language ID** to `feel`
@@ -64,30 +64,24 @@ Install the [LSP4IJ plugin](https://plugins.jetbrains.com/plugin/23257-lsp4ij) a
 Build the LSP server from source:
 
 ```bash
-./mvnw clean package
+./mvnw -f lsp/pom.xml clean package
 ```
 
 Run the LSP server as a standalone process:
 
 ```bash
-java -jar target/feel-engine-<version>.jar
+java -jar lsp/target/feel-lsp-<version>-complete.jar
 ```
 
 The process speaks JSON-RPC over stdin/stdout and stays running while your editor is connected.
 
-Optional: build an additional thin artifact:
-
-```bash
-./mvnw -PthinJar clean package
-```
-
-This additionally produces `target/feel-engine-<version>-thin.jar` for controlled runtime environments.
+The LSP project builds both a regular JAR (`feel-lsp-<version>.jar`) and a runnable shaded JAR (`feel-lsp-<version>-complete.jar`).
 
 ## Integrate with any LSP client
 
 To connect FEEL LSP from any editor/tooling that supports external language servers:
 
-1. Start `java -jar target/feel-engine-<version>.jar` as a stdio process.
+1. Start `java -jar lsp/target/feel-lsp-<version>-complete.jar` as a stdio process.
 2. Send standard LSP `initialize` / `initialized` requests.
 3. Send text sync notifications for FEEL documents.
 4. Read diagnostics and completion/hover responses over JSON-RPC.
