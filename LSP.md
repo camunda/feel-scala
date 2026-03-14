@@ -98,6 +98,27 @@ No custom transport is required; standard LSP over stdio is enough.
 
 This section is for contributors who want to understand and extend the FEEL LSP server implementation.
 
+### Manual debugging with LSP4IJ
+
+For manual debugging, we recommend installing the IntelliJ [LSP4IJ plugin](https://plugins.jetbrains.com/plugin/23257-lsp4ij).
+
+LSP4IJ is useful during development because it provides:
+
+- an LSP Console with:
+  - request/response tracing for LSP messages
+  - LSP server logs in the IDE
+- a semantic tokens inspector view
+- additional protocol-level debugging tools for capability and message troubleshooting
+
+When diagnosing issues, start by checking the LSP Console:
+
+1. the `initialize` response capabilities
+   - the client uses these to determine which features to use 
+   - e.g. if `semanticTokensProvider` is missing, the client won't send `textDocument/semanticTokens/full` requests
+2. whether expected requests (for example `textDocument/semanticTokens/full`) are sent
+3. server-side logs for request handling and fallback errors
+4. check the semantic tokens inspector to see how the LSP tokenizes the document
+
 ### Current architecture
 
 - Launcher entry point: `src/main/scala/org/camunda/feel/lsp/FeelLspLauncher.scala`
