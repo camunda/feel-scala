@@ -23,22 +23,12 @@ import org.camunda.feel.impl.interpreter.BuiltinFunctions
 import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.syntaxtree.ValFunction
 import org.camunda.feel.valuemapper.ValueMapper
-import org.eclipse.lsp4j.{
-  CompletionItem,
-  CompletionItemKind,
-  Diagnostic,
-  DiagnosticSeverity,
-  Hover,
-  MarkupContent,
-  MarkupKind,
-  Position,
-  Range,
-  TextDocumentPositionParams
-}
+import org.eclipse.lsp4j.{CompletionItem, CompletionItemKind, Diagnostic, DiagnosticSeverity, Hover, MarkupContent, MarkupKind, Position, Range, TextDocumentPositionParams}
 
 import java.util
+import scala.annotation.unused
 import scala.collection.mutable.ListBuffer
-import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
 
@@ -53,7 +43,6 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
           .variableReferences
           .map(_.variableName)
           .filterNot(_ == "<empty>")
-          .toSet
         AnalysisResult(
           diagnostics = interpreterDiagnostics(text),
           variableNames = variableNames
@@ -67,14 +56,14 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
     }
   }
 
-  def completionItems(text: String, analysis: AnalysisResult): util.List[CompletionItem] = {
+  def completionItems(@unused text: String, analysis: AnalysisResult): util.List[CompletionItem] = {
     val keywordItems  = FeelAnalyzer.Keywords.map(keywordCompletion)
     val builtinItems  = FeelAnalyzer.builtinSignatures.toList
       .sortBy(_._1)
       .map { case (name, signatures) => builtinCompletion(name, signatures) }
     val variableItems = analysis.variableNames.toList.sorted.map(variableCompletion)
 
-    (keywordItems ++ builtinItems ++ variableItems).toList.asJava
+    (keywordItems ++ builtinItems ++ variableItems).asJava
   }
 
   def hover(text: String, params: TextDocumentPositionParams): Hover = {

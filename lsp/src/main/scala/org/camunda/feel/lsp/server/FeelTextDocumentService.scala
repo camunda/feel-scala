@@ -140,7 +140,7 @@ class FeelTextDocumentService(
       s"TRACE Publish diagnostics: uri='${state.uri}' count=${state.analysis.diagnostics.size}"
     )
     val diagnostics =
-      new PublishDiagnosticsParams(state.uri, state.analysis.diagnostics.toList.asJava)
+      new PublishDiagnosticsParams(state.uri, state.analysis.diagnostics.asJava)
     diagnostics.setVersion(state.version)
 
     Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
