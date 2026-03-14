@@ -1,0 +1,147 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.camunda.feel.lsp
+
+import org.camunda.feel.lsp.analysis.FeelAnalyzer
+import org.camunda.feel.lsp.server.FeelLanguageServer
+import org.eclipse.lsp4j.{
+  CompletionParams,
+  DidChangeTextDocumentParams,
+  DidOpenTextDocumentParams,
+  HoverParams,
+  InitializeParams,
+  Position,
+  TextDocumentContentChangeEvent,
+  TextDocumentIdentifier,
+  TextDocumentItem,
+  VersionedTextDocumentIdentifier
+}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+import scala.jdk.CollectionConverters.CollectionHasAsScala
+
+class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
+
+  "The FEEL language server" should "advertise capabilities and publish parse diagnostics" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+
+    val initializeResult = server.initialize(new InitializeParams()).get()
+
+    initializeResult.getCapabilities.getHoverProvider.getLeft.booleanValue() should be(true)
+    initializeResult.getCapabilities.getCompletionProvider should not be null
+
+    val experimental =
+      initializeResult.getCapabilities.getExperimental.asInstanceOf[java.util.Map[String, Object]]
+    experimental.get("feelLanguageVersion") should be(FeelAnalyzer.FeelLanguageVersion)
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(
+          "file:///expr.feel",
+          "feel",
+          1,
+          "x +"
+        )
+      )
+    )
+
+    val diagnostics = client.awaitDiagnostics()
+    diagnostics should not be null
+    diagnostics.getDiagnostics.asScala should have size 1
+    diagnostics.getDiagnostics.get(0).getMessage should startWith("Parse error:")
+  }
+
+  it should "publish warning diagnostics, completion and hover data" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+
+    server.initialize(new InitializeParams()).get()
+
+    val uri = "file:///warn.feel"
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(
+          uri,
+          "feel",
+          1,
+          "substring(\"abc\", 1)"
+        )
+      )
+    )
+
+    val diagnostics = client.awaitDiagnostics()
+    diagnostics should not be null
+    diagnostics.getDiagnostics.asScala.exists(_.getMessage.contains("NO_VARIABLE_FOUND")) should be(
+      false
+    )
+
+    val completionParams = new CompletionParams(new TextDocumentIdentifier(uri), new Position(0, 0))
+    val completionResult = server.getTextDocumentService.completion(completionParams).get()
+    val completionItems  = completionResult match {
+      case left if left.isLeft    => left.getLeft.asScala.toList
+      case right if right.isRight => right.getRight.getItems.asScala.toList
+    }
+
+    completionItems.exists(_.getLabel == "substring") should be(true)
+    completionItems.exists(_.getLabel == "x") should be(false)
+
+    val hover = server.getTextDocumentService
+      .hover(
+        new HoverParams(new TextDocumentIdentifier(uri), new Position(0, 4))
+      )
+      .get()
+
+    hover should not be null
+    hover.getContents.getRight.getValue should include("substring")
+  }
+
+  it should "ignore stale didChange versions" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri = "file:///version.feel"
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(
+          uri,
+          "feel",
+          2,
+          "x +"
+        )
+      )
+    )
+
+    client.awaitDiagnostics() should not be null
+
+    val staleChange = new DidChangeTextDocumentParams(
+      new VersionedTextDocumentIdentifier(uri, 1),
+      java.util.Collections.singletonList(new TextDocumentContentChangeEvent("1 + 2"))
+    )
+
+    server.getTextDocumentService.didChange(staleChange)
+
+    client.awaitDiagnostics(250) should be(null)
+  }
+}
+
+
