@@ -409,11 +409,6 @@
               <createSourcesJar>true</createSourcesJar>
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
 
-              <artifactSet>
-                <excludes>
-                  <exclude>org.slf4j:slf4j-api</exclude>
-                </excludes>
-              </artifactSet>
 
               <filters>
                 <filter>
