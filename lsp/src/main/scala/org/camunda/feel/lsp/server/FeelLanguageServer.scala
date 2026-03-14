@@ -40,11 +40,18 @@ import java.util
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
-class FeelLanguageServer(private val analyzer: FeelAnalyzer)
-    extends LanguageServer
+class FeelLanguageServer(
+    private val analyzer: FeelAnalyzer,
+    private val interpreterTimeoutMillis: Long
+) extends LanguageServer
     with LanguageClientAware {
 
-  def this() = this(new FeelAnalyzer())
+  def this(analyzer: FeelAnalyzer) = this(
+    analyzer,
+    FeelTextDocumentService.DefaultInterpreterTimeoutMillis
+  )
+
+  def this() = this(new FeelAnalyzer(), FeelTextDocumentService.DefaultInterpreterTimeoutMillis)
 
   private val logger = FeelLspLogging.logger(getClass.getName)
 
@@ -53,7 +60,7 @@ class FeelLanguageServer(private val analyzer: FeelAnalyzer)
   @volatile private var client: LanguageClient         = _
   @volatile private var shutdownRequested: Boolean     = false
   private val textDocumentService: TextDocumentService =
-    new FeelTextDocumentService(store, analyzer, () => client)
+    new FeelTextDocumentService(store, analyzer, () => client, interpreterTimeoutMillis)
   private val workspaceService: WorkspaceService       = new FeelWorkspaceService()
 
   override def connect(client: LanguageClient): Unit = {

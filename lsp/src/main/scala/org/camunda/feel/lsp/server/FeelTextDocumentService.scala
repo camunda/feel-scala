@@ -50,11 +50,11 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 class FeelTextDocumentService(
     store: DocumentStore,
     analyzer: FeelAnalyzer,
-    clientProvider: () => LanguageClient
+    clientProvider: () => LanguageClient,
+    interpreterTimeoutMillis: Long = FeelTextDocumentService.DefaultInterpreterTimeoutMillis
 ) extends TextDocumentService {
 
-  private val interpreterTimeoutMillis = 5000L
-  private val interpreterExecutor      = Executors.newCachedThreadPool(new ThreadFactory {
+  private val interpreterExecutor = Executors.newCachedThreadPool(new ThreadFactory {
     override def newThread(runnable: Runnable): Thread = {
       val thread = new Thread(runnable)
       thread.setName("feel-lsp-interpreter-diagnostics")
@@ -240,4 +240,8 @@ class FeelTextDocumentService(
     state.analysis.diagnostics.exists(d => d.getSource == "feel-parser")
 
   private def versionOf(version: Integer): Int = Option(version).map(_.intValue()).getOrElse(0)
+}
+
+object FeelTextDocumentService {
+  val DefaultInterpreterTimeoutMillis: Long = 5000L
 }

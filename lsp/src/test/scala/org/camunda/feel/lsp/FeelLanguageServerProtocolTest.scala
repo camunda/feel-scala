@@ -178,15 +178,33 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "publish a timeout error diagnostic after 5 seconds for long-running interpreter evaluations" in {
-    val server = new FeelLanguageServer()
+  it should "publish a timeout error diagnostic for long-running interpreter evaluations" in {
+    val timeoutMillis   = 50L
+    val enteredEval     = new CountDownLatch(1)
+    val interruptedEval = new CountDownLatch(1)
+    val blocker         = new CountDownLatch(1)
+
+    val analyzer = new FeelAnalyzer() {
+      override def analyzeInterpreter(text: String): List[org.eclipse.lsp4j.Diagnostic] = {
+        enteredEval.countDown()
+        try {
+          blocker.await()
+          List.empty
+        } catch {
+          case interrupted: InterruptedException =>
+            interruptedEval.countDown()
+            throw interrupted
+        }
+      }
+    }
+
+    val server = new FeelLanguageServer(analyzer, timeoutMillis)
     val client = new RecordingLanguageClient()
     server.connect(client)
     server.initialize(new InitializeParams()).get()
 
     val uri        = "file:///timeout-diagnostics.feel"
-    val expression =
-      "for i in 1..10000 return for j in 1..100000 return i * j"
+    val expression = "1 + 1"
 
     server.getTextDocumentService.didOpen(
       new DidOpenTextDocumentParams(
@@ -199,8 +217,10 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     fastDiagnostics.getVersion should be(1)
     fastDiagnostics.getDiagnostics.asScala shouldBe empty
 
+    enteredEval.await(1, TimeUnit.SECONDS) should be(true)
+
     val startedAt          = System.nanoTime()
-    val timeoutDiagnostics = client.awaitDiagnostics(7000)
+    val timeoutDiagnostics = client.awaitDiagnostics(1000)
     val elapsedMillis      = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
 
     timeoutDiagnostics should not be null
@@ -210,10 +230,10 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     val timeoutDiagnostic = timeoutDiagnostics.getDiagnostics.get(0)
     timeoutDiagnostic.getSeverity should be(DiagnosticSeverity.Error)
     timeoutDiagnostic.getSource should be("feel-interpreter")
-    timeoutDiagnostic.getMessage should include("timed out after 5000 ms")
+    timeoutDiagnostic.getMessage should include(s"timed out after $timeoutMillis ms")
 
-    elapsedMillis should be >= 5000L
-    elapsedMillis should be < 7000L
+    interruptedEval.await(1, TimeUnit.SECONDS) should be(true)
+    elapsedMillis should be < 1000L
   }
 
   it should "ignore stale didChange versions" in {
