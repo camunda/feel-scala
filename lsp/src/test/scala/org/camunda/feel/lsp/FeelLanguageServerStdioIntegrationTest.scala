@@ -19,11 +19,15 @@ package org.camunda.feel.lsp
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
 import org.eclipse.lsp4j.{
+  DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
   DidOpenTextDocumentParams,
+  DiagnosticSeverity,
   InitializeParams,
+  TextDocumentContentChangeEvent,
   TextDocumentIdentifier,
-  TextDocumentItem
+  TextDocumentItem,
+  VersionedTextDocumentIdentifier
 }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -99,6 +103,104 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
     } finally {
       process.destroyForcibly()
     }
+  }
+
+  it should "timeout rapid long-running changes and recover quickly for fast expressions" in {
+    val process = startServerProcess()
+
+    try {
+      val client                 = new RecordingLanguageClientJava()
+      val launcher               =
+        LSPLauncher.createClientLauncher(client, process.getInputStream, process.getOutputStream)
+      val server: LanguageServer = launcher.getRemoteProxy
+
+      launcher.startListening()
+      server.initialize(new InitializeParams()).get(5, TimeUnit.SECONDS)
+
+      val uri            = "file:///timeout-stress.feel"
+      val slowExpression = "for i in 1..10000 return for j in 1..100000 return i * j"
+
+      server.getTextDocumentService.didOpen(
+        new DidOpenTextDocumentParams(
+          new TextDocumentItem(uri, "feel", 1, slowExpression)
+        )
+      )
+
+      // consume initial fast diagnostics from didOpen
+      client.awaitDiagnostics(1000) should not be null
+
+      // Send 10 rapid didChange requests without waiting.
+      (1 to 10).foreach { _ =>
+        server.getTextDocumentService.didChange(
+          new DidChangeTextDocumentParams(
+            new VersionedTextDocumentIdentifier(uri, 1),
+            java.util.Collections.singletonList(new TextDocumentContentChangeEvent(slowExpression))
+          )
+        )
+      }
+
+      // consume the 10 immediate fast diagnostics from didChange
+      (1 to 10).foreach(_ => client.awaitDiagnostics(1000) should not be null)
+
+      // Every long-running request should hit the interpreter timeout and publish an error diagnostic.
+      val timeoutCount = collectTimeoutDiagnostics(client, expectedCount = 10, waitMillis = 9000)
+      timeoutCount should be >= 10
+      client.drainDiagnostics(200)
+
+      // Switch to a fast expression and verify diagnostics settle quickly.
+      val fastExpression = "1 + 1"
+      val startedAt      = System.nanoTime()
+      server.getTextDocumentService.didChange(
+        new DidChangeTextDocumentParams(
+          new VersionedTextDocumentIdentifier(uri, 2),
+          java.util.Collections.singletonList(new TextDocumentContentChangeEvent(fastExpression))
+        )
+      )
+
+      val fastPhase = client.awaitDiagnostics(1000)
+      fastPhase should not be null
+      fastPhase.getDiagnostics.asScala shouldBe empty
+
+      val interpreterPhase = client.awaitDiagnostics(1000)
+      interpreterPhase should not be null
+      interpreterPhase.getDiagnostics.asScala shouldBe empty
+
+      val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
+      elapsedMillis should be < 1000L
+
+      server.shutdown().get(5, TimeUnit.SECONDS)
+      server.exit()
+
+      process.waitFor(5, TimeUnit.SECONDS) should be(true)
+      process.exitValue() should be(0)
+    } finally {
+      process.destroyForcibly()
+    }
+  }
+
+  private def collectTimeoutDiagnostics(
+      client: RecordingLanguageClientJava,
+      expectedCount: Int,
+      waitMillis: Long
+  ): Int = {
+    val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(waitMillis)
+    var matches  = 0
+
+    while (matches < expectedCount && System.nanoTime() < deadline) {
+      val remainingMillis =
+        TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime()).max(1L)
+      val diagnostics     = client.awaitDiagnostics(remainingMillis)
+
+      if (diagnostics != null) {
+        matches += diagnostics.getDiagnostics.asScala.count(d =>
+          d.getSource == "feel-interpreter" &&
+            d.getSeverity == DiagnosticSeverity.Error &&
+            d.getMessage.contains("timed out after 5000 ms")
+        )
+      }
+    }
+
+    matches
   }
 
   private def startServerProcess(): Process = {
