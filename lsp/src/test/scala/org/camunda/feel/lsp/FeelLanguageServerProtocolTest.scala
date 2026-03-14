@@ -346,7 +346,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     releaseFirstEval.countDown()
 
     // Completing the stale version-1 evaluation must not publish diagnostics anymore.
-    client.awaitDiagnostics(300) should be(null)
+    client.awaitDiagnostics(100) should be(null)
   }
 
   it should "interrupt long-running interpreter diagnostics evaluation threads" in {
@@ -388,16 +388,16 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     fastDiagnostics.getVersion should be(1)
     fastDiagnostics.getDiagnostics.asScala shouldBe empty
 
-    enteredEval.await(3, TimeUnit.SECONDS) should be(true)
+    enteredEval.await(1, TimeUnit.SECONDS) should be(true)
 
     val thread = evaluatorThread.get()
     thread should not be null
     thread.interrupt()
 
-    interruptedEval.await(3, TimeUnit.SECONDS) should be(true)
+    interruptedEval.await(1, TimeUnit.SECONDS) should be(true)
 
     // Interrupted interpreter evaluation should not publish late diagnostics for this version.
-    client.awaitDiagnostics(1000) should be(null)
+    client.awaitDiagnostics(100) should be(null)
   }
 
   it should "return semantic tokens for FEEL snippets" in {
