@@ -27,6 +27,21 @@ Want to try it out? Use the [Playground](https://camunda.github.io/feel-scala/do
 
 Please have a look at the [developer documentation](https://camunda.github.io/feel-scala/docs/developer-guide). It describes how to integrate the engine into your application, and how to extend/customize it.
 
+## FEEL LSP Server (experimental)
+
+This repository now includes a Language Server Protocol (LSP) server for FEEL over stdio.
+
+Build the project and run the shaded server artifact:
+
+```bash
+./mvnw clean package
+java -jar target/feel-engine-<version>-scala-shaded.jar
+```
+
+The server supports initialize/lifecycle, document sync (`didOpen`/`didChange`/`didClose`), diagnostics, completion, and hover.
+
+During `initialize`, the offered FEEL version is exposed via `capabilities.experimental.feelLanguageVersion`.
+
 ## Contribution
 
 Contributions are welcome 🎉 Please have a look at the [Contribution Guide](./CONTRIBUTING.md).
