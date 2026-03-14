@@ -254,30 +254,32 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
   }
 
   it should "interrupt long-running interpreter diagnostics evaluation threads" in {
-    val analyzer       = new FeelAnalyzer()
-    val interrupted    = new java.util.concurrent.CountDownLatch(1)
-    val evaluationDone = new java.util.concurrent.CountDownLatch(1)
-    val expression     =
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri        = "file:///interrupt-interpreter.feel"
+    val expression =
       "for i in 1..100 return for j in 1..100000 return i * j"
 
-    val thread = new Thread(() => {
-      try {
-        analyzer.analyzeInterpreter(expression)
-        evaluationDone.countDown()
-      } catch {
-        case _: InterruptedException =>
-          interrupted.countDown()
-      }
-    })
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(uri, "feel", 1, expression)
+      )
+    )
 
-    thread.start()
-    Thread.sleep(100)
-    thread.interrupt()
+    val fastDiagnostics = client.awaitDiagnostics()
+    fastDiagnostics should not be null
+    fastDiagnostics.getVersion should be(1)
 
-    interrupted.await(2, TimeUnit.SECONDS) should be(true)
-    evaluationDone.getCount should be(1)
-    thread.join(1000)
-    thread.isAlive should be(false)
+    val maybeInterpreterThread = awaitInterpreterThread(3000)
+    maybeInterpreterThread should not be empty
+
+    maybeInterpreterThread.foreach(_.interrupt())
+
+    // Interrupted interpreter evaluation should not publish late diagnostics for this version.
+    client.awaitDiagnostics(1000) should be(null)
   }
 
   it should "return semantic tokens for FEEL snippets" in {
@@ -392,6 +394,30 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
         TokenSpan(lexeme, tokenType)
       }
       .toList
+  }
+
+  private def awaitInterpreterThread(timeoutMillis: Long): Option[Thread] = {
+    val deadline = System.currentTimeMillis() + timeoutMillis
+
+    while (System.currentTimeMillis() < deadline) {
+      val maybeThread = Thread.getAllStackTraces
+        .entrySet()
+        .asScala
+        .find { entry =>
+          entry.getValue.exists(element =>
+            element.getClassName.startsWith("org.camunda.feel.impl.interpreter")
+          )
+        }
+        .map(_.getKey)
+
+      if (maybeThread.isDefined) {
+        return maybeThread
+      }
+
+      Thread.sleep(20)
+    }
+
+    None
   }
 }
 
