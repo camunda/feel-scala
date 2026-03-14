@@ -42,16 +42,28 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class FeelLanguageServer(
     private val analyzer: FeelAnalyzer,
-    private val interpreterTimeoutMillis: Long
+    private val interpreterTimeoutMillis: Long,
+    private val executorMode: FeelTextDocumentService.ExecutorMode
 ) extends LanguageServer
     with LanguageClientAware {
 
   def this(analyzer: FeelAnalyzer) = this(
     analyzer,
-    FeelTextDocumentService.DefaultInterpreterTimeoutMillis
+    FeelTextDocumentService.DefaultInterpreterTimeoutMillis,
+    FeelLanguageServer.defaultExecutorMode
   )
 
-  def this() = this(new FeelAnalyzer(), FeelTextDocumentService.DefaultInterpreterTimeoutMillis)
+  def this(analyzer: FeelAnalyzer, interpreterTimeoutMillis: Long) = this(
+    analyzer,
+    interpreterTimeoutMillis,
+    FeelLanguageServer.defaultExecutorMode
+  )
+
+  def this() = this(
+    new FeelAnalyzer(),
+    FeelTextDocumentService.DefaultInterpreterTimeoutMillis,
+    FeelLanguageServer.defaultExecutorMode
+  )
 
   private val logger = FeelLspLogging.logger(getClass.getName)
 
@@ -60,7 +72,13 @@ class FeelLanguageServer(
   @volatile private var client: LanguageClient         = _
   @volatile private var shutdownRequested: Boolean     = false
   private val textDocumentService: TextDocumentService =
-    new FeelTextDocumentService(store, analyzer, () => client, interpreterTimeoutMillis)
+    new FeelTextDocumentService(
+      store,
+      analyzer,
+      () => client,
+      interpreterTimeoutMillis,
+      executorMode
+    )
   private val workspaceService: WorkspaceService       = new FeelWorkspaceService()
 
   override def connect(client: LanguageClient): Unit = {
@@ -122,7 +140,17 @@ class FeelLanguageServer(
 
 object FeelLanguageServer {
 
-  private val serverVersionFallback: String = "dev"
+  private val executorModePropertyName: String = "feel.lsp.executorMode"
+  private val serverVersionFallback: String    = "dev"
+
+  val defaultExecutorMode: FeelTextDocumentService.ExecutorMode =
+    Option(System.getProperty(executorModePropertyName))
+      .map(_.trim.toLowerCase)
+      .collect {
+        case "platform" => FeelTextDocumentService.ExecutorMode.Platform
+        case "virtual"  => FeelTextDocumentService.ExecutorMode.Virtual
+      }
+      .getOrElse(FeelTextDocumentService.DefaultExecutorMode)
 
   val serverVersion: String =
     Option(getClass.getPackage)

@@ -41,6 +41,7 @@ import java.util.concurrent.{
   CompletableFuture,
   ConcurrentHashMap,
   ExecutionException,
+  ExecutorService,
   Executors,
   Future,
   ThreadFactory,
@@ -54,7 +55,8 @@ class FeelTextDocumentService(
     store: DocumentStore,
     analyzer: FeelAnalyzer,
     clientProvider: () => LanguageClient,
-    interpreterTimeoutMillis: Long = FeelTextDocumentService.DefaultInterpreterTimeoutMillis
+    interpreterTimeoutMillis: Long = FeelTextDocumentService.DefaultInterpreterTimeoutMillis,
+    executorMode: FeelTextDocumentService.ExecutorMode = FeelTextDocumentService.DefaultExecutorMode
 ) extends TextDocumentService {
 
   private val interpreterSubmittedCounter   = new AtomicLong(0)
@@ -63,23 +65,35 @@ class FeelTextDocumentService(
   private val interpreterInterruptedCounter = new AtomicLong(0)
   private val interpreterPublishedCounter   = new AtomicLong(0)
 
-  private val diagnosticsExecutor = Executors.newCachedThreadPool(new ThreadFactory {
-    override def newThread(runnable: Runnable): Thread = {
-      val thread = new Thread(runnable)
-      thread.setName("feel-lsp-diagnostics-orchestrator")
-      thread.setDaemon(true)
-      thread
-    }
-  })
+  private val diagnosticsExecutor: ExecutorService = executorMode match {
+    case FeelTextDocumentService.ExecutorMode.Platform =>
+      Executors.newCachedThreadPool(new ThreadFactory {
+        override def newThread(runnable: Runnable): Thread = {
+          val thread = new Thread(runnable)
+          thread.setName("feel-lsp-diagnostics-orchestrator")
+          thread.setDaemon(true)
+          thread
+        }
+      })
 
-  private val interpreterExecutor = Executors.newCachedThreadPool(new ThreadFactory {
-    override def newThread(runnable: Runnable): Thread = {
-      val thread = new Thread(runnable)
-      thread.setName("feel-lsp-interpreter-diagnostics")
-      thread.setDaemon(true)
-      thread
-    }
-  })
+    case FeelTextDocumentService.ExecutorMode.Virtual =>
+      Executors.newVirtualThreadPerTaskExecutor()
+  }
+
+  private val interpreterExecutor: ExecutorService = executorMode match {
+    case FeelTextDocumentService.ExecutorMode.Platform =>
+      Executors.newCachedThreadPool(new ThreadFactory {
+        override def newThread(runnable: Runnable): Thread = {
+          val thread = new Thread(runnable)
+          thread.setName("feel-lsp-interpreter-diagnostics")
+          thread.setDaemon(true)
+          thread
+        }
+      })
+
+    case FeelTextDocumentService.ExecutorMode.Virtual =>
+      Executors.newVirtualThreadPerTaskExecutor()
+  }
 
   private val logger        = FeelLspLogging.logger(getClass.getName)
   private val inFlightByUri = new ConcurrentHashMap[String, InFlightInterpreterDiagnostics]()
@@ -320,7 +334,16 @@ class FeelTextDocumentService(
 }
 
 object FeelTextDocumentService {
+
+  sealed trait ExecutorMode
+
+  object ExecutorMode {
+    case object Platform extends ExecutorMode
+    case object Virtual  extends ExecutorMode
+  }
+
   val DefaultInterpreterTimeoutMillis: Long = 5000L
+  val DefaultExecutorMode: ExecutorMode     = ExecutorMode.Virtual
 }
 
 private case class InFlightInterpreterDiagnostics(
