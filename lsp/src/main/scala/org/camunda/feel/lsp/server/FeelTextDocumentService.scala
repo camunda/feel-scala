@@ -61,6 +61,15 @@ class FeelTextDocumentService(
   private val interpreterInterruptedCounter = new AtomicLong(0)
   private val interpreterPublishedCounter   = new AtomicLong(0)
 
+  private val diagnosticsExecutor = Executors.newCachedThreadPool(new ThreadFactory {
+    override def newThread(runnable: Runnable): Thread = {
+      val thread = new Thread(runnable)
+      thread.setName("feel-lsp-diagnostics-orchestrator")
+      thread.setDaemon(true)
+      thread
+    }
+  })
+
   private val interpreterExecutor = Executors.newCachedThreadPool(new ThreadFactory {
     override def newThread(runnable: Runnable): Thread = {
       val thread = new Thread(runnable)
@@ -248,7 +257,7 @@ class FeelTextDocumentService(
                 s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${execution.getCause.getMessage}"
               )
           }
-        })
+        }, diagnosticsExecutor)
         .exceptionally(error => {
           logger.warning(
             s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${error.getMessage}"
