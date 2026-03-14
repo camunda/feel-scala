@@ -29,6 +29,8 @@ import org.eclipse.lsp4j.{
   CompletionOptions,
   InitializeParams,
   InitializeResult,
+  SemanticTokensLegend,
+  SemanticTokensWithRegistrationOptions,
   ServerCapabilities,
   ServerInfo,
   TextDocumentSyncKind
@@ -36,6 +38,7 @@ import org.eclipse.lsp4j.{
 
 import java.util
 import java.util.concurrent.CompletableFuture
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class FeelLanguageServer extends LanguageServer with LanguageClientAware {
 
@@ -61,6 +64,15 @@ class FeelLanguageServer extends LanguageServer with LanguageClientAware {
     serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
     serverCapabilities.setCompletionProvider(new CompletionOptions())
     serverCapabilities.setHoverProvider(true)
+    serverCapabilities.setSemanticTokensProvider(
+      new SemanticTokensWithRegistrationOptions(
+        new SemanticTokensLegend(
+          FeelAnalyzer.SemanticTokenTypes.asJava,
+          util.Collections.emptyList[String]()
+        ),
+        true
+      )
+    )
 
     val result       = new InitializeResult(serverCapabilities)
     val experimental = new util.HashMap[String, Object]()

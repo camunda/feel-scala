@@ -30,6 +30,8 @@ import org.eclipse.lsp4j.{
   DidSaveTextDocumentParams,
   Hover,
   HoverParams,
+  SemanticTokens,
+  SemanticTokensParams,
   PublishDiagnosticsParams
 }
 
@@ -117,6 +119,20 @@ class FeelTextDocumentService(
       .orNull
 
     CompletableFuture.completedFuture(hover)
+  }
+
+  override def semanticTokensFull(
+      params: SemanticTokensParams
+  ): CompletableFuture[SemanticTokens] = {
+    logger.finest(
+      s"TRACE Received request: textDocument/semanticTokens/full uri='${params.getTextDocument.getUri}'"
+    )
+    val data = store
+      .get(params.getTextDocument.getUri)
+      .map(document => analyzer.semanticTokenData(document.text, document.analysis))
+      .getOrElse(util.Collections.emptyList[Integer]())
+
+    CompletableFuture.completedFuture(new SemanticTokens(data))
   }
 
   private def publishDiagnostics(state: DocumentState): Unit = {

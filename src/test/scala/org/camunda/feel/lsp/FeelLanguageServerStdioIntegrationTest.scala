@@ -58,6 +58,14 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
             )
         }
       initializeResult.getCapabilities.getCompletionProvider should not be null
+      initializeResult.getCapabilities.getSemanticTokensProvider should not be null
+      initializeResult.getCapabilities.getSemanticTokensProvider.getLegend.getTokenTypes.asScala should contain allOf (
+        "keyword",
+        "function",
+        "variable",
+        "string",
+        "number"
+      )
 
       val uri = "file:///integration.feel"
       server.getTextDocumentService.didOpen(

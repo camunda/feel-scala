@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.{
 }
 
 import java.util
+import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 
 class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
@@ -88,6 +89,105 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
 
       case _ => null
     }
+  }
+
+  def semanticTokenData(text: String, analysis: AnalysisResult): util.List[Integer] = {
+    val variableNames = analysis.variableNames
+    val tokens        = ListBuffer.empty[SemanticToken]
+
+    var line   = 0
+    var column = 0
+    var index  = 0
+
+    while (index < text.length) {
+      text.charAt(index) match {
+        case '\n' =>
+          line += 1
+          column = 0
+          index += 1
+
+        case '"' =>
+          val startLine   = line
+          val startColumn = column
+          index += 1
+          column += 1
+
+          var escaped = false
+          var closed  = false
+          while (index < text.length && !closed) {
+            val ch = text.charAt(index)
+            if (ch == '\n') {
+              line += 1
+              column = 0
+            } else {
+              column += 1
+            }
+
+            if (escaped) {
+              escaped = false
+            } else if (ch == '\\') {
+              escaped = true
+            } else if (ch == '"') {
+              closed = true
+            }
+
+            index += 1
+          }
+
+          if (startLine == line && column > startColumn) {
+            tokens += SemanticToken(startLine, startColumn, column - startColumn, "string")
+          }
+
+        case ch if ch.isDigit =>
+          val startColumn = column
+          index += 1
+          column += 1
+
+          while (index < text.length && FeelAnalyzer.isNumberChar(text.charAt(index))) {
+            index += 1
+            column += 1
+          }
+
+          tokens += SemanticToken(line, startColumn, column - startColumn, "number")
+
+        case ch if FeelAnalyzer.isIdentifierStart(ch) =>
+          val start       = index
+          val startColumn = column
+
+          index += 1
+          column += 1
+
+          while (index < text.length && FeelAnalyzer.isIdentifierPart(text.charAt(index))) {
+            index += 1
+            column += 1
+          }
+
+          val identifier = text.substring(start, index)
+          val tokenType  =
+            if (FeelAnalyzer.KeywordsSet.contains(identifier)) {
+              Some("keyword")
+            } else if (
+              FeelAnalyzer.builtinSignatures.contains(identifier) && FeelAnalyzer
+                .isFunctionInvocationAt(text, index)
+            ) {
+              Some("function")
+            } else if (variableNames.contains(identifier)) {
+              Some("variable")
+            } else {
+              None
+            }
+
+          tokenType.foreach(t =>
+            tokens += SemanticToken(line, startColumn, column - startColumn, t)
+          )
+
+        case _ =>
+          index += 1
+          column += 1
+      }
+    }
+
+    FeelAnalyzer.encodeSemanticTokens(tokens.toList)
   }
 
   private def interpreterDiagnostics(text: String): List[Diagnostic] = {
@@ -182,6 +282,19 @@ object FeelAnalyzer {
     "false",
     "null"
   )
+
+  val KeywordsSet: Set[String] = Keywords.toSet
+
+  val SemanticTokenTypes: List[String] = List(
+    "keyword",
+    "function",
+    "variable",
+    "string",
+    "number"
+  )
+
+  private val SemanticTokenTypeIndex: Map[String, Int] =
+    SemanticTokenTypes.zipWithIndex.toMap
 
   val KeywordDescriptions: Map[String, String] = Map(
     "if"       -> "Conditional expression: if <condition> then <value> else <value>",
@@ -284,6 +397,51 @@ object FeelAnalyzer {
 
     s"$name(${args.mkString(", ")})"
   }
+
+  private def encodeSemanticTokens(tokens: List[SemanticToken]): util.List[Integer] = {
+    val sorted = tokens.sortBy(token => (token.line, token.startChar))
+    val data   = ListBuffer.empty[Integer]
+
+    var previousLine      = 0
+    var previousStartChar = 0
+
+    sorted.foreach { token =>
+      val lineDelta  = token.line - previousLine
+      val startDelta = if (lineDelta == 0) token.startChar - previousStartChar else token.startChar
+
+      data += lineDelta
+      data += startDelta
+      data += token.length
+      data += SemanticTokenTypeIndex(token.tokenType)
+      data += 0 // no token modifiers for now
+
+      previousLine = token.line
+      previousStartChar = token.startChar
+    }
+
+    data.toList.asJava
+  }
+
+  private def isIdentifierStart(ch: Char): Boolean = ch.isLetter || ch == '_'
+
+  private def isIdentifierPart(ch: Char): Boolean = ch.isLetterOrDigit || ch == '_'
+
+  private def isNumberChar(ch: Char): Boolean =
+    ch.isDigit || ch == '.' || ch == '_' || ch == 'e' || ch == 'E' || ch == '+' || ch == '-'
+
+  private def isFunctionInvocationAt(text: String, indexAfterIdentifier: Int): Boolean = {
+    var idx = indexAfterIdentifier
+    while (idx < text.length && text.charAt(idx).isWhitespace && text.charAt(idx) != '\n') {
+      idx += 1
+    }
+
+    idx < text.length && text.charAt(idx) == '('
+  }
 }
 
-
+private case class SemanticToken(
+    line: Int,
+    startChar: Int,
+    length: Int,
+    tokenType: String
+)

@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.{
   HoverParams,
   InitializeParams,
   Position,
+  SemanticTokensParams,
   TextDocumentContentChangeEvent,
   TextDocumentIdentifier,
   TextDocumentItem,
@@ -46,6 +47,16 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
 
     initializeResult.getCapabilities.getHoverProvider.getLeft.booleanValue() should be(true)
     initializeResult.getCapabilities.getCompletionProvider should not be null
+    initializeResult.getCapabilities.getSemanticTokensProvider should not be null
+
+    val tokenLegend = initializeResult.getCapabilities.getSemanticTokensProvider.getLegend
+    tokenLegend.getTokenTypes.asScala should contain allOf (
+      "keyword",
+      "function",
+      "variable",
+      "string",
+      "number"
+    )
 
     val experimental =
       initializeResult.getCapabilities.getExperimental.asInstanceOf[java.util.Map[String, Object]]
@@ -142,6 +153,63 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
 
     client.awaitDiagnostics(250) should be(null)
   }
+
+  it should "return semantic tokens for FEEL snippets" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri  = "file:///tokens.feel"
+    val text = "unknownVar + substring(\"abc\", 42) and true and null"
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(uri, "feel", 1, text)
+      )
+    )
+
+    client.awaitDiagnostics() should not be null
+
+    val tokens = server.getTextDocumentService
+      .semanticTokensFull(new SemanticTokensParams(new TextDocumentIdentifier(uri)))
+      .get()
+
+    tokens should not be null
+    val spans  = decodeSemanticTokens(text, tokens.getData.asScala.toList.map(_.intValue()))
+
+    spans should contain(TokenSpan("unknownVar", "variable"))
+    spans should contain(TokenSpan("substring", "function"))
+    spans should contain(TokenSpan("\"abc\"", "string"))
+    spans should contain(TokenSpan("42", "number"))
+    spans should contain(TokenSpan("and", "keyword"))
+    spans should contain(TokenSpan("true", "keyword"))
+    spans should contain(TokenSpan("null", "keyword"))
+  }
+
+  private def decodeSemanticTokens(text: String, data: List[Int]): List[TokenSpan] = {
+    val tokenTypes = List("keyword", "function", "variable", "string", "number")
+    val lines      = text.split("\\n", -1)
+
+    var line   = 0
+    var column = 0
+
+    data
+      .grouped(5)
+      .map { values =>
+        val deltaLine  = values(0)
+        val deltaStart = values(1)
+        val length     = values(2)
+        val tokenType  = tokenTypes(values(3))
+
+        line = line + deltaLine
+        column = if (deltaLine == 0) column + deltaStart else deltaStart
+
+        val lexeme = lines(line).substring(column, column + length)
+        TokenSpan(lexeme, tokenType)
+      }
+      .toList
+  }
 }
 
-
+case class TokenSpan(lexeme: String, tokenType: String)
