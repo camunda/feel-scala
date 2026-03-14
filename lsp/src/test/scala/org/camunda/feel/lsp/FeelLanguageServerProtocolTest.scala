@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.{
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
@@ -250,6 +251,33 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     if (firstVersion2Index >= 0) {
       observed.drop(firstVersion2Index + 1).exists(_.getVersion == 1) should be(false)
     }
+  }
+
+  it should "interrupt long-running interpreter diagnostics evaluation threads" in {
+    val analyzer       = new FeelAnalyzer()
+    val interrupted    = new java.util.concurrent.CountDownLatch(1)
+    val evaluationDone = new java.util.concurrent.CountDownLatch(1)
+    val expression     =
+      "for i in 1..100 return for j in 1..100000 return i * j"
+
+    val thread = new Thread(() => {
+      try {
+        analyzer.analyzeInterpreter(expression)
+        evaluationDone.countDown()
+      } catch {
+        case _: InterruptedException =>
+          interrupted.countDown()
+      }
+    })
+
+    thread.start()
+    Thread.sleep(100)
+    thread.interrupt()
+
+    interrupted.await(2, TimeUnit.SECONDS) should be(true)
+    evaluationDone.getCount should be(1)
+    thread.join(1000)
+    thread.isAlive should be(false)
   }
 
   it should "return semantic tokens for FEEL snippets" in {
