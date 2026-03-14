@@ -39,6 +39,8 @@ import java.util.concurrent.CompletableFuture
 
 class FeelLanguageServer extends LanguageServer with LanguageClientAware {
 
+  private val logger = FeelLspLogging.logger(getClass.getName)
+
   private val analyzer = new FeelAnalyzer()
   private val store    = new DocumentStore()
 
@@ -49,10 +51,12 @@ class FeelLanguageServer extends LanguageServer with LanguageClientAware {
   private val workspaceService: WorkspaceService       = new FeelWorkspaceService()
 
   override def connect(client: LanguageClient): Unit = {
+    logger.finest("TRACE Received request: connect")
     this.client = client
   }
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
+    logger.finest("TRACE Received request: initialize")
     val serverCapabilities = new ServerCapabilities
     serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
     serverCapabilities.setCompletionProvider(new CompletionOptions())
@@ -69,11 +73,13 @@ class FeelLanguageServer extends LanguageServer with LanguageClientAware {
   }
 
   override def shutdown(): CompletableFuture[AnyRef] = {
+    logger.finest("TRACE Received request: shutdown")
     shutdownRequested = true
     CompletableFuture.completedFuture(null)
   }
 
   override def exit(): Unit = {
+    logger.finest("TRACE Received request: exit")
     val exitCode = if (shutdownRequested) 0 else 1
     System.exit(exitCode)
   }

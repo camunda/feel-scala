@@ -21,8 +21,14 @@ import org.eclipse.lsp4j.services.WorkspaceService
 
 class FeelWorkspaceService extends WorkspaceService {
 
-  override def didChangeConfiguration(params: DidChangeConfigurationParams): Unit = ()
+  private val logger = FeelLspLogging.logger(getClass.getName)
 
-  override def didChangeWatchedFiles(params: DidChangeWatchedFilesParams): Unit = ()
+  override def didChangeConfiguration(params: DidChangeConfigurationParams): Unit = {
+    logger.finest("TRACE Received request: workspace/didChangeConfiguration")
+  }
+
+  override def didChangeWatchedFiles(params: DidChangeWatchedFilesParams): Unit = {
+    logger.finest("TRACE Received request: workspace/didChangeWatchedFiles")
+  }
 }
 

@@ -43,8 +43,13 @@ class FeelTextDocumentService(
     clientProvider: () => LanguageClient
 ) extends TextDocumentService {
 
+  private val logger = FeelLspLogging.logger(getClass.getName)
+
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
     val document = params.getTextDocument
+    logger.finest(
+      s"TRACE Received request: textDocument/didOpen uri='${document.getUri}' version=${versionOf(document.getVersion)}"
+    )
     val state    = store.put(
       uri = document.getUri,
       version = versionOf(document.getVersion),
@@ -57,6 +62,9 @@ class FeelTextDocumentService(
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
     val document  = params.getTextDocument
+    logger.finest(
+      s"TRACE Received request: textDocument/didChange uri='${document.getUri}' version=${versionOf(document.getVersion)}"
+    )
     val maybeOpen = store.update(
       uri = document.getUri,
       version = versionOf(document.getVersion),
@@ -68,6 +76,9 @@ class FeelTextDocumentService(
   }
 
   override def didClose(params: DidCloseTextDocumentParams): Unit = {
+    logger.finest(
+      s"TRACE Received request: textDocument/didClose uri='${params.getTextDocument.getUri}'"
+    )
     store.remove(params.getTextDocument.getUri)
     val diagnostics = new PublishDiagnosticsParams(
       params.getTextDocument.getUri,
@@ -76,11 +87,18 @@ class FeelTextDocumentService(
     Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
   }
 
-  override def didSave(params: DidSaveTextDocumentParams): Unit = ()
+  override def didSave(params: DidSaveTextDocumentParams): Unit = {
+    logger.finest(
+      s"TRACE Received request: textDocument/didSave uri='${params.getTextDocument.getUri}'"
+    )
+  }
 
   override def completion(
       params: CompletionParams
   ): CompletableFuture[Either[util.List[CompletionItem], CompletionList]] = {
+    logger.finest(
+      s"TRACE Received request: textDocument/completion uri='${params.getTextDocument.getUri}'"
+    )
     val items = store
       .get(params.getTextDocument.getUri)
       .map(document => analyzer.completionItems(document.text, document.analysis))
@@ -90,6 +108,9 @@ class FeelTextDocumentService(
   }
 
   override def hover(params: HoverParams): CompletableFuture[Hover] = {
+    logger.finest(
+      s"TRACE Received request: textDocument/hover uri='${params.getTextDocument.getUri}'"
+    )
     val hover = store
       .get(params.getTextDocument.getUri)
       .map(document => analyzer.hover(document.text, params))
@@ -99,6 +120,9 @@ class FeelTextDocumentService(
   }
 
   private def publishDiagnostics(state: DocumentState): Unit = {
+    logger.finest(
+      s"TRACE Publish diagnostics: uri='${state.uri}' count=${state.analysis.diagnostics.size}"
+    )
     val diagnostics =
       new PublishDiagnosticsParams(state.uri, state.analysis.diagnostics.toList.asJava)
     diagnostics.setVersion(state.version)
@@ -108,4 +132,3 @@ class FeelTextDocumentService(
 
   private def versionOf(version: Integer): Int = Option(version).map(_.intValue()).getOrElse(0)
 }
-
