@@ -36,7 +36,15 @@ import org.eclipse.lsp4j.{
 }
 
 import java.util
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.{
+  Callable,
+  CompletableFuture,
+  ExecutionException,
+  Executors,
+  ThreadFactory,
+  TimeUnit,
+  TimeoutException
+}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class FeelTextDocumentService(
@@ -44,6 +52,16 @@ class FeelTextDocumentService(
     analyzer: FeelAnalyzer,
     clientProvider: () => LanguageClient
 ) extends TextDocumentService {
+
+  private val interpreterTimeoutMillis = 5000L
+  private val interpreterExecutor      = Executors.newCachedThreadPool(new ThreadFactory {
+    override def newThread(runnable: Runnable): Thread = {
+      val thread = new Thread(runnable)
+      thread.setName("feel-lsp-interpreter-diagnostics")
+      thread.setDaemon(true)
+      thread
+    }
+  })
 
   private val logger = FeelLspLogging.logger(getClass.getName)
 
@@ -155,14 +173,57 @@ class FeelTextDocumentService(
       ()
     } else {
       CompletableFuture
-        .supplyAsync(() => analyzer.analyzeInterpreter(state.text))
-        .thenAccept(warnings => {
-          store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach {
-            mergedState =>
-              logger.finest(
-                s"TRACE Publish interpreter diagnostics: uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size}"
+        .runAsync(() => {
+          val evaluation =
+            interpreterExecutor.submit(new Callable[List[org.eclipse.lsp4j.Diagnostic]] {
+              override def call(): List[org.eclipse.lsp4j.Diagnostic] =
+                analyzer.analyzeInterpreter(state.text)
+            })
+
+          try {
+            val warnings = evaluation.get(interpreterTimeoutMillis, TimeUnit.MILLISECONDS)
+            store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach {
+              mergedState =>
+                logger.finest(
+                  s"TRACE Publish interpreter diagnostics: uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size}"
+                )
+                publishDiagnostics(mergedState)
+            }
+          } catch {
+            case _: TimeoutException =>
+              evaluation.cancel(true)
+              val timeoutDiagnostic = new org.eclipse.lsp4j.Diagnostic(
+                FeelAnalyzer.fullRange(state.text),
+                s"Interpreter diagnostics timed out after $interpreterTimeoutMillis ms"
               )
-              publishDiagnostics(mergedState)
+              timeoutDiagnostic.setSeverity(org.eclipse.lsp4j.DiagnosticSeverity.Error)
+              timeoutDiagnostic.setSource("feel-interpreter")
+
+              store
+                .withInterpreterDiagnostics(state.uri, state.version, List(timeoutDiagnostic))
+                .foreach { mergedState =>
+                  logger.warning(
+                    s"Interpreter diagnostics timed out: uri='${mergedState.uri}' version=${mergedState.version} timeoutMs=$interpreterTimeoutMillis"
+                  )
+                  publishDiagnostics(mergedState)
+                }
+
+            case interrupted: InterruptedException =>
+              Thread.currentThread().interrupt()
+              logger.warning(
+                s"Interpreter diagnostics interrupted for uri='${state.uri}' version=${state.version}: ${interrupted.getMessage}"
+              )
+
+            case execution: ExecutionException
+                if Option(execution.getCause).exists(_.isInstanceOf[InterruptedException]) =>
+              logger.warning(
+                s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: java.lang.InterruptedException"
+              )
+
+            case execution: ExecutionException =>
+              logger.warning(
+                s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${execution.getCause.getMessage}"
+              )
           }
         })
         .exceptionally(error => {
