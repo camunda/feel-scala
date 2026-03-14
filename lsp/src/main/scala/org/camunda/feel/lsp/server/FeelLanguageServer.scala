@@ -40,12 +40,15 @@ import java.util
 import java.util.concurrent.CompletableFuture
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
-class FeelLanguageServer extends LanguageServer with LanguageClientAware {
+class FeelLanguageServer(private val analyzer: FeelAnalyzer)
+    extends LanguageServer
+    with LanguageClientAware {
+
+  def this() = this(new FeelAnalyzer())
 
   private val logger = FeelLspLogging.logger(getClass.getName)
 
-  private val analyzer = new FeelAnalyzer()
-  private val store    = new DocumentStore()
+  private val store = new DocumentStore()
 
   @volatile private var client: LanguageClient         = _
   @volatile private var shutdownRequested: Boolean     = false

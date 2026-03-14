@@ -34,7 +34,8 @@ import org.eclipse.lsp4j.{
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.atomic.AtomicReference
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
@@ -254,7 +255,25 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
   }
 
   it should "interrupt long-running interpreter diagnostics evaluation threads" in {
-    val server = new FeelLanguageServer()
+    val evaluatorThread = new AtomicReference[Thread]()
+    val enteredEval     = new CountDownLatch(1)
+    val interruptedEval = new CountDownLatch(1)
+
+    val analyzer = new FeelAnalyzer() {
+      override def analyzeInterpreter(text: String): List[org.eclipse.lsp4j.Diagnostic] = {
+        evaluatorThread.set(Thread.currentThread())
+        enteredEval.countDown()
+        try {
+          super.analyzeInterpreter(text)
+        } catch {
+          case interrupted: InterruptedException =>
+            interruptedEval.countDown()
+            throw interrupted
+        }
+      }
+    }
+
+    val server = new FeelLanguageServer(analyzer)
     val client = new RecordingLanguageClient()
     server.connect(client)
     server.initialize(new InitializeParams()).get()
@@ -272,11 +291,15 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     val fastDiagnostics = client.awaitDiagnostics()
     fastDiagnostics should not be null
     fastDiagnostics.getVersion should be(1)
+    fastDiagnostics.getDiagnostics.asScala shouldBe empty
 
-    val maybeInterpreterThread = awaitInterpreterThread(3000)
-    maybeInterpreterThread should not be empty
+    enteredEval.await(3, TimeUnit.SECONDS) should be(true)
 
-    maybeInterpreterThread.foreach(_.interrupt())
+    val thread = evaluatorThread.get()
+    thread should not be null
+    thread.interrupt()
+
+    interruptedEval.await(3, TimeUnit.SECONDS) should be(true)
 
     // Interrupted interpreter evaluation should not publish late diagnostics for this version.
     client.awaitDiagnostics(1000) should be(null)
@@ -396,29 +419,6 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
       .toList
   }
 
-  private def awaitInterpreterThread(timeoutMillis: Long): Option[Thread] = {
-    val deadline = System.currentTimeMillis() + timeoutMillis
-
-    while (System.currentTimeMillis() < deadline) {
-      val maybeThread = Thread.getAllStackTraces
-        .entrySet()
-        .asScala
-        .find { entry =>
-          entry.getValue.exists(element =>
-            element.getClassName.startsWith("org.camunda.feel.impl.interpreter")
-          )
-        }
-        .map(_.getKey)
-
-      if (maybeThread.isDefined) {
-        return maybeThread
-      }
-
-      Thread.sleep(20)
-    }
-
-    None
-  }
 }
 
 case class TokenSpan(lexeme: String, tokenType: String)
