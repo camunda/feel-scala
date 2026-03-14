@@ -16,7 +16,6 @@ versions, can be found on the [GitHub release page](https://github.com/camunda/f
 
 * Add an experimental FEEL LSP server over stdio with diagnostics, completion, and hover.
 * Publish the shaded executable JAR as the default distribution artifact.
-* Keep thin JAR packaging optional via the `thinJar` Maven profile.
 
 ## 1.21
 
