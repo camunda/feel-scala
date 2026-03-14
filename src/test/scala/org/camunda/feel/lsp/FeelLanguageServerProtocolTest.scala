@@ -47,9 +47,29 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
 
     initializeResult.getCapabilities.getHoverProvider.getLeft.booleanValue() should be(true)
     initializeResult.getCapabilities.getCompletionProvider should not be null
-    initializeResult.getCapabilities.getSemanticTokensProvider should not be null
+    val semanticTokensProvider = initializeResult.getCapabilities.getSemanticTokensProvider
+    semanticTokensProvider should not be null
+    semanticTokensProvider.getId should be("feel-semantic-tokens")
+    semanticTokensProvider.getFull should not be null
+    semanticTokensProvider.getRange should not be null
 
-    val tokenLegend = initializeResult.getCapabilities.getSemanticTokensProvider.getLegend
+    val fullEnabled =
+      if (semanticTokensProvider.getFull.isLeft) {
+        semanticTokensProvider.getFull.getLeft.booleanValue()
+      } else {
+        semanticTokensProvider.getFull.getRight != null
+      }
+    fullEnabled should be(true)
+
+    val rangeEnabled =
+      if (semanticTokensProvider.getRange.isLeft) {
+        semanticTokensProvider.getRange.getLeft.booleanValue()
+      } else {
+        semanticTokensProvider.getRange.getRight == java.lang.Boolean.TRUE
+      }
+    rangeEnabled should be(false)
+
+    val tokenLegend = semanticTokensProvider.getLegend
     tokenLegend.getTokenTypes.asScala should contain allOf (
       "keyword",
       "function",
@@ -185,6 +205,63 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     spans should contain(TokenSpan("and", "keyword"))
     spans should contain(TokenSpan("true", "keyword"))
     spans should contain(TokenSpan("null", "keyword"))
+  }
+
+  it should "return semantic tokens for latest didChange content" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri = "file:///tokens-change.feel"
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(uri, "feel", 1, "x + 1")
+      )
+    )
+
+    client.awaitDiagnostics() should not be null
+
+    server.getTextDocumentService.didChange(
+      new DidChangeTextDocumentParams(
+        new VersionedTextDocumentIdentifier(uri, 2),
+        java.util.Collections.singletonList(
+          new TextDocumentContentChangeEvent("substring(\"a\", 1)")
+        )
+      )
+    )
+
+    client.awaitDiagnostics() should not be null
+
+    val updatedText = "substring(\"a\", 1)"
+    val tokens      = server.getTextDocumentService
+      .semanticTokensFull(new SemanticTokensParams(new TextDocumentIdentifier(uri)))
+      .get()
+
+    tokens should not be null
+    val spans       = decodeSemanticTokens(updatedText, tokens.getData.asScala.toList.map(_.intValue()))
+
+    spans should contain(TokenSpan("substring", "function"))
+    spans should contain(TokenSpan("\"a\"", "string"))
+    spans should contain(TokenSpan("1", "number"))
+    spans.exists(_.lexeme == "x") should be(false)
+  }
+
+  it should "return empty semantic tokens for unknown documents" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val tokens = server.getTextDocumentService
+      .semanticTokensFull(
+        new SemanticTokensParams(new TextDocumentIdentifier("file:///missing.feel"))
+      )
+      .get()
+
+    tokens should not be null
+    tokens.getData.asScala shouldBe empty
   }
 
   private def decodeSemanticTokens(text: String, data: List[Int]): List[TokenSpan] = {
