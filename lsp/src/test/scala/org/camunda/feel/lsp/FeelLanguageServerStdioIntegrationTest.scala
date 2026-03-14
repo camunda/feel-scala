@@ -143,8 +143,14 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
       (1 to 100).foreach(_ => client.awaitDiagnostics(1000) should not be null)
 
       // Every long-running request should hit the interpreter timeout and publish an error diagnostic.
-      val timeoutCount = collectTimeoutDiagnostics(client, expectedCount = 100, waitMillis = 9000)
+      val stressStartNanos = System.nanoTime()
+      val timeoutCount     = collectTimeoutDiagnostics(client, expectedCount = 100, waitMillis = 9000)
       timeoutCount should be >= 100
+      reportTimeoutThroughput(
+        label = "rapid didChange timeout stress",
+        timeoutCount = timeoutCount,
+        elapsedNanos = System.nanoTime() - stressStartNanos
+      )
       client.drainDiagnostics(200)
 
       // Switch to a fast expression and verify diagnostics settle quickly.
@@ -201,6 +207,18 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
     }
 
     matches
+  }
+
+  private def reportTimeoutThroughput(
+      label: String,
+      timeoutCount: Int,
+      elapsedNanos: Long
+  ): Unit = {
+    val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos).max(1L)
+    val perSecond     = (timeoutCount.toDouble * 1000d) / elapsedMillis.toDouble
+    info(
+      f"$label: observed $timeoutCount timeout diagnostics in ${elapsedMillis}ms (${perSecond}%.2f/sec)"
+    )
   }
 
   private def startServerProcess(): Process = {

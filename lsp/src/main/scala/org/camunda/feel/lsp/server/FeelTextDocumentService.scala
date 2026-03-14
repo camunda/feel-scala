@@ -45,6 +45,7 @@ import java.util.concurrent.{
   TimeUnit,
   TimeoutException
 }
+import java.util.concurrent.atomic.AtomicLong
 import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class FeelTextDocumentService(
@@ -53,6 +54,12 @@ class FeelTextDocumentService(
     clientProvider: () => LanguageClient,
     interpreterTimeoutMillis: Long = FeelTextDocumentService.DefaultInterpreterTimeoutMillis
 ) extends TextDocumentService {
+
+  private val interpreterSubmittedCounter   = new AtomicLong(0)
+  private val interpreterStartedCounter     = new AtomicLong(0)
+  private val interpreterTimedOutCounter    = new AtomicLong(0)
+  private val interpreterInterruptedCounter = new AtomicLong(0)
+  private val interpreterPublishedCounter   = new AtomicLong(0)
 
   private val interpreterExecutor = Executors.newCachedThreadPool(new ThreadFactory {
     override def newThread(runnable: Runnable): Thread = {
@@ -172,8 +179,18 @@ class FeelTextDocumentService(
     if (hasParserError(state)) {
       ()
     } else {
+      val submissionId = interpreterSubmittedCounter.incrementAndGet()
+      logger.finest(
+        s"TRACE Interpreter diagnostics submitted: id=$submissionId uri='${state.uri}' version=${state.version}"
+      )
       CompletableFuture
         .runAsync(() => {
+          val started = System.nanoTime()
+          interpreterStartedCounter.incrementAndGet()
+          logger.finest(
+            s"TRACE Interpreter diagnostics started: id=$submissionId uri='${state.uri}' version=${state.version}"
+          )
+
           val evaluation =
             interpreterExecutor.submit(new Callable[List[org.eclipse.lsp4j.Diagnostic]] {
               override def call(): List[org.eclipse.lsp4j.Diagnostic] =
@@ -184,13 +201,16 @@ class FeelTextDocumentService(
             val warnings = evaluation.get(interpreterTimeoutMillis, TimeUnit.MILLISECONDS)
             store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach {
               mergedState =>
+                interpreterPublishedCounter.incrementAndGet()
                 logger.finest(
-                  s"TRACE Publish interpreter diagnostics: uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size}"
+                  s"TRACE Publish interpreter diagnostics: id=$submissionId uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size} elapsedMs=${TimeUnit.NANOSECONDS
+                    .toMillis(System.nanoTime() - started)} published=${interpreterPublishedCounter.get()}"
                 )
                 publishDiagnostics(mergedState)
             }
           } catch {
             case _: TimeoutException =>
+              interpreterTimedOutCounter.incrementAndGet()
               evaluation.cancel(true)
               val timeoutDiagnostic = new org.eclipse.lsp4j.Diagnostic(
                 FeelAnalyzer.fullRange(state.text),
@@ -203,21 +223,24 @@ class FeelTextDocumentService(
                 .withInterpreterDiagnostics(state.uri, state.version, List(timeoutDiagnostic))
                 .foreach { mergedState =>
                   logger.warning(
-                    s"Interpreter diagnostics timed out: uri='${mergedState.uri}' version=${mergedState.version} timeoutMs=$interpreterTimeoutMillis"
+                    s"Interpreter diagnostics timed out: id=$submissionId uri='${mergedState.uri}' version=${mergedState.version} timeoutMs=$interpreterTimeoutMillis elapsedMs=${TimeUnit.NANOSECONDS
+                      .toMillis(System.nanoTime() - started)} timedOut=${interpreterTimedOutCounter.get()}"
                   )
                   publishDiagnostics(mergedState)
                 }
 
             case interrupted: InterruptedException =>
+              interpreterInterruptedCounter.incrementAndGet()
               Thread.currentThread().interrupt()
               logger.warning(
-                s"Interpreter diagnostics interrupted for uri='${state.uri}' version=${state.version}: ${interrupted.getMessage}"
+                s"Interpreter diagnostics interrupted for id=$submissionId uri='${state.uri}' version=${state.version}: ${interrupted.getMessage} interrupted=${interpreterInterruptedCounter.get()}"
               )
 
             case execution: ExecutionException
                 if Option(execution.getCause).exists(_.isInstanceOf[InterruptedException]) =>
+              interpreterInterruptedCounter.incrementAndGet()
               logger.warning(
-                s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: java.lang.InterruptedException"
+                s"Failed to compute interpreter diagnostics for id=$submissionId uri='${state.uri}' version=${state.version}: java.lang.InterruptedException interrupted=${interpreterInterruptedCounter.get()}"
               )
 
             case execution: ExecutionException =>
