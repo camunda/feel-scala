@@ -17,9 +17,12 @@
 package org.camunda.feel.lsp
 
 import org.camunda.feel.lsp.server.FeelLanguageServerJava
+import org.camunda.feel.lsp.server.FeelLspLogging
 import org.eclipse.lsp4j.launch.LSPLauncher
 
 object FeelLspLauncher {
+
+  private val logger = FeelLspLogging.logger(getClass.getName)
 
   def main(args: Array[String]): Unit = {
     val server   = new FeelLanguageServerJava()
@@ -27,7 +30,10 @@ object FeelLspLauncher {
       LSPLauncher.createServerLauncher(server, System.in, System.out)
 
     server.connect(launcher.getRemoteProxy)
-    launcher.startListening().get()
+    val listening = launcher.startListening()
+
+    logger.info("FEEL LSP server started and listening on stdio")
+    listening.get()
   }
 }
 
