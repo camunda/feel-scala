@@ -29,26 +29,9 @@ Please have a look at the [developer documentation](https://camunda.github.io/fe
 
 ## FEEL LSP Server (experimental)
 
-This repository now includes a Language Server Protocol (LSP) server for FEEL over stdio.
+This repository includes an experimental Language Server Protocol (LSP) server for FEEL over stdio.
 
-Build the project and run the shaded server artifact:
-
-```bash
-./mvnw clean package
-java -jar target/feel-engine-<version>.jar
-```
-
-If you need a thin artifact for controlled runtime environments, build with the optional profile:
-
-```bash
-./mvnw -PthinJar clean package
-```
-
-This additionally produces `target/feel-engine-<version>-thin.jar`.
-
-The server supports initialize/lifecycle, document sync (`didOpen`/`didChange`/`didClose`), diagnostics, completion, and hover.
-
-During `initialize`, the offered FEEL version is exposed via `capabilities.experimental.feelLanguageVersion`.
+For setup and usage details, see [LSP.md](./LSP.md).
 
 ## Contribution
 
