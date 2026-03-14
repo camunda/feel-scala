@@ -23,7 +23,18 @@ import org.camunda.feel.impl.interpreter.BuiltinFunctions
 import org.camunda.feel.impl.parser.FeelParser
 import org.camunda.feel.syntaxtree.ValFunction
 import org.camunda.feel.valuemapper.ValueMapper
-import org.eclipse.lsp4j.{CompletionItem, CompletionItemKind, Diagnostic, DiagnosticSeverity, Hover, MarkupContent, MarkupKind, Position, Range, TextDocumentPositionParams}
+import org.eclipse.lsp4j.{
+  CompletionItem,
+  CompletionItemKind,
+  Diagnostic,
+  DiagnosticSeverity,
+  Hover,
+  MarkupContent,
+  MarkupKind,
+  Position,
+  Range,
+  TextDocumentPositionParams
+}
 
 import java.util
 import scala.annotation.unused

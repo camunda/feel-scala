@@ -78,6 +78,15 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.antipathy</groupId>
+        <artifactId>mvn-scalafmt_2.13</artifactId>
+        <version>1.1.1684076452.9f83818</version>
+        <configuration>
+          <configLocation>${project.basedir}/.scalafmt.conf</configLocation>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
         <version>4.9.10</version>
@@ -170,5 +179,82 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- profile to auto format -->
+    <profile>
+      <id>autoFormat</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.antipathy</groupId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
+            <executions>
+              <execution>
+                <id>scala-format</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-license</id>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- profile to perform strict validation checks -->
+    <profile>
+      <id>checkFormat</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.antipathy</groupId>
+            <artifactId>mvn-scalafmt_2.13</artifactId>
+            <executions>
+              <execution>
+                <id>scala-format</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>format</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>check-license</id>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <phase>validate</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
 
