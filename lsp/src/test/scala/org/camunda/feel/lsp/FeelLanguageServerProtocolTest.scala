@@ -20,6 +20,7 @@ import org.camunda.feel.lsp.analysis.FeelAnalyzer
 import org.camunda.feel.lsp.server.FeelLanguageServer
 import org.eclipse.lsp4j.{
   CompletionParams,
+  DiagnosticSeverity,
   DidChangeTextDocumentParams,
   DidOpenTextDocumentParams,
   HoverParams,
@@ -177,6 +178,44 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "publish a timeout error diagnostic after 5 seconds for long-running interpreter evaluations" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri        = "file:///timeout-diagnostics.feel"
+    val expression =
+      "for i in 1..10000 return for j in 1..100000 return i * j"
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(uri, "feel", 1, expression)
+      )
+    )
+
+    val fastDiagnostics = client.awaitDiagnostics()
+    fastDiagnostics should not be null
+    fastDiagnostics.getVersion should be(1)
+    fastDiagnostics.getDiagnostics.asScala shouldBe empty
+
+    val startedAt          = System.nanoTime()
+    val timeoutDiagnostics = client.awaitDiagnostics(7000)
+    val elapsedMillis      = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
+
+    timeoutDiagnostics should not be null
+    timeoutDiagnostics.getVersion should be(1)
+    timeoutDiagnostics.getDiagnostics.asScala should have size 1
+
+    val timeoutDiagnostic = timeoutDiagnostics.getDiagnostics.get(0)
+    timeoutDiagnostic.getSeverity should be(DiagnosticSeverity.Error)
+    timeoutDiagnostic.getSource should be("feel-interpreter")
+    timeoutDiagnostic.getMessage should include("timed out after 5000 ms")
+
+    elapsedMillis should be >= 5000L
+    elapsedMillis should be < 7000L
+  }
+
   it should "ignore stale didChange versions" in {
     val server = new FeelLanguageServer()
     val client = new RecordingLanguageClient()
@@ -280,7 +319,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
 
     val uri        = "file:///interrupt-interpreter.feel"
     val expression =
-      "for i in 1..100 return for j in 1..100000 return i * j"
+      "for i in 1..10000 return for j in 1..100000 return i * j"
 
     server.getTextDocumentService.didOpen(
       new DidOpenTextDocumentParams(
