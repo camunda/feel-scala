@@ -60,19 +60,28 @@ class FeelLanguageServer extends LanguageServer with LanguageClientAware {
 
   override def initialize(params: InitializeParams): CompletableFuture[InitializeResult] = {
     logger.finest("TRACE Received request: initialize")
-    val serverCapabilities = new ServerCapabilities
+    val clientSupportsSemanticTokens = Option(params)
+      .flatMap(p => Option(p.getCapabilities))
+      .flatMap(c => Option(c.getTextDocument))
+      .flatMap(td => Option(td.getSemanticTokens))
+      .isDefined
+    logger.fine(s"Client advertised semantic tokens support: $clientSupportsSemanticTokens")
+
+    val serverCapabilities    = new ServerCapabilities
     serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Full)
     serverCapabilities.setCompletionProvider(new CompletionOptions())
     serverCapabilities.setHoverProvider(true)
-    serverCapabilities.setSemanticTokensProvider(
-      new SemanticTokensWithRegistrationOptions(
-        new SemanticTokensLegend(
-          FeelAnalyzer.SemanticTokenTypes.asJava,
-          util.Collections.emptyList[String]()
-        ),
-        true
+    val semanticTokensOptions = new SemanticTokensWithRegistrationOptions()
+    semanticTokensOptions.setLegend(
+      new SemanticTokensLegend(
+        FeelAnalyzer.SemanticTokenTypes.asJava,
+        util.Collections.emptyList[String]()
       )
     )
+    semanticTokensOptions.setId("feel-semantic-tokens")
+    semanticTokensOptions.setFull(true)
+    semanticTokensOptions.setRange(false)
+    serverCapabilities.setSemanticTokensProvider(semanticTokensOptions)
 
     val result       = new InitializeResult(serverCapabilities)
     val experimental = new util.HashMap[String, Object]()
