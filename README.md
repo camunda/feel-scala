@@ -35,8 +35,16 @@ Build the project and run the shaded server artifact:
 
 ```bash
 ./mvnw clean package
-java -jar target/feel-engine-<version>-scala-shaded.jar
+java -jar target/feel-engine-<version>.jar
 ```
+
+If you need a thin artifact for controlled runtime environments, build with the optional profile:
+
+```bash
+./mvnw -PthinJar clean package
+```
+
+This additionally produces `target/feel-engine-<version>-thin.jar`.
 
 The server supports initialize/lifecycle, document sync (`didOpen`/`didChange`/`didClose`), diagnostics, completion, and hover.
 

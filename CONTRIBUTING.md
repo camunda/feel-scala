@@ -41,6 +41,13 @@ Build the JAR files with
 mvn install
 ```
 
+By default, packaging publishes the shaded executable JAR as the primary artifact.
+If you need to additionally attach the thin JAR for controlled environments, use:
+
+```
+mvn -PthinJar package
+```
+
 ## Styleguides
 
 ### Source code
@@ -214,3 +221,7 @@ The documentation is published using GitHub actions.
 > Only for Camunda developers. 
 
 Open the Camunda Slack channel [#ask-dmn-feel](https://camunda.slack.com/archives/C01QYD808A3). Click on the bookmark "Release FEEL-Scala" and follow the instructions. 🏗️
+
+When releasing, treat the shaded JAR as the default distribution artifact.
+The thin JAR remains optional and is only attached when the `thinJar` profile is enabled.
+
