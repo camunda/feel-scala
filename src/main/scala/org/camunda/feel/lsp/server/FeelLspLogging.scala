@@ -17,14 +17,26 @@
 package org.camunda.feel.lsp.server
 
 import java.util.logging.{Level, Logger}
+import java.util.logging.{ConsoleHandler, SimpleFormatter}
 
 object FeelLspLogging {
 
   private val defaultLevel: Level = Level.INFO
 
   def logger(name: String): Logger = {
-    val l = Logger.getLogger(name)
-    l.setLevel(resolveLevel())
+    val level = resolveLevel()
+    val l     = Logger.getLogger(name)
+    l.setUseParentHandlers(false)
+    l.setLevel(level)
+
+    if (l.getHandlers.isEmpty) {
+      val handler = new ConsoleHandler
+      handler.setLevel(level)
+      handler.setFormatter(new SimpleFormatter())
+      l.addHandler(handler)
+    }
+
+    l.getHandlers.foreach(_.setLevel(level))
     l
   }
 
