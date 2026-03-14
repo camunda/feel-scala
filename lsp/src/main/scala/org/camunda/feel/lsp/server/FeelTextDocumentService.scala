@@ -39,8 +39,10 @@ import java.util
 import java.util.concurrent.{
   Callable,
   CompletableFuture,
+  ConcurrentHashMap,
   ExecutionException,
   Executors,
+  Future,
   ThreadFactory,
   TimeUnit,
   TimeoutException
@@ -79,7 +81,8 @@ class FeelTextDocumentService(
     }
   })
 
-  private val logger = FeelLspLogging.logger(getClass.getName)
+  private val logger        = FeelLspLogging.logger(getClass.getName)
+  private val inFlightByUri = new ConcurrentHashMap[String, InFlightInterpreterDiagnostics]()
 
   override def didOpen(params: DidOpenTextDocumentParams): Unit = {
     val document = params.getTextDocument
@@ -94,6 +97,7 @@ class FeelTextDocumentService(
     )
 
     publishDiagnostics(state)
+    cancelInFlight(state.uri, "superseded by didOpen")
     publishInterpreterDiagnosticsAsync(state)
   }
 
@@ -111,6 +115,7 @@ class FeelTextDocumentService(
 
     maybeOpen.foreach { state =>
       publishDiagnostics(state)
+      cancelInFlight(state.uri, "superseded by didChange")
       publishInterpreterDiagnosticsAsync(state)
     }
   }
@@ -119,9 +124,11 @@ class FeelTextDocumentService(
     logger.finest(
       s"TRACE Received request: textDocument/didClose uri='${params.getTextDocument.getUri}'"
     )
-    store.remove(params.getTextDocument.getUri)
+    val uri         = params.getTextDocument.getUri
+    cancelInFlight(uri, "document closed")
+    store.remove(uri)
     val diagnostics = new PublishDiagnosticsParams(
-      params.getTextDocument.getUri,
+      uri,
       util.Collections.emptyList[org.eclipse.lsp4j.Diagnostic]()
     )
     Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
@@ -188,83 +195,121 @@ class FeelTextDocumentService(
     if (hasParserError(state)) {
       ()
     } else {
-      val submissionId = interpreterSubmittedCounter.incrementAndGet()
+      val submissionId  = interpreterSubmittedCounter.incrementAndGet()
+      val evaluationRef = new java.util.concurrent.atomic.AtomicReference[Future[_]]()
       logger.finest(
         s"TRACE Interpreter diagnostics submitted: id=$submissionId uri='${state.uri}' version=${state.version}"
       )
-      CompletableFuture
-        .runAsync(() => {
-          val started = System.nanoTime()
-          interpreterStartedCounter.incrementAndGet()
-          logger.finest(
-            s"TRACE Interpreter diagnostics started: id=$submissionId uri='${state.uri}' version=${state.version}"
-          )
 
-          val evaluation =
-            interpreterExecutor.submit(new Callable[List[org.eclipse.lsp4j.Diagnostic]] {
-              override def call(): List[org.eclipse.lsp4j.Diagnostic] =
-                analyzer.analyzeInterpreter(state.text)
-            })
+      val orchestration = CompletableFuture
+        .runAsync(
+          () => {
+            val started = System.nanoTime()
+            interpreterStartedCounter.incrementAndGet()
+            logger.finest(
+              s"TRACE Interpreter diagnostics started: id=$submissionId uri='${state.uri}' version=${state.version}"
+            )
 
-          try {
-            val warnings = evaluation.get(interpreterTimeoutMillis, TimeUnit.MILLISECONDS)
-            store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach {
-              mergedState =>
+            val evaluation =
+              interpreterExecutor.submit(new Callable[List[org.eclipse.lsp4j.Diagnostic]] {
+                override def call(): List[org.eclipse.lsp4j.Diagnostic] =
+                  analyzer.analyzeInterpreter(state.text)
+              })
+            evaluationRef.set(evaluation)
+
+            try {
+              val warnings = evaluation.get(interpreterTimeoutMillis, TimeUnit.MILLISECONDS)
+              store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach { mergedState =>
                 interpreterPublishedCounter.incrementAndGet()
                 logger.finest(
                   s"TRACE Publish interpreter diagnostics: id=$submissionId uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size} elapsedMs=${TimeUnit.NANOSECONDS
                     .toMillis(System.nanoTime() - started)} published=${interpreterPublishedCounter.get()}"
                 )
                 publishDiagnostics(mergedState)
+              }
+            } catch {
+              case _: TimeoutException =>
+                interpreterTimedOutCounter.incrementAndGet()
+                evaluation.cancel(true)
+                val timeoutDiagnostic = new org.eclipse.lsp4j.Diagnostic(
+                  FeelAnalyzer.fullRange(state.text),
+                  s"Interpreter diagnostics timed out after $interpreterTimeoutMillis ms"
+                )
+                timeoutDiagnostic.setSeverity(org.eclipse.lsp4j.DiagnosticSeverity.Error)
+                timeoutDiagnostic.setSource("feel-interpreter")
+
+                store
+                  .withInterpreterDiagnostics(state.uri, state.version, List(timeoutDiagnostic))
+                  .foreach { mergedState =>
+                    logger.warning(
+                      s"Interpreter diagnostics timed out: id=$submissionId uri='${mergedState.uri}' version=${mergedState.version} timeoutMs=$interpreterTimeoutMillis elapsedMs=${TimeUnit.NANOSECONDS
+                        .toMillis(System.nanoTime() - started)} timedOut=${interpreterTimedOutCounter.get()}"
+                    )
+                    publishDiagnostics(mergedState)
+                  }
+
+              case interrupted: InterruptedException =>
+                interpreterInterruptedCounter.incrementAndGet()
+                Thread.currentThread().interrupt()
+                logger.warning(
+                  s"Interpreter diagnostics interrupted for id=$submissionId uri='${state.uri}' version=${state.version}: ${interrupted.getMessage} interrupted=${interpreterInterruptedCounter.get()}"
+                )
+
+              case execution: ExecutionException
+                  if Option(execution.getCause).exists(_.isInstanceOf[InterruptedException]) =>
+                interpreterInterruptedCounter.incrementAndGet()
+                logger.warning(
+                  s"Failed to compute interpreter diagnostics for id=$submissionId uri='${state.uri}' version=${state.version}: java.lang.InterruptedException interrupted=${interpreterInterruptedCounter.get()}"
+                )
+
+              case execution: ExecutionException =>
+                logger.warning(
+                  s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${execution.getCause.getMessage}"
+                )
             }
-          } catch {
-            case _: TimeoutException =>
-              interpreterTimedOutCounter.incrementAndGet()
-              evaluation.cancel(true)
-              val timeoutDiagnostic = new org.eclipse.lsp4j.Diagnostic(
-                FeelAnalyzer.fullRange(state.text),
-                s"Interpreter diagnostics timed out after $interpreterTimeoutMillis ms"
-              )
-              timeoutDiagnostic.setSeverity(org.eclipse.lsp4j.DiagnosticSeverity.Error)
-              timeoutDiagnostic.setSource("feel-interpreter")
 
-              store
-                .withInterpreterDiagnostics(state.uri, state.version, List(timeoutDiagnostic))
-                .foreach { mergedState =>
-                  logger.warning(
-                    s"Interpreter diagnostics timed out: id=$submissionId uri='${mergedState.uri}' version=${mergedState.version} timeoutMs=$interpreterTimeoutMillis elapsedMs=${TimeUnit.NANOSECONDS
-                      .toMillis(System.nanoTime() - started)} timedOut=${interpreterTimedOutCounter.get()}"
-                  )
-                  publishDiagnostics(mergedState)
-                }
-
-            case interrupted: InterruptedException =>
-              interpreterInterruptedCounter.incrementAndGet()
-              Thread.currentThread().interrupt()
-              logger.warning(
-                s"Interpreter diagnostics interrupted for id=$submissionId uri='${state.uri}' version=${state.version}: ${interrupted.getMessage} interrupted=${interpreterInterruptedCounter.get()}"
-              )
-
-            case execution: ExecutionException
-                if Option(execution.getCause).exists(_.isInstanceOf[InterruptedException]) =>
-              interpreterInterruptedCounter.incrementAndGet()
-              logger.warning(
-                s"Failed to compute interpreter diagnostics for id=$submissionId uri='${state.uri}' version=${state.version}: java.lang.InterruptedException interrupted=${interpreterInterruptedCounter.get()}"
-              )
-
-            case execution: ExecutionException =>
-              logger.warning(
-                s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${execution.getCause.getMessage}"
-              )
-          }
-        }, diagnosticsExecutor)
+            val current = inFlightByUri.get(state.uri)
+            if (current != null && current.submissionId == submissionId) {
+              inFlightByUri.remove(state.uri, current)
+            }
+          },
+          diagnosticsExecutor
+        )
         .exceptionally(error => {
           logger.warning(
             s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${error.getMessage}"
           )
           null
         })
+
+      val registeredTask = InFlightInterpreterDiagnostics(
+        submissionId = submissionId,
+        evaluationRef = evaluationRef,
+        orchestrator = orchestration
+      )
+      val previous       = inFlightByUri.put(state.uri, registeredTask)
+      cancelTask(previous, state.uri, "superseded by newer interpreter diagnostics")
+
       ()
+    }
+  }
+
+  private def cancelInFlight(uri: String, reason: String): Unit = {
+    val existing = inFlightByUri.remove(uri)
+    cancelTask(existing, uri, reason)
+  }
+
+  private def cancelTask(
+      task: InFlightInterpreterDiagnostics,
+      uri: String,
+      reason: String
+  ): Unit = {
+    Option(task).foreach { running =>
+      Option(running.orchestrator).foreach(_.cancel(true))
+      Option(running.evaluationRef.get()).foreach(_.cancel(true))
+      logger.finest(
+        s"TRACE Cancel interpreter diagnostics: id=${running.submissionId} uri='$uri' reason='$reason'"
+      )
     }
   }
 
@@ -277,3 +322,9 @@ class FeelTextDocumentService(
 object FeelTextDocumentService {
   val DefaultInterpreterTimeoutMillis: Long = 5000L
 }
+
+private case class InFlightInterpreterDiagnostics(
+    submissionId: Long,
+    evaluationRef: java.util.concurrent.atomic.AtomicReference[Future[_]],
+    orchestrator: CompletableFuture[Void]
+)
