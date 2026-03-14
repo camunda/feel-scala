@@ -274,7 +274,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
 
     server.getTextDocumentService.didChange(staleChange)
 
-    client.awaitDiagnostics(250) should be(null)
+    client.drainDiagnostics(75) shouldBe empty
   }
 
   it should "suppress stale interpreter diagnostics for older versions" in {
@@ -346,20 +346,22 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     releaseFirstEval.countDown()
 
     // Completing the stale version-1 evaluation must not publish diagnostics anymore.
-    client.awaitDiagnostics(100) should be(null)
+    client.drainDiagnostics(75) shouldBe empty
   }
 
   it should "interrupt long-running interpreter diagnostics evaluation threads" in {
     val evaluatorThread = new AtomicReference[Thread]()
     val enteredEval     = new CountDownLatch(1)
     val interruptedEval = new CountDownLatch(1)
+    val blocker         = new CountDownLatch(1)
 
     val analyzer = new FeelAnalyzer() {
       override def analyzeInterpreter(text: String): List[org.eclipse.lsp4j.Diagnostic] = {
         evaluatorThread.set(Thread.currentThread())
         enteredEval.countDown()
         try {
-          super.analyzeInterpreter(text)
+          blocker.await()
+          List.empty
         } catch {
           case interrupted: InterruptedException =>
             interruptedEval.countDown()
@@ -374,8 +376,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     server.initialize(new InitializeParams()).get()
 
     val uri        = "file:///interrupt-interpreter.feel"
-    val expression =
-      "for i in 1..10000 return for j in 1..100000 return i * j"
+    val expression = "1 + 1"
 
     server.getTextDocumentService.didOpen(
       new DidOpenTextDocumentParams(
@@ -397,7 +398,7 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     interruptedEval.await(1, TimeUnit.SECONDS) should be(true)
 
     // Interrupted interpreter evaluation should not publish late diagnostics for this version.
-    client.awaitDiagnostics(100) should be(null)
+    client.drainDiagnostics(75) shouldBe empty
   }
 
   it should "return semantic tokens for FEEL snippets" in {

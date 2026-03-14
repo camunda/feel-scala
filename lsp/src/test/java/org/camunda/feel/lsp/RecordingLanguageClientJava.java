@@ -25,6 +25,8 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecordingLanguageClientJava implements LanguageClient {
 
@@ -59,6 +61,19 @@ public class RecordingLanguageClientJava implements LanguageClient {
 
   public PublishDiagnosticsParams awaitDiagnostics(long timeoutMillis) throws InterruptedException {
     return diagnosticsQueue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+  }
+
+  public List<PublishDiagnosticsParams> drainDiagnostics(long idleTimeoutMillis)
+      throws InterruptedException {
+    final var collected = new ArrayList<PublishDiagnosticsParams>();
+    PublishDiagnosticsParams next = awaitDiagnostics(idleTimeoutMillis);
+
+    while (next != null) {
+      collected.add(next);
+      next = awaitDiagnostics(idleTimeoutMillis);
+    }
+
+    return collected;
   }
 }
 

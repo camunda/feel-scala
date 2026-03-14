@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.{
 }
 
 import java.util.concurrent.{CompletableFuture, LinkedBlockingQueue, TimeUnit}
+import scala.collection.mutable.ListBuffer
 
 class RecordingLanguageClient extends LanguageClient {
 
@@ -47,5 +48,17 @@ class RecordingLanguageClient extends LanguageClient {
 
   def awaitDiagnostics(timeoutMillis: Long = 3000): PublishDiagnosticsParams =
     diagnosticsQueue.poll(timeoutMillis, TimeUnit.MILLISECONDS)
+
+  def drainDiagnostics(idleTimeoutMillis: Long = 50): List[PublishDiagnosticsParams] = {
+    val collected = ListBuffer.empty[PublishDiagnosticsParams]
+    var next      = awaitDiagnostics(idleTimeoutMillis)
+
+    while (next != null) {
+      collected += next
+      next = awaitDiagnostics(idleTimeoutMillis)
+    }
+
+    collected.toList
+  }
 }
 
