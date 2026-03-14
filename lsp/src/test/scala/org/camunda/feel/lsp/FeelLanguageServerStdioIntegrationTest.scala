@@ -129,8 +129,8 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
       // consume initial fast diagnostics from didOpen
       client.awaitDiagnostics(1000) should not be null
 
-      // Send 10 rapid didChange requests without waiting.
-      (1 to 10).foreach { _ =>
+      // Send 100 rapid didChange requests without waiting.
+      (1 to 100).foreach { _ =>
         server.getTextDocumentService.didChange(
           new DidChangeTextDocumentParams(
             new VersionedTextDocumentIdentifier(uri, 1),
@@ -139,12 +139,12 @@ class FeelLanguageServerStdioIntegrationTest extends AnyFlatSpec with Matchers {
         )
       }
 
-      // consume the 10 immediate fast diagnostics from didChange
-      (1 to 10).foreach(_ => client.awaitDiagnostics(1000) should not be null)
+      // consume the 100 immediate fast diagnostics from didChange
+      (1 to 100).foreach(_ => client.awaitDiagnostics(1000) should not be null)
 
       // Every long-running request should hit the interpreter timeout and publish an error diagnostic.
-      val timeoutCount = collectTimeoutDiagnostics(client, expectedCount = 10, waitMillis = 9000)
-      timeoutCount should be >= 10
+      val timeoutCount = collectTimeoutDiagnostics(client, expectedCount = 100, waitMillis = 9000)
+      timeoutCount should be >= 100
       client.drainDiagnostics(200)
 
       // Switch to a fast expression and verify diagnostics settle quickly.
