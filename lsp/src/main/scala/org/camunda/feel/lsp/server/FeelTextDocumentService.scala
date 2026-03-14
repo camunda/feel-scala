@@ -42,7 +42,9 @@ import java.util.concurrent.{
   ExecutorService,
   Executors,
   Future,
+  ScheduledExecutorService,
   ScheduledFuture,
+  ScheduledThreadPoolExecutor,
   ThreadFactory,
   TimeUnit,
   TimeoutException
@@ -94,14 +96,25 @@ class FeelTextDocumentService(
       Executors.newVirtualThreadPerTaskExecutor()
   }
 
-  private val timeoutScheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory {
-    override def newThread(runnable: Runnable): Thread = {
-      val thread = new Thread(runnable)
-      thread.setName("feel-lsp-timeout-scheduler")
-      thread.setDaemon(true)
-      thread
-    }
-  })
+  private val timeoutScheduler: ScheduledExecutorService = executorMode match {
+    case FeelTextDocumentService.ExecutorMode.Platform =>
+      Executors.newSingleThreadScheduledExecutor(new ThreadFactory {
+        override def newThread(runnable: Runnable): Thread = {
+          val thread = new Thread(runnable)
+          thread.setName("feel-lsp-timeout-scheduler")
+          thread.setDaemon(true)
+          thread
+        }
+      })
+
+    case FeelTextDocumentService.ExecutorMode.Virtual =>
+      val scheduler = new ScheduledThreadPoolExecutor(
+        1,
+        Thread.ofVirtual().name("feel-lsp-timeout-scheduler-", 0).factory()
+      )
+      scheduler.setRemoveOnCancelPolicy(true)
+      scheduler
+  }
 
   private val logger        = FeelLspLogging.logger(getClass.getName)
   private val inFlightByUri = new ConcurrentHashMap[String, InFlightInterpreterDiagnostics]()
