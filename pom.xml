@@ -402,8 +402,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>scala-shaded</shadedClassifierName>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
               <!-- avoid creating a reduced pom - see https://github.com/camunda/feel-scala/issues/450 -->
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
@@ -483,6 +482,30 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>thinJar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-thin-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <classifier>thin</classifier>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- profile to auto format -->
     <profile>
       <id>autoFormat</id>
