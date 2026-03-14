@@ -25,6 +25,8 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -73,6 +75,11 @@ final class TextDocumentServiceForwarder implements TextDocumentService {
   @Override
   public CompletableFuture<Hover> hover(HoverParams params) {
     return delegate.hover(params);
+  }
+
+  @Override
+  public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
+    return delegate.semanticTokensFull(params);
   }
 }
 
