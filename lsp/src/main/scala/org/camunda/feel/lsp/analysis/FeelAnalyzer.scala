@@ -45,7 +45,7 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
 
   val feelLanguageVersion: String = FeelAnalyzer.FeelLanguageVersion
 
-  def analyze(text: String): AnalysisResult = {
+  def analyzeFast(text: String): AnalysisResult = {
     val parseResult = FeelParser.parseExpression(text)
     parseResult match {
       case Parsed.Success(_, _) =>
@@ -55,7 +55,7 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
           .map(_.variableName)
           .filterNot(_ == "<empty>")
         AnalysisResult(
-          diagnostics = interpreterDiagnostics(text),
+          diagnostics = List.empty,
           variableNames = variableNames
         )
 
@@ -66,6 +66,18 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
         )
     }
   }
+
+  // Backward-compatible combined analysis used by tests and utility callers.
+  def analyze(text: String): AnalysisResult = {
+    val fast = analyzeFast(text)
+    if (hasParserError(fast)) {
+      fast
+    } else {
+      fast.copy(diagnostics = fast.diagnostics ++ interpreterDiagnostics(text))
+    }
+  }
+
+  def analyzeInterpreter(text: String): List[Diagnostic] = interpreterDiagnostics(text)
 
   def completionItems(@unused text: String, analysis: AnalysisResult): util.List[CompletionItem] = {
     val keywordItems  = FeelAnalyzer.Keywords.map(keywordCompletion)
@@ -247,6 +259,9 @@ class FeelAnalyzer(engineApi: FeelEngineApi = FeelAnalyzer.defaultEngineApi) {
 
     new Hover(markup)
   }
+
+  private def hasParserError(result: AnalysisResult): Boolean =
+    result.diagnostics.exists(d => d.getSource == "feel-parser")
 }
 
 case class AnalysisResult(

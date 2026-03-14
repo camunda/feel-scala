@@ -60,6 +60,7 @@ class FeelTextDocumentService(
     )
 
     publishDiagnostics(state)
+    publishInterpreterDiagnosticsAsync(state)
   }
 
   override def didChange(params: DidChangeTextDocumentParams): Unit = {
@@ -74,7 +75,10 @@ class FeelTextDocumentService(
       analyzer = analyzer
     )
 
-    maybeOpen.foreach(publishDiagnostics)
+    maybeOpen.foreach { state =>
+      publishDiagnostics(state)
+      publishInterpreterDiagnosticsAsync(state)
+    }
   }
 
   override def didClose(params: DidCloseTextDocumentParams): Unit = {
@@ -145,6 +149,34 @@ class FeelTextDocumentService(
 
     Option(clientProvider()).foreach(_.publishDiagnostics(diagnostics))
   }
+
+  private def publishInterpreterDiagnosticsAsync(state: DocumentState): Unit = {
+    if (hasParserError(state)) {
+      ()
+    } else {
+      CompletableFuture
+        .supplyAsync(() => analyzer.analyzeInterpreter(state.text))
+        .thenAccept(warnings => {
+          store.withInterpreterDiagnostics(state.uri, state.version, warnings).foreach {
+            mergedState =>
+              logger.finest(
+                s"TRACE Publish interpreter diagnostics: uri='${mergedState.uri}' version=${mergedState.version} count=${warnings.size}"
+              )
+              publishDiagnostics(mergedState)
+          }
+        })
+        .exceptionally(error => {
+          logger.warning(
+            s"Failed to compute interpreter diagnostics for uri='${state.uri}' version=${state.version}: ${error.getMessage}"
+          )
+          null
+        })
+      ()
+    }
+  }
+
+  private def hasParserError(state: DocumentState): Boolean =
+    state.analysis.diagnostics.exists(d => d.getSource == "feel-parser")
 
   private def versionOf(version: Integer): Int = Option(version).map(_.intValue()).getOrElse(0)
 }

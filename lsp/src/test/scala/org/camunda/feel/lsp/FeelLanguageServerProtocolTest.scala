@@ -144,6 +144,37 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     hover.getContents.getRight.getValue should include("substring")
   }
 
+  it should "publish diagnostics in fast and interpreter phases" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri        = "file:///phased-diagnostics.feel"
+    val expression =
+      "substring(123, 1, 2) + (1 + null) + (1 / 0) + (\"abc\" - 2) + unknownVar"
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(uri, "feel", 1, expression)
+      )
+    )
+
+    val fastDiagnostics = client.awaitDiagnostics()
+    fastDiagnostics should not be null
+    fastDiagnostics.getVersion should be(1)
+    fastDiagnostics.getDiagnostics.asScala shouldBe empty
+
+    val interpreterDiagnostics = client.awaitDiagnostics()
+    interpreterDiagnostics should not be null
+    interpreterDiagnostics.getVersion should be(1)
+    interpreterDiagnostics.getDiagnostics.asScala.exists(
+      _.getSource == "feel-interpreter"
+    ) should be(
+      true
+    )
+  }
+
   it should "ignore stale didChange versions" in {
     val server = new FeelLanguageServer()
     val client = new RecordingLanguageClient()
@@ -172,6 +203,53 @@ class FeelLanguageServerProtocolTest extends AnyFlatSpec with Matchers {
     server.getTextDocumentService.didChange(staleChange)
 
     client.awaitDiagnostics(250) should be(null)
+  }
+
+  it should "suppress stale interpreter diagnostics for older versions" in {
+    val server = new FeelLanguageServer()
+    val client = new RecordingLanguageClient()
+    server.connect(client)
+    server.initialize(new InitializeParams()).get()
+
+    val uri = "file:///stale-interpreter.feel"
+
+    server.getTextDocumentService.didOpen(
+      new DidOpenTextDocumentParams(
+        new TextDocumentItem(
+          uri,
+          "feel",
+          1,
+          "substring(123, 1, 2) + unknownVar"
+        )
+      )
+    )
+
+    val openFast = client.awaitDiagnostics()
+    openFast should not be null
+    openFast.getVersion should be(1)
+
+    server.getTextDocumentService.didChange(
+      new DidChangeTextDocumentParams(
+        new VersionedTextDocumentIdentifier(uri, 2),
+        java.util.Collections.singletonList(
+          new TextDocumentContentChangeEvent("substring(\"abc\", 1)")
+        )
+      )
+    )
+
+    val observed = Iterator
+      .continually(client.awaitDiagnostics(500))
+      .take(6)
+      .filter(_ != null)
+      .toList
+
+    observed.exists(_.getVersion == 2) should be(true)
+    observed.exists(d => d.getVersion == 2 && d.getDiagnostics.asScala.isEmpty) should be(true)
+
+    val firstVersion2Index = observed.indexWhere(_.getVersion == 2)
+    if (firstVersion2Index >= 0) {
+      observed.drop(firstVersion2Index + 1).exists(_.getVersion == 1) should be(false)
+    }
   }
 
   it should "return semantic tokens for FEEL snippets" in {

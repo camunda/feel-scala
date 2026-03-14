@@ -27,7 +27,7 @@ class DocumentStore {
   private val documents = TrieMap.empty[String, DocumentState]
 
   def put(uri: String, version: Int, text: String, analyzer: FeelAnalyzer): DocumentState = {
-    val state = DocumentState(uri, version, text, analyzer.analyze(text))
+    val state = DocumentState(uri, version, text, analyzer.analyzeFast(text))
     documents.put(uri, state)
     state
   }
@@ -53,6 +53,26 @@ class DocumentStore {
   }
 
   def get(uri: String): Option[DocumentState] = documents.get(uri)
+
+  def withInterpreterDiagnostics(
+      uri: String,
+      version: Int,
+      diagnostics: List[org.eclipse.lsp4j.Diagnostic]
+  ): Option[DocumentState] = {
+    documents.get(uri) match {
+      case Some(current) if current.version == version =>
+        val mergedState = current.copy(
+          analysis = current.analysis.copy(
+            diagnostics = current.analysis.diagnostics ++ diagnostics
+          )
+        )
+        documents.put(uri, mergedState)
+        Some(mergedState)
+
+      case _ =>
+        None
+    }
+  }
 
   def remove(uri: String): Unit = {
     documents.remove(uri)
