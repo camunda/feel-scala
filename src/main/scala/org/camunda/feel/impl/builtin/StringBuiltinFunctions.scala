@@ -46,6 +46,7 @@ object StringBuiltinFunctions {
     "trim"             -> List(trimFunction),
     "uuid"             -> List(uuidFunction),
     "to base64"        -> List(toBase64Function),
+    "from base64"      -> List(fromBase64Function),
     "is blank"         -> List(isBlankFunction)
   )
 
@@ -285,6 +286,21 @@ object StringBuiltinFunctions {
       invoke = { case List(ValString(value)) =>
         val bytes = value.getBytes(StandardCharsets.UTF_8)
         ValString(Base64.getEncoder.encodeToString(bytes))
+      }
+    )
+
+  private def fromBase64Function =
+    builtinFunction(
+      params = List("value"),
+      invoke = { case List(ValString(value)) =>
+        Try(Base64.getDecoder.decode(value))
+          .map { bytes =>
+            ValString(new String(bytes, StandardCharsets.UTF_8))
+          }
+          .recover { _ =>
+            ValError(s"Invalid Base64 value '$value'")
+          }
+          .get
       }
     )
 

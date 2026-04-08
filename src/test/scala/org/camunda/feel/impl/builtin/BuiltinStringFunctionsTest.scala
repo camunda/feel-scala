@@ -196,6 +196,17 @@ class BuiltinStringFunctionsTest
     evaluateExpression(""" to base64(value: "Camunda") """) should returnResult("Q2FtdW5kYQ==")
   }
 
+  "A from base64() function" should "return a string decoded from base64" in {
+
+    evaluateExpression(""" from base64("RkVFTA==") """) should returnResult("FEEL")
+
+    evaluateExpression(""" from base64(value: "Q2FtdW5kYQ==") """) should returnResult("Camunda")
+  }
+
+  it should "return null if the value is not a valid base64 string" in {
+    evaluateExpression(""" from base64("!!!") """) should returnNull()
+  }
+
   "A is blank() function" should "return true if the string contains only whitespace" in {
     evaluateExpression(
       expression = """ is blank("") """
