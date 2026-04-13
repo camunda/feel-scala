@@ -16,8 +16,8 @@
  */
 package org.camunda.feel.impl.builtin
 
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
 import org.camunda.feel.impl.{EvaluationResultMatchers, FeelEngineTest}
-import org.camunda.feel.syntaxtree._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -204,7 +204,10 @@ class BuiltinStringFunctionsTest
   }
 
   it should "return null if the value is not a valid base64 string" in {
-    evaluateExpression(""" from base64("!!!") """) should returnNull()
+    evaluateExpression(""" from base64("!!!") """) should (returnNull() and reportFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage = "Failed to invoke function 'from base64': Invalid Base64 value '!!!'"
+    ))
   }
 
   "A is blank() function" should "return true if the string contains only whitespace" in {
