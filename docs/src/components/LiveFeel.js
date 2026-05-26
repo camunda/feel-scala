@@ -60,7 +60,7 @@ const LiveFeel = ({
   function evaluate(parsedContext) {
     axios
       .post(
-          "https://feel.upgradingdave.com/api/v1/feel/evaluate",
+          "https://feel-playground.camunda.com/api/v1/feel/evaluate",
         {
           expression: expression,
           context: parsedContext,

@@ -71,7 +71,7 @@ const LiveFeelUnaryTests = ({
   function evaluate(parsedContext, parsedInputValue) {
     axios
       .post(
-          "https://feel.upgradingdave.com/api/v1/feel-unary-tests/evaluate",
+          "https://feel-playground.camunda.com/api/v1/feel-unary-tests/evaluate",
         {
           expression: expression,
           inputValue: parsedInputValue,
