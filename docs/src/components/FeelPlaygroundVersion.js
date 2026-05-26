@@ -9,7 +9,7 @@ const FeelPlaygroundVersion = ({
   function loadVersion() {
     axios
         .get(
-            "https://feel.upgradingdave.com/api/v1/version",
+            "https://feel-playground.camunda.com/api/v1/version",
             {
               headers: {
                 accept: "*/*",
