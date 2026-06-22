@@ -11,14 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 18
-      - name: Install Dependencies
+      - name: Validate static site
         run: |
-          cd docs
-          npm ci
-      - name: Build
-        run: |
-          cd docs
-          npm run build
+          test -f docs/index.html || (echo "Missing docs/index.html" && exit 1)
+          test -f docs/.nojekyll || (echo "Missing docs/.nojekyll" && exit 1)
+          test -f docs/docs/playground/index.html || (echo "Missing docs/docs/playground/index.html" && exit 1)
+          echo "Static site validation passed."

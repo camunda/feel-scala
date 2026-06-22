@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEEL-Scala</title>
+  <link rel="icon" href="img/favicon.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      color: #14120f;
+      background: #f8f8f8;
+    }
+
+    header {
+      background: #fc5d0d;
+      color: #fff;
+      padding: 60px 24px 48px;
+      text-align: center;
+    }
+
+    header img.logo {
+      width: 180px;
+      margin-bottom: 24px;
+      filter: brightness(0) invert(1);
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      font-size: 1.15rem;
+      opacity: 0.92;
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 56px auto;
+      padding: 0 24px;
+    }
+
+    main h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #14120f;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e6e2de;
+      border-radius: 10px;
+      padding: 28px 24px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 24px rgba(252, 93, 13, 0.18);
+      transform: translateY(-3px);
+    }
+
+    .card .icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fc5d0d;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 0.93rem;
+      color: #6b6560;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 0.88rem;
+      color: #9e9a96;
+      border-top: 1px solid #e6e2de;
+      background: #fff;
+    }
+
+    footer a {
+      color: #fc5d0d;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img class="logo" src="img/camunda-logo.png" alt="Camunda Logo">
+    <h1>FEEL-Scala</h1>
+    <p>A parser and interpreter for FEEL (Friendly Enough Expression Language) written in Scala, by Camunda.</p>
+  </header>
+  <main>
+    <h2>Resources</h2>
+    <div class="cards">
+      <a href="https://docs.camunda.io/docs/components/modeler/feel/language-guide/feel-expressions-introduction/" class="card">
+        <span class="icon">📖</span>
+        <h3>Language Guide</h3>
+        <p>Learn how to write FEEL expressions, including data types, language constructs, and built-in functions.</p>
+      </a>
+      <a href="https://github.com/camunda/feel-scala" class="card">
+        <span class="icon">🛠️</span>
+        <h3>Developer Guide</h3>
+        <p>Integrate the FEEL engine into your application and learn how to extend and customize it via SPIs.</p>
+      </a>
+      <a href="https://feel-playground.camunda.com/playground" class="card">
+        <span class="icon">🎮</span>
+        <h3>FEEL Playground (online)</h3>
+        <p>Try out FEEL expressions directly in the browser without any setup.</p>
+      </a>
+      <a href="https://github.com/camunda-community-hub/feel-scala-playground" class="card">
+        <span class="icon">🖥️</span>
+        <h3>FEEL Playground (self-managed)</h3>
+        <p>Run the FEEL Playground in your own infrastructure.</p>
+      </a>
+    </div>
+  </main>
+  <footer>
+    <p>
+      Copyright &copy; 2024 <a href="https://camunda.com">Camunda</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://github.com/camunda/feel-scala/blob/main/LICENSE">Apache License 2.0</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://github.com/camunda/feel-scala">GitHub</a>
+    </p>
+  </footer>
+</body>
+</html>
