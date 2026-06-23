@@ -35,8 +35,6 @@ Add the FEEL engine as a dependency to your project:
 </dependency>
 ```
 
-Or, download the [JAR file](https://github.com/camunda/feel-scala/releases) _(feel-engine-${VERSION}-complete.jar)_ and add it to your classpath.
-
 ## Use as a Library
 
 The FEEL engine provides an API to evaluate expressions and unary-tests.
@@ -44,34 +42,47 @@ The FEEL engine provides an API to evaluate expressions and unary-tests.
 **Java:**
 
 ```java
-final FeelEngine engine = new FeelEngine.Builder()
-    .valueMapper(SpiServiceLoader.loadValueMapper())
-    .functionProvider(SpiServiceLoader.loadFunctionProvider())
-    .build();
+final FeelEngineApi engine = FeelEngineBuilder.forJava().build();
 
 final Map<String, Object> variables = Map.of("x", 21);
-final Either<FeelEngine.Failure, Object> result = engine.evalExpression("x + 21", variables);
+final EvaluationResult evaluationResult = engine.evaluateExpression("x + 21", variables);
 
-if (result.isRight()) {
-    final Object value = result.right().get();
+if (evaluationResult.isSuccess()) {
+    final Object value = evaluationResult.result();
     System.out.println("result is " + value); // result is 42
 } else {
-    final FeelEngine.Failure failure = result.left().get();
-    throw new RuntimeException(failure.message());
+    throw new RuntimeException(evaluationResult.failure().message());
 }
 ```
 
 **Scala:**
 
 ```scala
-val engine = new FeelEngine
+val engine: FeelEngineApi = FeelEngineBuilder().build()
 
-val result: Either[Failure, Any] = engine.evalExpression("x + 21", Map("x" -> 21))
+val evaluationResult: EvaluationResult = engine.evaluateExpression("x + 21", Map("x" -> 21))
 
-result
-  .map(value => println(s"result is: $value")) // result is: 42
-  .left.map(failure => println(s"failure: $failure"))
+if (evaluationResult.isSuccess) {
+    println(s"result: ${evaluationResult.result}")
+} else {
+    println(s"failure: ${evaluationResult.failure.message}")
+}
 ```
+
+### Use as a script engine
+
+The FEEL engine implements Java's script engine API [JSR 223](https://www.jcp.org/en/jsr/detail?id=223).
+
+The FEEL expression evaluation is registered under the following names:
+
+* `feel`
+* `feel-scala`
+* `http://www.omg.org/spec/FEEL/20140401` (FEEL namespace)
+
+The FEEL unary-tests evaluation is registered under the following names:
+
+* `feel-unary-tests`
+* `feel-scala-unary-tests`
 
 ## Extend
 
@@ -82,22 +93,29 @@ The FEEL engine can be extended and customized by implementing one of the follow
 Implement `org.camunda.feel.context.JavaFunctionProvider` (Java) or `org.camunda.feel.context.CustomFunctionProvider` (Scala) to provide custom functions.
 
 ```java
-public class CustomFunctionProvider extends JavaFunctionProvider {
+public class CustomJavaFunctionProvider extends JavaFunctionProvider {
+    private static final Map<String, JavaFunction> functions = new HashMap<>();
+
+    static {
+        final JavaFunction function = new JavaFunction(Arrays.asList("x"), args -> {
+            final ValNumber arg = (ValNumber) args.get(0);
+
+            int x = arg.value().intValue();
+
+            return new ValNumber(BigDecimal.valueOf(x - 1));
+        });
+
+        functions.put("decr", function);
+    }
 
     @Override
     public Optional<JavaFunction> resolveFunction(String functionName) {
-        if (functionName.equals("incr")) {
-            return Optional.of(new JavaFunction(List.of("x"), args -> {
-                ValNumber arg = (ValNumber) args.get(0);
-                return new ValNumber(arg.value().add(BigDecimal.ONE));
-            }));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(functions.get(functionName));
     }
 
     @Override
     public Collection<String> getFunctionNames() {
-        return List.of("incr");
+        return functions.keySet();
     }
 }
 ```
@@ -138,10 +156,13 @@ Register the mapper by creating the file `META-INF/services/org.camunda.feel.val
 Implement `org.camunda.feel.FeelEngineClock` to replace the system clock used by the engine (e.g. for testing).
 
 ```java
+import java.time.Instant;
+import java.time.ZonedDateTime;
+
 public class MyClock extends FeelEngineClock {
     @Override
     public ZonedDateTime getCurrentTime() {
-        return ...; // return the current time from your clock
+        return ZonedDateTime.now(); // return the current time from your clock
     }
 }
 ```
@@ -151,8 +172,6 @@ Register the clock by creating the file `META-INF/services/org.camunda.feel.Feel
 ## Contribution
 
 Contributions are welcome 🎉 Please have a look at the [Contribution Guide](./CONTRIBUTING.md).
-
-Found a bug? Please [report it](https://github.com/camunda/feel-scala/issues).
 
 ## License
 
