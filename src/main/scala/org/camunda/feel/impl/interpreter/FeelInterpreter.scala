@@ -80,6 +80,18 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
 
       case range: ConstRange => toRange(range)
 
+      case Template(parts) =>
+        ValString(
+          // evaluate all parts and concatenate them
+          parts
+            .map(eval)
+            .map {
+              case ValString(value) => value
+              case other            => other.toString
+            }
+            .mkString
+        )
+
       // simple unary tests
       case InputEqualTo(x)                              =>
         withVal(getImplicitInputValue, i => checkEquality(i, eval(x)))
