@@ -166,7 +166,19 @@ class InterpreterFunctionTest extends AnyFlatSpec with Matchers with FeelIntegra
     eval("f(test   name yada:2)", functions = functions) should be(ValNumber(3))
   }
 
-  "An external java function definition" should "be invoked with one double parameter" in {
+  "An external java function definition" should "return always null" in {
+    val functions = Map(
+      "cos" -> eval(
+        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """
+      )
+        .asInstanceOf[ValFunction]
+    )
+
+    eval("cos(0)", functions = functions) should be(ValNull)
+  }
+
+  // Disabled external functions for security reasons
+  ignore should "be invoked with one double parameter" in {
 
     val functions = Map(
       "cos" -> eval(
@@ -179,7 +191,8 @@ class InterpreterFunctionTest extends AnyFlatSpec with Matchers with FeelIntegra
     eval("cos(1)", functions = functions) should be(ValNumber(Math.cos(1)))
   }
 
-  it should "be invoked with two int parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "be invoked with two int parameters" in {
 
     val functions = Map(
       "max" -> eval(
@@ -191,7 +204,8 @@ class InterpreterFunctionTest extends AnyFlatSpec with Matchers with FeelIntegra
     eval("max(1,2)", functions = functions) should be(ValNumber(2))
   }
 
-  it should "be invoked with one long parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "be invoked with one long parameters" in {
 
     val functions = Map(
       "abs" -> eval(
@@ -203,7 +217,8 @@ class InterpreterFunctionTest extends AnyFlatSpec with Matchers with FeelIntegra
     eval("abs(-1)", functions = functions) should be(ValNumber(1))
   }
 
-  it should "be invoked with one float parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "be invoked with one float parameters" in {
 
     val functions = Map(
       "round" -> eval(
