@@ -256,7 +256,24 @@ class InterpreterFunctionTest
     ) should returnResult(3)
   }
 
-  "An external Java function invocation" should "invoke a function with a double parameter" in {
+  "An external Java function invocation" should "return always null" in {
+    val functions = Map(
+      "cos" -> evaluateFunction(
+        """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """
+      )
+    )
+
+    evaluateExpression(
+      expression = "cos(0)",
+      functions = functions
+    ) should (returnNull() and reportFailure(
+      failureType = EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
+      failureMessage = "Failed to invoke function 'cos': External function invocations are not supported."
+    ))
+  }
+
+  // Disabled external functions for security reasons
+  ignore should "invoke a function with a double parameter" in {
     val functions = Map(
       "cos" -> evaluateFunction(
         """ function(angle) external { java: { class: "java.lang.Math", method signature: "cos(double)" } } """
@@ -274,7 +291,8 @@ class InterpreterFunctionTest
     ) should returnResult(Math.cos(1))
   }
 
-  it should "invoke a function with two int parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "invoke a function with two int parameters" in {
     evaluateExpression(
       expression = "max(1,2)",
       functions = Map("max" -> evaluateFunction(""" function(x,y) external { java: {
@@ -282,7 +300,8 @@ class InterpreterFunctionTest
     ) should returnResult(2)
   }
 
-  it should "invoke a function with a long parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "invoke a function with a long parameters" in {
     evaluateExpression(
       expression = "abs(-1)",
       functions = Map("abs" -> evaluateFunction(""" function(a) external { java: {
@@ -290,7 +309,8 @@ class InterpreterFunctionTest
     ) should returnResult(1)
   }
 
-  it should "invoke a function with a float parameters" in {
+  // Disabled external functions for security reasons
+  ignore should "invoke a function with a float parameters" in {
     evaluateExpression(
       expression = "round(3.2)",
       functions = Map("round" -> evaluateFunction(""" function(a) external { java: {

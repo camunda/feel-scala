@@ -74,14 +74,16 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
       .parseExpression(externalFunctionInvocation) shouldBe a[Right[_, ParsedExpression]]
   }
 
-  it should "evaluate an external function" in {
+  // Disabled external functions for security reasons
+  ignore should "evaluate an external function" in {
 
     engineWithEnabledFunctions.evalExpression(externalFunctionInvocation) should be(
       Right(invocationResult)
     )
   }
 
-  it should "evaluate a parsed external function" in {
+  // Disabled external functions for security reasons
+  ignore should "evaluate a parsed external function" in {
 
     engineWithEnabledFunctions.eval(parsedExternalFunctionInvocation) should be(
       Right(invocationResult)
