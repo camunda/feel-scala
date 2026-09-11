@@ -227,14 +227,19 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           paramValues =>
             body match {
               case JavaFunctionInvocation(className, methodName, arguments) =>
-                invokeJavaFunction(
-                  className,
-                  methodName,
-                  arguments,
-                  paramValues,
-                  context.valueMapper
+                ValError(
+                  "External function invocations are not supported."
                 )
-              case _                                                        => eval(body)(context.addAll((params zip paramValues).toMap))
+
+              // We disabled the Java function invocation for security reasons.
+              //                invokeJavaFunction(
+              //                  className,
+              //                  methodName,
+              //                  arguments,
+              //                  paramValues,
+              //                  context.valueMapper
+              //                )
+              case _ => eval(body)(context.addAll((params zip paramValues).toMap))
             }
         )
 
