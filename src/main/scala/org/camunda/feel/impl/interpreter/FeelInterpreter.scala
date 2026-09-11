@@ -18,6 +18,7 @@ package org.camunda.feel.impl.interpreter
 
 import org.camunda.feel.FeelEngine.UnaryTests
 import org.camunda.feel.api.EvaluationFailureType
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
 import org.camunda.feel.context.Context
 import org.camunda.feel.impl.interpreter.FeelInterpreter.INPUT_VALUE_SYMBOL
 import org.camunda.feel.syntaxtree._
@@ -278,14 +279,20 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           paramValues =>
             body match {
               case JavaFunctionInvocation(className, methodName, arguments) =>
-                invokeJavaFunction(
-                  className,
-                  methodName,
-                  arguments,
-                  paramValues,
-                  context.valueMapper
+                error(
+                  FUNCTION_INVOCATION_FAILURE,
+                  "External function invocations are not supported."
                 )
-              case _                                                        => eval(body)(context.addAll((params zip paramValues).toMap))
+
+              // We disabled the Java function invocation for security reasons.
+              //                invokeJavaFunction(
+              //                  className,
+              //                  methodName,
+              //                  arguments,
+              //                  paramValues,
+              //                  context.valueMapper
+              //                )
+              case _ => eval(body)(context.addAll((params zip paramValues).toMap))
             }
         )
 
