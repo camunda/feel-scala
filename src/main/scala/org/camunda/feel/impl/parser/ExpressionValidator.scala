@@ -34,6 +34,7 @@ import org.camunda.feel.syntaxtree.{
   Filter,
   For,
   FunctionDefinition,
+  FunctionInvocation,
   If,
   In,
   InputEqualTo,
@@ -46,8 +47,10 @@ import org.camunda.feel.syntaxtree.{
   IterationContext,
   JavaFunctionInvocation,
   Multiplication,
+  NamedFunctionParameters,
   Not,
   PathExpression,
+  PositionalFunctionParameters,
   QualifiedFunctionInvocation,
   SomeItem,
   Subtraction,
@@ -74,8 +77,16 @@ class ExpressionValidator(externalFunctionsEnabled: Boolean) {
       entries.flatMap { case (_, value) => validate(value) }
     case ConstRange(start, end) => validate(start.value) ++ validate(end.value)
 
-    case QualifiedFunctionInvocation(path, _, _) => validate(path)
-    case FunctionDefinition(_, body)             => validate(body)
+    case FunctionInvocation(_, PositionalFunctionParameters(params)) => params.flatMap(validate)
+    case FunctionInvocation(_, NamedFunctionParameters(params))      =>
+      params.flatMap { case (_, value) => validate(value) }.toList
+
+    case QualifiedFunctionInvocation(path, _, PositionalFunctionParameters(params)) =>
+      validate(path) ++ params.flatMap(validate)
+    case QualifiedFunctionInvocation(path, _, NamedFunctionParameters(params))      =>
+      validate(path) ++ params.flatMap { case (_, value) => validate(value) }.toList
+
+    case FunctionDefinition(_, body) => validate(body)
 
     case InputLessThan(x)       => validate(x)
     case InputLessOrEqual(x)    => validate(x)
