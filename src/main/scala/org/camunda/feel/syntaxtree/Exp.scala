@@ -144,3 +144,5 @@ case class Filter(list: Exp, filter: Exp) extends Exp
 case class IterationContext(start: Exp, end: Exp) extends Exp
 
 case class UnaryTestExpression(exp: Exp) extends Exp
+
+case class Template(parts: Seq[Exp]) extends Exp
