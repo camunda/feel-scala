@@ -166,8 +166,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>${plugin.version.compiler}</version>
-          <configuration>
+          <configuration combine.self="override">
             <source>${version.java}</source>
             <target>${version.java}</target>
           </configuration>
@@ -176,6 +175,15 @@
     </pluginManagement>
 
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration combine.self="override">
+          <source>${version.java}</source>
+          <target>${version.java}</target>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>net.alchim31.maven</groupId>
