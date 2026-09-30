@@ -91,8 +91,15 @@ object FeelEngine {
       this
     }
 
+    /** Deprecated. It is not possible to enable external functions. Use the FunctionProvider SPI
+      * instead. The engine ignores this setting and any parsing or evaluation of external functions
+      * will fail.
+      *
+      * @deprecated
+      *   External functions are not supported.
+      */
+    @Deprecated
     def enableExternalFunctions(enable: Boolean): Builder = {
-      configuration_ = configuration_.copy(externalFunctionsEnabled = enable)
       this
     }
 
@@ -120,10 +127,6 @@ class FeelEngine(
 ) {
 
   private val interpreter = new FeelInterpreter(valueMapper)
-
-  private val validator = new ExpressionValidator(
-    externalFunctionsEnabled = configuration.externalFunctionsEnabled
-  )
 
   logger.debug(
     s"Engine created. [" +
@@ -157,7 +160,7 @@ class FeelEngine(
 
   private def validate(exp: ParsedExpression): Either[Failure, ParsedExpression] = {
 
-    validator
+    ExpressionValidator
       .validateExpression(exp.expression)
       .map(failure =>
         Failure(s"""validation of expression '${exp.text}' failed: ${failure.message}""")
