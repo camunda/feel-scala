@@ -57,14 +57,14 @@ import org.camunda.feel.syntaxtree.{
   UnaryTestExpression
 }
 
-class ExpressionValidator(externalFunctionsEnabled: Boolean) {
+object ExpressionValidator {
 
   def validateExpression(expression: Exp): Option[Failure] =
     validate(expression).headOption
 
   private def validate(exp: Exp): List[Failure] = exp match {
     // validate expression
-    case JavaFunctionInvocation(_, _, _) if !externalFunctionsEnabled =>
+    case JavaFunctionInvocation(_, _, _) =>
       List(
         Failure(
           "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."
