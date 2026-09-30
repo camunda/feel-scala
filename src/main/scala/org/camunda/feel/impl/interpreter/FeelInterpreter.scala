@@ -280,20 +280,13 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           params,
           paramValues =>
             body match {
-              case JavaFunctionInvocation(className, methodName, arguments) =>
+              case _: JavaFunctionInvocation =>
+                // External Java function invocations are not supported for security reasons.
                 error(
                   FUNCTION_INVOCATION_FAILURE,
-                  "External function invocations are not supported."
+                  "External Java functions are not supported."
                 )
 
-              // We disabled the Java function invocation for security reasons.
-              //                invokeJavaFunction(
-              //                  className,
-              //                  methodName,
-              //                  arguments,
-              //                  paramValues,
-              //                  context.valueMapper
-              //                )
               case _ => eval(body)(context.addAll((params zip paramValues).toMap))
             }
         )
@@ -907,48 +900,6 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
           ValNull
         }
     }
-
-  private def invokeJavaFunction(
-      className: String,
-      methodName: String,
-      arguments: List[String],
-      paramValues: List[Val],
-      valueMapper: ValueMapper
-  )(implicit context: EvalContext): Val = {
-    try {
-
-      val clazz = JavaClassMapper.loadClass(className)
-
-      val argTypes = arguments map JavaClassMapper.loadClass
-
-      val method = clazz.getDeclaredMethod(methodName, argTypes: _*)
-
-      val argJavaObjects = paramValues zip argTypes map { case (obj, clazz) =>
-        JavaClassMapper.asJavaObject(obj, clazz)
-      }
-
-      val result = method.invoke(null, argJavaObjects: _*)
-
-      valueMapper.toVal(result)
-
-    } catch {
-      case e: ClassNotFoundException =>
-        error(
-          EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-          s"Failed to load class '$className'"
-        )
-      case e: NoSuchMethodException  =>
-        error(
-          EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-          s"Failed to get method with name '$methodName' and arguments '$arguments' from class '$className'"
-        )
-      case _: Throwable              =>
-        error(
-          EvaluationFailureType.FUNCTION_INVOCATION_FAILURE,
-          s"Failed to invoke method with name '$methodName' and arguments '$arguments' from class '$className'"
-        )
-    }
-  }
 
   private def toRange(range: ConstRange)(implicit context: EvalContext): Val = {
     withValues(
