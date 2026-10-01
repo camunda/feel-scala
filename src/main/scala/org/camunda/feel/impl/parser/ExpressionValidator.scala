@@ -59,17 +59,14 @@ import org.camunda.feel.syntaxtree.{
 
 object ExpressionValidator {
 
+  private val externalJavaFunctionFailure = Failure("External Java functions are not supported.")
+
   def validateExpression(expression: Exp): Option[Failure] =
     validate(expression).headOption
 
   private def validate(exp: Exp): List[Failure] = exp match {
     // validate expression
-    case JavaFunctionInvocation(_, _, _) =>
-      List(
-        Failure(
-          "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."
-        )
-      )
+    case JavaFunctionInvocation(_, _, _) => List(externalJavaFunctionFailure)
 
     // delegate to inner expression
     case ConstList(items)       => items.flatMap(validate)
