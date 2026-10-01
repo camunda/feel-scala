@@ -282,10 +282,7 @@ class FeelInterpreter(private val valueMapper: ValueMapper) {
             body match {
               case _: JavaFunctionInvocation =>
                 // External Java function invocations are not supported for security reasons.
-                error(
-                  FUNCTION_INVOCATION_FAILURE,
-                  "External Java functions are not supported."
-                )
+                ValError("External Java functions are not supported.")
 
               case _ => eval(body)(context.addAll((params zip paramValues).toMap))
             }
