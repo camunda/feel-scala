@@ -16,16 +16,13 @@
  */
 package org.camunda.feel.api
 
+import fastparse.Parsed
 import org.camunda.feel.FeelEngine.Failure
-import org.camunda.feel.syntaxtree.{
-  ConstContext,
-  ConstNumber,
-  FunctionDefinition,
-  FunctionInvocation,
-  JavaFunctionInvocation,
-  ParsedExpression,
-  PositionalFunctionParameters
-}
+import org.camunda.feel.api.EvaluationFailureType.FUNCTION_INVOCATION_FAILURE
+import org.camunda.feel.impl.interpreter.{EvalContext, FeelInterpreter}
+import org.camunda.feel.impl.parser.FeelParser
+import org.camunda.feel.syntaxtree._
+import org.camunda.feel.valuemapper.ValueMapper
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -42,27 +39,12 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
         call: f(-1)
         }.call"""
 
-  val parsedExternalFunction = ParsedExpression(
-    expression = ConstContext(
-      entries = List(
-        "f"    -> FunctionDefinition(
-          parameters = List("x"),
-          body = JavaFunctionInvocation(
-            className = "java.lang.Math",
-            methodName = "abs",
-            arguments = List("long")
-          )
-        ),
-        "call" -> FunctionInvocation(
-          function = "f",
-          params = PositionalFunctionParameters(
-            List(ConstNumber(-1))
-          )
-        )
-      )
-    ),
-    text = externalFunctionInvocation
-  )
+  val parsedExternalFunction: ParsedExpression =
+    FeelParser.parseExpression(externalFunctionInvocation) match {
+      case success: Parsed.Success[Exp] =>
+        ParsedExpression(success.value, externalFunctionInvocation)
+      case failure                      => fail(s"Failed to parse expression: $failure")
+    }
 
   val validationFailure = Failure(
     s"validation of expression '$externalFunctionInvocation' failed: External Java functions are not supported."
@@ -116,6 +98,22 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
 
     result.isFailure should be(true)
     result.failure should be(validationFailure)
+  }
+
+  "The FEEL engine interpreter" should "evaluate an external function to null (for security reasons)" in {
+
+    // Bypass the engine to verify the security gate inside the interpreter
+    val interpreter = new FeelInterpreter(ValueMapper.defaultValueMapper)
+    val evalContext = EvalContext.empty(ValueMapper.defaultValueMapper)
+
+    val result = interpreter.eval(parsedExternalFunction.expression)(evalContext)
+
+    result should matchPattern { case ValNull => }
+
+    evalContext.failureCollector.failures contains EvaluationFailure(
+      failureType = FUNCTION_INVOCATION_FAILURE,
+      failureMessage = "External Java functions are not supported."
+    )
   }
 
 }
