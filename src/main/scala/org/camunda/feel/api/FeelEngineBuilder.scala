@@ -55,10 +55,16 @@ case class FeelEngineBuilder private (
   def withClock(clock: FeelEngineClock): FeelEngineBuilder =
     copy(clock = clock)
 
-  /** Enables/disables external FEEL functions for the engine.
+  /** Deprecated. It is not possible to enable external functions. Use the FunctionProvider SPI
+    * instead. The engine ignores this setting and any parsing or evaluation of external functions
+    * will fail.
+    *
+    * @deprecated
+    *   External functions are not supported.
     */
+  @Deprecated
   def withEnabledExternalFunctions(enabled: Boolean): FeelEngineBuilder =
-    copy(configuration = configuration.copy(externalFunctionsEnabled = enabled))
+    this
 
   /** Creates a new engine with the given configuration.
     *
