@@ -16,7 +16,6 @@
  */
 package org.camunda.feel.api
 
-import org.camunda.feel.FeelEngine.Failure
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -25,14 +24,16 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
   private val externalFunctionDefinition =
     """function() external { java: { class: "com.example.Hello", method signature: "greeting(string)" } }"""
 
+  private val expectedFailureMessage = "External Java functions are not supported."
+
   private val engine: FeelEngineApi = FeelEngineBuilder().build()
 
-  "A (default) FeelEngine" should "fail to parse an external function in context" in {
+  "A FeelEngine" should "fail to parse an external function in context" in {
 
     val r = engine.parseExpression(s"""{f: $externalFunctionDefinition}""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside a function with positional arguments" in {
@@ -40,7 +41,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""sort([], $externalFunctionDefinition)""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside a function with named arguments" in {
@@ -48,7 +49,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""sort(list: [], precedes: $externalFunctionDefinition)""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside list" in {
@@ -56,7 +57,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""[$externalFunctionDefinition]""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside range start" in {
@@ -64,7 +65,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""[1..$externalFunctionDefinition]""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside range end" in {
@@ -72,7 +73,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""[$externalFunctionDefinition..10]""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside comparison" in {
@@ -80,7 +81,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""$externalFunctionDefinition < 10""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside addition" in {
@@ -88,7 +89,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""10 + $externalFunctionDefinition""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside condition" in {
@@ -96,7 +97,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""if(true) then $externalFunctionDefinition else 10""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside list filter" in {
@@ -104,7 +105,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""[][$externalFunctionDefinition]""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside instance-of" in {
@@ -112,7 +113,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseExpression(s"""$externalFunctionDefinition instance of function""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
   it should "fail to parse an external function inside unary test" in {
@@ -120,7 +121,7 @@ class ExternalFunctionsDetectionTest extends AnyFlatSpec with Matchers {
     val r = engine.parseUnaryTests(s"""< $externalFunctionDefinition""")
 
     r.isFailure should be(true)
-    r.failure.message should include("External functions are disabled")
+    r.failure.message should include(expectedFailureMessage)
   }
 
 }
