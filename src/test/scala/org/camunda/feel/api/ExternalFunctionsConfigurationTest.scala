@@ -16,19 +16,25 @@
  */
 package org.camunda.feel.api
 
-import org.camunda.feel.FeelEngine
-import org.camunda.feel.FeelEngine.{Configuration, Failure}
-import org.camunda.feel.syntaxtree.ParsedExpression
+import org.camunda.feel.FeelEngine.Failure
+import org.camunda.feel.syntaxtree.{
+  ConstContext,
+  ConstNumber,
+  FunctionDefinition,
+  FunctionInvocation,
+  JavaFunctionInvocation,
+  ParsedExpression,
+  PositionalFunctionParameters
+}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
 
-  val defaultEngine = new FeelEngine()
+  private val defaultEngine: FeelEngineApi = FeelEngineBuilder().build()
 
-  val engineWithEnabledFunctions = new FeelEngine(
-    configuration = Configuration(externalFunctionsEnabled = true)
-  )
+  private val engineWithEnabledFunctions =
+    FeelEngineBuilder().withEnabledExternalFunctions(true).build()
 
   val externalFunctionInvocation =
     """{
@@ -36,58 +42,80 @@ class ExternalFunctionsConfigurationTest extends AnyFlatSpec with Matchers {
         call: f(-1)
         }.call"""
 
-  val parsedExternalFunctionInvocation = engineWithEnabledFunctions
-    .parseExpression(externalFunctionInvocation)
-    .getOrElse(???)
+  val parsedExternalFunction = ParsedExpression(
+    expression = ConstContext(
+      entries = List(
+        "f"    -> FunctionDefinition(
+          parameters = List("x"),
+          body = JavaFunctionInvocation(
+            className = "java.lang.Math",
+            methodName = "abs",
+            arguments = List("long")
+          )
+        ),
+        "call" -> FunctionInvocation(
+          function = "f",
+          params = PositionalFunctionParameters(
+            List(ConstNumber(-1))
+          )
+        )
+      )
+    ),
+    text = externalFunctionInvocation
+  )
 
-  val disabledExternalFunctionFailure = Failure(
-    s"validation of expression '$externalFunctionInvocation' failed: " +
-      "External functions are disabled. Use the FunctionProvider SPI (recommended) or enable external function in the configuration."
+  val validationFailure = Failure(
+    s"validation of expression '$externalFunctionInvocation' failed: External Java functions are not supported."
   )
 
   val invocationResult = 1
 
   "A (default) FeelEngine" should "fail to parse an external function" in {
 
-    defaultEngine.parseExpression(externalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure)
-    )
+    val result = defaultEngine.parseExpression(externalFunctionInvocation)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
   it should "fail to evaluate an external function" in {
 
-    defaultEngine.evalExpression(externalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure)
-    )
+    val result = defaultEngine.evaluateExpression(externalFunctionInvocation)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
   it should "fail to evaluate a parsed external function" in {
 
-    defaultEngine.eval(parsedExternalFunctionInvocation) should be(
-      Left(disabledExternalFunctionFailure)
-    )
+    val result = defaultEngine.evaluate(parsedExternalFunction)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
-  "A FEEL engine with enabled external functions" should "parse an external function" in {
+  "A FEEL engine with enabled external functions" should "fail to parse an external function (for security reasons)" in {
 
-    engineWithEnabledFunctions
-      .parseExpression(externalFunctionInvocation) shouldBe a[Right[_, ParsedExpression]]
+    val result = engineWithEnabledFunctions.parseExpression(externalFunctionInvocation)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
-  // Disabled external functions for security reasons
-  ignore should "evaluate an external function" in {
+  it should "fail to evaluate an external function (for security reasons)" in {
 
-    engineWithEnabledFunctions.evalExpression(externalFunctionInvocation) should be(
-      Right(invocationResult)
-    )
+    val result = engineWithEnabledFunctions.evaluateExpression(externalFunctionInvocation)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
-  // Disabled external functions for security reasons
-  ignore should "evaluate a parsed external function" in {
+  it should "fail to evaluate a parsed external function (for security reasons)" in {
 
-    engineWithEnabledFunctions.eval(parsedExternalFunctionInvocation) should be(
-      Right(invocationResult)
-    )
+    val result = engineWithEnabledFunctions.evaluate(parsedExternalFunction)
+
+    result.isFailure should be(true)
+    result.failure should be(validationFailure)
   }
 
 }
