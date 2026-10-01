@@ -39,9 +39,7 @@ import java.time.{Duration, LocalDate, LocalDateTime, LocalTime, Period, ZonedDa
 
 trait FeelEngineTest {
 
-  val engine: FeelEngineApi = FeelEngineBuilder()
-    .withEnabledExternalFunctions(true)
-    .build()
+  val engine: FeelEngineApi = FeelEngineBuilder().build()
 
   def evaluateExpression(
       expression: String,
