@@ -103,7 +103,7 @@ jobs:
           java-version: 11
           cache: maven
 
-      - uses: s4u/maven-settings-action@v4.0.0
+      - uses: s4u/maven-settings-action@v4.1.0
         with:
           servers: |
             [{
