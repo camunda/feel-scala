@@ -52,6 +52,7 @@ import org.camunda.feel.syntaxtree.{
   ConstNull,
   ConstNumber,
   ConstRange,
+  ConstRangeBoundary,
   ConstString,
   ConstTime,
   ConstYearMonthDuration,
@@ -88,20 +89,20 @@ import org.camunda.feel.syntaxtree.{
   PathExpression,
   PositionalFunctionParameters,
   QualifiedFunctionInvocation,
-  ConstRangeBoundary,
   Ref,
   SomeItem,
   Subtraction,
+  Template,
   UnaryTestExpression
 }
 import org.camunda.feel.{
   Date,
+  isDayTimeDuration,
+  isLocalDateTime,
   isOffsetDateTime,
   isOffsetTime,
   isValidDate,
   isYearMonthDuration,
-  isLocalDateTime,
-  isDayTimeDuration,
   stringToDate,
   stringToDateTime,
   stringToDayTimeDuration,
@@ -375,7 +376,7 @@ object FeelParser {
     terminalValue.flatMap(optional(chainedValueOp(_)))
 
   private def terminalValue[_: P]: P[Exp] =
-    temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")"
+    temporal | functionInvocation | variableRef | literal | inputValue | functionDefinition | "(" ~ expression ~ ")" | template
 
   private def literal[_: P]: P[Exp] =
     nullLiteral | boolean | string | number | temporal | list | context
@@ -560,6 +561,62 @@ object FeelParser {
     P(
       ("[" ~ expression ~ "]").rep(1)
     ).map(ops => ops.foldLeft(base)(Filter))
+
+  // --------------- template expressions ---------------
+
+  private def template[_: P]: P[Exp] = P(
+    "```" ~~/ templateContent ~~/ "```"
+  )
+
+  private def templateContent[_: P]: P[Exp] = P(
+    templateStringPart.? ~~ (
+      (templatePlaceholder | templateCondition | templateLoop) ~~ templateStringPart.?
+    ).repX(0)
+  ).map { case (prefix, sequence) =>
+    val start: Seq[Exp] = prefix.map(Seq(_)).getOrElse(Seq.empty)
+    val parts           = sequence.foldLeft(start) {
+      case (acc, (placeholder, None))         => acc :+ placeholder
+      case (acc, (placeholder, Some(suffix))) => acc :++ Seq(placeholder, suffix)
+    }
+    Template(parts)
+  }
+
+  private def templateStringPart[_: P]: P[Exp] = P(
+    (!("{{" | "```") ~~ AnyChar).repX(1).!
+  ).map(translateEscapes).map(ConstString)
+
+  private def templatePlaceholder[_: P]: P[Exp] = P(
+    "{{" ~~ !("#" | "/") ~/ expression ~ "}}"
+  ).map(exp =>
+    FunctionInvocation(
+      function = "string",
+      params = PositionalFunctionParameters(List(exp))
+    )
+  )
+
+  private def templateCondition[_: P]: P[Exp] = P(
+    "{{#if" ~/ expression ~ "}}" ~~/ templateContent ~~ "{{/if}}"
+  ).map { case (condition, content) =>
+    If(
+      condition = condition,
+      statement = content,
+      elseStatement = ConstString("")
+    )
+  }
+
+  private def templateLoop[_: P]: P[Exp] = P(
+    "{{#loop" ~/ expression ~ "}}" ~~/ templateContent ~~ "{{/loop}}"
+  ).map { case (iterationContext, content) =>
+    val loop = For(
+      iterators = List(("this", iterationContext)),
+      exp = content
+    )
+
+    FunctionInvocation(
+      function = "string join",
+      params = PositionalFunctionParameters(List(loop))
+    )
+  }
 
   // --------------- unary-tests expressions ---------------
 
